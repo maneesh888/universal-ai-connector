@@ -1,0 +1,15 @@
+.gradle/
+.kotlin/
+**/.swiftpm/
+**/build/
+DerivedData/
+*.xcresult
+*.log
+.DS_Store
+
+# Generated locally by scripts/build-xcframework.sh.
+swift-package/Artifacts/
+
+# Local Xcode state.
+**/xcuserdata/
+**/*.xcuserstate
