@@ -72,7 +72,7 @@ Superseded runs on the same pull request or branch are cancelled. The workflow g
 
 `.github/dependabot.yml` groups monthly GitHub Actions and Gradle updates so workflow and build dependencies do not silently age. Review and verify those pull requests like any other dependency change; do not auto-merge them without the required checks.
 
-The cross-platform jobs are configured locally but are not evidence until they pass on GitHub. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. JVM console and Android application consumer checks must be added when those samples exist. Do not label Android, JVM host-OS portability, device, consumer integration, provider, gateway, or release behavior as CI-verified before the corresponding job runs successfully.
+GitHub Actions run [29687591527](https://github.com/maneesh888/universal-ai-connector/actions/runs/29687591527) passed the complete matrix on July 19, 2026. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. JVM console and Android application consumer checks must be added when those samples exist. Do not label device, consumer integration, provider, gateway, or release behavior as CI-verified before the corresponding job runs successfully.
 
 Keep `Required checks` as the stable branch-protection status and make it depend on every supported P1 host job. Prefer one host job per materially different toolchain; do not add native targets solely to increase the matrix.
 

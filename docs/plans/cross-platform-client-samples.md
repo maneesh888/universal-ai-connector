@@ -26,7 +26,9 @@ The POC names remain valid only while preserving the verified migration path. Ne
 
 On July 19, 2026, the existing bridge gained JVM and Android targets. `./gradlew :bridge:jvmTest` and `./gradlew :bridge:testAndroidHostTest` each compiled their target and ran all 6 common tests with zero failures, and `./gradlew :bridge:bundleAndroidMainAar` assembled the Android library. The complete P0 regression also passed under Gradle 8.11.1: iOS Simulator bridge tests, simulator XCFramework assembly, all 8 Swift integration tests, the iOS sample build, secret scanning, and whitespace checks.
 
-This is partial P1 evidence only. The PR workflow is now configured to run existing JVM tests on Linux, Windows, and macOS plus Android host tests and AAR packaging on Linux, but those new jobs remain unverified until they pass on GitHub. A JVM console sample, Android sample application, iOS ARM64 device slice, and expanded shared test matrix remain unverified. Android emulator and physical-device behavior were not exercised.
+GitHub Actions run [29687591527](https://github.com/maneesh888/universal-ai-connector/actions/runs/29687591527) passed on July 19, 2026. It proved repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, the complete P0 Apple suite on macOS, and the stable `Required checks` aggregator.
+
+This remains partial P1 evidence only. A JVM console sample, Android sample application, iOS ARM64 device slice, and expanded shared test matrix remain unverified. Android emulator and physical-device behavior were not exercised.
 
 ## Target structure
 

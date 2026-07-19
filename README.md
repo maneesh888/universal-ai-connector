@@ -15,7 +15,7 @@ No AI provider, gateway, API key, or network integration is implemented yet.
 
 > **Current phase:** P1 cross-platform package baseline in progress.
 >
-> **Current P1 proof:** Shared tests pass locally on JVM and Android host. Cross-platform PR jobs are configured but require a successful GitHub run; consumer samples and iOS device delivery remain.
+> **Current P1 proof:** PR checks pass JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the complete Apple P0 suite on macOS. Consumer samples and iOS device delivery remain.
 >
 > **Production status:** Architecture validation only—not a production AI client yet.
 
@@ -56,7 +56,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | SwiftUI sample compilation | ✅ Verified |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
-| Linux, Windows, and macOS JVM PR jobs | 🚧 Configured; remote proof pending |
+| Linux, Windows, and macOS JVM PR jobs | ✅ Verified |
 | One product-facing Kotlin client used by Android and JVM samples | 🚧 Planned in P1 |
 | Consumer integration smoke checks | 🚧 Planned in P1 |
 | iOS device framework slice | ⏭️ Next milestone |

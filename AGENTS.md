@@ -33,7 +33,7 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 
-GitHub Actions are configured to run repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the P0 Apple interoperability path on pull requests. Treat the new cross-platform jobs as configured but not remotely verified until they pass on GitHub. CI still does not prove iOS device, Android/JVM consumer samples, provider, gateway, or release behavior.
+As of July 19, 2026, GitHub Actions prove repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the P0 Apple interoperability path on pull requests. CI still does not prove iOS device, Android/JVM consumer samples, provider, gateway, or release behavior.
 
 ## Host Integration Standard
 
