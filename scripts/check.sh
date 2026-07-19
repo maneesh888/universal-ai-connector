@@ -9,8 +9,9 @@ usage() {
 Usage: ./scripts/check.sh [--hygiene|--quick|--full]
 
   --hygiene  Scan for secrets and whitespace issues, including untracked files.
-  --quick    Run Kotlin bridge tests and hygiene checks.
-  --full     Run the complete verified POC suite. This is the default.
+  --quick    Run Kotlin shared tests, the JVM consumer, and hygiene checks.
+  --full     Run the complete deterministic Kotlin, JVM-consumer, and Apple suite.
+             This is the default.
 EOF
 }
 
@@ -46,13 +47,19 @@ run_hygiene() {
 }
 
 run_quick() {
-  "$ROOT/gradlew" :bridge:iosSimulatorArm64Test
+  "$ROOT/gradlew" \
+    :bridge:jvmTest \
+    :bridge:iosSimulatorArm64Test \
+    :samples:jvm-console:consumerCheck
   run_hygiene
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
-  "$ROOT/gradlew" :bridge:iosSimulatorArm64Test
+  "$ROOT/gradlew" \
+    :bridge:jvmTest \
+    :bridge:iosSimulatorArm64Test \
+    :samples:jvm-console:consumerCheck
 
   # Build once, then reuse the same generated artifact for both Swift consumers.
   "$ROOT/scripts/build-xcframework.sh"
@@ -60,7 +67,7 @@ run_full() {
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
 
   run_hygiene
-  echo "Universal AI Connector complete POC checks passed."
+  echo "Universal AI Connector complete deterministic checks passed."
 }
 
 case "$MODE" in

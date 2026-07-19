@@ -26,13 +26,13 @@ Run commands from the repository root:
 # Kotlin bridge tests plus hygiene
 ./scripts/check.sh --quick
 
-# Complete verified P0 path
+# Complete deterministic Kotlin, JVM-consumer, and Apple path
 ./scripts/check.sh --full
 ```
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The full check builds the XCFramework once and reuses it for Swift Package tests and the sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks run shared JVM tests, iOS Simulator bridge tests, and the JVM console consumer check. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
 P1 currently has focused host-side checks while its samples and CI jobs are still being built:
 
@@ -40,9 +40,11 @@ P1 currently has focused host-side checks while its samples and CI jobs are stil
 ./gradlew :bridge:jvmTest
 ./gradlew :bridge:testAndroidHostTest
 ./gradlew :bridge:bundleAndroidMainAar
+./gradlew :samples:jvm-console:consumerCheck
+./gradlew :samples:jvm-console:run
 ```
 
-These commands prove JVM shared behavior, Android host-side shared behavior, and Android library packaging. They do not prove an Android application, emulator, or physical device.
+The `consumerCheck` task compiles the JVM console against `project(":bridge")`, tests its exact output, and executes its non-interactive entry point. It is consumer-integration proof for the local public Gradle module boundary, not Maven distribution proof. The Android commands prove host-side shared behavior and library packaging; they do not prove an Android application, emulator, or physical device.
 
 As P1 samples land, add their build/run commands to this document and the top-level check. Sample verification must use public Gradle module dependencies or the Swift Package product; do not compile shared source files directly into a sample.
 
@@ -63,16 +65,16 @@ The hook is a local feedback mechanism. GitHub CI remains the remote enforcement
 `.github/workflows/ci.yml` runs for pull requests, pushes to `main`, and manual dispatches:
 
 - `Repository hygiene` runs secret and whitespace checks on Linux.
-- `JVM + Android (Linux)` runs JVM shared tests, Android host tests, and Android AAR packaging with Java 21.
-- `JVM (Windows)` runs JVM shared tests with Java 21.
-- `Apple POC + JVM (macOS)` runs JVM shared tests and the complete verified Apple suite with Java 21.
+- `JVM + Android (Linux)` runs JVM shared tests, the JVM console consumer, Android host tests, and Android AAR packaging with Java 21.
+- `JVM (Windows)` runs JVM shared tests and the JVM console consumer with Java 21.
+- `Apple POC + JVM (macOS)` runs JVM shared tests, the JVM console consumer, and the complete verified Apple suite with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
 Superseded runs on the same pull request or branch are cancelled. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
 
 `.github/dependabot.yml` groups monthly GitHub Actions and Gradle updates so workflow and build dependencies do not silently age. Review and verify those pull requests like any other dependency change; do not auto-merge them without the required checks.
 
-GitHub Actions run [29687591527](https://github.com/maneesh888/universal-ai-connector/actions/runs/29687591527) passed the complete matrix on July 19, 2026. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. JVM console and Android application consumer checks must be added when those samples exist. Do not label device, consumer integration, provider, gateway, or release behavior as CI-verified before the corresponding job runs successfully.
+GitHub Actions run [29687591527](https://github.com/maneesh888/universal-ai-connector/actions/runs/29687591527) passed the pre-consumer matrix on July 19, 2026. The current workflow adds the JVM console consumer to those same Linux, Windows, and macOS jobs without adding an operating-system job. Record the new JVM consumer matrix as verified only after its pull-request run passes. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. An Android application consumer check remains outstanding. Do not label device, consumer integration, provider, gateway, or release behavior as CI-verified before the corresponding job runs successfully.
 
 Keep `Required checks` as the stable branch-protection status and make it depend on every supported P1 host job. Prefer one host job per materially different toolchain; do not add native targets solely to increase the matrix.
 

@@ -3,8 +3,9 @@
 ## Status
 
 - Repository stage: interoperability POC verified; P1 cross-platform baseline in progress
-- Current implementation: iOS Simulator delivery proof plus JVM and Android common-test targets
+- Current implementation: iOS Simulator delivery proof, JVM and Android common-test targets, one product-facing Kotlin client, and a local JVM console consumer
 - Active work package: P1, cross-platform package and client-sample baseline
+- Next bounded P1 package: Android consumer sample
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -61,7 +62,7 @@ The host-facing developer experience must converge on:
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | In progress | JVM tests passed on Linux, Windows, and macOS; Android host tests/AAR and P0 Apple suite passed in CI July 19, 2026; samples and iOS device remain |
+| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, 13 shared tests per current target, JVM console smoke, Android AAR, and P0 Apple regression passed locally July 19, 2026; three-host consumer CI pending; Android/iOS sample upgrades and iOS device remain |
 | P2 | Canonical core and JSON contracts | Not started | |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |

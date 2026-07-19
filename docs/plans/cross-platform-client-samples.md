@@ -28,7 +28,11 @@ On July 19, 2026, the existing bridge gained JVM and Android targets. `./gradlew
 
 GitHub Actions run [29687591527](https://github.com/maneesh888/universal-ai-connector/actions/runs/29687591527) passed on July 19, 2026. It proved repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, the complete P0 Apple suite on macOS, and the stable `Required checks` aggregator.
 
-This remains partial P1 evidence only. A JVM console sample, Android sample application, iOS ARM64 device slice, and expanded shared test matrix remain unverified. Android emulator and physical-device behavior were not exercised.
+That merged baseline remained partial P1 evidence only: it did not include a JVM console sample, Android sample application, iOS ARM64 device slice, or expanded shared test matrix. Android emulator and physical-device behavior were not exercised.
+
+The current bounded P1 package adds `UniversalAiConnector` as the supported Android/JVM entry point and `samples/jvm-console` as a real `project(":bridge")` consumer. The client is reusable, concurrent, and thread-safe; it owns no coroutine scope or resource, requires no cleanup, and runs suspending work and cold flows in the caller's context. Its deterministic behavior covers one-shot response, ordered streaming, stable typed errors, and caller cancellation. The Kotlin API is hidden from Objective-C export so the verified Apple callback bridge and Swift façade remain the only supported Apple path.
+
+Local verification passed July 19, 2026: `:bridge:jvmTest`, `:bridge:testAndroidHostTest`, and `:bridge:iosSimulatorArm64Test` each ran 13 shared tests with zero failures; `:bridge:bundleAndroidMainAar` assembled the library; the JVM console `test`, `build`, `run`, and `consumerCheck` tasks passed with its one exact-output smoke test; and `./scripts/check.sh --full` passed XCFramework header validation, all 8 Swift tests, the iOS sample build, secret scanning, and whitespace validation. Cross-host JVM consumer evidence remains pending until the pull-request matrix passes.
 
 ## Target structure
 
@@ -83,6 +87,8 @@ Samples remain presentation-only. Shared behavior belongs in common Kotlin code,
 - Add a console sample that exercises every shared demonstration operation.
 - Keep the initial JVM API Kotlin-first and verify the same sample on Linux, Windows, and macOS hosts.
 - Ensure cancellation tests use coroutine test primitives and do not depend on wall-clock sleeps.
+
+The console sample is non-interactive and imports only `com.maneesh.universalai.connector` from the public bridge module. `:samples:jvm-console:consumerCheck` compiles the dependency boundary, asserts the complete consumer-facing output with virtual coroutine time, and runs the application to deterministic termination.
 
 ### Android
 
