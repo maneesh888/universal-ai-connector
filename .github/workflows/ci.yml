@@ -45,8 +45,10 @@ jobs:
         with:
           cache-provider: basic
 
-      - name: Install required Android SDK packages
-        run: sdkmanager "platforms;android-36" "build-tools;36.1.0"
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools platforms;android-36 build-tools;36.1.0
 
       - name: Run JVM and Android checks
         run: ./gradlew :bridge:jvmTest :bridge:testAndroidHostTest :bridge:bundleAndroidMainAar --stacktrace
