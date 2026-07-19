@@ -4,7 +4,7 @@
 
 This repository contains a verified iOS-Kotlin interoperability POC and the plans for evolving it into the Universal AI Connector V2 package.
 
-The next approved scope is cross-platform targets, shared interoperability tests, and thin iOS, Android, and JVM sample clients. Do not add provider adapters, Ktor networking, canonical AI contracts, gateway integration, or OpenKeyboard integration before their work package is active in `docs/plans/universal-ai-connector-v2.md`.
+The next approved scope is cross-platform targets, shared interoperability tests, thin iOS, Android, and JVM sample clients, and a measurable host-integration baseline. Do not add provider adapters, Ktor networking, canonical AI contracts, gateway integration, artifact publication, or OpenKeyboard integration before their work package is active in `docs/plans/universal-ai-connector-v2.md`.
 
 ## Start Every Task
 
@@ -33,7 +33,17 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 
-GitHub Actions currently prove repository hygiene and the P0 Apple interoperability path. They do not yet prove Android, JVM, iOS device, provider, gateway, or release behavior.
+GitHub Actions are configured to run repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the P0 Apple interoperability path on pull requests. Treat the new cross-platform jobs as configured but not remotely verified until they pass on GitHub. CI still does not prove iOS device, Android/JVM consumer samples, provider, gateway, or release behavior.
+
+## Host Integration Standard
+
+- Treat Android, iOS, and Kotlin/JVM as the supported application surfaces for the initial alpha. Prove JVM portability on Linux, Windows, and macOS before claiming those host operating systems.
+- Give Kotlin consumers one shared client entry point with idiomatic `suspend` and `Flow` APIs. Give Swift consumers one Swift façade with `async` functions, `AsyncThrowingStream`, Swift errors, and Swift cancellation.
+- Keep callback bridges, coroutine scopes, Kotlin implementation types, generated Objective-C names, and packaging details out of supported host-facing APIs.
+- Provide a simple default construction path. Keep transport injection and other advanced configuration available without making them mandatory for first use once P3 activates networking.
+- Treat samples as external consumers: they must use the packaged module or artifact boundary and must not reach into internal source sets or implementation packages.
+- A platform is integration-verified only when its clean consumer sample builds from documented instructions and exercises response, streaming, stable errors, and cancellation where supported.
+- Keep remote Maven and Swift Package publication in P8. P1 establishes local package boundaries, consumer samples, and copy-paste-ready integration documentation.
 
 ## Development Tools
 
@@ -47,8 +57,10 @@ GitHub Actions currently prove repository hygiene and the P0 Apple interoperabil
 
 - Keep platform-neutral behavior in Kotlin `commonMain`.
 - Keep sample applications thin; they demonstrate the shared API and do not duplicate connector behavior.
+- Keep one shared Kotlin client contract for Android and JVM consumers; do not create platform-specific connector behavior merely to simplify a sample.
 - Keep Kotlin `Flow`, coroutine types, and Kotlin implementation types behind the Swift callback bridge.
 - Keep the supported Apple API in the Swift façade.
+- Preserve idiomatic host lifecycle behavior: caller cancellation must propagate, terminal callbacks must be exactly once, and owned resources must have a documented cleanup path.
 - Use deterministic fake implementations for samples and normal CI until live-provider work is explicitly active.
 - Keep provider DTOs internal to their future provider modules.
 - Do not introduce OpenKeyboard actions, prompts, storage, or UI into this package.

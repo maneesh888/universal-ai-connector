@@ -6,6 +6,7 @@
 - Current implementation: iOS Simulator delivery proof plus JVM and Android common-test targets
 - Active work package: P1, cross-platform package and client-sample baseline
 - Package version target: `0.1.0-alpha.1`
+- Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing.
@@ -31,6 +32,30 @@ Initial foundations:
 - Ktor client with an injectable `HttpClient` or engine
 - deterministic fake providers and Ktor `MockEngine` tests
 
+## Host integration and platform strategy
+
+The initial alpha optimizes for broad practical reach without maintaining every Kotlin/Native target:
+
+| Host surface | Initial delivery | Verification expectation |
+|---|---|---|
+| Android | Kotlin Multiplatform Android library | Shared tests, AAR packaging, and Android sample build |
+| iOS | Swift façade over a device-and-simulator XCFramework | Kotlin/Native tests, Swift Package tests, and SwiftUI sample builds |
+| Linux | Kotlin/JVM artifact | JVM tests and console consumer on Linux CI |
+| Windows | Kotlin/JVM artifact | JVM tests and console consumer on Windows CI |
+| macOS | Kotlin/JVM artifact plus the Apple delivery toolchain | JVM consumer proof and the Apple verification suite on macOS CI |
+
+Native macOS ARM64 and Linux X64 may be added when a no-JVM or native-language consumer requires them. Windows Kotlin/Native, JavaScript, and Wasm remain demand-driven. A host is not described as supported merely because the compiler can produce a target: the repository must also test its public API, packaging, documented consumption path, and lifecycle behavior.
+
+The host-facing developer experience must converge on:
+
+- one documented dependency path per host surface;
+- one primary client entry point;
+- a simple default configuration plus optional advanced injection;
+- idiomatic Kotlin `suspend`/`Flow` and Swift `async`/`AsyncThrowingStream` behavior;
+- stable host-native errors and cancellation;
+- samples that consume package boundaries rather than internal source shortcuts;
+- installation and first-use snippets kept executable by consumer smoke tests.
+
 ## Milestones
 
 | ID | Work package | Status | Evidence |
@@ -43,7 +68,7 @@ Initial foundations:
 | P5 | Anthropic adapter | Not started | |
 | P6 | OpenRouter and OpenAI-compatible adapters | Not started | |
 | P7 | Universal Gateway V2 adapter | Not started | |
-| P8 | Production Swift and Apple distribution | Not started | |
+| P8 | Production distribution and host integration | Not started | |
 | P9 | Release hardening and internal alpha | Not started | |
 
 Only one row may be `In progress` at a time.
@@ -70,8 +95,11 @@ Acceptance requires:
 - JVM, Android, iOS ARM64, and iOS Simulator ARM64 targets compile.
 - Shared deterministic behavior is tested from common code.
 - JVM console, Android, and iOS Swift samples consume the same shared client contract.
+- Samples compile as external consumers through documented package boundaries and do not import internal implementation packages.
 - The Apple XCFramework contains device and simulator slices.
 - Async response, streaming, stable errors, and cancellation remain covered.
+- The supported Kotlin and Swift entry points have documented construction, lifecycle, concurrency, cancellation, and cleanup behavior.
+- Linux, Windows, and macOS CI prove the Kotlin/JVM consumer path before JVM host-OS portability is claimed.
 - Generated artifacts and secrets remain excluded from Git.
 
 ## P2: Canonical core and JSON contracts
@@ -90,9 +118,13 @@ Before implementation, close these decisions in ADRs:
 
 Acceptance requires schema-valid fixtures, unknown-field compatibility, unknown-value compatibility, and no vendor DTOs in public signatures.
 
+The canonical API must remain small enough for one primary client entry point. Provider extensions must not force ordinary consumers to handle vendor DTOs or construct provider-specific request objects.
+
 ## P3: HTTP transport and provider registry
 
 Add injectable Ktor transport, base URL normalization, safe header handling, timeouts, SSE parsing, request-ID and retry-after extraction, cancellation propagation, and log redaction.
+
+Default construction must select supported platform transport behavior without requiring ordinary consumers to create a Ktor `HttpClient`. Advanced consumers may inject a transport or engine for control and deterministic tests. Resource ownership and cleanup must be explicit for both paths.
 
 Generation retries remain disabled by default. Never reconnect or retry after response content begins.
 
@@ -107,9 +139,17 @@ Implement adapters in order:
 
 Each adapter owns its provider DTOs, request translation, response translation, structured-output handling, streaming translation, capability reporting, and canonical error mapping. Live tests remain opt-in and secret-safe.
 
-## P8: Swift and Apple distribution
+## P8: Production distribution and host integration
 
-Promote the POC bridge into a stable Swift façade and production XCFramework containing device and simulator slices. Define local and remote Swift Package distribution, artifact checksum production, versioning, and compatibility tests.
+Promote the POC bridge into a stable Swift façade and production XCFramework containing device and simulator slices. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
+
+Acceptance requires:
+
+- one copy-paste dependency declaration for Android/JVM and one remote Swift Package dependency for Apple;
+- consumer fixtures that resolve released artifacts rather than repository source projects;
+- compiled first-use examples for Kotlin and Swift;
+- documented minimum toolchain and platform versions;
+- no manual framework copying, generated artifact commits, or repository-specific build steps for consumers.
 
 ## P9: Alpha release
 
@@ -118,6 +158,7 @@ Release `0.1.0-alpha.1` only after:
 - deterministic tests pass on JVM, Android, and iOS;
 - all initial adapters pass request, response, error, structured-output, streaming, and cancellation tests;
 - Swift distribution and samples are verified;
+- documented Android, iOS, JVM/Linux, JVM/Windows, and JVM/macOS consumer paths resolve and compile from released artifacts;
 - API compatibility and secret scans pass;
 - public API documentation and known limitations are published.
 
@@ -130,6 +171,8 @@ The following remain outside this package roadmap until explicitly activated:
 - provider-selection UI and credential storage
 - billing, quotas, server routing, and server model allowlists
 - agent frameworks, tool execution, RAG, and multimodal inputs
+- native desktop targets without a demonstrated no-JVM or native-language consumer requirement
+- Java-specific, JavaScript, and Wasm façades until their consumer demand and maintenance cost are approved
 
 ## Session reporting
 

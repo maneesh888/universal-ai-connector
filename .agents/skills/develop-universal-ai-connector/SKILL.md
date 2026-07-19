@@ -41,6 +41,9 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 - Keep the connector independent from OpenKeyboard, SwiftUI application state, App Groups, Keychain storage, keyboard actions, and Gateway V1 DTOs.
 - Keep platform-neutral behavior in Kotlin `commonMain`.
 - Keep iOS, Android, and JVM samples thin; demonstrate the shared client contract without duplicating connector behavior.
+- Treat samples as external consumers. They must use the packaged module or artifact boundary rather than internal source sets or implementation packages.
+- Provide one Kotlin client entry point with idiomatic `suspend` and `Flow` APIs for Android and JVM, plus one idiomatic Swift façade using `async`, `AsyncThrowingStream`, Swift errors, and Swift cancellation.
+- Keep the default integration path small and usable without custom transport construction. Add advanced transport injection when P3 is active, without making it mandatory for first use.
 - Keep Kotlin `Flow`, coroutine types, and implementation types behind the Swift callback bridge. Expose the supported Apple API through the Swift facade.
 - Keep provider DTOs internal to their adapter modules. Do not expose vendor-specific types through canonical public APIs.
 - Use deterministic fake implementations and mock transports for normal tests and samples.
@@ -55,7 +58,8 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 4. Keep the last verified path intact while migrating structure or packaging.
 5. Separate deterministic proof from opt-in live-provider proof. Never present mock results as evidence that a real provider or gateway works.
 6. Record public API, contract, packaging, or compatibility changes in the appropriate plan or documentation.
-7. Update milestone status only after its acceptance criteria have evidence.
+7. Verify host integration through consumer samples that compile against documented package boundaries. A library-unit-test pass alone is not consumer integration proof.
+8. Update milestone status only after its acceptance criteria have evidence.
 
 ## Route Optional Development Tools
 
@@ -90,6 +94,7 @@ Do not claim a target, sample, simulator, device slice, live provider, gateway, 
 
 - Keep `docs/plans/universal-ai-connector-v2.md` as the detailed milestone source of truth.
 - Keep the README concise and public-facing: current phase, proven capabilities, limitations, next milestone, and accurate commands.
+- Keep installation and first-use snippets aligned with compiled consumer samples. Do not document unpublished Maven or remote Swift Package coordinates as available.
 - Mark a milestone completed only when every acceptance criterion is satisfied.
 - Attach evidence to the roadmap or active plan using exact test/build results and the execution date.
 - Distinguish architecture validation, deterministic tests, packaging success, and production readiness.
