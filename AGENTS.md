@@ -35,7 +35,7 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 
-As of July 19, 2026, GitHub Actions prove repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the P0 Apple interoperability path on pull requests. The current P1 workflow also exercises the JVM console consumer in those existing operating-system jobs; record that portability proof only after its pull-request matrix passes. CI still does not prove iOS device, Android application, provider, gateway, or release behavior.
+As of July 19, 2026, GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove iOS device, Android application, provider, gateway, or release behavior.
 
 ## Host Integration Standard
 

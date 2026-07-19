@@ -15,7 +15,7 @@ No AI provider, gateway, API key, or network integration is implemented yet.
 
 > **Current phase:** P1 cross-platform package baseline in progress.
 >
-> **Current P1 proof:** The pre-consumer PR baseline passes JVM tests on Linux, Windows, and macOS, Android host tests/AAR packaging on Linux, and the complete Apple P0 suite on macOS. Locally, 13 shared tests pass on JVM, Android host, and iOS Simulator; the JVM console output smoke, Android AAR, XCFramework/Swift tests, and iOS sample build also pass. The updated three-host consumer matrix is pending its pull-request run; the Android application and iOS device delivery remain.
+> **Current P1 proof:** GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) passes the JVM console consumer on Linux, Windows, and macOS, Android host tests/AAR packaging on Linux, the complete Apple P0 suite on macOS, repository hygiene, and `Required checks`. The Android application and iOS device delivery remain.
 >
 > **Production status:** Architecture validation only—not a production AI client yet.
 
@@ -59,7 +59,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Linux, Windows, and macOS JVM PR jobs | ✅ Verified |
 | Product-facing Kotlin client for Android and JVM | ✅ Verified on JVM |
 | JVM console through the public Gradle module boundary | ✅ Verified locally |
-| JVM console on Linux, Windows, and macOS CI | 🚧 PR verification pending |
+| JVM console on Linux, Windows, and macOS CI | ✅ Verified |
 | Android application consumer | 🚧 Next P1 package |
 | iOS device framework slice | ⏭️ Next milestone |
 | JVM sample client | ✅ Verified locally |
@@ -91,8 +91,7 @@ P1 will preserve the working interoperability path while completing:
 2. The Android demonstration client using the shared Kotlin API.
 3. The product-facing Swift migration and iOS sample upgrade.
 4. The remaining shared and host interoperability tests.
-5. Consumer-boundary checks and copy-paste-ready first-use documentation.
-6. Linux, Windows, and macOS JVM CI plus the existing macOS Apple toolchain coverage.
+5. Consumer-boundary checks and copy-paste-ready first-use documentation for the remaining hosts.
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 

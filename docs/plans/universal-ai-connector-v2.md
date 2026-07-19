@@ -62,7 +62,7 @@ The host-facing developer experience must converge on:
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, 13 shared tests per current target, JVM console smoke, Android AAR, and P0 Apple regression passed locally July 19, 2026; three-host consumer CI pending; Android/iOS sample upgrades and iOS device remain |
+| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API and JVM console passed locally and on Linux, Windows, and macOS CI in run 29698575249; Android/iOS sample upgrades and iOS device remain |
 | P2 | Canonical core and JSON contracts | Not started | |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |
