@@ -5,7 +5,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DESTINATION="$("$ROOT/scripts/simulator-destination.sh")"
 DERIVED_DATA="${TMPDIR:-/tmp}/universal-ai-connector-sample-derived"
 
-"$ROOT/scripts/build-xcframework.sh"
+if [[ "${UAC_SKIP_XCFRAMEWORK_BUILD:-0}" != "1" ]]; then
+  "$ROOT/scripts/build-xcframework.sh"
+fi
 
 xcodebuild build \
   -project "$ROOT/samples/ios/UniversalAiConnectorPOCSample.xcodeproj" \

@@ -1,27 +1,98 @@
 # Universal AI Connector
 
-Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Kotlin, Android, JVM, and Swift applications.
+**Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
+
+![Project stage](https://img.shields.io/badge/stage-interoperability%20POC-2563eb)
+![Tests](https://img.shields.io/badge/tests-14%20passing-16a34a)
+![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%7C%20JVM%20%7C%20Android%20host-111827)
+![License](https://img.shields.io/badge/license-MIT-7c3aed)
+
+Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Android, iOS, and Kotlin/JVM applications. The initial JVM artifact is intended to provide portable Linux, Windows, and macOS consumption without requiring separate native desktop builds.
 
 The repository is currently at the interoperability proof-of-concept stage. It proves that a Swift application can call Kotlin/Native code through an XCFramework, receive asynchronous and streaming results, map stable errors, and propagate Swift task cancellation into Kotlin coroutines.
 
 No AI provider, gateway, API key, or network integration is implemented yet.
 
-## Current status
+> **Current phase:** P1 cross-platform package baseline in progress.
+>
+> **Current P1 proof:** PR checks pass JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the complete Apple P0 suite on macOS. Consumer samples and iOS device delivery remain.
+>
+> **Production status:** Architecture validation only—not a production AI client yet.
+
+## Integration goal
+
+The production library is intended to require one documented dependency and one primary client entry point on each host surface. Kotlin applications will receive idiomatic `suspend` and `Flow` APIs. Swift applications will receive a Swift façade using `async`, `AsyncThrowingStream`, Swift errors, and Swift cancellation without exposing Kotlin implementation types.
+
+P1 is establishing this package boundary through compiling iOS, Android, and JVM consumer samples. Remote Maven coordinates and remote Swift Package installation are planned for P8 and are not available yet.
+
+## Project status and progress
+
+### Overall roadmap completion: 10% — 1 of 10 milestones completed
+
+```text
+Interoperability POC       ████████████████████ 100%  ✅ Complete
+Cross-platform baseline   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 In progress
+Canonical AI contracts    ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+HTTP client foundation    ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Provider adapters         ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Gateway integration       ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+```
+
+The percentage measures completed roadmap milestones, not production readiness. See the [V2 roadmap](docs/plans/universal-ai-connector-v2.md) for milestone definitions and acceptance criteria.
+
+### What works today
 
 | Area | Status |
 |---|---|
-| Kotlin/Native iOS Simulator framework | Verified |
-| XCFramework generation | Verified |
-| Local Swift Package wrapper | Verified |
-| Swift async response bridge | Verified |
-| Kotlin `Flow` to Swift `AsyncThrowingStream` | Verified |
-| Swift-to-Kotlin cancellation | Verified |
-| Interactive iOS sample build | Verified |
-| iOS device, Android, and JVM targets | Planned |
-| Canonical AI contracts and HTTP transport | Planned |
-| OpenAI, Anthropic, OpenRouter, and gateway adapters | Planned |
+| Kotlin/Native iOS Simulator framework | ✅ Verified |
+| XCFramework generation | ✅ Verified |
+| Local Swift Package wrapper | ✅ Verified |
+| Swift synchronous and async calls into Kotlin | ✅ Verified |
+| Kotlin `Flow` to Swift `AsyncThrowingStream` | ✅ Verified |
+| Stable Kotlin-to-Swift error mapping | ✅ Verified |
+| Swift-to-Kotlin cancellation | ✅ Verified |
+| SwiftUI sample compilation | ✅ Verified |
+| JVM target and shared tests | ✅ Verified |
+| Android library, host tests, and AAR | ✅ Verified |
+| Linux, Windows, and macOS JVM PR jobs | ✅ Verified |
+| One product-facing Kotlin client used by Android and JVM samples | 🚧 Planned in P1 |
+| Consumer integration smoke checks | 🚧 Planned in P1 |
+| iOS device framework slice | ⏭️ Next milestone |
+| Android and JVM sample clients | 🚧 Current milestone |
+| Canonical AI contracts and HTTP transport | ⏳ Planned |
+| OpenAI, Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
-The complete local verification suite passed on July 17, 2026 with 6 Kotlin tests and 8 Swift integration tests.
+On July 19, 2026, all 6 shared tests passed independently on JVM and Android host, and the Android AAR assembled successfully. The complete Apple regression also passed with 6 iOS Simulator Kotlin tests, 8 Swift integration tests, XCFramework assembly, and the standalone sample build on an iPhone 17 Pro simulator destination.
+
+### Milestone status
+
+| Milestone | Description | Status |
+|---|---|---|
+| P0 | iOS-Kotlin interoperability POC | ✅ Completed |
+| P1 | Cross-platform package and client samples | 🚧 In progress |
+| P2 | Canonical core and JSON contracts | ⏳ Planned |
+| P3 | HTTP transport and provider registry | ⏳ Planned |
+| P4 | OpenAI Responses adapter | ⏳ Planned |
+| P5 | Anthropic adapter | ⏳ Planned |
+| P6 | OpenRouter and compatible adapters | ⏳ Planned |
+| P7 | Universal Gateway V2 adapter | ⏳ Planned |
+| P8 | Production distribution and host integration | ⏳ Planned |
+| P9 | Release hardening and internal alpha | ⏳ Planned |
+
+### P1 remaining work
+
+P1 will preserve the working interoperability path while adding:
+
+1. iOS device and iOS Simulator XCFramework slices.
+2. JVM and Android Kotlin Multiplatform targets.
+3. Shared deterministic interoperability tests.
+4. Proper iOS SwiftUI, Android, and JVM demonstration clients.
+5. Consumer-boundary checks and copy-paste-ready first-use documentation.
+6. Linux, Windows, and macOS JVM CI plus the existing macOS Apple toolchain coverage.
+
+The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
 ## Architecture direction
 
@@ -46,6 +117,16 @@ Swift application
 
 The Swift façade keeps Kotlin implementation types, coroutine types, and `Flow` out of the supported Swift API.
 
+The planned host-facing shape is deliberately small:
+
+- Android and JVM share one Kotlin client and common models.
+- iOS uses one Swift façade over the packaged XCFramework.
+- Simple construction works without advanced transport setup; injectable transport is added with the P3 networking milestone.
+- Host coroutine or task cancellation propagates into connector work.
+- Samples consume public package boundaries and remain thin presentation layers.
+
+Native Linux, Windows, and macOS artifacts are demand-driven. The initial desktop/server path is Kotlin/JVM; Java-specific, JavaScript, and Wasm façades are not currently committed support surfaces.
+
 ## Quick start
 
 Requirements:
@@ -54,6 +135,7 @@ Requirements:
 - Xcode 26.x
 - Java 21
 - An installed iOS 17 or newer simulator runtime
+- Android SDK platform 36 and Build Tools 36.1 for the P1 Android checks
 
 Run the complete POC verification:
 
@@ -73,6 +155,9 @@ The check covers:
 Run individual checks when needed:
 
 ```bash
+./gradlew :bridge:jvmTest
+./gradlew :bridge:testAndroidHostTest
+./gradlew :bridge:bundleAndroidMainAar
 ./gradlew :bridge:iosSimulatorArm64Test
 ./scripts/build-xcframework.sh
 ./scripts/test-swift-package.sh
@@ -130,7 +215,7 @@ The package roadmap is documented in [`docs/plans/universal-ai-connector-v2.md`]
 
 The next approved implementation package expands the current bridge into tested iOS, Android, and JVM client demonstrations. See [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md).
 
-Provider and gateway work begins only after the cross-platform package foundation and canonical contracts are stable.
+Provider and gateway work begins only after the cross-platform package foundation and canonical contracts are stable. Production Maven and remote Swift Package distribution is planned for P8 after the client contract and transport are established.
 
 ## License
 
