@@ -55,7 +55,7 @@ jobs:
 
       - name: Upload failure evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-jvm-android-failure-evidence
           path: bridge/build/reports/tests/
@@ -86,7 +86,7 @@ jobs:
 
       - name: Upload failure evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-jvm-failure-evidence
           path: bridge/build/reports/tests/
@@ -127,7 +127,7 @@ jobs:
 
       - name: Upload failure evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: apple-poc-failure-evidence
           path: |
