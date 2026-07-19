@@ -42,6 +42,14 @@ internal class PocEngine {
             )
         }
 
+        if (normalizedInput == FORCE_ERROR_INPUT) {
+            delay(STREAM_DELAY_MILLIS)
+            throw PocFailure(
+                code = "simulated_failure",
+                message = "The Kotlin POC produced the requested simulated failure.",
+            )
+        }
+
         repeat(STREAM_EVENT_COUNT) { index ->
             delay(STREAM_DELAY_MILLIS)
             emit(

@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE="$ROOT/bridge/build/XCFrameworks/debug/UniversalAiConnectorBridge.xcframework"
 DESTINATION="$ROOT/swift-package/Artifacts/UniversalAiConnectorBridge.xcframework"
 FRAMEWORK_INFO="$DESTINATION/ios-arm64-simulator/UniversalAiConnectorBridge.framework/Info.plist"
+FRAMEWORK_HEADER="$DESTINATION/ios-arm64-simulator/UniversalAiConnectorBridge.framework/Headers/UniversalAiConnectorBridge.h"
 
 "$ROOT/gradlew" :bridge:assembleUniversalAiConnectorBridgeDebugXCFramework
 
@@ -22,6 +23,16 @@ MINIMUM_OS_VERSION="$(
 )"
 if [[ "$MINIMUM_OS_VERSION" != "17.0" ]]; then
   echo "Expected XCFramework minimum iOS version 17.0, found: $MINIMUM_OS_VERSION" >&2
+  exit 1
+fi
+
+if grep -q '@interface UACBUniversalAiConnector :' "$FRAMEWORK_HEADER"; then
+  echo "Product Kotlin client leaked into the Apple callback-bridge header." >&2
+  exit 1
+fi
+
+if grep -q 'Kotlinx_coroutines_coreFlow' "$FRAMEWORK_HEADER"; then
+  echo "Kotlin Flow leaked into the Apple callback-bridge header." >&2
   exit 1
 fi
 

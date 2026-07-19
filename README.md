@@ -2,20 +2,20 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-interoperability%20POC-2563eb)
-![Tests](https://img.shields.io/badge/tests-14%20passing-16a34a)
-![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%7C%20JVM%20%7C%20Android%20host-111827)
+![Project stage](https://img.shields.io/badge/stage-P1%20cross--platform%20baseline-2563eb)
+![JVM tests](https://img.shields.io/badge/JVM%20tests-14%20passing-16a34a)
+![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%7C%20JVM%20consumer%20%7C%20Android%20host-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
 
 Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Android, iOS, and Kotlin/JVM applications. The initial JVM artifact is intended to provide portable Linux, Windows, and macOS consumption without requiring separate native desktop builds.
 
-The repository is currently at the interoperability proof-of-concept stage. It proves that a Swift application can call Kotlin/Native code through an XCFramework, receive asynchronous and streaming results, map stable errors, and propagate Swift task cancellation into Kotlin coroutines.
+The repository is currently in its P1 cross-platform baseline. The verified Apple proof still shows that Swift can call Kotlin/Native through an XCFramework, receive asynchronous and streaming results, map stable errors, and propagate cancellation. Android and JVM now share a product-facing Kotlin client, and a JVM console application consumes that client through the public Gradle module boundary.
 
 No AI provider, gateway, API key, or network integration is implemented yet.
 
 > **Current phase:** P1 cross-platform package baseline in progress.
 >
-> **Current P1 proof:** PR checks pass JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the complete Apple P0 suite on macOS. Consumer samples and iOS device delivery remain.
+> **Current P1 proof:** GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) passes the JVM console consumer on Linux, Windows, and macOS, Android host tests/AAR packaging on Linux, the complete Apple P0 suite on macOS, repository hygiene, and `Required checks`. The Android application and iOS device delivery remain.
 >
 > **Production status:** Architecture validation only—not a production AI client yet.
 
@@ -57,10 +57,12 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
 | Linux, Windows, and macOS JVM PR jobs | ✅ Verified |
-| One product-facing Kotlin client used by Android and JVM samples | 🚧 Planned in P1 |
-| Consumer integration smoke checks | 🚧 Planned in P1 |
+| Product-facing Kotlin client for Android and JVM | ✅ Verified on JVM |
+| JVM console through the public Gradle module boundary | ✅ Verified locally |
+| JVM console on Linux, Windows, and macOS CI | ✅ Verified |
+| Android application consumer | 🚧 Next P1 package |
 | iOS device framework slice | ⏭️ Next milestone |
-| Android and JVM sample clients | 🚧 Current milestone |
+| JVM sample client | ✅ Verified locally |
 | Canonical AI contracts and HTTP transport | ⏳ Planned |
 | OpenAI, Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
@@ -83,14 +85,13 @@ On July 19, 2026, all 6 shared tests passed independently on JVM and Android hos
 
 ### P1 remaining work
 
-P1 will preserve the working interoperability path while adding:
+P1 will preserve the working interoperability path while completing:
 
 1. iOS device and iOS Simulator XCFramework slices.
-2. JVM and Android Kotlin Multiplatform targets.
-3. Shared deterministic interoperability tests.
-4. Proper iOS SwiftUI, Android, and JVM demonstration clients.
-5. Consumer-boundary checks and copy-paste-ready first-use documentation.
-6. Linux, Windows, and macOS JVM CI plus the existing macOS Apple toolchain coverage.
+2. The Android demonstration client using the shared Kotlin API.
+3. The product-facing Swift migration and iOS sample upgrade.
+4. The remaining shared and host interoperability tests.
+5. Consumer-boundary checks and copy-paste-ready first-use documentation for the remaining hosts.
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
@@ -127,24 +128,39 @@ The planned host-facing shape is deliberately small:
 
 Native Linux, Windows, and macOS artifacts are demand-driven. The initial desktop/server path is Kotlin/JVM; Java-specific, JavaScript, and Wasm façades are not currently committed support surfaces.
 
+The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope or external resource, so no cleanup is required. `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation.
+
 ## Quick start
 
 Requirements:
 
-- macOS on Apple silicon
-- Xcode 26.x
 - Java 21
+- macOS on Apple silicon and Xcode 26.x for Apple verification
 - An installed iOS 17 or newer simulator runtime
 - Android SDK platform 36 and Build Tools 36.1 for the P1 Android checks
 
-Run the complete POC verification:
+Run the JVM console consumer on any supported JVM host:
+
+```bash
+./gradlew :samples:jvm-console:run
+```
+
+Verify its public module dependency, exact output, and executable entry point:
+
+```bash
+./gradlew :samples:jvm-console:consumerCheck
+```
+
+Run the complete deterministic verification:
 
 ```bash
 ./scripts/check.sh
 ```
 
-The check covers:
+On macOS, the full check covers:
 
+- shared JVM tests
+- the JVM console consumer test and executable
 - Kotlin iOS Simulator tests
 - XCFramework generation
 - Swift Package integration tests
@@ -158,6 +174,8 @@ Run individual checks when needed:
 ./gradlew :bridge:jvmTest
 ./gradlew :bridge:testAndroidHostTest
 ./gradlew :bridge:bundleAndroidMainAar
+./gradlew :samples:jvm-console:consumerCheck
+./gradlew :samples:jvm-console:run
 ./gradlew :bridge:iosSimulatorArm64Test
 ./scripts/build-xcframework.sh
 ./scripts/test-swift-package.sh
@@ -174,6 +192,26 @@ POC_SIMULATOR_NAME='iPhone 16' ./scripts/test-swift-package.sh
 POC_SIMULATOR_DESTINATION='platform=iOS Simulator,id=<simulator-udid>' \
   ./scripts/test-swift-package.sh
 ```
+
+## Kotlin/JVM sample
+
+The console sample declares only `implementation(project(":bridge"))` for connector behavior. It does not copy or compile shared sources and imports no `poc` or callback-bridge packages.
+
+The first-use path is:
+
+```kotlin
+val connector = UniversalAiConnector()
+println(connector.version)
+println(connector.respond("hello from JVM"))
+
+connector.stream("stream").collect { event ->
+    println("${event.sequence}: ${event.text}")
+}
+```
+
+Failures are delivered as `UniversalAiConnectorException` with a typed `UniversalAiErrorCode` and stable string value. Cancellation is controlled by the caller's coroutine or flow collection; the sample cancels a one-shot request and stops a stream after its first event without input or orchestration sleeps.
+
+The Kotlin API is hidden from Objective-C export so Apple consumers continue through the existing callback bridge and supported Swift façade. The XCFramework build fails if the product Kotlin client or `Flow` leaks into the generated Apple header.
 
 ## iOS sample
 
@@ -203,6 +241,7 @@ The sample demonstrates:
 bridge/                 Kotlin Multiplatform bridge and tests
 swift-package/          Supported Swift façade and Swift tests
 samples/ios/            Standalone iOS SwiftUI sample
+samples/jvm-console/    Non-interactive public-module Kotlin/JVM consumer
 scripts/                Deterministic verification commands
 docs/plans/             Package roadmap and work-package plans
 ```
@@ -213,7 +252,7 @@ Generated XCFrameworks, build directories, DerivedData, `.xcresult` bundles, and
 
 The package roadmap is documented in [`docs/plans/universal-ai-connector-v2.md`](docs/plans/universal-ai-connector-v2.md).
 
-The next approved implementation package expands the current bridge into tested iOS, Android, and JVM client demonstrations. See [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md).
+The next bounded P1 package is the Android consumer sample using the same `UniversalAiConnector` API. See [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md).
 
 Provider and gateway work begins only after the cross-platform package foundation and canonical contracts are stable. Production Maven and remote Swift Package distribution is planned for P8 after the client contract and transport are established.
 

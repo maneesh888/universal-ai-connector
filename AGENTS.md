@@ -22,6 +22,8 @@ The next approved scope is cross-platform targets, shared interoperability tests
 - Fast local check: `./scripts/check.sh --quick`
 - Complete deterministic check: `./scripts/check.sh --full`
 - JVM shared tests: `./gradlew :bridge:jvmTest`
+- JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
+- JVM console application: `./gradlew :samples:jvm-console:run`
 - Android shared host tests: `./gradlew :bridge:testAndroidHostTest`
 - Android library AAR: `./gradlew :bridge:bundleAndroidMainAar`
 - Kotlin bridge tests: `./gradlew :bridge:iosSimulatorArm64Test`
@@ -33,7 +35,7 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 
-As of July 19, 2026, GitHub Actions prove repository hygiene, JVM tests on Linux, Windows, and macOS, Android host tests and AAR packaging on Linux, and the P0 Apple interoperability path on pull requests. CI still does not prove iOS device, Android/JVM consumer samples, provider, gateway, or release behavior.
+As of July 19, 2026, GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove iOS device, Android application, provider, gateway, or release behavior.
 
 ## Host Integration Standard
 

@@ -75,11 +75,15 @@ Use the repository check modes proportionally:
 
 - Hygiene only: `./scripts/check.sh --hygiene`
 - Fast Kotlin and hygiene check: `./scripts/check.sh --quick`
-- Complete deterministic POC check: `./scripts/check.sh --full`
+- Complete deterministic Kotlin, JVM-consumer, and Apple check: `./scripts/check.sh --full`
 
 Use narrower commands during iteration:
 
 - Kotlin iOS bridge tests: `./gradlew :bridge:iosSimulatorArm64Test`
+- Shared JVM tests: `./gradlew :bridge:jvmTest`
+- Android host tests: `./gradlew :bridge:testAndroidHostTest`
+- Android AAR packaging: `./gradlew :bridge:bundleAndroidMainAar`
+- JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
 - XCFramework assembly: `./scripts/build-xcframework.sh`
 - Swift Package tests: `./scripts/test-swift-package.sh`
 - iOS sample build: `./scripts/build-sample.sh`
