@@ -6,6 +6,12 @@ Turn the verified iOS-Kotlin POC into a cross-platform package baseline with thi
 
 This work package validates packaging and consumption. It does not add Ktor, provider SDKs, API keys, canonical AI DTOs, or gateway networking.
 
+## Progress evidence
+
+On July 19, 2026, the existing bridge gained JVM and Android targets. `./gradlew :bridge:jvmTest` and `./gradlew :bridge:testAndroidHostTest` each compiled their target and ran all 6 common tests with zero failures, and `./gradlew :bridge:bundleAndroidMainAar` assembled the Android library. The complete P0 regression also passed under Gradle 8.11.1: iOS Simulator bridge tests, simulator XCFramework assembly, all 8 Swift integration tests, the iOS sample build, secret scanning, and whitespace checks.
+
+This is partial P1 evidence only. A JVM console sample, Android sample application, iOS ARM64 device slice, expanded shared test matrix, and cross-platform CI remain unverified. Android emulator and physical-device behavior were not exercised.
+
 ## Target structure
 
 ```text

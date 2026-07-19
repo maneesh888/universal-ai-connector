@@ -2,10 +2,22 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     kotlin("multiplatform")
+    id("com.android.kotlin.multiplatform.library")
 }
 
 kotlin {
     val xcframework = XCFramework("UniversalAiConnectorBridge")
+
+    jvm()
+
+    androidLibrary {
+        namespace = "com.maneesh.universalai.connector.bridge"
+        compileSdk = 36
+        minSdk = 24
+        buildToolsVersion = "36.1.0"
+
+        withHostTestBuilder {}
+    }
 
     iosSimulatorArm64 {
         binaries.framework {

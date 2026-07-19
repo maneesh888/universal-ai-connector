@@ -2,9 +2,9 @@
 
 ## Status
 
-- Repository stage: interoperability POC verified; production package work not started
-- Current implementation: iOS Simulator KMP-to-Swift delivery proof
-- Next work package: P1, cross-platform package and client-sample baseline
+- Repository stage: interoperability POC verified; P1 cross-platform baseline in progress
+- Current implementation: iOS Simulator delivery proof plus JVM and Android common-test targets
+- Active work package: P1, cross-platform package and client-sample baseline
 - Package version target: `0.1.0-alpha.1`
 - Gateway and OpenKeyboard integration: deferred
 
@@ -36,7 +36,7 @@ Initial foundations:
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | Not started | See `cross-platform-client-samples.md` |
+| P1 | Cross-platform package and client-sample baseline | In progress | JVM and Android targets compiled, 6 common tests passed on each, Android AAR assembled, and P0 regressed July 19, 2026; samples and iOS device remain |
 | P2 | Canonical core and JSON contracts | Not started | |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |

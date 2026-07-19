@@ -1,0 +1,4 @@
+interface:
+  display_name: "Develop Universal AI Connector"
+  short_description: "Advance tested KMP connector milestones"
+  default_prompt: "Use $develop-universal-ai-connector to implement the next bounded repository milestone and verify it."

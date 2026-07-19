@@ -10,7 +10,7 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 1. Resolve the root with `git rev-parse --show-toplevel`.
 2. Inspect `git status --short --branch`.
-3. Read `docs/plans/universal-ai-connector-v2.md` and the active work-package plan completely.
+3. Read `docs/plans/universal-ai-connector-v2.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and the active work-package plan completely.
 4. Execute only one bounded work package unless the user explicitly authorizes a larger batch.
 5. Preserve unrelated changes and generated artifacts.
 6. Use the Gradle wrapper and repository scripts.
@@ -18,15 +18,30 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 ## Current Verification
 
+- Hygiene only: `./scripts/check.sh --hygiene`
+- Fast local check: `./scripts/check.sh --quick`
+- Complete deterministic check: `./scripts/check.sh --full`
+- JVM shared tests: `./gradlew :bridge:jvmTest`
+- Android shared host tests: `./gradlew :bridge:testAndroidHostTest`
+- Android library AAR: `./gradlew :bridge:bundleAndroidMainAar`
 - Kotlin bridge tests: `./gradlew :bridge:iosSimulatorArm64Test`
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
 - Sample simulator build: `./scripts/build-sample.sh`
-- Complete POC check: `./scripts/check.sh`
 - Secret scan: `./scripts/secret-scan.sh`
 - Final whitespace check: `git diff --check`
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
+
+GitHub Actions currently prove repository hygiene and the P0 Apple interoperability path. They do not yet prove Android, JVM, iOS device, provider, gateway, or release behavior.
+
+## Development Tools
+
+- Use the GitHub connector for remote PR, issue, workflow, log, and artifact inspection when it is available.
+- Use official provider-documentation MCPs for current external API contracts only when the corresponding provider milestone is active.
+- Use Xcode or simulator MCPs for exact platform proof when available; otherwise use the repository Xcode scripts and report the missing proof surface.
+- Treat MCPs as development tools, never runtime package dependencies.
+- Do not store MCP tokens or credentials in the repository.
 
 ## Architecture Rules
 
