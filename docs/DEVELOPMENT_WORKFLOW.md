@@ -23,16 +23,16 @@ Run commands from the repository root:
 # Secrets and whitespace, including untracked files
 ./scripts/check.sh --hygiene
 
-# Kotlin bridge tests plus hygiene
+# Kotlin bridge tests, Kotlin consumer apps, plus hygiene
 ./scripts/check.sh --quick
 
-# Complete deterministic Kotlin, JVM-consumer, and Apple path
+# Complete deterministic Kotlin-consumer and Apple path
 ./scripts/check.sh --full
 ```
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The quick and full checks run shared JVM tests, iOS Simulator bridge tests, and the JVM console consumer check. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks run shared JVM tests, iOS Simulator bridge tests, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
 P1 currently has focused host-side checks while its samples and CI jobs are still being built:
 
@@ -42,9 +42,13 @@ P1 currently has focused host-side checks while its samples and CI jobs are stil
 ./gradlew :bridge:bundleAndroidMainAar
 ./gradlew :samples:jvm-console:consumerCheck
 ./gradlew :samples:jvm-console:run
+./gradlew :samples:android:consumerCheck
+./scripts/run-android-sample.sh
 ```
 
-The `consumerCheck` task compiles the JVM console against `project(":bridge")`, tests its exact output, and executes its non-interactive entry point. It is consumer-integration proof for the local public Gradle module boundary, not Maven distribution proof. The Android commands prove host-side shared behavior and library packaging; they do not prove an Android application, emulator, or physical device.
+The JVM `consumerCheck` compiles the console against `project(":bridge")`, tests its exact output, and executes its non-interactive entry point. The Android `consumerCheck` compiles the separate Compose application against the same public module, runs its controller tests, and assembles its debug APK. These are consumer-integration proofs for the local public Gradle module boundary, not Maven distribution proof.
+
+`run-android-sample.sh` requires a booted emulator or connected device, installs the debug APK, and launches the app. Set `UAC_ANDROID_SERIAL` to select a device or `UAC_ADB` to select an `adb` binary. This optional device path is local evidence; CI intentionally uses deterministic unit/build checks and does not boot an emulator.
 
 As P1 samples land, add their build/run commands to this document and the top-level check. Sample verification must use public Gradle module dependencies or the Swift Package product; do not compile shared source files directly into a sample.
 
@@ -65,16 +69,16 @@ The hook is a local feedback mechanism. GitHub CI remains the remote enforcement
 `.github/workflows/ci.yml` runs for pull requests, pushes to `main`, and manual dispatches:
 
 - `Repository hygiene` runs secret and whitespace checks on Linux.
-- `JVM + Android (Linux)` runs JVM shared tests, the JVM console consumer, Android host tests, and Android AAR packaging with Java 21.
+- `JVM + Android (Linux)` runs JVM shared tests, the JVM console consumer, Android host tests, Android AAR packaging, and the Android application consumer check with Java 21.
 - `JVM (Windows)` runs JVM shared tests and the JVM console consumer with Java 21.
-- `Apple POC + JVM (macOS)` runs JVM shared tests, the JVM console consumer, and the complete verified Apple suite with Java 21.
+- `Apple POC + JVM (macOS)` runs JVM shared tests, both Kotlin consumer checks, and the complete verified Apple suite with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
 Superseded runs on the same pull request or branch are cancelled. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
 
 `.github/dependabot.yml` groups monthly GitHub Actions and Gradle updates so workflow and build dependencies do not silently age. Review and verify those pull requests like any other dependency change; do not auto-merge them without the required checks.
 
-GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) passed the complete matrix on July 19, 2026. It proves the JVM console consumer on Linux, Windows, and macOS without adding an operating-system job, Android host tests and AAR packaging on Linux, the complete Apple P0 suite on macOS, repository hygiene, and the stable `Required checks` aggregator. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. An Android application consumer check remains outstanding. Do not label device, provider, gateway, distribution, or release behavior as CI-verified before the corresponding job runs successfully.
+GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) passed the complete matrix on July 19, 2026. It proves the JVM console consumer on Linux, Windows, and macOS without adding an operating-system job, Android host tests and AAR packaging on Linux, the complete Apple P0 suite on macOS, repository hygiene, and the stable `Required checks` aggregator. The Android application check was added afterward and remains pending remote proof. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. Do not label emulator/device, provider, gateway, distribution, or release behavior as CI-verified before the corresponding evidence exists.
 
 Keep `Required checks` as the stable branch-protection status and make it depend on every supported P1 host job. Prefer one host job per materially different toolchain; do not add native targets solely to increase the matrix.
 

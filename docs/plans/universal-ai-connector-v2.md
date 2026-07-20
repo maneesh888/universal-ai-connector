@@ -3,9 +3,9 @@
 ## Status
 
 - Repository stage: interoperability POC verified; P1 cross-platform baseline in progress
-- Current implementation: iOS Simulator delivery proof, JVM and Android common-test targets, one product-facing Kotlin client, and a local JVM console consumer
+- Current implementation: iOS Simulator delivery proof, JVM and Android common-test targets, one product-facing Kotlin client, and local JVM console and Android application consumers
 - Active work package: P1, cross-platform package and client-sample baseline
-- Next bounded P1 package: Android consumer sample
+- Next bounded P1 package: product-facing Apple delivery/sample upgrade with an iOS ARM64 device slice
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -47,6 +47,8 @@ The initial alpha optimizes for broad practical reach without maintaining every 
 
 Native macOS ARM64 and Linux X64 may be added when a no-JVM or native-language consumer requires them. Windows Kotlin/Native, JavaScript, and Wasm remain demand-driven. A host is not described as supported merely because the compiler can produce a target: the repository must also test its public API, packaging, documented consumption path, and lifecycle behavior.
 
+The initial JVM console remains the headless and server-oriented proof. P8 must add one Compose Multiplatform desktop demonstration application that runs from the same JVM code on macOS, Windows, and Linux. It must offer a zero-configuration deterministic mode for evaluation and an explicitly configured live mode once provider and Gateway adapters exist. Native desktop library targets remain demand-driven; the demonstration application consumes the Kotlin/JVM artifact.
+
 The host-facing developer experience must converge on:
 
 - one documented dependency path per host surface;
@@ -62,7 +64,7 @@ The host-facing developer experience must converge on:
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API and JVM console passed locally and on Linux, Windows, and macOS CI in run 29698575249; Android/iOS sample upgrades and iOS device remain |
+| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API and JVM console passed locally and in CI run 29698575249; Android app tests, APK, and API 36.1 emulator launch passed locally July 20; Apple sample upgrade and iOS device remain |
 | P2 | Canonical core and JSON contracts | Not started | |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |
@@ -142,13 +144,18 @@ Each adapter owns its provider DTOs, request translation, response translation, 
 
 ## P8: Production distribution and host integration
 
-Promote the POC bridge into a stable Swift façade and production XCFramework containing device and simulator slices. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
+Promote the POC bridge into a stable Swift façade and production XCFramework containing device and simulator slices. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
 
 Acceptance requires:
 
 - one copy-paste dependency declaration for Android/JVM and one remote Swift Package dependency for Apple;
 - consumer fixtures that resolve released artifacts rather than repository source projects;
 - compiled first-use examples for Kotlin and Swift;
+- user-visible Android, iOS, and desktop demonstrations covering response, streaming, stable errors, and cancellation;
+- a desktop deterministic mode that starts without an account, network, gateway, provider credential, or secret;
+- an opt-in desktop live mode that accepts host-provided adapter configuration only after the corresponding adapter milestone is complete;
+- Gateway client configuration limited to its base URL and gateway credential provider, with provider credentials remaining on the Gateway server and no secret logging or committed credentials;
+- self-contained desktop distributions built and smoke-tested on their matching macOS, Windows, and Linux hosts;
 - documented minimum toolchain and platform versions;
 - no manual framework copying, generated artifact commits, or repository-specific build steps for consumers.
 
@@ -159,6 +166,7 @@ Release `0.1.0-alpha.1` only after:
 - deterministic tests pass on JVM, Android, and iOS;
 - all initial adapters pass request, response, error, structured-output, streaming, and cancellation tests;
 - Swift distribution and samples are verified;
+- the Android, iOS, and desktop demonstration screens are launch-tested and retain deterministic no-secret modes;
 - documented Android, iOS, JVM/Linux, JVM/Windows, and JVM/macOS consumer paths resolve and compile from released artifacts;
 - API compatibility and secret scans pass;
 - public API documentation and known limitations are published.
@@ -172,7 +180,7 @@ The following remain outside this package roadmap until explicitly activated:
 - provider-selection UI and credential storage
 - billing, quotas, server routing, and server model allowlists
 - agent frameworks, tool execution, RAG, and multimodal inputs
-- native desktop targets without a demonstrated no-JVM or native-language consumer requirement
+- native desktop library targets without a demonstrated no-JVM or native-language consumer requirement; the planned P8 graphical desktop demo uses Kotlin/JVM
 - Java-specific, JavaScript, and Wasm façades until their consumer demand and maintenance cost are approved
 
 ## Session reporting
