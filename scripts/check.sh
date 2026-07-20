@@ -46,7 +46,12 @@ run_hygiene() {
   echo "Universal AI Connector hygiene checks passed."
 }
 
+run_script_tests() {
+  "$ROOT/scripts/tests/run-android-sample-test.sh"
+}
+
 run_quick() {
+  run_script_tests
   "$ROOT/gradlew" \
     :bridge:jvmTest \
     :bridge:iosSimulatorArm64Test \
@@ -57,6 +62,7 @@ run_quick() {
 }
 
 run_full() {
+  run_script_tests
   "$ROOT/gradlew" \
     :bridge:jvmTest \
     :bridge:iosSimulatorArm64Test \

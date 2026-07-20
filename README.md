@@ -15,7 +15,7 @@ No AI provider, gateway, API key, or network integration is implemented yet.
 
 > **Current phase:** P1 cross-platform package baseline in progress.
 >
-> **Current P1 proof:** The Android application consumer passed unit tests, APK assembly, installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20, 2026. GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) remains the latest remote proof for the JVM console, Android library, Apple P0 suite, hygiene, and `Required checks`; the new Android app CI path is configured but has not run remotely. Product-facing iOS migration and iOS device delivery remain.
+> **Current P1 proof:** The Android application consumer passed unit tests, APK assembly, installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20, 2026. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed the Android application consumer alongside the JVM console, Android library, Apple P0 suite, hygiene, and `Required checks`. Product-facing iOS migration and iOS device delivery remain.
 >
 > **Production status:** Architecture validation only—not a production AI client yet.
 
@@ -67,7 +67,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Canonical AI contracts and HTTP transport | ⏳ Planned |
 | OpenAI, Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
-On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. The latest remote matrix is still the July 19 run described above.
+On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the exact Android consumer head across the complete remote matrix.
 
 ### Milestone status
 
@@ -165,7 +165,7 @@ With a booted emulator or connected device, install and launch it:
 ./scripts/run-android-sample.sh
 ```
 
-Set `UAC_ANDROID_SERIAL=<serial>` when more than one device is connected, or `UAC_ADB=/path/to/adb` when `adb` is not on `PATH` or in the standard macOS Android SDK location.
+Set `UAC_ANDROID_SERIAL=<serial>` when more than one device is connected; the script uses that device for both installation and launch. Set `UAC_ADB=/path/to/adb` when `adb` is not on `PATH` or in the standard macOS Android SDK location.
 
 Run the complete deterministic verification:
 

@@ -31,3 +31,4 @@ The project follows Semantic Versioning once published artifacts begin.
 - Hid the Kotlin product API from Objective-C export and added an XCFramework header check so Apple consumers remain on the callback bridge and Swift façade.
 - Extended local checks and Linux/macOS CI definitions with Android application controller tests and debug APK assembly.
 - Recorded the P8 requirement for installable macOS, Windows, and Linux desktop demonstrations with deterministic and opt-in live Gateway modes.
+- Applied `UAC_ANDROID_SERIAL` consistently to Android sample installation and launch, with a deterministic launch-script regression test.

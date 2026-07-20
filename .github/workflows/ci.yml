@@ -23,8 +23,10 @@ jobs:
       - name: Check out sources
         uses: actions/checkout@v7
 
-      - name: Run secret and whitespace checks
-        run: ./scripts/check.sh --hygiene
+      - name: Run repository hygiene and script tests
+        run: |
+          ./scripts/check.sh --hygiene
+          ./scripts/tests/run-android-sample-test.sh
 
   jvm-android-linux:
     name: JVM + Android (Linux)
