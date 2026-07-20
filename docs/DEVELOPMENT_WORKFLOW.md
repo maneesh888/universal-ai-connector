@@ -107,6 +107,18 @@ Use optional tools when they are available:
 
 If `gh` is unavailable or unauthenticated, report the blocker rather than silently changing GitHub tools. If another MCP is unavailable, use repository scripts and report the missing proof surface. Never add MCP SDKs, credentials, or tool-specific DTOs to the runtime package. Never store tokens in repository configuration; use OAuth or environment-backed credentials.
 
+## Branch naming
+
+Create new branches with the conventional prefix that matches the work's primary purpose:
+
+- `feature/<short-description>` for new functionality
+- `bugfix/<short-description>` for defect fixes
+- `docs/<short-description>` for documentation-only work
+- `chore/<short-description>` for maintenance
+- `refactor/<short-description>` for structural changes without behavior changes
+
+Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unless they add useful context. Do not create new `codex/` branches, and do not rename existing branches or pull-request heads that already use that prefix.
+
 ## Pull-request workflow
 
 1. Select one roadmap work package.

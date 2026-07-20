@@ -16,6 +16,18 @@ The next approved scope is cross-platform targets, shared interoperability tests
 6. Use the Gradle wrapper and repository scripts.
 7. Do not commit or push unless explicitly authorized.
 
+## Branch Naming
+
+Use a conventional type prefix for every new branch:
+
+- `feature/<short-description>` for new functionality
+- `bugfix/<short-description>` for defect fixes
+- `docs/<short-description>` for documentation-only work
+- `chore/<short-description>` for maintenance
+- `refactor/<short-description>` for structural changes without behavior changes
+
+Write the description in lowercase kebab-case. Keep the full branch name concise and descriptive, omit issue numbers unless they add useful context, and choose the prefix that matches the work's primary purpose. Do not use `codex/` for new branches. Preserve existing branches and pull requests under their current names; do not rename `codex/p1-android-sample` or any other existing branch.
+
 ## Current Verification
 
 - Hygiene only: `./scripts/check.sh --hygiene`

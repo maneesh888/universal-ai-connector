@@ -109,6 +109,8 @@ Do not claim a target, sample, simulator, device slice, live provider, gateway, 
 
 Do not commit or push without explicit user authorization.
 
+When creating a branch, use the conventional naming policy in `AGENTS.md`: `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/` followed by a concise lowercase kebab-case description. Match the prefix to the work's primary purpose, omit issue numbers unless useful, and do not create new `codex/` branches. Never rename an existing branch or pull-request head solely to adopt the convention.
+
 Before committing:
 
 1. Inspect `git status --short --branch`.
