@@ -49,7 +49,8 @@ As of July 19, 2026, GitHub Actions run [29698575249](https://github.com/maneesh
 
 ## Development Tools
 
-- Use the GitHub connector for remote PR, issue, workflow, log, and artifact inspection when it is available.
+- Use the `gh` CLI for GitHub repository, PR, issue, review, workflow, log, artifact, and authorized state-changing operations. Use `gh api graphql` when thread-level or GraphQL state is required.
+- Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report that blocker instead of silently switching tools.
 - Use official provider-documentation MCPs for current external API contracts only when the corresponding provider milestone is active.
 - Use Xcode or simulator MCPs for exact platform proof when available; otherwise use the repository Xcode scripts and report the missing proof surface.
 - Treat MCPs as development tools, never runtime package dependencies.

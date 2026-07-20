@@ -93,18 +93,19 @@ Remote dependency-resolution checks are added only when P8 activates publication
 
 After the workflow has passed on GitHub, protect `main` by requiring the single `Required checks` status. Configure branch protection in GitHub rather than encoding repository-admin assumptions in local scripts.
 
-## MCP and connector routing
+## GitHub CLI and connector routing
 
 Use optional tools when they are available:
 
 | Tool | Use | Proof boundary |
 |---|---|---|
-| GitHub connector | Read PRs, issues, workflow runs, job logs, and artifacts; create or update remote work only with authorization | Remote coordination and CI evidence |
+| GitHub CLI (`gh`) | Default for repository, PR, issue, review, workflow, log, artifact, and authorized state-changing operations; use `gh api graphql` for thread-level state | Remote coordination and CI evidence |
+| GitHub connector | Use only when the user explicitly requests it; never switch to it silently when `gh` is unavailable or unauthenticated | Connector-specific fallback explicitly chosen by the user |
 | OpenAI Developer Docs MCP | Verify current OpenAI API contracts when P4 or later activates them | Documentation evidence, not implementation proof |
 | Xcode or simulator MCP | Inspect simulator state and collect visual or lifecycle evidence | Valid only for the exact simulator/device path exercised |
 | Browser tooling | Verify future web samples or published documentation | Browser behavior only |
 
-If an MCP is unavailable, use repository scripts and report the missing proof surface. Never add MCP SDKs, credentials, or tool-specific DTOs to the runtime package. Never store tokens in repository configuration; use OAuth or environment-backed credentials.
+If `gh` is unavailable or unauthenticated, report the blocker rather than silently changing GitHub tools. If another MCP is unavailable, use repository scripts and report the missing proof surface. Never add MCP SDKs, credentials, or tool-specific DTOs to the runtime package. Never store tokens in repository configuration; use OAuth or environment-backed credentials.
 
 ## Pull-request workflow
 
@@ -113,7 +114,7 @@ If an MCP is unavailable, use repository scripts and report the missing proof su
 3. Build affected consumer samples when public APIs or package boundaries change.
 4. Run `./scripts/check.sh --quick` before committing.
 5. Run `./scripts/check.sh --full` before requesting review when the package baseline changes.
-6. Push and use the GitHub connector or GitHub UI to inspect every required job.
+6. Push and use `gh` to inspect every required job.
 7. Update roadmap and README status only after the exact acceptance evidence exists.
 
 ### Agent-assisted review and merge

@@ -20,9 +20,11 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 
 1. Resolve the repository root and inspect `git status --short --branch`.
 2. Read `AGENTS.md`, the roadmap, `docs/DEVELOPMENT_WORKFLOW.md`, and the active work-package plan completely.
-3. Resolve the owner, repository, PR number, base branch, head branch, head SHA, draft state, author, changed files, mergeability, reviews, review threads, and check runs with the GitHub connector. Use `gh` only when connector coverage is insufficient.
+3. Resolve the owner, repository, PR number, base branch, head branch, head SHA, draft state, author, changed files, mergeability, reviews, review threads, and check runs with `gh`. Prefer `gh pr view`, `gh pr diff`, `gh pr checks`, `gh run view`, and `gh api graphql` as appropriate.
 4. Record the head SHA before reviewing. Never assume the current checkout matches the PR.
 5. Preserve dirty or unrelated local work. If the checkout is not a clean copy of the exact PR head, verify in a separate temporary worktree or another isolated checkout; never stash, reset, overwrite, or incorporate user changes.
+
+Use `gh` for every GitHub read and authorized state change. Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report the blocker instead of silently switching tools.
 
 ## 2. Run an independent review
 
