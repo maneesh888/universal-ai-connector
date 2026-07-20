@@ -20,19 +20,19 @@ P1 requires the first three levels for its supported samples. Distribution proof
 Run commands from the repository root:
 
 ```bash
-# Secrets and whitespace, including untracked files
+# Shell syntax, secrets, and whitespace, including untracked files
 ./scripts/check.sh --hygiene
 
-# Kotlin bridge tests, Kotlin consumer apps, plus hygiene
+# Mandatory before every commit
 ./scripts/check.sh --quick
 
-# Complete deterministic Kotlin-consumer and Apple path
+# Mandatory before every push and pull-request creation or update
 ./scripts/check.sh --full
 ```
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The quick and full checks run deterministic shell-script tests, shared JVM tests, iOS Simulator bridge tests, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
 P1 currently has focused host-side checks while its samples and CI jobs are still being built:
 
@@ -52,17 +52,19 @@ The JVM `consumerCheck` compiles the console against `project(":bridge")`, tests
 
 As P1 samples land, add their build/run commands to this document and the top-level check. Sample verification must use public Gradle module dependencies or the Swift Package product; do not compile shared source files directly into a sample.
 
-## Optional pre-commit hook
+## Mandatory local hooks
 
-Enable the committed hook for the current clone:
+Enable the committed hooks for every clone:
 
 ```bash
 ./scripts/install-hooks.sh
 ```
 
-The installer configures the local repository to use `.githooks/`. It refuses to replace a different configured hooks path. The pre-commit hook runs `./scripts/check.sh --quick`.
+The installer configures the local repository to use `.githooks/` and refuses to replace a different configured hooks path. Because Git does not activate committed hooks automatically, run the installer before repository work and verify `git config --local --get core.hooksPath` prints `.githooks`.
 
-The hook is a local feedback mechanism. GitHub CI remains the remote enforcement boundary.
+The pre-commit hook rejects unstaged tracked changes and untracked files so the working tree matches the staged snapshot, then runs `./scripts/check.sh --quick`. The pre-push hook rejects branch or tag updates that do not resolve to the checked-out `HEAD` and requires a clean worktree before and after `./scripts/check.sh --full`, so verification applies to the exact commit being pushed. Never use `--no-verify`; a missing toolchain or failed check blocks the commit or push until fixed.
+
+The hooks are mandatory local gates. GitHub CI remains an independent remote enforcement boundary and must also pass before merge.
 
 ## GitHub Actions
 
@@ -71,7 +73,7 @@ The hook is a local feedback mechanism. GitHub CI remains the remote enforcement
 - `Repository hygiene` runs secret and whitespace checks on Linux.
 - `JVM + Android (Linux)` runs JVM shared tests, the JVM console consumer, Android host tests, Android AAR packaging, and the Android application consumer check with Java 21.
 - `JVM (Windows)` runs JVM shared tests and the JVM console consumer with Java 21.
-- `Apple POC + JVM (macOS)` runs JVM shared tests, both Kotlin consumer checks, and the complete verified Apple suite with Java 21.
+- `Apple POC + JVM (macOS)` runs the complete local `--full` suite, including Android library/application, JVM, and Apple verification, with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
 Superseded runs on the same pull request or branch are cancelled. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
@@ -111,16 +113,29 @@ Use optional tools when they are available:
 
 If `gh` is unavailable or unauthenticated, report the blocker rather than silently changing GitHub tools. If another MCP is unavailable, use repository scripts and report the missing proof surface. Never add MCP SDKs, credentials, or tool-specific DTOs to the runtime package. Never store tokens in repository configuration; use OAuth or environment-backed credentials.
 
+## Branch naming
+
+Create new branches with the conventional prefix that matches the work's primary purpose:
+
+- `feature/<short-description>` for new functionality
+- `bugfix/<short-description>` for defect fixes
+- `docs/<short-description>` for documentation-only work
+- `chore/<short-description>` for maintenance
+- `refactor/<short-description>` for structural changes without behavior changes
+
+Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unless they add useful context. Do not create new `codex/` branches, and do not rename existing branches or pull-request heads that already use that prefix.
+
 ## Pull-request workflow
 
 1. Select one roadmap work package.
 2. Run targeted tests while iterating.
 3. Build affected consumer samples when public APIs or package boundaries change.
-4. Run `./scripts/check.sh --quick` before committing.
-5. Run `./scripts/check.sh --full` before requesting review when the package baseline changes.
-6. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, and exact evidence.
-7. Push and use `gh` to inspect every required job.
-8. Update roadmap and README status only after the exact acceptance evidence exists.
+4. Stage every intended file and remove or preserve elsewhere any unrelated change; partial commits with unstaged or untracked files are rejected.
+5. Commit only after the mandatory pre-commit hook passes `./scripts/check.sh --quick`.
+6. Push only after the mandatory pre-push hook passes `./scripts/check.sh --full` from a clean worktree. This applies to both pull-request creation and every later update.
+7. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, exact head SHA, and exact local evidence.
+8. Use `gh` to inspect every required job and do not treat the PR as merge-ready until the stable `Required checks` job passes.
+9. Update roadmap and README status only after the exact acceptance evidence exists.
 
 ### Review brief
 

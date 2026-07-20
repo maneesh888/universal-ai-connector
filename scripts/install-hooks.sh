@@ -16,7 +16,7 @@ if [[ -n "$HOOKS_PATH" && "$HOOKS_PATH" != ".githooks" ]]; then
   exit 1
 fi
 
-chmod +x "$ROOT/.githooks/pre-commit"
+chmod +x "$ROOT/.githooks/pre-commit" "$ROOT/.githooks/pre-push"
 git -C "$ROOT" config --local core.hooksPath .githooks
 
-echo "Universal AI Connector Git hooks enabled from .githooks/."
+echo "Universal AI Connector pre-commit and pre-push hooks enabled from .githooks/."
