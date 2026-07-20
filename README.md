@@ -160,6 +160,7 @@ Run the complete deterministic verification:
 On macOS, the full check covers:
 
 - shared JVM tests
+- Android shared host tests and AAR packaging
 - the JVM console consumer test and executable
 - Kotlin iOS Simulator tests
 - XCFramework generation
@@ -167,6 +168,14 @@ On macOS, the full check covers:
 - iOS sample build
 - secret scanning
 - Git whitespace validation
+
+Enable the mandatory local commit and push gates once per clone:
+
+```bash
+./scripts/install-hooks.sh
+```
+
+The pre-commit hook runs the quick cross-platform suite. The pre-push hook requires a clean worktree and runs the complete deterministic suite. Do not bypass either hook.
 
 Run individual checks when needed:
 

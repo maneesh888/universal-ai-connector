@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+require_clean_tree() {
+  if [[ -n "$(git -C "$ROOT" status --porcelain --untracked-files=all)" ]]; then
+    echo "Refusing to push from a dirty worktree." >&2
+    echo "Commit or remove every local change so full verification matches HEAD." >&2
+    git -C "$ROOT" status --short >&2
+    exit 1
+  fi
+}
+
+require_pushed_refs_match_head() {
+  local head_oid
+  head_oid="$(git -C "$ROOT" rev-parse HEAD)"
+
+  while read -r local_ref local_oid _remote_ref _remote_oid; do
+    case "$local_ref" in
+      refs/heads/*)
+        if [[ "$local_oid" != "$head_oid" ]]; then
+          echo "Refusing to push a branch that is not the checked-out HEAD." >&2
+          echo "Check out and fully verify each branch before pushing it." >&2
+          exit 1
+        fi
+        ;;
+      refs/tags/*)
+        if [[ "$(git -C "$ROOT" rev-list -n 1 "$local_oid")" != "$head_oid" ]]; then
+          echo "Refusing to push a tag that does not resolve to the checked-out HEAD." >&2
+          echo "Check out and fully verify the tagged commit before pushing it." >&2
+          exit 1
+        fi
+        ;;
+    esac
+  done
+}
+
+require_clean_tree
+require_pushed_refs_match_head
+echo "Running Universal AI Connector pre-push checks..."
+"$ROOT/scripts/check.sh" --full
+require_clean_tree

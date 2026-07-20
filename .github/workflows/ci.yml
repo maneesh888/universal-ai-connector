@@ -122,6 +122,11 @@ jobs:
         with:
           cache-provider: basic
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools platforms;android-36 build-tools;36.1.0
+
       - name: Report toolchain versions
         run: |
           java -version

@@ -11,11 +11,12 @@ Advance the independent Universal AI Connector repository one bounded, verified 
 
 1. Resolve the repository root with `git rev-parse --show-toplevel` and work only from that checkout or its task worktree.
 2. Inspect `git status --short --branch` before making changes.
-3. Read the root `AGENTS.md` completely and follow it as the repository's always-on policy.
-4. Read `docs/plans/universal-ai-connector-v2.md` completely. Treat it as the source of truth for milestone order and status.
-5. Read the plan named by the active milestone. For P1, read `docs/plans/cross-platform-client-samples.md` completely.
-6. Read `docs/DEVELOPMENT_WORKFLOW.md` before changing build, verification, CI, hooks, or external-tool behavior.
-7. Preserve unrelated tracked and untracked changes. Do not incorporate, revert, stage, or commit them unless the user explicitly assigns them to the task.
+3. Run `./scripts/install-hooks.sh` and verify the local `core.hooksPath` is `.githooks`.
+4. Read the root `AGENTS.md` completely and follow it as the repository's always-on policy.
+5. Read `docs/plans/universal-ai-connector-v2.md` completely. Treat it as the source of truth for milestone order and status.
+6. Read the plan named by the active milestone. For P1, read `docs/plans/cross-platform-client-samples.md` completely.
+7. Read `docs/DEVELOPMENT_WORKFLOW.md` before changing build, verification, CI, hooks, or external-tool behavior.
+8. Preserve unrelated tracked and untracked changes. Do not incorporate, revert, stage, or commit them unless the user explicitly assigns them to the task.
 
 Do not apply OpenKeyboard's application workflow to this independent package. Use OpenKeyboard only when a later integration milestone explicitly activates it.
 
@@ -71,13 +72,15 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 - Use browser tooling only for future web samples or published documentation.
 - Never make MCP availability a runtime dependency of the connector and never place MCP credentials in the repository.
 
-## Verify Proportionally
+## Enforce Local Verification
 
-Use the repository check modes proportionally:
+Use the repository check modes as mandatory cumulative gates:
 
-- Hygiene only: `./scripts/check.sh --hygiene`
-- Fast Kotlin and hygiene check: `./scripts/check.sh --quick`
-- Complete deterministic Kotlin, JVM-consumer, and Apple check: `./scripts/check.sh --full`
+- Iteration hygiene: `./scripts/check.sh --hygiene`
+- Every commit: `./scripts/check.sh --quick`
+- Every push and pull-request creation or update: `./scripts/check.sh --full`
+
+The pre-commit hook rejects unstaged and untracked files before running the quick gate. The pre-push hook rejects refs that do not resolve to the checked-out `HEAD` and requires a clean worktree before and after the full gate. Never bypass either hook. A missing toolchain, unavailable platform dependency, or failed check blocks the commit or push until fixed.
 
 Use narrower commands during iteration:
 
@@ -92,7 +95,7 @@ Use narrower commands during iteration:
 - Secret scan: `./scripts/secret-scan.sh`
 - Whitespace validation: `git diff --check`
 
-For new Android, JVM, device, provider, or distribution modules, use the commands recorded in the active work-package plan and add them to `./scripts/check.sh` and GitHub Actions when they become part of the supported deterministic baseline.
+The quick gate includes JVM tests, Android host tests and AAR packaging, iOS Simulator tests, the JVM consumer check, and hygiene. The full gate adds XCFramework assembly, Swift Package tests, and the iOS sample build. For new Android samples, JVM consumers, device paths, providers, or distribution modules, use the commands recorded in the active work-package plan and add them to `./scripts/check.sh` and GitHub Actions as soon as they become part of the supported deterministic baseline.
 
 Do not claim a target, sample, simulator, device slice, live provider, gateway, or release path is verified unless that exact path ran successfully. Report unavailable toolchains or environments as blockers.
 
@@ -114,10 +117,17 @@ When creating a branch, use the conventional naming policy in `AGENTS.md`: `feat
 Before committing:
 
 1. Inspect `git status --short --branch`.
-2. Run the active verification suite, `./scripts/secret-scan.sh`, and `git diff --check`.
-3. Stage only files belonging to the work package.
-4. Inspect `git diff --cached --name-only` and the staged diff.
-5. Confirm generated artifacts and secrets are absent.
+2. Stage only files belonging to the work package.
+3. Inspect `git diff --cached --name-only` and the staged diff.
+4. Confirm the worktree contains no unstaged or untracked files and that generated artifacts and secrets are absent.
+5. Commit only through the mandatory pre-commit hook and require `./scripts/check.sh --quick` to pass.
+
+Before pushing or creating or updating a pull request:
+
+1. Confirm the worktree is clean and `HEAD` is the exact intended remote update.
+2. Push only through the mandatory pre-push hook and require `./scripts/check.sh --full` to pass.
+3. Never use `--no-verify`; if the full gate cannot run or fails, stop and report the blocker.
+4. Refresh the PR review brief with the pushed head SHA and exact local evidence.
 
 If pushing would publish earlier local commits ahead of the remote, tell the user before pushing.
 

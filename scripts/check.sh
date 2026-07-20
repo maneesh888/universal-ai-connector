@@ -8,14 +8,18 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/check.sh [--hygiene|--quick|--full]
 
-  --hygiene  Scan for secrets and whitespace issues, including untracked files.
-  --quick    Run Kotlin shared tests, the JVM consumer, and hygiene checks.
-  --full     Run the complete deterministic Kotlin, JVM-consumer, and Apple suite.
+  --hygiene  Validate shell syntax, secrets, and whitespace, including untracked files.
+  --quick    Run hygiene plus JVM, Android, iOS Simulator, AAR, and JVM-consumer checks.
+  --full     Run quick coverage plus XCFramework, Swift Package, and iOS sample checks.
              This is the default.
 EOF
 }
 
 run_hygiene() {
+  while IFS= read -r shell_file; do
+    bash -n "$ROOT/$shell_file"
+  done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
+
   "$ROOT/scripts/secret-scan.sh"
   git -C "$ROOT" diff --check
 
@@ -46,27 +50,30 @@ run_hygiene() {
   echo "Universal AI Connector hygiene checks passed."
 }
 
-run_quick() {
+run_cross_platform_gradle_checks() {
   "$ROOT/gradlew" \
     :bridge:jvmTest \
+    :bridge:testAndroidHostTest \
+    :bridge:bundleAndroidMainAar \
     :bridge:iosSimulatorArm64Test \
     :samples:jvm-console:consumerCheck
+}
+
+run_quick() {
   run_hygiene
+  run_cross_platform_gradle_checks
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
-  "$ROOT/gradlew" \
-    :bridge:jvmTest \
-    :bridge:iosSimulatorArm64Test \
-    :samples:jvm-console:consumerCheck
+  run_hygiene
+  run_cross_platform_gradle_checks
 
   # Build once, then reuse the same generated artifact for both Swift consumers.
   "$ROOT/scripts/build-xcframework.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-swift-package.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
 
-  run_hygiene
   echo "Universal AI Connector complete deterministic checks passed."
 }
 
