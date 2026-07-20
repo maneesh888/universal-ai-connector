@@ -135,10 +135,10 @@ Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unl
 6. Push only after the mandatory pre-push hook passes `./scripts/check.sh --full` from a clean worktree. This applies to both pull-request creation and every later update.
 7. Create the pull request as a draft. GitHub Actions run while the pull request remains a draft.
 8. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, exact head SHA, and exact local evidence.
-9. Have the project `pr-reviewer` agent independently review the exact head SHA using the current structured review brief while GitHub Actions continue in parallel.
+9. In the same active task, the root agent that created or updated the draft must immediately invoke the project `pr-reviewer` agent to independently review the exact head SHA using the current structured review brief. Do not wait for GitHub Actions; review and required checks continue in parallel.
 10. Fix every blocking finding while the pull request remains a draft. If a fix or any other update changes the head SHA, disable auto-merge when enabled, return the pull request to draft when necessary, and restart local verification, the review brief, independent review, required-check inspection, thread inspection, and mergeability inspection for the new SHA.
 11. Use `gh` to inspect required jobs. A failed, cancelled, timed-out, or skipped required check blocks readiness; pending or in-progress required checks do not block a clean, reviewed head from leaving draft and enrolling in native auto-merge.
-12. With explicit current merge authorization and a passing review-completion gate, mark the draft ready and enable exact-head squash auto-merge. GitHub then waits for `Required checks` and every other branch-protection requirement before completing the merge.
+12. With explicit current merge authorization and a passing review-completion gate, mark the draft ready and enable exact-head squash auto-merge. That authorization may be bundled into the original request to create or update the pull request; if it is, continue without asking for another confirmation. GitHub then waits for `Required checks` and every other branch-protection requirement before completing the merge.
 13. Update roadmap and README status only after the exact acceptance evidence exists.
 
 ### Review brief
@@ -182,7 +182,7 @@ Use the repository skill for a repeatable gate:
 Use $review-verify-merge-pr to review PR #<number>; if every gate passes, mark it ready and enable squash auto-merge for the exact reviewed head.
 ```
 
-The workflow separates responsibilities. The project `pr-reviewer` agent performs an independent, read-only review of the exact head SHA with the current structured review brief. The root agent verifies that same PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
+The workflow separates responsibilities without splitting the task. After creating or updating the draft and recording its current review brief, the same root agent immediately invokes the project `pr-reviewer` agent for an independent, read-only review of the exact head SHA while required checks continue. The root agent stays active, verifies that same PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
 
 A draft PR may leave draft and enroll in native auto-merge only when:
 
@@ -197,7 +197,7 @@ A draft PR may leave draft and enroll in native auto-merge only when:
 
 Required checks are merge-completion gates rather than prerequisites for leaving draft. After auto-merge is enabled, GitHub may merge only when every required check, including `Required checks` and any applicable protected live-verification gate, passes and every branch-protection requirement remains satisfied.
 
-Review requests are read-only by default. If the current user request explicitly authorizes marking a draft ready without merging, the root agent may do so only after the review-completion gate passes. If the current user request explicitly authorizes merging and that gate passes, the root agent:
+Review requests are read-only by default. A request to create or update a pull request authorizes the root agent to invoke independent read-only review immediately, but it does not by itself authorize changing draft state or enabling auto-merge. The user may bundle those permissions into one request—for example, create a draft pull request, review it, fix in-scope findings, and if clean mark it ready and enable auto-merge. When the current request contains that bundled authorization, the root agent must continue the same active task through every applicable gate without requesting a second confirmation. If the current user request explicitly authorizes marking a draft ready without merging, the root agent may do so only after the review-completion gate passes. If the current user request explicitly authorizes merging and that gate passes, the root agent:
 
 1. refreshes the GitHub head SHA, required checks, requested changes, unresolved review threads, and mergeability;
 2. confirms the refreshed head is the independently reviewed and locally verified SHA;

@@ -12,6 +12,8 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 - Treat `review`, `is this ready?`, and `what is blocking this?` as read-only requests.
 - Treat `merge`, `merge if clean`, or an equally explicit instruction in the current request as merge authorization. Do not infer it from earlier tasks or general repository ownership.
 - Treat `mark ready` as authorization to change draft state only after every review-completion gate passes. Do not infer merge authorization from it.
+- Treat creating or updating a pull request as authorization to invoke independent read-only review of its published exact head immediately, but not as authorization to change draft state or enable auto-merge.
+- Allow one current request to bundle draft creation or update, review, in-scope finding fixes, readiness, and auto-merge authorization. When the authorization is explicit, continue the same active task through those gates without requesting a second confirmation.
 - Keep the independent reviewer read-only. Let only the root agent perform a GitHub state change, and only when the current request explicitly authorizes that specific change.
 - Create pull requests as drafts and run GitHub Actions while they remain drafts. Do not mark a pull request ready merely to start CI.
 - Never bypass branch protection, force a merge, use `--admin` or another administrator override, weaken required checks, dismiss valid feedback, add an autonomous merger, or expose credentials.
@@ -47,7 +49,9 @@ Pass the independent reviewer the brief and its source material. Keep the handof
 
 ## 3. Run an independent review
 
-Spawn the project custom agent `pr-reviewer` when it is available. Give it the current structured review brief, its source links, the PR identity, and the exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
+When the root agent created or updated the draft in the current task, it must immediately continue into this section after publishing the current review brief. Do not end the task at draft creation and do not wait for GitHub Actions to finish; independent review and required checks run in parallel.
+
+Spawn the project custom agent `pr-reviewer` when it is available. Give it the current structured review brief, its source links, the PR identity, and the exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. The root agent that created or updated the draft remains responsible for receiving the result and continuing the same task through every authorized gate. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
 
 Review the root diff and relevant surrounding code, not only the PR description. Inspect:
 
@@ -90,6 +94,8 @@ Required checks are native auto-merge completion gates, not prerequisites for le
 If any gate fails, leave the PR's state unchanged and report the blocker, evidence, exact head SHA, and next action.
 
 ## 6. Perform only authorized state changes
+
+Apply authorization already stated in the current create-or-update request; do not require the user to repeat an explicit bundled permission after review completes. A create-or-update request without readiness or merge language still authorizes review only.
 
 If every review-completion gate passes but the request is review-only, report that the exact head completed review, distinguish pending required checks from successful ones, and stop.
 
