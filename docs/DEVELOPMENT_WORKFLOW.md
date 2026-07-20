@@ -93,18 +93,19 @@ Remote dependency-resolution checks are added only when P8 activates publication
 
 After the workflow has passed on GitHub, protect `main` by requiring the single `Required checks` status. Configure branch protection in GitHub rather than encoding repository-admin assumptions in local scripts.
 
-## MCP and connector routing
+## GitHub CLI and connector routing
 
 Use optional tools when they are available:
 
 | Tool | Use | Proof boundary |
 |---|---|---|
-| GitHub connector | Read PRs, issues, workflow runs, job logs, and artifacts; create or update remote work only with authorization | Remote coordination and CI evidence |
+| GitHub CLI (`gh`) | Default for repository, PR, issue, review, workflow, log, artifact, and authorized state-changing operations; use `gh api graphql` for thread-level state | Remote coordination and CI evidence |
+| GitHub connector | Use only when the user explicitly requests it; never switch to it silently when `gh` is unavailable or unauthenticated | Connector-specific fallback explicitly chosen by the user |
 | OpenAI Developer Docs MCP | Verify current OpenAI API contracts when P4 or later activates them | Documentation evidence, not implementation proof |
 | Xcode or simulator MCP | Inspect simulator state and collect visual or lifecycle evidence | Valid only for the exact simulator/device path exercised |
 | Browser tooling | Verify future web samples or published documentation | Browser behavior only |
 
-If an MCP is unavailable, use repository scripts and report the missing proof surface. Never add MCP SDKs, credentials, or tool-specific DTOs to the runtime package. Never store tokens in repository configuration; use OAuth or environment-backed credentials.
+If `gh` is unavailable or unauthenticated, report the blocker rather than silently changing GitHub tools. If another MCP is unavailable, use repository scripts and report the missing proof surface. Never add MCP SDKs, credentials, or tool-specific DTOs to the runtime package. Never store tokens in repository configuration; use OAuth or environment-backed credentials.
 
 ## Pull-request workflow
 
@@ -113,5 +114,62 @@ If an MCP is unavailable, use repository scripts and report the missing proof su
 3. Build affected consumer samples when public APIs or package boundaries change.
 4. Run `./scripts/check.sh --quick` before committing.
 5. Run `./scripts/check.sh --full` before requesting review when the package baseline changes.
-6. Push and use the GitHub connector or GitHub UI to inspect every required job.
-7. Update roadmap and README status only after the exact acceptance evidence exists.
+6. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, and exact evidence.
+7. Push and use `gh` to inspect every required job.
+8. Update roadmap and README status only after the exact acceptance evidence exists.
+
+### Review brief
+
+The PR description is the durable handoff between implementation and independent review. Before review, the root agent writes a neutral brief from the current user request, linked issue or plan, repository requirements, and verified implementation evidence. It passes the brief and source links to the reviewer without supplying expected findings or a desired conclusion.
+
+Use this structure:
+
+```markdown
+## Review brief
+
+### Problem
+The user or engineering problem being solved.
+
+### Requirement sources
+- User request, issue, plan, or decision link
+
+### Requirements and acceptance criteria
+- Required behavior and observable completion condition
+
+### Implementation decisions
+- Important approach or constraint selected during implementation
+
+### Out of scope
+- Behavior deliberately excluded from this PR
+
+### Evidence and proof boundaries
+- Exact checks executed and behavior not exercised
+
+### Review target head
+`<full commit SHA>`
+```
+
+Refresh the brief when requirements, scope, evidence, or the head SHA materially changes. A missing, ambiguous, stale, or internally inconsistent brief blocks merge readiness. Requirements that existed only in a private implementation conversation must be summarized here; the reviewer cannot recover context that was never recorded or passed to it.
+
+### Agent-assisted review and merge
+
+Use the repository skill for a repeatable gate:
+
+```text
+Use $review-verify-merge-pr to review PR #<number>; if it is clean, mark it ready and merge it.
+```
+
+The workflow separates responsibilities. The project `pr-reviewer` agent performs an independent, read-only review. The root agent verifies the exact PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
+
+A PR is merge-ready only when:
+
+- the reviewed and locally verified head SHA is still GitHub's current head;
+- no blocking correctness, architecture, regression, test, security, public-contract, packaging, or evidence finding remains;
+- every required GitHub check, including `Required checks`, has completed successfully;
+- no requested change or unresolved blocking review thread remains;
+- the affected local verification commands pass; and
+- GitHub reports the PR mergeable under the repository's branch rules.
+
+Review requests are read-only by default. The agent may mark a draft ready and merge only when the current user request explicitly authorizes those actions. It must never force a merge, use an administrator bypass, weaken branch protection, dismiss valid feedback, or merge a different head than the one reviewed. If the head changes during review or verification, start the gate again for the new SHA.
+
+Keep GitHub Actions deterministic and read-only; do not place an autonomous merger or write token in `ci.yml`. Configure `main` branch protection in GitHub to require `Required checks` and conversation resolution. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.

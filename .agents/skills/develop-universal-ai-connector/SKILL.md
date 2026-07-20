@@ -60,10 +60,12 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 6. Record public API, contract, packaging, or compatibility changes in the appropriate plan or documentation.
 7. Verify host integration through consumer samples that compile against documented package boundaries. A library-unit-test pass alone is not consumer integration proof.
 8. Update milestone status only after its acceptance criteria have evidence.
+9. Before requesting PR review, add a review brief to the PR description containing the problem, requirement sources, requirements and acceptance criteria, important implementation decisions, out-of-scope behavior, verification evidence and proof boundaries, and exact head SHA.
 
 ## Route Optional Development Tools
 
-- Use the GitHub connector for remote repository context, pull requests, issues, workflow results, job logs, and artifacts. Request explicit authorization before remote writes.
+- Use the `gh` CLI for remote repository context, pull requests, issues, reviews, workflow results, job logs, artifacts, and authorized writes. Use `gh api graphql` for review-thread or other GraphQL-only state.
+- Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report the blocker instead of silently switching tools. Request explicit authorization before remote writes.
 - Use the OpenAI Developer Docs MCP during P4 and later OpenAI contract work. Fetch current primary documentation instead of relying on model memory.
 - Use an available Xcode, simulator, or device MCP for exact Apple lifecycle and visual proof. Fall back to repository scripts when it is unavailable and state the missing proof surface.
 - Use browser tooling only for future web samples or published documentation.
