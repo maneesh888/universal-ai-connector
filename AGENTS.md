@@ -59,13 +59,24 @@ As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh
 ## Pull Request Review and Merge
 
 - Route PR review, merge-readiness, and merge requests through `$review-verify-merge-pr`.
+- Create every pull request as a draft. GitHub Actions must run while the pull request remains a draft; readiness is a gated state change, not the trigger for initial CI.
 - Before independent review, assemble a neutral review brief from the current user request, PR body, linked issue or plan, and verified implementation evidence. Include the problem, requirement sources, requirements and acceptance criteria, implementation decisions, out-of-scope behavior, evidence and proof boundaries, and exact head SHA.
-- Record the review brief in the PR description before merge and pass it with its source links to the reviewer. Do not pass expected findings or implementation conclusions as facts. Treat a missing, ambiguous, or stale review brief as a merge-readiness blocker.
-- Use the project `pr-reviewer` custom agent for an independent read-only review when it is available; the root agent remains responsible for verification and every GitHub state change.
+- Record the review brief in the PR description before independent review and pass it with its source links to the reviewer. Do not pass expected findings or implementation conclusions as facts. Treat a missing, ambiguous, or stale review brief as a merge-readiness blocker.
+- Use the project `pr-reviewer` custom agent for an independent read-only review of the exact head SHA with the current structured review brief; the root agent remains responsible for verification and every GitHub state change.
 - Review the exact PR head for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and truthful documentation or evidence.
-- Before merging, confirm the reviewed head SHA is unchanged, required checks passed, no blocking review thread or requested change remains, local verification passed for the affected proof surface, and GitHub reports the PR mergeable.
+- Fix every blocking finding before readiness. Any head change invalidates the prior review, verification, and merge attempt: refresh the review brief and restart the entire gate for the new SHA.
+- Before readiness, confirm the review brief is complete and current; the independently reviewed SHA equals GitHub's head SHA; local verification passed; every required check, including `Required checks`, passed; no blocking finding, requested change, or unresolved thread remains; and GitHub reports the PR mergeable.
 - Treat correctness, security, data-loss, public-contract, missing-test, and materially false status or verification findings as blockers.
-- Mark a draft ready or merge it only when the user's current request explicitly authorizes that action. Never bypass branch protection, force a merge, dismiss a valid review, or enable administrator overrides.
+- Mark a draft ready only after the readiness gate passes and the current user request explicitly authorizes that state change. When the current user request explicitly authorizes merging and every gate passes, refresh the head, required checks, review threads, requested changes, and mergeability; mark the draft ready; refresh those states again immediately; then enable GitHub native auto-merge with squash and exact-head protection:
+
+  ```bash
+  gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
+  ```
+
+- If the head changes, disable an already-enabled auto-merge with `gh pr merge <number> --disable-auto` or abandon the invalidated attempt, then restart independent review and every gate for the new SHA.
+- Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or enable an autonomous merger.
+- Keep GitHub Actions read-only. Do not add a write token, PAT, autonomous merger, or merge logic to `ci.yml`.
+- After GitHub merges the pull request, inspect the resulting `main` workflow run and report its result.
 - Keep review-only tasks read-only. Do not fix findings, alter unrelated work, or push replacement commits unless the user separately requests implementation.
 
 ## Architecture Rules

@@ -1,9 +1,9 @@
 ---
 name: review-verify-merge-pr
-description: Review a GitHub pull request for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and merge readiness; verify the exact PR head locally and against GitHub; and mark ready or merge only when explicitly authorized and every gate passes. Use for requests to review a PR, decide whether a PR is ready, verify PR checks or evidence, mark a draft ready, or merge a PR if clean.
+description: Review a draft GitHub pull request for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and merge readiness; verify the exact PR head locally and against GitHub; and mark ready or enable review-gated native auto-merge only when explicitly authorized and every gate passes. Use for requests to review a PR, decide whether a PR is ready, verify PR checks or evidence, mark a draft ready, or enable auto-merge for a clean PR.
 ---
 
-# Review, Verify, and Merge a PR
+# Review, Verify, and Enable Auto-Merge for a PR
 
 Apply one conservative gate from PR discovery through any authorized merge. Separate independent review from state-changing decisions, and bind every conclusion to the exact head SHA reviewed.
 
@@ -11,9 +11,10 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 
 - Treat `review`, `is this ready?`, and `what is blocking this?` as read-only requests.
 - Treat `merge`, `merge if clean`, or an equally explicit instruction in the current request as merge authorization. Do not infer it from earlier tasks or general repository ownership.
-- Treat `mark ready` as authorization to change draft state only. Do not infer merge authorization from it.
+- Treat `mark ready` as authorization to change draft state only after every readiness gate passes. Do not infer merge authorization from it.
 - Keep the independent reviewer read-only. Let only the root agent perform a GitHub state change, and only when the current request explicitly authorizes that specific change.
-- Never bypass branch protection, force a merge, use an administrator override, weaken required checks, dismiss valid feedback, or expose credentials.
+- Create pull requests as drafts and run GitHub Actions while they remain drafts. Do not mark a pull request ready merely to start CI.
+- Never bypass branch protection, force a merge, use `--admin` or another administrator override, weaken required checks, dismiss valid feedback, add an autonomous merger, or expose credentials.
 - Do not implement fixes during a review-only task. Report blockers and wait for a separate implementation request.
 
 ## 1. Establish repository and PR context
@@ -40,13 +41,13 @@ Require the brief to contain:
 - verification evidence and exact proof boundaries; and
 - the exact PR head SHA the brief describes.
 
-Record the brief in the PR description before merge. Updating the description is a GitHub state change and requires explicit authorization; if authorization is absent, report the missing brief as a blocker rather than editing it. Refresh the brief whenever the requirements, scope, evidence, or head SHA materially changes.
+Record the brief in the PR description before independent review. Updating the description is a GitHub state change and requires explicit authorization; if authorization is absent, report the missing brief as a blocker rather than editing it. Refresh the brief whenever the requirements, scope, evidence, or head SHA materially changes.
 
 Pass the independent reviewer the brief and its source material. Keep the handoff factual: do not include expected findings, tell the reviewer that the change is correct, or hide unresolved decisions.
 
 ## 3. Run an independent review
 
-Spawn the project custom agent `pr-reviewer` when it is available. Give it the PR identity and exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
+Spawn the project custom agent `pr-reviewer` when it is available. Give it the current structured review brief, its source links, the PR identity, and the exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
 
 Review the root diff and relevant surrounding code, not only the PR description. Inspect:
 
@@ -72,17 +73,17 @@ Do not substitute green CI for missing local review or claim proof for an unexec
 
 ## 5. Apply the merge-readiness gates
 
-Refresh GitHub state after local verification and again immediately before any state change. Start over for a new head if the PR head SHA changed.
+Refresh GitHub state after local verification and again immediately before any state change. Fix every blocking finding under separate implementation authorization before retrying. Any head change, including a finding fix, invalidates the previous review, verification, and merge attempt: refresh the brief and restart the entire gate for the new SHA.
 
 Require all of the following:
 
-1. No blocking finding remains from either review pass.
-2. The locally verified SHA equals GitHub's current PR head SHA.
-3. Every required check has completed successfully, including the stable `Required checks` aggregator when configured. Do not treat pending, cancelled, timed-out, or skipped required checks as success.
-4. No requested change or unresolved blocking review thread remains.
-5. GitHub reports the PR mergeable, and any required base-update policy is satisfied.
-6. The diff stays inside the authorized work package and contains no secret or generated-artifact violation.
-7. The PR description contains a complete, current review brief and its requirements and status claims match the evidence actually obtained.
+1. The PR description contains a complete, current review brief, including the exact head SHA, and its requirements and status claims match the evidence actually obtained.
+2. The independently reviewed SHA equals GitHub's current PR head SHA.
+3. Local verification passed for that exact SHA.
+4. Every required check has completed successfully, including the stable `Required checks` aggregator when configured. Do not treat pending, cancelled, timed-out, or skipped required checks as success.
+5. No blocking finding, requested change, or unresolved review thread remains.
+6. GitHub reports the PR mergeable, and any required base-update policy is satisfied.
+7. The diff stays inside the authorized work package and contains no secret or generated-artifact violation.
 
 If any gate fails, leave the PR's state unchanged and report the blocker, evidence, exact head SHA, and next action.
 
@@ -90,15 +91,25 @@ If any gate fails, leave the PR's state unchanged and report the blocker, eviden
 
 If every gate passes but the request is review-only, report that the exact head is ready and stop.
 
-If draft-state authorization is explicit, refresh the gates and mark the exact clean head ready for review. If merge authorization is also explicit, continue; otherwise stop.
+If draft-state authorization is explicit, refresh the gates and mark the exact clean head ready for review. If merge authorization is not explicit, stop without enabling auto-merge.
 
 If merge authorization is explicit:
 
-1. Refresh the head SHA, required checks, blocking threads, and mergeability one final time.
-2. Use a repository-enabled merge method without bypassing rules. Prefer the repository's configured default; do not rewrite branch history merely to change the merge style.
-3. Merge only the reviewed SHA. If GitHub cannot atomically protect the expected head, re-read the PR immediately before the merge and abort on any mismatch.
-4. Confirm GitHub reports the PR merged and record the PR URL and resulting merge or squash commit SHA.
-5. Inspect the post-merge `main` workflow when it starts. Report a failure clearly; never rewrite shared history to hide it.
+1. Refresh the head SHA, required checks, requested changes, unresolved review threads, and mergeability one final time.
+2. Confirm the refreshed head is the independently reviewed and locally verified SHA and every readiness gate still passes.
+3. Mark the draft ready if it is still a draft.
+4. Refresh the head SHA, required checks, requested changes, unresolved review threads, and mergeability again immediately before enabling auto-merge. Abort on any mismatch or failed gate.
+5. Enable GitHub native auto-merge with squash and exact-head protection:
+
+   ```bash
+   gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
+   ```
+
+6. Confirm and report whether auto-merge is enabled or GitHub has already completed the merge. Do not claim the pull request is merged while it is still queued.
+7. If the head changes before the merge completes, disable the prior attempt with `gh pr merge <number> --disable-auto` when applicable, or abandon the invalidated attempt. Refresh the review brief and restart independent review and every gate for the new SHA.
+8. After GitHub merges the pull request, record the PR URL and resulting squash commit SHA, inspect the workflow run for the resulting `main` commit, and report its result. Never rewrite shared history to hide a failure.
+
+Keep GitHub Actions read-only. Do not add an autonomous merger, write token, PAT, or merge logic to `ci.yml`; native auto-merge and branch protection remain GitHub's enforcement boundary.
 
 ## Report the result
 
@@ -109,7 +120,7 @@ Lead with blocking findings, or state that none were found. Include:
 - independent-review availability and findings;
 - local commands and pass/fail results;
 - required checks, review-thread state, and mergeability;
-- any ready-for-review or merge action performed;
+- any ready-for-review or native auto-merge action performed, including whether auto-merge is pending or complete;
 - merge commit and post-merge workflow result when applicable; and
 - proof boundaries and residual risks.
 

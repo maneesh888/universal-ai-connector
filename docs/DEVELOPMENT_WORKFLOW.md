@@ -118,9 +118,12 @@ If `gh` is unavailable or unauthenticated, report the blocker rather than silent
 3. Build affected consumer samples when public APIs or package boundaries change.
 4. Run `./scripts/check.sh --quick` before committing.
 5. Run `./scripts/check.sh --full` before requesting review when the package baseline changes.
-6. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, and exact evidence.
-7. Push and use `gh` to inspect every required job.
-8. Update roadmap and README status only after the exact acceptance evidence exists.
+6. Create the pull request as a draft. GitHub Actions run while the pull request remains a draft.
+7. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, exact evidence, and current head SHA.
+8. Push and use `gh` to inspect every required job while the pull request is still a draft.
+9. Have the project `pr-reviewer` agent independently review the exact head SHA using the current structured review brief.
+10. Fix every blocking finding. If a fix or any other update changes the head SHA, refresh the brief and restart independent review, local verification, required-check verification, thread inspection, and mergeability inspection for the new SHA.
+11. Update roadmap and README status only after the exact acceptance evidence exists.
 
 ### Review brief
 
@@ -160,20 +163,35 @@ Refresh the brief when requirements, scope, evidence, or the head SHA materially
 Use the repository skill for a repeatable gate:
 
 ```text
-Use $review-verify-merge-pr to review PR #<number>; if it is clean, mark it ready and merge it.
+Use $review-verify-merge-pr to review PR #<number>; if every gate passes, mark it ready and enable squash auto-merge for the exact reviewed head.
 ```
 
-The workflow separates responsibilities. The project `pr-reviewer` agent performs an independent, read-only review. The root agent verifies the exact PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
+The workflow separates responsibilities. The project `pr-reviewer` agent performs an independent, read-only review of the exact head SHA with the current structured review brief. The root agent verifies that same PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
 
-A PR is merge-ready only when:
+A draft PR may be marked ready only when:
 
-- the reviewed and locally verified head SHA is still GitHub's current head;
+- the review brief is complete and current;
+- the independently reviewed head SHA is still GitHub's current head;
+- the affected local verification commands passed for that SHA;
 - no blocking correctness, architecture, regression, test, security, public-contract, packaging, or evidence finding remains;
 - every required GitHub check, including `Required checks`, has completed successfully;
-- no requested change or unresolved blocking review thread remains;
-- the affected local verification commands pass; and
+- no requested change or unresolved review thread remains;
 - GitHub reports the PR mergeable under the repository's branch rules.
 
-Review requests are read-only by default. The agent may mark a draft ready and merge only when the current user request explicitly authorizes those actions. It must never force a merge, use an administrator bypass, weaken branch protection, dismiss valid feedback, or merge a different head than the one reviewed. If the head changes during review or verification, start the gate again for the new SHA.
+Review requests are read-only by default. If the current user request explicitly authorizes marking a draft ready without merging, the root agent may do so only after every readiness gate passes. If the current user request explicitly authorizes merging and every gate passes, the root agent:
 
-Keep GitHub Actions deterministic and read-only; do not place an autonomous merger or write token in `ci.yml`. Configure `main` branch protection in GitHub to require `Required checks` and conversation resolution. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.
+1. refreshes the GitHub head SHA, required checks, requested changes, unresolved review threads, and mergeability;
+2. confirms the refreshed head is the independently reviewed and locally verified SHA;
+3. marks the draft ready;
+4. refreshes the same GitHub state again immediately before enabling auto-merge; and
+5. enables GitHub native auto-merge with squash and exact-head protection:
+
+```bash
+gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
+```
+
+Native auto-merge preserves GitHub as the enforcement boundary; it is not authorization to merge an unreviewed revision. If the head changes before GitHub completes the merge, disable an already-enabled attempt with `gh pr merge <number> --disable-auto` when applicable, or abandon the invalidated attempt. Refresh the review brief, fix findings, and restart the entire gate for the new SHA.
+
+Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or merge a different head than the one reviewed. After GitHub merges the pull request, inspect the workflow run created for the resulting `main` commit and report its result.
+
+Keep GitHub Actions deterministic and read-only; do not place an autonomous merger, write token, PAT, or merge logic in `ci.yml`. Configure `main` branch protection in GitHub to require `Required checks` and conversation resolution. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.
