@@ -32,13 +32,15 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 ## Current Verification
 
 - Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files.
-- Mandatory commit check: `./scripts/check.sh --quick` adds JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM console consumer.
+- Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
 - Mandatory push and PR check: `./scripts/check.sh --full` adds XCFramework assembly, Swift Package tests, and the iOS sample build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
 - JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
 - JVM console application: `./gradlew :samples:jvm-console:run`
 - Android shared host tests: `./gradlew :bridge:testAndroidHostTest`
 - Android library AAR: `./gradlew :bridge:bundleAndroidMainAar`
+- Android application consumer: `./gradlew :samples:android:consumerCheck`
+- Android emulator/device application: `./scripts/run-android-sample.sh`
 - Kotlin bridge tests: `./gradlew :bridge:iosSimulatorArm64Test`
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
@@ -56,7 +58,7 @@ Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 - Never use `--no-verify` or another mechanism to bypass repository hooks. If the required toolchain is unavailable or a check fails, treat the commit or push as blocked until the environment or failure is fixed.
 - GitHub Actions remain an independent merge gate; local success never replaces required remote checks.
 
-As of July 19, 2026, GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove iOS device, Android application, provider, gateway, or release behavior.
+As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the Android application consumer on Linux and macOS; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove an Android emulator or physical device, iOS device, provider, gateway, or release behavior.
 
 ## Host Integration Standard
 

@@ -89,13 +89,15 @@ Use narrower commands during iteration:
 - Android host tests: `./gradlew :bridge:testAndroidHostTest`
 - Android AAR packaging: `./gradlew :bridge:bundleAndroidMainAar`
 - JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
+- Android application consumer: `./gradlew :samples:android:consumerCheck`
+- Android emulator/device application: `./scripts/run-android-sample.sh`
 - XCFramework assembly: `./scripts/build-xcframework.sh`
 - Swift Package tests: `./scripts/test-swift-package.sh`
 - iOS sample build: `./scripts/build-sample.sh`
 - Secret scan: `./scripts/secret-scan.sh`
 - Whitespace validation: `git diff --check`
 
-The quick gate includes JVM tests, Android host tests and AAR packaging, iOS Simulator tests, the JVM consumer check, and hygiene. The full gate adds XCFramework assembly, Swift Package tests, and the iOS sample build. For new Android samples, JVM consumers, device paths, providers, or distribution modules, use the commands recorded in the active work-package plan and add them to `./scripts/check.sh` and GitHub Actions as soon as they become part of the supported deterministic baseline.
+The quick gate includes Android sample script tests, JVM tests, Android host tests and AAR packaging, iOS Simulator tests, the JVM consumer check, the Android application consumer check, and hygiene. The full gate adds XCFramework assembly, Swift Package tests, and the iOS sample build. For new consumers, device paths, providers, or distribution modules, use the commands recorded in the active work-package plan and add them to `./scripts/check.sh` and GitHub Actions as soon as they become part of the supported deterministic baseline.
 
 Do not claim a target, sample, simulator, device slice, live provider, gateway, or release path is verified unless that exact path ran successfully. Report unavailable toolchains or environments as blockers.
 

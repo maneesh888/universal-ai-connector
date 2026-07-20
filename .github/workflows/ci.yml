@@ -23,8 +23,10 @@ jobs:
       - name: Check out sources
         uses: actions/checkout@v7
 
-      - name: Run secret and whitespace checks
-        run: ./scripts/check.sh --hygiene
+      - name: Run repository hygiene and script tests
+        run: |
+          ./scripts/check.sh --hygiene
+          ./scripts/tests/run-android-sample-test.sh
 
   jvm-android-linux:
     name: JVM + Android (Linux)
@@ -57,6 +59,7 @@ jobs:
           :bridge:testAndroidHostTest
           :bridge:bundleAndroidMainAar
           :samples:jvm-console:consumerCheck
+          :samples:android:consumerCheck
           --stacktrace
 
       - name: Upload failure evidence
@@ -67,6 +70,7 @@ jobs:
           path: |
             bridge/build/reports/tests/
             samples/jvm-console/build/reports/tests/
+            samples/android/build/reports/tests/
           if-no-files-found: ignore
           retention-days: 7
 
@@ -149,6 +153,7 @@ jobs:
             ${{ runner.temp }}/uac-swift-package.xcresult
             bridge/build/reports/tests/
             samples/jvm-console/build/reports/tests/
+            samples/android/build/reports/tests/
           if-no-files-found: ignore
           retention-days: 7
 

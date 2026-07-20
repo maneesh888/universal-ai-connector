@@ -9,7 +9,7 @@ usage() {
 Usage: ./scripts/check.sh [--hygiene|--quick|--full]
 
   --hygiene  Validate shell syntax, secrets, and whitespace, including untracked files.
-  --quick    Run hygiene plus JVM, Android, iOS Simulator, AAR, and JVM-consumer checks.
+  --quick    Run hygiene plus deterministic JVM, Android, iOS Simulator, and consumer checks.
   --full     Run quick coverage plus XCFramework, Swift Package, and iOS sample checks.
              This is the default.
 EOF
@@ -50,23 +50,30 @@ run_hygiene() {
   echo "Universal AI Connector hygiene checks passed."
 }
 
+run_script_tests() {
+  "$ROOT/scripts/tests/run-android-sample-test.sh"
+}
+
 run_cross_platform_gradle_checks() {
   "$ROOT/gradlew" \
     :bridge:jvmTest \
     :bridge:testAndroidHostTest \
     :bridge:bundleAndroidMainAar \
     :bridge:iosSimulatorArm64Test \
-    :samples:jvm-console:consumerCheck
+    :samples:jvm-console:consumerCheck \
+    :samples:android:consumerCheck
 }
 
 run_quick() {
   run_hygiene
+  run_script_tests
   run_cross_platform_gradle_checks
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
   run_hygiene
+  run_script_tests
   run_cross_platform_gradle_checks
 
   # Build once, then reuse the same generated artifact for both Swift consumers.
