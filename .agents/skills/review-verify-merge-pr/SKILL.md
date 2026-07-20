@@ -26,7 +26,25 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 
 Use `gh` for every GitHub read and authorized state change. Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report the blocker instead of silently switching tools.
 
-## 2. Run an independent review
+## 2. Establish the review brief
+
+Fetch the PR description and linked issues or plans with `gh`. Build a neutral review brief from those durable sources and the current implementation conversation when it is available. Distinguish documented requirements from assumptions or inferences.
+
+Require the brief to contain:
+
+- the problem being solved;
+- requirement sources, including issue, plan, or user-request references;
+- requirements and observable acceptance criteria;
+- important implementation decisions and constraints;
+- explicitly out-of-scope behavior;
+- verification evidence and exact proof boundaries; and
+- the exact PR head SHA the brief describes.
+
+Record the brief in the PR description before merge. Updating the description is a GitHub state change and requires explicit authorization; if authorization is absent, report the missing brief as a blocker rather than editing it. Refresh the brief whenever the requirements, scope, evidence, or head SHA materially changes.
+
+Pass the independent reviewer the brief and its source material. Keep the handoff factual: do not include expected findings, tell the reviewer that the change is correct, or hide unresolved decisions.
+
+## 3. Run an independent review
 
 Spawn the project custom agent `pr-reviewer` when it is available. Give it the PR identity and exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
 
@@ -41,7 +59,7 @@ Review the root diff and relevant surrounding code, not only the PR description.
 
 Classify findings by severity and explain the user-visible or engineering impact. Treat a finding as blocking when it can cause incorrect behavior, a security or data-loss risk, a public-contract or packaging regression, an untested material behavior change, or a materially false readiness or verification claim.
 
-## 3. Verify the exact head proportionally
+## 4. Verify the exact head proportionally
 
 Check out or fetch the recorded PR head without modifying user work. Run the active plan's required commands and use the repository scripts:
 
@@ -52,7 +70,7 @@ Check out or fetch the recorded PR head without modifying user work. Run the act
 
 Do not substitute green CI for missing local review or claim proof for an unexecuted simulator, device, live provider, gateway, distribution, or release surface. Record every command and result.
 
-## 4. Apply the merge-readiness gates
+## 5. Apply the merge-readiness gates
 
 Refresh GitHub state after local verification and again immediately before any state change. Start over for a new head if the PR head SHA changed.
 
@@ -64,11 +82,11 @@ Require all of the following:
 4. No requested change or unresolved blocking review thread remains.
 5. GitHub reports the PR mergeable, and any required base-update policy is satisfied.
 6. The diff stays inside the authorized work package and contains no secret or generated-artifact violation.
-7. The PR description and status documentation match the evidence actually obtained.
+7. The PR description contains a complete, current review brief and its requirements and status claims match the evidence actually obtained.
 
 If any gate fails, leave the PR's state unchanged and report the blocker, evidence, exact head SHA, and next action.
 
-## 5. Perform only authorized state changes
+## 6. Perform only authorized state changes
 
 If every gate passes but the request is review-only, report that the exact head is ready and stop.
 
@@ -87,6 +105,7 @@ If merge authorization is explicit:
 Lead with blocking findings, or state that none were found. Include:
 
 - PR number, URL, base, and exact reviewed head SHA;
+- review-brief sources, completeness, and any assumptions;
 - independent-review availability and findings;
 - local commands and pass/fail results;
 - required checks, review-thread state, and mergeability;

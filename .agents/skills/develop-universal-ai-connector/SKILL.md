@@ -60,6 +60,7 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 6. Record public API, contract, packaging, or compatibility changes in the appropriate plan or documentation.
 7. Verify host integration through consumer samples that compile against documented package boundaries. A library-unit-test pass alone is not consumer integration proof.
 8. Update milestone status only after its acceptance criteria have evidence.
+9. Before requesting PR review, add a review brief to the PR description containing the problem, requirement sources, requirements and acceptance criteria, important implementation decisions, out-of-scope behavior, verification evidence and proof boundaries, and exact head SHA.
 
 ## Route Optional Development Tools
 

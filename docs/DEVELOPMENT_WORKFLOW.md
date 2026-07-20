@@ -114,8 +114,42 @@ If `gh` is unavailable or unauthenticated, report the blocker rather than silent
 3. Build affected consumer samples when public APIs or package boundaries change.
 4. Run `./scripts/check.sh --quick` before committing.
 5. Run `./scripts/check.sh --full` before requesting review when the package baseline changes.
-6. Push and use `gh` to inspect every required job.
-7. Update roadmap and README status only after the exact acceptance evidence exists.
+6. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, and exact evidence.
+7. Push and use `gh` to inspect every required job.
+8. Update roadmap and README status only after the exact acceptance evidence exists.
+
+### Review brief
+
+The PR description is the durable handoff between implementation and independent review. Before review, the root agent writes a neutral brief from the current user request, linked issue or plan, repository requirements, and verified implementation evidence. It passes the brief and source links to the reviewer without supplying expected findings or a desired conclusion.
+
+Use this structure:
+
+```markdown
+## Review brief
+
+### Problem
+The user or engineering problem being solved.
+
+### Requirement sources
+- User request, issue, plan, or decision link
+
+### Requirements and acceptance criteria
+- Required behavior and observable completion condition
+
+### Implementation decisions
+- Important approach or constraint selected during implementation
+
+### Out of scope
+- Behavior deliberately excluded from this PR
+
+### Evidence and proof boundaries
+- Exact checks executed and behavior not exercised
+
+### Reviewed head
+`<full commit SHA>`
+```
+
+Refresh the brief when requirements, scope, evidence, or the head SHA materially changes. A missing, ambiguous, stale, or internally inconsistent brief blocks merge readiness. Requirements that existed only in a private implementation conversation must be summarized here; the reviewer cannot recover context that was never recorded or passed to it.
 
 ### Agent-assisted review and merge
 

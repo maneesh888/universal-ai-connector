@@ -59,6 +59,8 @@ As of July 19, 2026, GitHub Actions run [29698575249](https://github.com/maneesh
 ## Pull Request Review and Merge
 
 - Route PR review, merge-readiness, and merge requests through `$review-verify-merge-pr`.
+- Before independent review, assemble a neutral review brief from the current user request, PR body, linked issue or plan, and verified implementation evidence. Include the problem, requirement sources, requirements and acceptance criteria, implementation decisions, out-of-scope behavior, evidence and proof boundaries, and exact head SHA.
+- Record the review brief in the PR description before merge and pass it with its source links to the reviewer. Do not pass expected findings or implementation conclusions as facts. Treat a missing, ambiguous, or stale review brief as a merge-readiness blocker.
 - Use the project `pr-reviewer` custom agent for an independent read-only review when it is available; the root agent remains responsible for verification and every GitHub state change.
 - Review the exact PR head for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and truthful documentation or evidence.
 - Before merging, confirm the reviewed head SHA is unchanged, required checks passed, no blocking review thread or requested change remains, local verification passed for the affected proof surface, and GitHub reports the PR mergeable.
