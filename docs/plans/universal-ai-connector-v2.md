@@ -73,7 +73,7 @@ P4 must introduce a separate `./scripts/check-live.sh` entry point before its fi
 
 Any head change invalidates earlier local live evidence and requires the affected live suite to run again before the updated head is pushed. Documentation-only and unrelated deterministic changes do not require live credentials.
 
-After the draft pull request is created, the same affected live suite must pass for the exact head through a protected GitHub Environment before readiness and merge. Run that secret-bearing workflow only for trusted heads with least-privilege credentials and required approval; never expose secrets to fork pull requests or execute untrusted pull-request code through `pull_request_target`. The ordinary `ci.yml` workflow remains read-only and secretless. A maintainer must run the protected live gate on a trusted head when a fork contribution affects live behavior.
+After the draft pull request is created, the same affected live suite must run for the exact head through a protected GitHub Environment and act as a required merge condition. It may remain pending when a clean, independently reviewed head leaves draft and enrolls in native auto-merge, but it must pass before GitHub completes the merge. Run that secret-bearing workflow only for trusted heads with least-privilege credentials and required approval; never expose secrets to fork pull requests or execute untrusted pull-request code through `pull_request_target`. The ordinary `ci.yml` workflow remains read-only and secretless. A maintainer must run the protected live gate on a trusted head when a fork contribution affects live behavior.
 
 ## Milestones
 

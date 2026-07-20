@@ -135,10 +135,11 @@ Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unl
 6. Push only after the mandatory pre-push hook passes `./scripts/check.sh --full` from a clean worktree. This applies to both pull-request creation and every later update.
 7. Create the pull request as a draft. GitHub Actions run while the pull request remains a draft.
 8. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, exact head SHA, and exact local evidence.
-9. Use `gh` to inspect every required job while the pull request remains a draft; do not treat it as merge-ready until the stable `Required checks` job passes.
-10. Have the project `pr-reviewer` agent independently review the exact head SHA using the current structured review brief.
-11. Fix every blocking finding. If a fix or any other update changes the head SHA, refresh the brief and restart independent review, local verification, required-check verification, thread inspection, and mergeability inspection for the new SHA.
-12. Update roadmap and README status only after the exact acceptance evidence exists.
+9. Have the project `pr-reviewer` agent independently review the exact head SHA using the current structured review brief while GitHub Actions continue in parallel.
+10. Fix every blocking finding while the pull request remains a draft. If a fix or any other update changes the head SHA, disable auto-merge when enabled, return the pull request to draft when necessary, and restart local verification, the review brief, independent review, required-check inspection, thread inspection, and mergeability inspection for the new SHA.
+11. Use `gh` to inspect required jobs. A failed, cancelled, timed-out, or skipped required check blocks readiness; pending or in-progress required checks do not block a clean, reviewed head from leaving draft and enrolling in native auto-merge.
+12. With explicit current merge authorization and a passing review-completion gate, mark the draft ready and enable exact-head squash auto-merge. GitHub then waits for `Required checks` and every other branch-protection requirement before completing the merge.
+13. Update roadmap and README status only after the exact acceptance evidence exists.
 
 ### Review brief
 
@@ -183,17 +184,20 @@ Use $review-verify-merge-pr to review PR #<number>; if every gate passes, mark i
 
 The workflow separates responsibilities. The project `pr-reviewer` agent performs an independent, read-only review of the exact head SHA with the current structured review brief. The root agent verifies that same PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
 
-A draft PR may be marked ready only when:
+A draft PR may leave draft and enroll in native auto-merge only when:
 
 - the review brief is complete and current;
 - the independently reviewed head SHA is still GitHub's current head;
 - the affected local verification commands passed for that SHA;
 - no blocking correctness, architecture, regression, test, security, public-contract, packaging, or evidence finding remains;
-- every required GitHub check, including `Required checks`, has completed successfully;
 - no requested change or unresolved review thread remains;
-- GitHub reports the PR mergeable under the repository's branch rules.
+- the diff stays inside its authorized scope and contains no secret or generated-artifact violation;
+- GitHub reports no merge conflict or unsatisfied base-update policy; and
+- no required check has failed, been cancelled, timed out, or been skipped. Pending or in-progress required checks are allowed at this stage.
 
-Review requests are read-only by default. If the current user request explicitly authorizes marking a draft ready without merging, the root agent may do so only after every readiness gate passes. If the current user request explicitly authorizes merging and every gate passes, the root agent:
+Required checks are merge-completion gates rather than prerequisites for leaving draft. After auto-merge is enabled, GitHub may merge only when every required check, including `Required checks` and any applicable protected live-verification gate, passes and every branch-protection requirement remains satisfied.
+
+Review requests are read-only by default. If the current user request explicitly authorizes marking a draft ready without merging, the root agent may do so only after the review-completion gate passes. If the current user request explicitly authorizes merging and that gate passes, the root agent:
 
 1. refreshes the GitHub head SHA, required checks, requested changes, unresolved review threads, and mergeability;
 2. confirms the refreshed head is the independently reviewed and locally verified SHA;
@@ -206,6 +210,8 @@ gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
 ```
 
 Native auto-merge preserves GitHub as the enforcement boundary; it is not authorization to merge an unreviewed revision. If the head changes before GitHub completes the merge, disable an already-enabled attempt with `gh pr merge <number> --disable-auto` when applicable, or abandon the invalidated attempt. Refresh the review brief, fix findings, and restart the entire gate for the new SHA.
+
+Return a ready pull request to draft with `gh pr ready <number> --undo` when a head change invalidates its review. If a required check fails after auto-merge enrollment, GitHub must not merge; report the failure, and if the fix changes the head, disable auto-merge, return to draft, and restart the gate. If every required check already passed when auto-merge is enabled, GitHub may merge immediately, so explicit current merge authorization must exist before the state change.
 
 Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or merge a different head than the one reviewed. After GitHub merges the pull request, inspect the workflow run created for the resulting `main` commit and report its result.
 
