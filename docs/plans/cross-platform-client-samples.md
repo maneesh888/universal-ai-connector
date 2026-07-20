@@ -36,6 +36,8 @@ Local verification passed July 19, 2026: `:bridge:jvmTest`, `:bridge:testAndroid
 
 GitHub Actions run [29698575249](https://github.com/maneesh888/universal-ai-connector/actions/runs/29698575249) passed July 19, 2026. The JVM console consumer and 13 shared tests passed on Linux, Windows, and macOS; Android host tests and AAR packaging passed on Linux; the complete P0 Apple regression passed on macOS; repository hygiene passed; and the stable `Required checks` aggregator passed.
 
+The July 20, 2026 Android consumer package adds `samples/android`, a separate Jetpack Compose application with `implementation(project(":bridge"))`. It uses `UniversalAiConnector`, keeps coroutine lifetime in the activity lifecycle scope, and renders every shared demonstration operation without networking or secrets. `./scripts/check.sh --full` passed the Kotlin, JVM consumer, Android consumer, XCFramework, 8-test Swift, iOS sample, secret, and whitespace regression. After a final job-start ordering hardening, `:samples:android:consumerCheck` passed all 3 controller tests and debug APK assembly. `./scripts/run-android-sample.sh` then installed and cold-launched the final APK on a local API 36.1 Pixel 8 emulator; screenshot and UI-hierarchy inspection confirmed version `0.1.0-alpha.1`, the exact one-shot response, five ordered events, stable `simulated_failure`, response cancellation, and stream stop after event 1. A direct on-device cancellation-button check also completed and left its controls enabled. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed the Android consumer check and the complete exact-head matrix; no physical-device claim is made.
+
 ## Target structure
 
 ```text
@@ -183,5 +185,6 @@ CI must not require API keys, running simulators outside the macOS job, or commi
 - Live API calls
 - OpenKeyboard integration
 - Artifact publication to Maven or a remote Swift Package
+- Graphical desktop demonstration; P1 uses the headless JVM console, while the installable macOS/Windows/Linux Compose desktop demo is a P8 requirement
 - Native Linux, Windows, or macOS artifacts; P1 desktop/server coverage is through Kotlin/JVM
 - Java-specific, JavaScript, or Wasm façades

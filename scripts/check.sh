@@ -9,8 +9,8 @@ usage() {
 Usage: ./scripts/check.sh [--hygiene|--quick|--full]
 
   --hygiene  Scan for secrets and whitespace issues, including untracked files.
-  --quick    Run Kotlin shared tests, the JVM consumer, and hygiene checks.
-  --full     Run the complete deterministic Kotlin, JVM-consumer, and Apple suite.
+  --quick    Run Kotlin shared tests, Kotlin consumer apps, and hygiene checks.
+  --full     Run the complete deterministic Kotlin-consumer and Apple suite.
              This is the default.
 EOF
 }
@@ -46,20 +46,28 @@ run_hygiene() {
   echo "Universal AI Connector hygiene checks passed."
 }
 
+run_script_tests() {
+  "$ROOT/scripts/tests/run-android-sample-test.sh"
+}
+
 run_quick() {
+  run_script_tests
   "$ROOT/gradlew" \
     :bridge:jvmTest \
     :bridge:iosSimulatorArm64Test \
-    :samples:jvm-console:consumerCheck
+    :samples:jvm-console:consumerCheck \
+    :samples:android:consumerCheck
   run_hygiene
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
+  run_script_tests
   "$ROOT/gradlew" \
     :bridge:jvmTest \
     :bridge:iosSimulatorArm64Test \
-    :samples:jvm-console:consumerCheck
+    :samples:jvm-console:consumerCheck \
+    :samples:android:consumerCheck
 
   # Build once, then reuse the same generated artifact for both Swift consumers.
   "$ROOT/scripts/build-xcframework.sh"
