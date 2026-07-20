@@ -6,6 +6,12 @@ Turn the verified iOS-Kotlin POC into a cross-platform package baseline with thi
 
 This work package validates packaging and consumption. It does not add Ktor, provider SDKs, API keys, canonical AI DTOs, or gateway networking.
 
+## Live-test boundary
+
+P1 is intentionally secretless. Its samples, local checks, and GitHub Actions use deterministic fake behavior and must not require a provider or Gateway credential. The roadmap's mandatory local pre-PR live-test gate activates with the first provider adapter in P4; it does not apply to P1 because P1 has no live behavior to verify.
+
+Do not add `.env` files, credential loaders, live-provider scripts, protected secret-bearing workflows, or claims of live-provider proof in this work package. P4 must establish the ignored local-secret convention, value-free environment example, separate `./scripts/check-live.sh` command, and protected GitHub Environment before its first adapter pull request. Once that gate exists, later changes to live provider, Gateway, or shared transport behavior must satisfy it as defined in `universal-ai-connector-v2.md`.
+
 ## P1 host-integration outcome
 
 P1 must prove that each sample is a real consumer of the supported package boundary. It does not publish remote artifacts, but it must remove repository-internal knowledge from sample APIs and document the same steps that a future external consumer will use.
