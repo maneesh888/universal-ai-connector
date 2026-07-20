@@ -10,22 +10,37 @@ The next approved scope is cross-platform targets, shared interoperability tests
 
 1. Resolve the root with `git rev-parse --show-toplevel`.
 2. Inspect `git status --short --branch`.
-3. Read `docs/plans/universal-ai-connector-v2.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and the active work-package plan completely.
-4. Execute only one bounded work package unless the user explicitly authorizes a larger batch.
-5. Preserve unrelated changes and generated artifacts.
-6. Use the Gradle wrapper and repository scripts.
-7. Do not commit or push unless explicitly authorized.
+3. Run `./scripts/install-hooks.sh` and confirm `git config --local --get core.hooksPath` prints `.githooks`.
+4. Read `docs/plans/universal-ai-connector-v2.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and the active work-package plan completely.
+5. Execute only one bounded work package unless the user explicitly authorizes a larger batch.
+6. Preserve unrelated changes and generated artifacts.
+7. Use the Gradle wrapper and repository scripts.
+8. Do not commit or push unless explicitly authorized.
+
+## Branch Naming
+
+Use a conventional type prefix for every new branch:
+
+- `feature/<short-description>` for new functionality
+- `bugfix/<short-description>` for defect fixes
+- `docs/<short-description>` for documentation-only work
+- `chore/<short-description>` for maintenance
+- `refactor/<short-description>` for structural changes without behavior changes
+
+Write the description in lowercase kebab-case. Keep the full branch name concise and descriptive, omit issue numbers unless they add useful context, and choose the prefix that matches the work's primary purpose. Do not use `codex/` for new branches. Preserve existing branches and pull requests under their current names; do not rename `codex/p1-android-sample` or any other existing branch.
 
 ## Current Verification
 
-- Hygiene only: `./scripts/check.sh --hygiene`
-- Fast local check: `./scripts/check.sh --quick`
-- Complete deterministic check: `./scripts/check.sh --full`
+- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files.
+- Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
+- Mandatory push and PR check: `./scripts/check.sh --full` adds XCFramework assembly, Swift Package tests, and the iOS sample build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
 - JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
 - JVM console application: `./gradlew :samples:jvm-console:run`
 - Android shared host tests: `./gradlew :bridge:testAndroidHostTest`
 - Android library AAR: `./gradlew :bridge:bundleAndroidMainAar`
+- Android application consumer: `./gradlew :samples:android:consumerCheck`
+- Android emulator/device application: `./scripts/run-android-sample.sh`
 - Kotlin bridge tests: `./gradlew :bridge:iosSimulatorArm64Test`
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
@@ -34,6 +49,14 @@ The next approved scope is cross-platform targets, shared interoperability tests
 - Final whitespace check: `git diff --check`
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
+
+## Mandatory Local Gates
+
+- Keep the committed hooks enabled through `core.hooksPath=.githooks` in every clone.
+- Every commit must pass the pre-commit hook, which rejects unstaged or untracked files and runs `./scripts/check.sh --quick` against the exact proposed commit contents.
+- Every push, including the push used to create or update a pull request, must pass the pre-push hook, which rejects refs that do not resolve to the checked-out `HEAD`, requires a clean worktree, and runs `./scripts/check.sh --full` against that exact commit.
+- Never use `--no-verify` or another mechanism to bypass repository hooks. If the required toolchain is unavailable or a check fails, treat the commit or push as blocked until the environment or failure is fixed.
+- GitHub Actions remain an independent merge gate; local success never replaces required remote checks.
 
 As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the Android application consumer on Linux and macOS; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove an Android emulator or physical device, iOS device, provider, gateway, or release behavior.
 
@@ -95,4 +118,5 @@ As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh
 
 - Never commit generated XCFrameworks, build directories, DerivedData, `.xcresult` bundles, logs, credentials, or secrets.
 - Never print API keys or Authorization headers.
-- Before committing, inspect `git status --short --branch`, run the active verification suite, stage only intended files, and inspect `git diff --cached --name-only`.
+- Before committing, inspect `git status --short --branch`, stage only intended files, inspect `git diff --cached --name-only`, and let the mandatory pre-commit hook run `./scripts/check.sh --quick` without bypassing it.
+- Before pushing, confirm the worktree is clean and let the mandatory pre-push hook run `./scripts/check.sh --full` without bypassing it.

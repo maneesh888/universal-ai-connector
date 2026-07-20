@@ -3,5 +3,19 @@ set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
 
+if ! git -C "$ROOT" diff --quiet --; then
+  echo "Refusing to commit with unstaged tracked changes." >&2
+  echo "Stage or revert the remaining changes so checks match the exact commit." >&2
+  git -C "$ROOT" status --short >&2
+  exit 1
+fi
+
+if [[ -n "$(git -C "$ROOT" ls-files --others --exclude-standard)" ]]; then
+  echo "Refusing to commit with untracked files." >&2
+  echo "Stage or remove them so checks match the exact commit." >&2
+  git -C "$ROOT" status --short >&2
+  exit 1
+fi
+
 echo "Running Universal AI Connector pre-commit checks..."
 "$ROOT/scripts/check.sh" --quick

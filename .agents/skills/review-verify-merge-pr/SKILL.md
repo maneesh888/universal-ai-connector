@@ -60,14 +60,14 @@ Review the root diff and relevant surrounding code, not only the PR description.
 
 Classify findings by severity and explain the user-visible or engineering impact. Treat a finding as blocking when it can cause incorrect behavior, a security or data-loss risk, a public-contract or packaging regression, an untested material behavior change, or a materially false readiness or verification claim.
 
-## 4. Verify the exact head proportionally
+## 4. Verify the exact head completely
 
 Check out or fetch the recorded PR head without modifying user work. Run the active plan's required commands and use the repository scripts:
 
-- For documentation, agent, or workflow-only changes, run `./scripts/check.sh --hygiene` plus format or syntax validation specific to the changed files.
-- For narrow implementation changes, run affected targeted tests and `./scripts/check.sh --quick`.
-- For public API, package boundary, sample, baseline, release, or broadly shared build changes, run affected targeted tests and `./scripts/check.sh --full`.
-- Always run `git diff --check` and the repository secret scan when they are not already included by the selected check.
+- Run `./scripts/check.sh --full` for every pull request head, including documentation-only and workflow-only changes. Do not reduce this gate based on diff size.
+- Run additional targeted tests when the active work package adds a proof surface not yet included in the full suite.
+- Treat the exact-head verification as blocked when the required toolchain is missing or any check cannot run; do not substitute a narrower command.
+- `--full` includes shell syntax validation, the repository secret scan, and whitespace checks.
 
 Do not substitute green CI for missing local review or claim proof for an unexecuted simulator, device, live provider, gateway, distribution, or release surface. Record every command and result.
 
