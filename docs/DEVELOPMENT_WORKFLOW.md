@@ -115,3 +115,26 @@ If an MCP is unavailable, use repository scripts and report the missing proof su
 5. Run `./scripts/check.sh --full` before requesting review when the package baseline changes.
 6. Push and use the GitHub connector or GitHub UI to inspect every required job.
 7. Update roadmap and README status only after the exact acceptance evidence exists.
+
+### Agent-assisted review and merge
+
+Use the repository skill for a repeatable gate:
+
+```text
+Use $review-verify-merge-pr to review PR #<number>; if it is clean, mark it ready and merge it.
+```
+
+The workflow separates responsibilities. The project `pr-reviewer` agent performs an independent, read-only review. The root agent verifies the exact PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
+
+A PR is merge-ready only when:
+
+- the reviewed and locally verified head SHA is still GitHub's current head;
+- no blocking correctness, architecture, regression, test, security, public-contract, packaging, or evidence finding remains;
+- every required GitHub check, including `Required checks`, has completed successfully;
+- no requested change or unresolved blocking review thread remains;
+- the affected local verification commands pass; and
+- GitHub reports the PR mergeable under the repository's branch rules.
+
+Review requests are read-only by default. The agent may mark a draft ready and merge only when the current user request explicitly authorizes those actions. It must never force a merge, use an administrator bypass, weaken branch protection, dismiss valid feedback, or merge a different head than the one reviewed. If the head changes during review or verification, start the gate again for the new SHA.
+
+Keep GitHub Actions deterministic and read-only; do not place an autonomous merger or write token in `ci.yml`. Configure `main` branch protection in GitHub to require `Required checks` and conversation resolution. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.

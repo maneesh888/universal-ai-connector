@@ -55,6 +55,16 @@ As of July 19, 2026, GitHub Actions run [29698575249](https://github.com/maneesh
 - Treat MCPs as development tools, never runtime package dependencies.
 - Do not store MCP tokens or credentials in the repository.
 
+## Pull Request Review and Merge
+
+- Route PR review, merge-readiness, and merge requests through `$review-verify-merge-pr`.
+- Use the project `pr-reviewer` custom agent for an independent read-only review when it is available; the root agent remains responsible for verification and every GitHub state change.
+- Review the exact PR head for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and truthful documentation or evidence.
+- Before merging, confirm the reviewed head SHA is unchanged, required checks passed, no blocking review thread or requested change remains, local verification passed for the affected proof surface, and GitHub reports the PR mergeable.
+- Treat correctness, security, data-loss, public-contract, missing-test, and materially false status or verification findings as blockers.
+- Mark a draft ready or merge it only when the user's current request explicitly authorizes that action. Never bypass branch protection, force a merge, dismiss a valid review, or enable administrator overrides.
+- Keep review-only tasks read-only. Do not fix findings, alter unrelated work, or push replacement commits unless the user separately requests implementation.
+
 ## Architecture Rules
 
 - Keep platform-neutral behavior in Kotlin `commonMain`.
