@@ -145,7 +145,7 @@ The user or engineering problem being solved.
 ### Evidence and proof boundaries
 - Exact checks executed and behavior not exercised
 
-### Reviewed head
+### Review target head
 `<full commit SHA>`
 ```
 
