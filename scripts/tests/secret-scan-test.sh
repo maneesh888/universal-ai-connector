@@ -36,6 +36,50 @@ if grep -Fq "$SYNTHETIC_SECRET" "$DETECTION_OUTPUT"; then
 fi
 rm -f "$PROBE_FILE"
 
+IGNORED_DETECTION_OUTPUT="$TEST_DIRECTORY/ignored-detection.log"
+IGNORED_PROBE_FILE="$TEST_REPOSITORY/ignored-secret.txt"
+printf '%s\n' 'ignored-secret.txt' > "$TEST_REPOSITORY/.ignore"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$IGNORED_PROBE_FILE"
+
+ignored_detection_status=0
+"$SCANNER_UNDER_TEST" > "$IGNORED_DETECTION_OUTPUT" 2>&1 || ignored_detection_status=$?
+if [[ "$ignored_detection_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject a probe hidden by .ignore." >&2
+  exit 1
+fi
+if ! grep -Fq "Potential secret material found." "$IGNORED_DETECTION_OUTPUT"; then
+  echo "Secret scan did not report the probe hidden by .ignore." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$IGNORED_DETECTION_OUTPUT"; then
+  echo "Secret scan exposed ignored matched material in its output." >&2
+  exit 1
+fi
+rm -f "$IGNORED_PROBE_FILE" "$TEST_REPOSITORY/.ignore"
+
+CONFIG_DETECTION_OUTPUT="$TEST_DIRECTORY/config-detection.log"
+CONFIG_PROBE_FILE="$TEST_REPOSITORY/config-secret.txt"
+RIPGREP_CONFIG="$TEST_DIRECTORY/ripgrep.conf"
+printf '%s\n' '--glob=!config-secret.txt' > "$RIPGREP_CONFIG"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$CONFIG_PROBE_FILE"
+
+config_detection_status=0
+env RIPGREP_CONFIG_PATH="$RIPGREP_CONFIG" \
+  "$SCANNER_UNDER_TEST" > "$CONFIG_DETECTION_OUTPUT" 2>&1 || config_detection_status=$?
+if [[ "$config_detection_status" -ne 1 ]]; then
+  echo "Expected the secret scan to disregard ripgrep configuration exclusions." >&2
+  exit 1
+fi
+if ! grep -Fq "Potential secret material found." "$CONFIG_DETECTION_OUTPUT"; then
+  echo "Secret scan did not report the probe hidden by ripgrep configuration." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$CONFIG_DETECTION_OUTPUT"; then
+  echo "Secret scan exposed configured matched material in its output." >&2
+  exit 1
+fi
+rm -f "$CONFIG_PROBE_FILE"
+
 FAKE_PATH="$TEST_DIRECTORY/path"
 MISSING_TOOL_OUTPUT="$TEST_DIRECTORY/missing-tool.log"
 mkdir -p "$FAKE_PATH"

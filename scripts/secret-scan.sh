@@ -10,6 +10,8 @@ fi
 
 scan_status=0
 rg --quiet \
+  --no-config \
+  --no-ignore \
   --hidden \
   --glob '!.git/**' \
   --glob '!**/build/**' \

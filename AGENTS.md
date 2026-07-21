@@ -31,7 +31,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 
 ## Current Verification
 
-- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files, and regression-tests fail-closed secret scanning.
+- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files, and regression-tests fail-closed secret scanning that cannot be suppressed by ripgrep configuration or ignore files.
 - Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
 - Mandatory push and PR check: `./scripts/check.sh --full` adds XCFramework assembly, Swift Package tests, and the iOS sample build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
@@ -45,7 +45,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
 - Sample simulator build: `./scripts/build-sample.sh`
-- Secret scan: `./scripts/secret-scan.sh` requires `rg`, fails closed when the scanner is missing or errors, and reports a match without printing the matched credential material.
+- Secret scan: `./scripts/secret-scan.sh` requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the scanner is missing or errors, and reports a match without printing the matched credential material.
 - Final whitespace check: `git diff --check`
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
