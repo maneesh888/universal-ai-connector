@@ -63,7 +63,7 @@ samples/android/                             Android public-module consumer
 samples/jvm-console/                         Kotlin/JVM public-module consumer
 ```
 
-The product-facing Swift façade is the supported Apple API. Keep the retained POC product and tests only as migration coverage until the product path has equivalent exact-head integration evidence; do not expose either callback adapter as a supported application API.
+The product-facing Swift façade is the supported Apple API. Keep the retained POC product and tests only as migration coverage until the product path has equivalent exact-head integration evidence and is accepted. Then retire the POC surface in a bounded closing P1 cleanup before P2 begins; do not expose either callback adapter as a supported application API.
 
 ## Shared demonstration contract
 

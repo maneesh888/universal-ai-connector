@@ -87,7 +87,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 
 ### P1 remaining work
 
-The product-facing Apple package is implemented while the proven POC Swift product and regression tests remain available as a temporary compatibility path. P1 remains in progress until the exact proposed head completes independent review and the required GitHub host matrix; physical-device execution is not a P1 completion requirement and has not been performed.
+The product-facing Apple package is implemented while the proven POC Swift product and regression tests remain available as a temporary compatibility path. The Apple surface remains a P1 acceptance candidate until its exact proposed head completes independent review and the required GitHub host matrix. After acceptance, bounded retirement of the temporary POC surface remains closing P1 work before P2; physical-device execution is not a P1 completion requirement and has not been performed.
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
@@ -322,7 +322,7 @@ Generated XCFrameworks, build directories, DerivedData, `.xcresult` bundles, and
 
 The package roadmap is documented in [`docs/plans/universal-ai-connector-v2.md`](docs/plans/universal-ai-connector-v2.md).
 
-The product-facing Apple delivery/sample package is the current P1 completion candidate. Its exact evidence and remaining review boundary are recorded in [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md).
+The product-facing Apple delivery/sample package is the current P1 Apple-surface acceptance candidate. Its exact evidence and remaining review boundary are recorded in [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md). After acceptance, bounded retirement of the temporary POC surface remains closing P1 work before P2.
 
 Provider and gateway work begins only after the cross-platform package foundation and canonical contracts are stable. Production Maven and remote Swift Package distribution is planned for P8 after the client contract and transport are established.
 
