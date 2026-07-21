@@ -1,4 +1,4 @@
 interface:
   display_name: "Review, Verify, and Merge PR"
   short_description: "Safely gate pull request reviews and merges"
-  default_prompt: "Use $review-verify-merge-pr with gh to review the current pull request, verify its exact head, and merge it only if explicitly authorized and clean."
+  default_prompt: "Use $review-verify-merge-pr with gh to review and verify the exact pull-request head. For an authorized implementation PR, carry a clean head through readiness and the guarded native merge by default; honor review-only, keep-draft, and do-not-merge instructions."

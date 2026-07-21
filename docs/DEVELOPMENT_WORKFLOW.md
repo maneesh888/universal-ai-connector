@@ -144,7 +144,7 @@ Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unl
 9. In the same active task, the root agent that created or updated the draft must invoke the project `pr-reviewer` agent to independently review the exact head SHA using the current structured review brief. Review and required checks may continue in parallel while the pull request remains a draft; every readiness and merge gate still waits for successful completion.
 10. Fix every blocking finding while the pull request remains a draft. If a fix or any other update changes the head SHA, disable any auto-merge request, return the pull request to draft when necessary, and restart local verification, the review brief, independent review, required-check inspection, protection inspection, thread inspection, and mergeability inspection for the new SHA.
 11. Use `gh` to wait for every mandatory GitHub check to complete successfully on the exact reviewed head, including `Required checks` and any applicable protected live-verification status. Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks block both readiness and a merge attempt.
-12. Verify `main` protection through the GitHub APIs and `gh pr checks <number> --required`. With explicit current merge authorization and every gate green, mark the exact reviewed head ready, refresh the head and all gates immediately, and make the guarded native squash-merge attempt. If GitHub queues auto-merge instead of merging immediately, disable it at once, keep the pull request unmerged, and report the blocker.
+12. Verify `main` protection through the GitHub APIs and `gh pr checks <number> --required`. For an authorized implementation-PR lifecycle without an applicable user opt-out, every green gate requires the root agent to mark the exact reviewed head ready, refresh the head and all gates immediately, and make the guarded native squash-merge attempt without requesting another confirmation. If GitHub queues auto-merge instead of merging immediately, disable it at once, keep the pull request unmerged, and report the blocker.
 13. Update roadmap and README status only after the exact acceptance evidence exists.
 
 ### Review brief
@@ -204,13 +204,17 @@ A draft PR may leave draft or proceed to a merge attempt only when:
 
 Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks are blockers. Do not leave draft or invoke the merge command until all mandatory checks are terminal-success for the exact reviewed head.
 
-Review requests are read-only by default. A request to create or update a pull request authorizes the root agent to invoke independent read-only review, but it does not by itself authorize changing draft state or merging. The user may bundle those permissions into one request—for example, create a draft pull request, review it, fix in-scope findings, and if clean mark it ready and merge it. When the current request contains that bundled authorization, the root agent must continue the same active task through every applicable gate without requesting a second confirmation. If the current user request explicitly authorizes marking a draft ready without merging, the root agent may do so only after every readiness gate passes. If the current user request explicitly authorizes merging and every gate passes, the root agent:
+Review, status, readiness-assessment, and blocker requests are read-only by default. The default implementation-PR lifecycle starts only when the current request authorizes both implementing changes and creating or updating the resulting pull request; local implementation alone does not authorize a commit, push, pull request, readiness change, or merge. That implementation-and-PR request conditionally authorizes the root agent to make the necessary in-scope commit and push, maintain the review brief, invoke independent exact-head review, fix in-scope findings, mark the clean reviewed head ready, and make the guarded native squash-merge attempt after all gates pass. The root agent continues through those stages without requesting another confirmation.
+
+The latest user instruction controls. Within an already-authorized implementation-PR lifecycle, `keep draft`, `remain draft`, or `do not mark ready` blocks both readiness and merge, while `do not merge` permits readiness after every gate passes but blocks the merge command. These opt-outs never create state-change authority in a review-only task. An instruction to create the pull request as a draft records the mandatory starting state and is not a keep-draft opt-out. An explicit request to mark an existing pull request ready authorizes readiness only; an explicit request to merge an existing pull request authorizes the same guarded readiness-and-merge path. In-scope findings may be fixed under the original implementation-PR authorization, but a material scope expansion requires user direction.
+
+For an authorized implementation-PR lifecycle without an applicable opt-out, or an explicit request to merge an existing pull request, the root agent:
 
 1. waits while the pull request remains draft until every mandatory local and GitHub check has completed successfully;
-2. refreshes the GitHub head SHA, required checks, reviews, requested changes, unresolved review threads, branch protection, mergeability, scope, secrets, and generated artifacts;
+2. refreshes the GitHub head SHA, required checks, reviews, requested changes, unresolved review threads, branch protection, mergeability, scope, secrets, generated artifacts, and latest user instruction;
 3. confirms the refreshed head is the independently reviewed and locally verified SHA and every gate still passes;
 4. marks the draft ready;
-5. refreshes the same GitHub state again immediately before the merge command; and
+5. refreshes the same GitHub state and latest user instruction again immediately before the merge command; and
 6. invokes GitHub native auto-merge syntax as a guarded immediate squash-merge attempt:
 
 ```bash
@@ -218,6 +222,8 @@ gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
 ```
 
 `--match-head-commit` is only a command-time head precondition. It does not provide durable protection for a queued auto-merge request after the command returns. Because all checks and gates are already green, the pull request is expected to merge immediately. Inspect its state at once; if GitHub leaves it open with auto-merge queued, immediately run `gh pr merge <number> --disable-auto`, verify the request is disabled and the pull request remains unmerged, and report the blocker. Never leave a queued request active or wait for it to merge after a later head update.
+
+Re-evaluate the latest user instruction immediately before readiness and again before the merge command. If a keep-draft opt-out arrives after readiness, disable any auto-merge request, run `gh pr ready <number> --undo`, and verify that the pull request is draft and unmerged. If a do-not-merge instruction arrives after readiness, disable any auto-merge request and verify that the pull request remains unmerged. Then report the new boundary instead of continuing.
 
 If the head changes before the merge completes, disable any auto-merge request, return a ready pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the review brief, and restart local verification, independent review, and every GitHub gate for the new SHA.
 
