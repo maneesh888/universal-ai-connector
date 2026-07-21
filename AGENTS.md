@@ -45,7 +45,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
 - Sample simulator build: `./scripts/build-sample.sh`
-- Secret scan: `./scripts/secret-scan.sh` requires `rg` and fails closed when the scanner is missing or errors.
+- Secret scan: `./scripts/secret-scan.sh` requires `rg`, fails closed when the scanner is missing or errors, and reports a match without printing the matched credential material.
 - Final whitespace check: `git diff --check`
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.

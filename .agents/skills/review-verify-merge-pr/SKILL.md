@@ -72,7 +72,7 @@ Check out or fetch the recorded PR head without modifying user work. Run the act
 - Run additional targeted tests when the active work package adds a proof surface not yet included in the full suite.
 - Treat the exact-head verification as blocked when the required toolchain is missing or any check cannot run; do not substitute a narrower command.
 - `--full` includes shell syntax validation, the repository secret scan, and whitespace checks.
-- Inspect local and GitHub logs to confirm every mandatory security tool actually executed. A green job whose scanner or other required dependency was missing is failed evidence, even when the job conclusion is `success`.
+- Inspect local and GitHub logs to confirm every mandatory security tool actually executed without exposing credential material. A green job whose scanner or other required dependency was missing, or whose diagnostics leaked a matched secret, is failed evidence even when the job conclusion is `success`.
 
 Do not substitute green CI for missing local review or claim proof for an unexecuted simulator, device, live provider, gateway, distribution, or release surface. Record every command and result.
 

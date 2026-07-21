@@ -32,7 +32,7 @@ Run commands from the repository root:
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, fails closed when the tool is missing or errors, and has a regression test in every hygiene run. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, fails closed when the tool is missing or errors, reports matches without printing matched credential material, and has a regression test for those properties in every hygiene run. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
 P1 currently has focused host-side checks while its samples and CI jobs are still being built:
 
@@ -76,7 +76,7 @@ The hooks are mandatory local gates. GitHub CI remains an independent remote enf
 - `Apple POC + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, and Apple verification, with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
-Superseded runs on the same pull request or branch are cancelled. Pull-request jobs explicitly check out the PR head SHA; strict branch protection separately requires that head to be current with `main` before merge. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
+Superseded runs on the same pull request or branch are cancelled. Pull-request jobs explicitly check out the PR head SHA; strict branch protection separately requires that head to be current with `main` before merge. Every third-party action reference is pinned to a full commit SHA, with its release line recorded in a comment and Dependabot responsible for reviewed updates. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
 
 `.github/dependabot.yml` groups monthly GitHub Actions and Gradle updates so workflow and build dependencies do not silently age. Review and verify those pull requests like any other dependency change; do not auto-merge them without the required checks.
 

@@ -9,7 +9,7 @@ if ! command -v rg >/dev/null 2>&1; then
 fi
 
 scan_status=0
-rg -n \
+rg --quiet \
   --hidden \
   --glob '!.git/**' \
   --glob '!**/build/**' \

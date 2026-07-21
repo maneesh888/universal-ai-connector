@@ -17,7 +17,8 @@ chmod +x "$SCANNER_UNDER_TEST"
 
 DETECTION_OUTPUT="$TEST_DIRECTORY/detection.log"
 PROBE_FILE="$TEST_REPOSITORY/synthetic-secret.txt"
-printf '%s%s\n' 'sk-' 'AAAAAAAAAAAAAAAAAAAAAAAA' > "$PROBE_FILE"
+SYNTHETIC_SECRET="$(printf '%s%s' 'sk-' 'AAAAAAAAAAAAAAAAAAAAAAAA')"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$PROBE_FILE"
 
 detection_status=0
 "$SCANNER_UNDER_TEST" > "$DETECTION_OUTPUT" 2>&1 || detection_status=$?
@@ -27,6 +28,10 @@ if [[ "$detection_status" -ne 1 ]]; then
 fi
 if ! grep -Fq "Potential secret material found." "$DETECTION_OUTPUT"; then
   echo "Secret scan did not report the synthetic secret probe." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$DETECTION_OUTPUT"; then
+  echo "Secret scan exposed matched secret material in its output." >&2
   exit 1
 fi
 rm -f "$PROBE_FILE"
