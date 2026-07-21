@@ -12,6 +12,8 @@ P1 is intentionally secretless. Its samples, local checks, and GitHub Actions us
 
 Do not add `.env` files, credential loaders, live-provider scripts, protected secret-bearing workflows, or claims of live-provider proof in this work package. P4 must establish the ignored local-secret convention, value-free environment example, separate `./scripts/check-live.sh` command, and protected GitHub Environment before its first adapter pull request. Once that gate exists, later changes to live provider, Gateway, or shared transport behavior must satisfy it as defined in `universal-ai-connector-v2.md`.
 
+P1's normal GitHub Actions workflow remains read-only and secretless, with no write token, PAT, autonomous merger, or `pull_request_target`. Its stable `Required checks` status must complete successfully for the exact independently reviewed head before a draft pull request leaves draft or any merge command runs; pending or skipped required checks are not an auto-merge queueing strategy.
+
 ## P1 host-integration outcome
 
 P1 must prove that each sample is a real consumer of the supported package boundary. It does not publish remote artifacts, but it must remove repository-internal knowledge from sample APIs and document the same steps that a future external consumer will use.
