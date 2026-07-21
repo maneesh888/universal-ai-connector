@@ -80,7 +80,7 @@ Apply these guardrails to every future work package:
 - Keep the Android, iOS, and JVM samples as stable contract consumers. Update all samples only when an approved canonical host behavior changes, not merely because another provider adapter is added.
 - Use affected-module and targeted host tests during implementation. Run the repository's mandatory quick gate at commit time and the complete supported platform matrix at push, pull-request, and release gates rather than repeatedly in the inner edit loop.
 - If a proposed P3-P7 feature materially requires changes across the shared API, Swift façade, Android/JVM host API, all samples, packaging scripts, and CI lanes, pause implementation. Record the cross-platform reason in an ADR or scoped plan decision and either correct the abstraction or explicitly approve the wider platform cost before proceeding.
-- After the product-facing Apple path is accepted, retire the temporary POC Swift surface in a bounded cleanup; do not extend both Apple façades through later milestones.
+- After the product-facing Apple path is accepted as the supported P1 Apple surface, retire the temporary POC Swift surface in a bounded closing P1 cleanup before P2 begins; do not extend both Apple façades through later milestones.
 
 ## Live provider and gateway verification gate
 
@@ -187,7 +187,7 @@ P4 also establishes the secret-safety baseline required by live testing: ignored
 
 ## P8: Production distribution and host integration
 
-Promote the POC bridge into a stable Swift façade and production XCFramework containing device and simulator slices. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
+Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
 
 Acceptance requires:
 
