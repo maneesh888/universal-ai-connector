@@ -11,7 +11,7 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 
 - Treat `review`, `is this ready?`, and `what is blocking this?` as read-only requests.
 - Start the default implementation-PR lifecycle only when the current request authorizes both implementing changes and creating or updating the resulting pull request. A request for local implementation alone does not authorize a commit, push, pull request, readiness change, or merge.
-- Treat that implementation-and-PR authorization as conditional authorization for the root agent to commit and push the in-scope work, maintain the review brief, invoke independent review, fix in-scope findings, mark the clean reviewed head ready, and make the guarded native squash-merge attempt after every gate succeeds. Do not request a second confirmation between those stages.
+- Treat that implementation-and-PR authorization as conditional authorization for the root agent to commit and push the in-scope work, maintain the concise PR description and richer reviewer packet, invoke independent review, fix in-scope findings, mark the clean reviewed head ready, and make the guarded native squash-merge attempt after every gate succeeds. Do not request a second confirmation between those stages.
 - Let the latest user instruction narrow or replace that default. Within an already-authorized implementation-PR lifecycle, `keep draft`, `remain draft`, or `do not mark ready` blocks both readiness and merge, while `do not merge` permits readiness after all gates pass but blocks the merge command. These opt-outs never create state-change authority in a review-only task. An instruction merely to create the pull request as a draft is the required starting state, not a keep-draft opt-out.
 - Treat an explicit `mark ready` request for an existing pull request as readiness-only authorization, and an explicit `merge` or `merge if clean` request as authorization for the same guarded readiness-and-merge path.
 - Keep the independent reviewer read-only. Only the root agent performs GitHub state changes under the applicable implementation-PR lifecycle or explicit state-change request.
@@ -29,11 +29,20 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 
 Use `gh` for every GitHub read and authorized state change. Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report the blocker instead of silently switching tools.
 
-## 2. Establish the review brief
+## 2. Establish the concise PR description and reviewer packet
 
-Fetch the PR description and linked issues or plans with `gh`. Build a neutral review brief from those durable sources and the current implementation conversation when it is available. Distinguish documented requirements from assumptions or inferences.
+Fetch the PR description and linked issues or plans with `gh`. The root agent must keep the PR description as a concise, durable brief proportional to the change and normally about 20-40 lines. Require it to contain:
 
-Require the brief to contain:
+- the problem and change summary;
+- the scope and key implementation decisions;
+- links to requirement sources plus concise deltas for requirements that exist only in the current implementation conversation;
+- a concise verification summary;
+- proof limits and explicitly out-of-scope behavior; and
+- the exact PR head SHA the description covers.
+
+Do not duplicate full plan text, raw logs, test-by-test transcripts, or review history merely to make the PR description self-contained.
+
+Separately, require the root agent to assemble a richer neutral, structured reviewer packet from durable requirement sources, the current implementation conversation, the root diff, and exact verification evidence. Distinguish documented requirements from assumptions or inferences. Require the packet to cover all seven review dimensions:
 
 - the problem being solved;
 - requirement sources, including issue, plan, or user-request references;
@@ -41,17 +50,17 @@ Require the brief to contain:
 - important implementation decisions and constraints;
 - explicitly out-of-scope behavior;
 - verification evidence and exact proof boundaries; and
-- the exact PR head SHA the brief describes.
+- the exact PR head SHA the packet describes.
 
-Record the brief in the PR description before independent review. Maintaining that description is part of the authorized implementation-PR lifecycle or an explicit PR-update request. During a review-only task, report a missing or stale brief as a blocker rather than editing it. Refresh the brief whenever the requirements, scope, evidence, or head SHA materially changes.
+Record or refresh the concise brief in the PR description when authorized, and always assemble the reviewer packet before independent review. Updating the PR description is part of the authorized implementation-PR lifecycle or an explicit PR-update request. During a review-only task, report a missing or stale description, or missing, ambiguous, stale, or inconsistent material context, as a blocker rather than editing the PR. Do not treat the concise description's lack of repetition from a linked durable source as missing context. Refresh both artifacts whenever the requirements, scope, decisions, evidence, proof boundaries, or head SHA materially changes; if a review-only task cannot refresh the PR description, stop on that authority-bound blocker.
 
-Pass the independent reviewer the brief and its source material. Keep the handoff factual: do not include expected findings, tell the reviewer that the change is correct, or hide unresolved decisions.
+Pass the independent reviewer the richer packet and its source links. Keep the handoff factual: do not include expected findings, tell the reviewer that the change is correct, or hide unresolved decisions.
 
 ## 3. Run an independent review
 
-When the root agent created or updated the draft in the current task, it must immediately continue into this section after publishing the current review brief. Do not end the task at draft creation and do not wait for GitHub Actions to finish; independent review and required checks run in parallel.
+When the root agent created or updated the draft in the current task, it must immediately continue into this section after publishing the concise PR description and assembling the current reviewer packet. Do not end the task at draft creation and do not wait for GitHub Actions to finish; independent review and required checks run in parallel.
 
-Spawn the project custom agent `pr-reviewer` when it is available. Give it the current structured review brief, its source links, the PR identity, and the exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. The root agent that created or updated the draft remains responsible for receiving the result and continuing the same task through every authorized gate. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
+Spawn the project custom agent `pr-reviewer` when it is available. Give it the current structured reviewer packet, its source links, the PR identity, and the exact head SHA, and require findings-first output tied to files, lines, tests, or observable evidence. The root agent that created or updated the draft remains responsible for receiving the result and continuing the same task through every authorized gate. If the custom agent is unavailable, perform the same review locally and disclose that independent-agent review was unavailable.
 
 Review the root diff and relevant surrounding code, not only the PR description. Inspect:
 
@@ -78,11 +87,11 @@ Do not substitute green CI for missing local review or claim proof for an unexec
 
 ## 5. Apply the review-completion, readiness, and merge gates
 
-Refresh GitHub state after local verification and again immediately before any state change. During an authorized implementation-PR lifecycle, fix every in-scope blocking finding while the pull request remains a draft. A review-only task or a finding that materially expands the authorized work package requires a separate implementation request. Any head change, including a finding fix, invalidates the previous review, verification, and merge attempt: disable any auto-merge request, return the pull request to draft when necessary, refresh the brief, and restart the entire gate for the new SHA.
+Refresh GitHub state after local verification and again immediately before any state change. During an authorized implementation-PR lifecycle, fix every in-scope blocking finding while the pull request remains a draft. A review-only task or a finding that materially expands the authorized work package requires a separate implementation request. Any head change, including a finding fix, invalidates the previous review, verification, and merge attempt: disable any auto-merge request, return the pull request to draft when necessary, refresh the concise PR description and reviewer packet, and restart the entire gate for the new SHA.
 
 Require all of the following:
 
-1. The PR description contains a complete, current review brief, including the exact head SHA, and its requirements and status claims match the evidence actually obtained.
+1. The concise PR description and richer reviewer packet are complete, current, mutually consistent, and bound to the exact head SHA; their requirements and status claims match the evidence actually obtained. Linked durable sources need not be repeated in the PR description, but missing material context in the combined handoff blocks readiness.
 2. The independently reviewed SHA equals GitHub's current PR head SHA.
 3. Local verification passed for that exact SHA.
 4. No blocking finding, requested change, or unresolved review thread remains.
@@ -118,7 +127,7 @@ For an authorized implementation-PR lifecycle without an applicable opt-out, or 
 
 7. Treat `--match-head-commit` only as a command-time head precondition. It does not bind or cancel an auto-merge request after the command returns and is not durable protection against a later head update.
 8. Because every gate was already green, expect the pull request to merge immediately and inspect its state at once. If GitHub leaves it open with auto-merge queued, immediately run `gh pr merge <number> --disable-auto`, verify auto-merge is disabled and the pull request remains unmerged, and report the blocker. Do not leave the request queued, wait for it to merge later, or retry without re-establishing every gate.
-9. If the head changes before the merge completes, disable any auto-merge request, return the pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the review brief, and restart local verification, independent review, and every gate for the new SHA.
+9. If the head changes before the merge completes, disable any auto-merge request, return the pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the concise PR description and reviewer packet, and restart local verification, independent review, and every gate for the new SHA.
 10. After GitHub merges the pull request, record the PR URL and resulting squash commit SHA, inspect the workflow run for the resulting `main` commit, and report its result. Never rewrite shared history to hide a failure.
 
 Keep normal GitHub Actions read-only and secretless. Do not add a privileged CI-side or unattended background merger, write token, PAT, merge logic, or `pull_request_target` to `ci.yml`; native merge controls and branch protection remain GitHub's enforcement boundary.
@@ -128,7 +137,7 @@ Keep normal GitHub Actions read-only and secretless. Do not add a privileged CI-
 Lead with blocking findings, or state that none were found. Include:
 
 - PR number, URL, base, and exact reviewed head SHA;
-- review-brief sources, completeness, and any assumptions;
+- concise PR description and reviewer packet sources, completeness, and any assumptions;
 - independent-review availability and findings;
 - local commands and pass/fail results;
 - required checks, review-thread state, and mergeability;

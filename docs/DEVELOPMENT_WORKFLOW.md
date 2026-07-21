@@ -140,45 +140,41 @@ Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unl
 5. Commit only after the mandatory pre-commit hook passes `./scripts/check.sh --quick`.
 6. Push only after the mandatory pre-push hook passes `./scripts/check.sh --full` from a clean worktree. This applies to both pull-request creation and every later update.
 7. Create the pull request as a draft. GitHub Actions run while the pull request remains a draft.
-8. Add or refresh the PR review brief from the implementation request, linked issue or plan, decisions, scope, exact head SHA, and exact local evidence.
-9. In the same active task, the root agent that created or updated the draft must invoke the project `pr-reviewer` agent to independently review the exact head SHA using the current structured review brief. Review and required checks may continue in parallel while the pull request remains a draft; every readiness and merge gate still waits for successful completion.
-10. Fix every blocking finding while the pull request remains a draft. If a fix or any other update changes the head SHA, disable any auto-merge request, return the pull request to draft when necessary, and restart local verification, the review brief, independent review, required-check inspection, protection inspection, thread inspection, and mergeability inspection for the new SHA.
+8. Add or refresh the concise PR review brief from the implementation request, linked issue or plan, material decisions, scope, exact head SHA, verification summary, and proof limits. Separately assemble the richer structured reviewer packet from those sources, the root diff, and exact evidence.
+9. In the same active task, the root agent that created or updated the draft must invoke the project `pr-reviewer` agent to independently review the exact head SHA using the current concise PR brief, structured reviewer packet, and source links. Review and required checks may continue in parallel while the pull request remains a draft; every readiness and merge gate still waits for successful completion.
+10. Fix every blocking finding while the pull request remains a draft. If a fix or any other update changes the head SHA, disable any auto-merge request, return the pull request to draft when necessary, and restart local verification, the concise PR brief, reviewer packet, independent review, required-check inspection, protection inspection, thread inspection, and mergeability inspection for the new SHA.
 11. Use `gh` to wait for every mandatory GitHub check to complete successfully on the exact reviewed head, including `Required checks` and any applicable protected live-verification status. Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks block both readiness and a merge attempt.
 12. Verify `main` protection through the GitHub APIs and `gh pr checks <number> --required`. For an authorized implementation-PR lifecycle without an applicable user opt-out, every green gate requires the root agent to mark the exact reviewed head ready, refresh the head and all gates immediately, and make the guarded native squash-merge attempt without requesting another confirmation. If GitHub queues auto-merge instead of merging immediately, disable it at once, keep the pull request unmerged, and report the blocker.
 13. Update roadmap and README status only after the exact acceptance evidence exists.
 
-### Review brief
+### Review context
 
-The PR description is the durable handoff between implementation and independent review. Before review, the root agent writes a neutral brief from the current user request, linked issue or plan, repository requirements, and verified implementation evidence. It passes the brief and source links to the reviewer without supplying expected findings or a desired conclusion.
+Use two complementary layers. The PR description is a concise, durable review brief for human readers; the root agent separately gives the independent reviewer a richer structured packet. The body and its linked sources preserve the auditable requirements and evidence, while the packet gives the reviewer enough detail to inspect the exact diff without forcing that detail into the public description.
 
-Use this structure:
+Keep a normal PR description proportional to the change and usually about 20-40 lines. More detail is appropriate only when it records a material risk, a decision unavailable elsewhere, or evidence required by the active plan. Do not copy full plan sections, raw logs, test-by-test transcripts, generated file inventories, or review history into the body. Use this structure:
 
 ```markdown
-## Review brief
+## Summary
+- Why this change is needed and what it does
 
-### Problem
-The user or engineering problem being solved.
+## Scope and key decisions
+- Material behavior or constraint introduced by this PR
+- Requirement sources: linked issue, plan, or decision
+- Request-only delta: concise requirement not available in a durable source, if any
 
-### Requirement sources
-- User request, issue, plan, or decision link
+## Verification
+- `<command or check>` — `<result>`
 
-### Requirements and acceptance criteria
-- Required behavior and observable completion condition
+## Proof limits
+- Material out-of-scope or unexercised behavior
 
-### Implementation decisions
-- Important approach or constraint selected during implementation
-
-### Out of scope
-- Behavior deliberately excluded from this PR
-
-### Evidence and proof boundaries
-- Exact checks executed and behavior not exercised
-
-### Review target head
+## Review target
 `<full commit SHA>`
 ```
 
-Refresh the brief when requirements, scope, evidence, or the head SHA materially changes. A missing, ambiguous, stale, or internally inconsistent brief blocks merge readiness. Requirements that existed only in a private implementation conversation must be summarized here; the reviewer cannot recover context that was never recorded or passed to it.
+Before independent review, build a neutral reviewer packet from the concise PR brief, current implementation request, linked durable sources, root diff, and verified evidence. The packet includes the detailed problem, requirements and observable acceptance criteria, important decisions and constraints, out-of-scope behavior, evidence and proof boundaries, source links, and exact head SHA. Pass it directly to the reviewer without expected findings or a desired conclusion; it does not need to be duplicated in the PR description.
+
+Refresh the concise brief and reviewer packet when requirements, scope, evidence, or the head SHA materially changes. Requirements that exist only in a private implementation conversation must have a concise durable delta in the PR body and fuller detail in the packet. The live-evidence fields required by the roadmap must still be recorded in a concise redacted form or linked durable record. Missing, ambiguous, stale, or internally inconsistent material context across the brief, linked sources, and packet blocks merge readiness; brevity or lack of repeated linked text alone does not.
 
 ### Agent-assisted review and merge
 
@@ -188,11 +184,11 @@ Use the repository skill for a repeatable gate:
 Use $review-verify-merge-pr to review PR #<number>; if every local and GitHub gate completes successfully, mark the exact reviewed head ready and perform the guarded squash merge.
 ```
 
-The workflow separates responsibilities without splitting the task. After creating or updating the draft and recording its current review brief, the same root agent invokes the project `pr-reviewer` agent for an independent, read-only review of the exact head SHA while the pull request remains a draft. Independent review and required checks may run in parallel, but the root agent waits for both to finish successfully before readiness or a merge attempt. The root agent stays active, verifies that same PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
+The workflow separates responsibilities without splitting the task. After creating or updating the draft, recording its concise review brief, and assembling the reviewer packet, the same root agent invokes the project `pr-reviewer` agent for an independent, read-only review of the exact head SHA while the pull request remains a draft. Independent review and required checks may run in parallel, but the root agent waits for both to finish successfully before readiness or a merge attempt. The root agent stays active, verifies that same PR head, runs the repository checks appropriate to the changed proof surface, reconciles the review with GitHub checks and unresolved threads, and alone performs authorized state changes.
 
 A draft PR may leave draft or proceed to a merge attempt only when:
 
-- the review brief is complete and current;
+- the concise PR brief and reviewer packet are complete, current, and consistent;
 - the independently reviewed head SHA is still GitHub's current head;
 - the affected local verification commands passed for that SHA;
 - no blocking correctness, architecture, regression, test, security, public-contract, packaging, or evidence finding remains;
@@ -204,7 +200,7 @@ A draft PR may leave draft or proceed to a merge attempt only when:
 
 Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks are blockers. Do not leave draft or invoke the merge command until all mandatory checks are terminal-success for the exact reviewed head.
 
-Review, status, readiness-assessment, and blocker requests are read-only by default. The default implementation-PR lifecycle starts only when the current request authorizes both implementing changes and creating or updating the resulting pull request; local implementation alone does not authorize a commit, push, pull request, readiness change, or merge. That implementation-and-PR request conditionally authorizes the root agent to make the necessary in-scope commit and push, maintain the review brief, invoke independent exact-head review, fix in-scope findings, mark the clean reviewed head ready, and make the guarded native squash-merge attempt after all gates pass. The root agent continues through those stages without requesting another confirmation.
+Review, status, readiness-assessment, and blocker requests are read-only by default. The default implementation-PR lifecycle starts only when the current request authorizes both implementing changes and creating or updating the resulting pull request; local implementation alone does not authorize a commit, push, pull request, readiness change, or merge. That implementation-and-PR request conditionally authorizes the root agent to make the necessary in-scope commit and push, maintain the concise PR brief and reviewer packet, invoke independent exact-head review, fix in-scope findings, mark the clean reviewed head ready, and make the guarded native squash-merge attempt after all gates pass. The root agent continues through those stages without requesting another confirmation.
 
 The latest user instruction controls. Within an already-authorized implementation-PR lifecycle, `keep draft`, `remain draft`, or `do not mark ready` blocks both readiness and merge, while `do not merge` permits readiness after every gate passes but blocks the merge command. These opt-outs never create state-change authority in a review-only task. An instruction to create the pull request as a draft records the mandatory starting state and is not a keep-draft opt-out. An explicit request to mark an existing pull request ready authorizes readiness only; an explicit request to merge an existing pull request authorizes the same guarded readiness-and-merge path. In-scope findings may be fixed under the original implementation-PR authorization, but a material scope expansion requires user direction.
 
@@ -225,7 +221,7 @@ gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
 
 Re-evaluate the latest user instruction immediately before readiness and again before the merge command. If a keep-draft opt-out arrives after readiness, disable any auto-merge request, run `gh pr ready <number> --undo`, and verify that the pull request is draft and unmerged. If a do-not-merge instruction arrives after readiness, disable any auto-merge request and verify that the pull request remains unmerged. Then report the new boundary instead of continuing.
 
-If the head changes before the merge completes, disable any auto-merge request, return a ready pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the review brief, and restart local verification, independent review, and every GitHub gate for the new SHA.
+If the head changes before the merge completes, disable any auto-merge request, return a ready pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the concise PR brief and reviewer packet, and restart local verification, independent review, and every GitHub gate for the new SHA.
 
 Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or merge a different head than the one reviewed. After GitHub merges the pull request, inspect the workflow run created for the resulting `main` commit and report its result.
 

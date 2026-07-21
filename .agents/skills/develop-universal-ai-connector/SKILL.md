@@ -61,7 +61,8 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 6. Record public API, contract, packaging, or compatibility changes in the appropriate plan or documentation.
 7. Verify host integration through consumer samples that compile against documented package boundaries. A library-unit-test pass alone is not consumer integration proof.
 8. Update milestone status only after its acceptance criteria have evidence.
-9. Before requesting PR review, add a review brief to the PR description containing the problem, requirement sources, requirements and acceptance criteria, important implementation decisions, out-of-scope behavior, verification evidence and proof boundaries, and exact head SHA.
+9. Before requesting independent review, keep the PR description as a concise, durable brief proportional to the change and normally about 20-40 lines. Include the problem and change summary, scope and key decisions, links to requirement sources plus concise deltas for requirements that exist only in the implementation conversation, a verification summary, proof limits and out-of-scope behavior, and the exact head SHA. Do not duplicate full plan text, raw logs, test-by-test transcripts, or review history.
+10. Separately, the root agent must assemble and pass the independent reviewer a richer neutral, structured packet from durable requirement sources, the current implementation conversation, the root diff, and exact verification evidence. Cover the problem, requirement sources, requirements and observable acceptance criteria, important decisions and constraints, out-of-scope behavior, verification evidence and proof boundaries, and exact head SHA. Missing, ambiguous, stale, or inconsistent material context blocks readiness; the concise PR description need not repeat information available in a linked durable source. Refresh both the description and packet whenever material context or the head SHA changes.
 
 ## Route Optional Development Tools
 
@@ -131,7 +132,7 @@ Before pushing or creating or updating a pull request:
 1. Confirm the worktree is clean and `HEAD` is the exact intended remote update.
 2. Push only through the mandatory pre-push hook and require `./scripts/check.sh --full` to pass.
 3. Never use `--no-verify`; if the full gate cannot run or fails, stop and report the blocker.
-4. Refresh the PR review brief with the pushed head SHA and exact local evidence.
+4. Refresh the concise PR description and the richer reviewer packet with the pushed head SHA and exact local evidence whenever material context or the head changes.
 
 If pushing would publish earlier local commits ahead of the remote, tell the user before pushing.
 
