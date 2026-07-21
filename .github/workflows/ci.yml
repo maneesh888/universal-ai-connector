@@ -117,9 +117,9 @@ jobs:
           retention-days: 7
 
   apple-poc:
-    name: Apple POC + JVM (macOS)
+    name: Apple + JVM (macOS)
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Check out sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -155,7 +155,7 @@ jobs:
       - name: Run JVM checks
         run: ./gradlew :bridge:jvmTest :samples:jvm-console:consumerCheck --stacktrace
 
-      - name: Run complete POC verification
+      - name: Run complete Apple verification
         env:
           UAC_SWIFT_RESULT_BUNDLE_PATH: ${{ runner.temp }}/uac-swift-package.xcresult
         run: ./scripts/check.sh --full
@@ -164,7 +164,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: apple-poc-failure-evidence
+          name: apple-failure-evidence
           path: |
             ${{ runner.temp }}/uac-swift-package.xcresult
             bridge/build/reports/tests/

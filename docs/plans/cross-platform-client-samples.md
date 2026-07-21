@@ -48,21 +48,22 @@ The July 20, 2026 Android consumer package adds `samples/android`, a separate Je
 
 The historical runs above were pull-request runs whose jobs used GitHub's synthetic merge checkout rather than the exact PR head. Their green hygiene conclusions are also invalid remote secret-scan evidence: `rg` was unavailable and the former scanner failed open. Their platform and consumer results remain bounded compatibility evidence, but exact-head repository-hygiene proof must come from a later run whose logs show exact-head checkout plus the fail-closed scanner and its missing-tool, ignore-rule, configuration-exclusion, and non-disclosure regressions executing successfully.
 
+The July 21, 2026 Apple delivery candidate adds an iOS ARM64 target beside iOS Simulator ARM64 and assembles both into one locally consumed XCFramework. A new `UniversalAiConnector` Swift Package product delegates through an Apple-only callback adapter to the same shared Kotlin client used by Android and JVM. The adapter is isolated to the iOS source set and excluded from the JVM JAR and Android AAR. It owns no long-lived coroutine job or external resource; every response or stream has its own cancellation handle. The retained `UniversalAiConnectorPOC` product and its eight tests remain as migration regression coverage while the product-facing suite establishes parity. The renamed SwiftUI sample imports only `UniversalAiConnector` and provides deterministic controls for response, streaming, forced error, immediate response cancellation, and consuming-task cancellation after the first stream event. Exact local and pull-request evidence for the final proposed head is recorded only after its mandatory checks complete.
+
+Local verification passed July 21, 2026 with `./scripts/check.sh --full`. The JVM, Android host, and iOS Simulator suites each ran 13 cross-platform shared tests, and iOS Simulator additionally ran 7 Apple-adapter tests. Android AAR packaging and the JVM and Android consumers passed, and the artifact-boundary check confirmed that the Apple adapter is absent from both non-Apple artifacts. XCFramework assembly produced exactly `ios-arm64` and `ios-arm64-simulator`, each arm64 with an iOS 17.0 minimum, and both exported headers passed the Kotlin-client and `Flow` boundary checks. The aggregate Swift Package simulator scheme passed 15 product-facing tests plus all 8 retained POC tests. The product-only SwiftUI sample then built for the simulator and compiled and linked for `generic/platform=iOS` with signing disabled. Secret scanning and its fail-closed regression suite, generated-artifact exclusion, shell syntax, and whitespace checks passed. This is deterministic simulator and generic-device link evidence only; no physical iOS device was installed to or executed.
+
 ## Target structure
 
 ```text
-v2/
-├── universal-ai-core/          Shared POC client contract and deterministic fake behavior
-├── universal-ai-testing/       Reusable interoperability fixtures and assertions
-└── universal-ai-swift-bridge/  Apple callback bridge and XCFramework entry point
-
-samples/
-├── ios-swift/                  SwiftUI application using the Swift Package façade
-├── android/                    Small Android application using the shared client
-└── jvm-console/                Command-line client using the shared client
+bridge/                                      Shared Kotlin client plus iOS-only callback adapters
+swift-package/Sources/UniversalAiConnector/ Product-facing supported Swift façade
+swift-package/Sources/UniversalAiConnectorPOC/ Retained POC compatibility façade
+samples/ios/UniversalAiConnectorSample/     SwiftUI product consumer
+samples/android/                             Android public-module consumer
+samples/jvm-console/                         Kotlin/JVM public-module consumer
 ```
 
-The existing `bridge`, `swift-package`, and `samples/ios` code should be migrated deliberately after equivalent tests exist. Do not delete the verified POC path before the replacement passes.
+The product-facing Swift façade is the supported Apple API. Keep the retained POC product and tests only as migration coverage until the product path has equivalent exact-head integration evidence and is accepted. Then retire the POC surface in a bounded closing P1 cleanup before P2 begins; do not expose either callback adapter as a supported application API.
 
 ## Shared demonstration contract
 
@@ -133,9 +134,10 @@ Run common behavior on JVM, Android unit tests, and iOS Simulator wherever suppo
 - framework import and synchronous call;
 - async response and error mapping;
 - complete stream ordering;
-- early stream termination;
+- consuming-task cancellation while the returned stream remains retained;
 - parent-task cancellation;
 - cancellation before Kotlin handle installation;
+- stream cancellation before handle installation and late-terminal suppression;
 - concurrent response and stream calls;
 - repeated connector creation and release without late callbacks.
 
@@ -144,6 +146,7 @@ Run common behavior on JVM, Android unit tests, and iOS Simulator wherever suppo
 - JVM sample compiles and runs.
 - JVM sample compiles and runs on Linux, Windows, and macOS CI without OS-specific source changes.
 - Android library and sample compile.
+- Apple callback-adapter classes are absent from the JVM JAR and Android AAR.
 - iOS Simulator tests pass.
 - iOS device framework slice links in a generic device build.
 - Swift Package tests pass.
@@ -164,9 +167,9 @@ Run common behavior on JVM, Android unit tests, and iOS Simulator wherever suppo
 
 Extend repository scripts so one top-level check runs deterministic validation. Keep live/provider checks separate.
 
-CI should use:
+CI uses:
 
-- macOS for Kotlin/Native, XCFramework, Swift Package, iOS sample verification, and a JVM consumer smoke check;
+- macOS for Kotlin/Native, combined-XCFramework validation, Swift Package simulator tests, iOS simulator and generic-device sample builds, and a JVM consumer smoke check;
 - Linux for JVM and Android unit/build checks plus the JVM console consumer;
 - Windows for the JVM test and console-consumer path.
 

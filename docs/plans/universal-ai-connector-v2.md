@@ -3,9 +3,11 @@
 ## Status
 
 - Repository stage: interoperability POC verified; P1 cross-platform baseline in progress
-- Current implementation: iOS Simulator delivery proof, JVM and Android common-test targets, one product-facing Kotlin client, and local JVM console and Android application consumers
+- Current implementation: one product-facing Kotlin client, local JVM and Android consumers, and a product-facing Swift façade/sample over a combined iOS device-and-simulator XCFramework candidate
 - Active work package: P1, cross-platform package and client-sample baseline
-- Next bounded P1 package: product-facing Apple delivery/sample upgrade with an iOS ARM64 device slice
+- Current bounded P1 package: product-facing Apple delivery/sample upgrade with an iOS ARM64 device slice
+- Current Apple-surface acceptance gate: exact-head local verification, required GitHub host checks, and independent review; the proven POC Swift product remains as temporary migration coverage during this gate
+- Remaining P1 work after Apple-surface acceptance: retire the temporary POC Swift surface in a bounded cleanup before P2 begins
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -59,6 +61,28 @@ The host-facing developer experience must converge on:
 - samples that consume package boundaries rather than internal source shortcuts;
 - installation and first-use snippets kept executable by consumer smoke tests.
 
+## Platform-complexity budget
+
+Cross-platform delivery is a foundation cost, not a platform tax that every later feature may repay. Reuse the P1 host, packaging, sample, and CI boundaries, and keep later behavior behind the shared contracts unless a milestone explicitly changes those contracts.
+
+| Milestones | Expected platform cost | Allowed host-surface change |
+|---|---|---|
+| P1 | High, one-time foundation | Establish targets, package boundaries, thin samples, lifecycle behavior, and the deterministic host matrix |
+| P2-P3 | Controlled contract stabilization | Finalize canonical models, the primary client contract, construction, transport injection, ownership, and cleanup without adding host targets or provider-specific host APIs |
+| P4-P7 | Low | Implement provider and Gateway behavior in shared/internal adapter modules and tests; reuse the stable Kotlin and Swift entry points and existing samples |
+| P8 | High, planned distribution work | Add publication, released-artifact consumers, signing/checksums, and the desktop demonstration without duplicating connector behavior per host |
+| P9 | Verification and hardening | Exercise the complete matrix and fix defects; do not introduce a new platform surface as incidental release work |
+
+Apply these guardrails to every future work package:
+
+- Do not add another host target, sample, or CI lane without an approved consumer requirement and an explicit maintenance-cost decision.
+- During P2-P3, change the supported Kotlin or Swift façade only when the canonical contract, construction, or lifecycle requires it. After P3 acceptance, keep those host entry points stable through P7 except for an approved compatibility, correctness, or security fix.
+- P4-P7 must not add per-provider Swift, Android, or JVM implementations, DTOs, controls, or lifecycle paths. Provider differences stay behind canonical shared contracts and internal adapter modules.
+- Keep the Android, iOS, and JVM samples as stable contract consumers. Update all samples only when an approved canonical host behavior changes, not merely because another provider adapter is added.
+- Use affected-module and targeted host tests during implementation. Run the repository's mandatory quick gate at commit time and the complete supported platform matrix at push, pull-request, and release gates rather than repeatedly in the inner edit loop.
+- If a proposed P3-P7 feature materially requires changes across the shared API, Swift façade, Android/JVM host API, all samples, packaging scripts, and CI lanes, pause implementation. Record the cross-platform reason in an ADR or scoped plan decision and either correct the abstraction or explicitly approve the wider platform cost before proceeding.
+- After the product-facing Apple path is accepted as the supported P1 Apple surface, retire the temporary POC Swift surface in a bounded closing P1 cleanup before P2 begins; do not extend both Apple façades through later milestones.
+
 ## Live provider and gateway verification gate
 
 Keep the normal commit, push, pull-request, and GitHub Actions path deterministic and secretless. Beginning with P4, any change that can affect live provider or Gateway behavior must also pass the affected live suite locally before the initial pull request is created and before every later push that updates that pull request. This includes later changes to the shared P3 transport, authentication, streaming, retry, error-mapping, or log-redaction paths after a live adapter exists.
@@ -80,7 +104,7 @@ After the draft pull request is created, the same affected live suite must run f
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, JVM console, and Android app passed CI run 29730678994; Android APK and API 36.1 emulator launch passed locally July 20; Apple sample upgrade and iOS device remain |
+| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, JVM console, and Android app passed bounded CI run 29730678994; Android API 36.1 emulator launch passed July 20; the combined Apple package and generic-device link passed the full local gate July 21; exact-head Apple acceptance checks/review and closing POC retirement remain |
 | P2 | Canonical core and JSON contracts | Not started | |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |
@@ -164,7 +188,7 @@ P4 also establishes the secret-safety baseline required by live testing: ignored
 
 ## P8: Production distribution and host integration
 
-Promote the POC bridge into a stable Swift façade and production XCFramework containing device and simulator slices. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
+Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
 
 Acceptance requires:
 
