@@ -32,7 +32,7 @@ Run commands from the repository root:
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the tool is missing or errors, reports matches without printing matched credential material, and has a regression test for those properties in every hygiene run. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the tool is missing or errors, reports matches without printing matched credential material, and has a regression test for those properties in every hygiene run. The full check then builds and validates one XCFramework containing iOS ARM64 device and simulator slices, reuses it for the product-facing and retained POC Swift integration tests, builds the SwiftUI sample for a simulator, and links that same sample for a generic iOS device. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
 P1 currently has focused host-side checks while its samples and CI jobs are still being built:
 
@@ -44,11 +44,17 @@ P1 currently has focused host-side checks while its samples and CI jobs are stil
 ./gradlew :samples:jvm-console:run
 ./gradlew :samples:android:consumerCheck
 ./scripts/run-android-sample.sh
+./scripts/build-xcframework.sh
+./scripts/test-swift-package.sh
+./scripts/build-sample.sh
+./scripts/build-sample-device.sh
 ```
 
 The JVM `consumerCheck` compiles the console against `project(":bridge")`, tests its exact output, and executes its non-interactive entry point. The Android `consumerCheck` compiles the separate Compose application against the same public module, runs its controller tests, and assembles its debug APK. These are consumer-integration proofs for the local public Gradle module boundary, not Maven distribution proof.
 
 `run-android-sample.sh` requires a booted emulator or connected device, installs the debug APK, and launches the app. Set `UAC_ANDROID_SERIAL` to use the same selected device for installation and launch, or `UAC_ADB` to select an `adb` binary. This optional device path is local evidence; CI intentionally uses deterministic unit/build checks and does not boot an emulator.
+
+`build-sample-device.sh` uses Xcode's `generic/platform=iOS` destination with code signing disabled. It proves that the Swift Package product selects and links the XCFramework's `ios-arm64` slice; it does not install or execute the app on physical hardware.
 
 As P1 samples land, add their build/run commands to this document and the top-level check. Sample verification must use public Gradle module dependencies or the Swift Package product; do not compile shared source files directly into a sample.
 
@@ -73,7 +79,7 @@ The hooks are mandatory local gates. GitHub CI remains an independent remote enf
 - `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
 - `JVM + Android (Linux)` runs JVM shared tests, the JVM console consumer, Android host tests, Android AAR packaging, and the Android application consumer check with Java 21.
 - `JVM (Windows)` runs JVM shared tests and the JVM console consumer with Java 21.
-- `Apple POC + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, and Apple verification, with Java 21.
+- `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
 Superseded runs on the same pull request or branch are cancelled. Pull-request jobs explicitly check out the PR head SHA; strict branch protection separately requires that head to be current with `main` before merge. Every third-party action reference is pinned to a full commit SHA, with its release line recorded in a comment and Dependabot responsible for reviewed updates. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.

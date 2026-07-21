@@ -13,12 +13,15 @@ fi
 cd "$ROOT/swift-package"
 
 run_swift_package_tests() {
+  # The generated package scheme includes the product-facing and retained POC
+  # integration test targets; individual product schemes have no test action.
   xcodebuild test \
-    -scheme UniversalAiConnectorPOC \
+    -scheme UniversalAiConnector-Package \
     -destination "$DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
     "$@" \
     CODE_SIGN_IDENTITY= \
+    CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
 }
 

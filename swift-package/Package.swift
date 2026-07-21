@@ -2,11 +2,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "UniversalAiConnectorPOC",
+    name: "UniversalAiConnector",
     platforms: [
         .iOS(.v17),
     ],
     products: [
+        .library(
+            name: "UniversalAiConnector",
+            targets: ["UniversalAiConnector"]
+        ),
         .library(
             name: "UniversalAiConnectorPOC",
             targets: ["UniversalAiConnectorPOC"]
@@ -21,9 +25,17 @@ let package = Package(
             name: "UniversalAiConnectorPOC",
             dependencies: ["UniversalAiConnectorBridge"]
         ),
+        .target(
+            name: "UniversalAiConnector",
+            dependencies: ["UniversalAiConnectorBridge"]
+        ),
         .testTarget(
             name: "UniversalAiConnectorPOCTests",
             dependencies: ["UniversalAiConnectorPOC"]
+        ),
+        .testTarget(
+            name: "UniversalAiConnectorTests",
+            dependencies: ["UniversalAiConnector"]
         ),
     ]
 )

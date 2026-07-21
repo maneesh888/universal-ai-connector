@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct UniversalAiConnectorPOCSampleApp: App {
+struct UniversalAiConnectorSampleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

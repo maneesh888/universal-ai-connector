@@ -3,9 +3,10 @@
 ## Status
 
 - Repository stage: interoperability POC verified; P1 cross-platform baseline in progress
-- Current implementation: iOS Simulator delivery proof, JVM and Android common-test targets, one product-facing Kotlin client, and local JVM console and Android application consumers
+- Current implementation: one product-facing Kotlin client, local JVM and Android consumers, and a product-facing Swift façade/sample over a combined iOS device-and-simulator XCFramework candidate
 - Active work package: P1, cross-platform package and client-sample baseline
-- Next bounded P1 package: product-facing Apple delivery/sample upgrade with an iOS ARM64 device slice
+- Current bounded P1 package: product-facing Apple delivery/sample upgrade with an iOS ARM64 device slice
+- P1 completion gate: exact-head local verification, required GitHub host checks, and independent review; the proven POC Swift product remains as temporary migration coverage
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -80,7 +81,7 @@ After the draft pull request is created, the same affected live suite must run f
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, JVM console, and Android app passed CI run 29730678994; Android APK and API 36.1 emulator launch passed locally July 20; Apple sample upgrade and iOS device remain |
+| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, JVM console, and Android app passed bounded CI run 29730678994; Android API 36.1 emulator launch passed July 20; the combined Apple package and generic-device link passed the full local gate July 21; exact-head PR checks and review remain |
 | P2 | Canonical core and JSON contracts | Not started | |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |

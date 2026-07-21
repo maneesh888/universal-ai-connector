@@ -19,6 +19,17 @@ kotlin {
         withHostTestBuilder {}
     }
 
+    iosArm64 {
+        binaries.framework {
+            baseName = "UniversalAiConnectorBridge"
+            isStatic = true
+            binaryOption("bundleId", "com.maneesh.universalai.connector.bridge")
+            freeCompilerArgs +=
+                "-Xoverride-konan-properties=minVersion.ios=17.0"
+            xcframework.add(this)
+        }
+    }
+
     iosSimulatorArm64 {
         binaries.framework {
             baseName = "UniversalAiConnectorBridge"

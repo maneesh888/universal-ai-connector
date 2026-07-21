@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000001 /* UniversalAiConnectorPOCSampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* UniversalAiConnectorPOCSampleApp.swift */; };
+		A10000000000000000000001 /* UniversalAiConnectorSampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* UniversalAiConnectorSampleApp.swift */; };
 		A10000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* ContentView.swift */; };
-		A10000000000000000000003 /* UniversalAiConnectorPOC in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* UniversalAiConnectorPOC */; };
+		A10000000000000000000003 /* UniversalAiConnector in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* UniversalAiConnector */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A20000000000000000000001 /* UniversalAiConnectorPOCSampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalAiConnectorPOCSampleApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000001 /* UniversalAiConnectorSampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalAiConnectorSampleApp.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A20000000000000000000003 /* UniversalAiConnectorPOCSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniversalAiConnectorPOCSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000003 /* UniversalAiConnectorSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniversalAiConnectorSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -23,7 +23,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000003 /* UniversalAiConnectorPOC in Frameworks */,
+				A10000000000000000000003 /* UniversalAiConnector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,23 +33,23 @@
 		A40000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				A40000000000000000000002 /* UniversalAiConnectorPOCSample */,
+				A40000000000000000000002 /* UniversalAiConnectorSample */,
 				A40000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A40000000000000000000002 /* UniversalAiConnectorPOCSample */ = {
+		A40000000000000000000002 /* UniversalAiConnectorSample */ = {
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000003 /* App */,
 			);
-			path = UniversalAiConnectorPOCSample;
+			path = UniversalAiConnectorSample;
 			sourceTree = "<group>";
 		};
 		A40000000000000000000003 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				A20000000000000000000001 /* UniversalAiConnectorPOCSampleApp.swift */,
+				A20000000000000000000001 /* UniversalAiConnectorSampleApp.swift */,
 				A20000000000000000000002 /* ContentView.swift */,
 			);
 			path = App;
@@ -58,7 +58,7 @@
 		A40000000000000000000004 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A20000000000000000000003 /* UniversalAiConnectorPOCSample.app */,
+				A20000000000000000000003 /* UniversalAiConnectorSample.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,9 +66,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A50000000000000000000001 /* UniversalAiConnectorPOCSample */ = {
+		A50000000000000000000001 /* UniversalAiConnectorSample */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A80000000000000000000002 /* Build configuration list for PBXNativeTarget "UniversalAiConnectorPOCSample" */;
+			buildConfigurationList = A80000000000000000000002 /* Build configuration list for PBXNativeTarget "UniversalAiConnectorSample" */;
 			buildPhases = (
 				A60000000000000000000001 /* Sources */,
 				A30000000000000000000001 /* Frameworks */,
@@ -78,12 +78,12 @@
 			);
 			dependencies = (
 			);
-			name = UniversalAiConnectorPOCSample;
+			name = UniversalAiConnectorSample;
 			packageProductDependencies = (
-				A90000000000000000000001 /* UniversalAiConnectorPOC */,
+				A90000000000000000000001 /* UniversalAiConnector */,
 			);
-			productName = UniversalAiConnectorPOCSample;
-			productReference = A20000000000000000000003 /* UniversalAiConnectorPOCSample.app */;
+			productName = UniversalAiConnectorSample;
+			productReference = A20000000000000000000003 /* UniversalAiConnectorSample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -101,7 +101,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A80000000000000000000001 /* Build configuration list for PBXProject "UniversalAiConnectorPOCSample" */;
+			buildConfigurationList = A80000000000000000000001 /* Build configuration list for PBXProject "UniversalAiConnectorSample" */;
 			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -119,7 +119,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A50000000000000000000001 /* UniversalAiConnectorPOCSample */,
+				A50000000000000000000001 /* UniversalAiConnectorSample */,
 			);
 		};
 /* End PBXProject section */
@@ -139,7 +139,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000001 /* UniversalAiConnectorPOCSampleApp.swift in Sources */,
+				A10000000000000000000001 /* UniversalAiConnectorSampleApp.swift in Sources */,
 				A10000000000000000000002 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -193,9 +193,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.maneesh.universalai.connector.poc.sample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maneesh.universalai.connector.sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = iphonesimulator;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -216,9 +216,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.maneesh.universalai.connector.poc.sample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maneesh.universalai.connector.sample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = iphonesimulator;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -228,7 +228,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A80000000000000000000001 /* Build configuration list for PBXProject "UniversalAiConnectorPOCSample" */ = {
+		A80000000000000000000001 /* Build configuration list for PBXProject "UniversalAiConnectorSample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AB0000000000000000000001 /* Debug */,
@@ -237,7 +237,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A80000000000000000000002 /* Build configuration list for PBXNativeTarget "UniversalAiConnectorPOCSample" */ = {
+		A80000000000000000000002 /* Build configuration list for PBXNativeTarget "UniversalAiConnectorSample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AB0000000000000000000003 /* Debug */,
@@ -256,10 +256,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A90000000000000000000001 /* UniversalAiConnectorPOC */ = {
+		A90000000000000000000001 /* UniversalAiConnector */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AA0000000000000000000001 /* XCLocalSwiftPackageReference "../../swift-package" */;
-			productName = UniversalAiConnectorPOC;
+			productName = UniversalAiConnector;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

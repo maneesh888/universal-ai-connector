@@ -33,7 +33,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 
 - Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files, and regression-tests fail-closed secret scanning that cannot be suppressed by ripgrep configuration or ignore files.
 - Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
-- Mandatory push and PR check: `./scripts/check.sh --full` adds XCFramework assembly, Swift Package tests, and the iOS sample build.
+- Mandatory push and PR check: `./scripts/check.sh --full` adds combined device-and-simulator XCFramework assembly and validation, Swift Package tests, the iOS simulator sample build, and a generic iOS-device sample link/build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
 - JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
 - JVM console application: `./gradlew :samples:jvm-console:run`
@@ -45,6 +45,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
 - Sample simulator build: `./scripts/build-sample.sh`
+- Sample generic-device link/build: `./scripts/build-sample-device.sh`
 - Secret scan: `./scripts/secret-scan.sh` requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the scanner is missing or errors, and reports a match without printing the matched credential material.
 - Final whitespace check: `git diff --check`
 
