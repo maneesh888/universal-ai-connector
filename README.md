@@ -3,7 +3,7 @@
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
 ![Project stage](https://img.shields.io/badge/stage-P1%20cross--platform%20baseline-2563eb)
-![JVM tests](https://img.shields.io/badge/JVM%20tests-20%20passing-16a34a)
+![JVM tests](https://img.shields.io/badge/JVM%20tests-13%20passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
 
@@ -15,7 +15,7 @@ No AI provider, gateway, API key, or network integration is implemented yet.
 
 > **Current phase:** P1 cross-platform package baseline in progress.
 >
-> **Current P1 proof:** On July 21, 2026, `./scripts/check.sh --full` passed the 20-test shared suites, Android/JVM consumers, exact two-slice XCFramework validation, 15 product-facing plus 8 retained-POC Swift tests, the simulator sample build, the generic iOS-device link/build, and repository hygiene. The Android application separately passed installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20. Historical GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) remains bounded compatibility evidence only because it used a synthetic merge commit and its former secret scanner failed open. Exact-head remote evidence for this Apple package is still required.
+> **Current P1 proof:** On July 21, 2026, `./scripts/check.sh --full` passed the 13-test cross-platform shared suites plus 7 Apple-only adapter tests on iOS Simulator, Android/JVM consumers, exact two-slice XCFramework validation, 15 product-facing plus 8 retained-POC Swift tests, the simulator sample build, the generic iOS-device link/build, and repository hygiene. The Android application separately passed installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20. Historical GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) remains bounded compatibility evidence only because it used a synthetic merge commit and its former secret scanner failed open. Exact-head remote evidence for the final Apple candidate belongs to its draft pull request and is not implied by this repository text.
 >
 > **Production status:** Architecture validation only—not a production AI client yet.
 
@@ -237,7 +237,7 @@ connector.stream("stream").collect { event ->
 
 Failures are delivered as `UniversalAiConnectorException` with a typed `UniversalAiErrorCode` and stable string value. Cancellation is controlled by the caller's coroutine or flow collection; the sample cancels a one-shot request and stops a stream after its first event without input or orchestration sleeps.
 
-The Kotlin API is hidden from Objective-C export so Apple consumers use the supported Swift façade. A private product-facing callback adapter delegates to the same Kotlin client without exporting `Flow` or Kotlin implementation types through the Swift API. The XCFramework build validates both Apple headers and fails if the product Kotlin client or `Flow` leaks into either one.
+The Kotlin API is hidden from Objective-C export so Apple consumers use the supported Swift façade. An Apple-only callback adapter delegates to the same Kotlin client without exporting `Flow` or Kotlin implementation types through the Swift API. It is compiled into the iOS frameworks as an implementation dependency of the supported Swift product and is excluded from the JVM JAR and Android AAR; those non-Apple artifact boundaries are checked by the repository gate. The XCFramework build validates both Apple headers and fails if the product Kotlin client or `Flow` leaks into either one.
 
 ## Android sample
 
@@ -283,7 +283,9 @@ func runFirstUse() async throws {
 }
 ```
 
-`UniversalAiConnector` is reusable, thread-safe, and supports concurrent responses and streams. Each operation runs independently; the façade and its Kotlin callback adapter own no long-lived coroutine job or external resource. The calling Swift task owns response lifetime, and the consuming task owns stream lifetime. Cancelling either task propagates to that Kotlin operation, including cancellation that races with handle installation. Ending stream iteration also cancels its Kotlin operation. After active tasks and streams finish or are cancelled, no explicit `close` call is required and the connector can be released.
+`UniversalAiConnector` is reusable, thread-safe, and supports concurrent responses and independently created streams. Each returned stream has one consuming task; concurrent iteration of the same stream is outside the supported contract. Each operation runs independently, and the façade and its Apple-only callback adapter own no long-lived coroutine job or external resource. The calling Swift task owns response lifetime, and the consuming task owns stream lifetime. Cancelling either task propagates to that Kotlin operation, including cancellation that races with handle installation.
+
+Callers that need to stop a stream promptly must cancel its consuming task, as the sample does after the first event. A plain `break` does not itself guarantee prompt cancellation while the returned `AsyncThrowingStream` remains retained; the underlying operation is cancelled when its iterator and stream are released, or it may complete normally if retained. After active tasks and streams finish, are cancelled, or are released, no explicit `close` call is required and the connector can be released.
 
 Failures arrive as `UniversalAiConnectorError`; Swift task cancellation remains `CancellationError`. The sample owns its tasks, cancels them when its view disappears, and provides explicit controls for:
 

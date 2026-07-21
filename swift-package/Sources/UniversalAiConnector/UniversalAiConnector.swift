@@ -2,10 +2,10 @@ import UniversalAiConnectorBridge
 
 /// The supported Apple client for Universal AI Connector.
 ///
-/// A connector is reusable and supports concurrent responses and streams. Each
-/// operation is owned by the calling Swift task: task or stream cancellation is
-/// propagated to Kotlin. The connector owns no caller-managed resource, so no
-/// explicit cleanup method is required.
+/// A connector is reusable and supports concurrent responses and independently
+/// created streams. Each returned stream supports one consuming task. Cancelling
+/// an operation's consuming task is propagated to Kotlin. The connector owns no
+/// caller-managed resource, so no explicit cleanup method is required.
 public final class UniversalAiConnector: @unchecked Sendable {
     private let bridge: AppleConnectorBridge
     private let testingHooks: UniversalAiConnectorTestingHooks
@@ -65,12 +65,25 @@ public final class UniversalAiConnector: @unchecked Sendable {
 
     /// Returns an ordered deterministic event stream.
     ///
-    /// Ending iteration or cancelling the consuming task cancels the Kotlin
-    /// coroutine. Exactly one completion, error, or cancellation is delivered.
+    /// Each returned stream supports one consumer. Concurrent iteration of the
+    /// same stream is outside the supported contract; create a separate stream
+    /// for each concurrent operation.
+    ///
+    /// Cancelling the consuming Swift task while it awaits the next event cancels
+    /// the Kotlin coroutine exactly once and makes that read throw
+    /// `CancellationError`, even when the returned stream remains strongly
+    /// retained. A normal `for try await` break does not request prompt
+    /// cancellation while the stream remains retained; the underlying work ends
+    /// when its iterator and sequence are released. Have an owning task cancel
+    /// the consumer while it is awaiting events when prompt early termination is
+    /// required.
+    ///
+    /// Exactly one completion, error, or cancellation is delivered.
     public func stream(
         input: String
     ) -> AsyncThrowingStream<UniversalAiStreamEvent, Error> {
         let state = LockedStreamState<UniversalAiStreamEvent>()
+        let testingHooks = self.testingHooks
 
         let callbackStream = AsyncThrowingStream<UniversalAiStreamEvent, Error> {
             continuation in
@@ -108,6 +121,7 @@ public final class UniversalAiConnector: @unchecked Sendable {
         return AsyncThrowingStream(unfolding: {
             try await withTaskCancellationHandler {
                 try Task.checkCancellation()
+                testingHooks.beforeStreamIteratorNext()
                 let event = try await iteratorBox.next()
                 try Task.checkCancellation()
                 return event

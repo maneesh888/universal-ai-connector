@@ -48,7 +48,7 @@ struct ContentView: View {
                 }
 
                 Section("Stream cancellation") {
-                    Button("Stop stream after first event") {
+                    Button("Cancel stream task after first event") {
                         viewModel.runStreamCancellation()
                     }
                     .disabled(viewModel.isStreamCancellationRunning)
@@ -234,16 +234,50 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                 streamCancellationTask = nil
             }
 
-            do {
-                var events: [String] = []
-                for try await event in connector.stream(input: "cancel stream") {
-                    events.append("\(event.sequence): \(event.text)")
-                    break
+            let (firstEvents, firstEventContinuation) =
+                AsyncStream.makeStream(of: UniversalAiStreamEvent.self)
+            let consumingTask = Task {
+                defer {
+                    firstEventContinuation.finish()
                 }
-                streamCancellationResult =
-                    "Stopped after " + events.joined(separator: " | ")
+
+                var isFirstEvent = true
+                for try await event in connector.stream(input: "cancel stream") {
+                    if isFirstEvent {
+                        isFirstEvent = false
+                        firstEventContinuation.yield(event)
+                        firstEventContinuation.finish()
+                    }
+                }
+            }
+
+            do {
+                try await withTaskCancellationHandler {
+                    var firstEventIterator = firstEvents.makeAsyncIterator()
+                    guard let event = await firstEventIterator.next() else {
+                        try Task.checkCancellation()
+                        try await consumingTask.value
+                        streamCancellationResult = "Unexpected stream completion."
+                        return
+                    }
+
+                    streamCancellationResult =
+                        "Received \(event.sequence): \(event.text)"
+                        + "; cancelling the consuming task…"
+                    consumingTask.cancel()
+                    try await consumingTask.value
+                    streamCancellationResult = "Unexpected stream completion."
+                } onCancel: {
+                    consumingTask.cancel()
+                    firstEventContinuation.finish()
+                }
             } catch is CancellationError {
-                streamCancellationResult = "Cancelled with CancellationError."
+                if streamCancellationResult.hasPrefix("Received ") {
+                    streamCancellationResult +=
+                        " Cancellation completed with CancellationError."
+                } else {
+                    streamCancellationResult = "Cancelled with CancellationError."
+                }
             } catch {
                 streamCancellationResult = "Failed: \(errorText(error))"
             }

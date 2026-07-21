@@ -86,19 +86,47 @@ final class UniversalAiConnectorTests: XCTestCase {
         }
     }
 
-    func testEarlyStreamTerminationCancelsOnlyThatStream() async throws {
-        let connector = UniversalAiConnector()
+    func testCancellingConsumingTaskCancelsRetainedStreamExactlyOnce() async throws {
+        let iteratorReadCount = LockedCounter()
+        let secondReadStarted = AsyncSignal()
+        let releaseSecondRead = DispatchSemaphore(value: 0)
+        let connector = UniversalAiConnector(
+            testingHooks: UniversalAiConnectorTestingHooks(
+                beforeStreamIteratorNext: {
+                    iteratorReadCount.increment()
+                    if iteratorReadCount.value == 2 {
+                        secondReadStarted.signal()
+                        releaseSecondRead.wait()
+                    }
+                }
+            )
+        )
         connector.resetDiagnosticsForTesting()
-
-        do {
-            let stream = connector.stream(input: "early")
-            for try await event in stream {
+        let retainedStream = connector.stream(input: "retained")
+        let firstEventReceived = AsyncSignal()
+        let consumingTask = Task {
+            for try await event in retainedStream {
                 XCTAssertEqual(event.sequence, 1)
-                break
+                firstEventReceived.signal()
             }
         }
 
+        await firstEventReceived.wait()
+        await secondReadStarted.wait()
+        consumingTask.cancel()
+        releaseSecondRead.signal()
+
+        do {
+            try await consumingTask.value
+            XCTFail("Expected cancellation.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
         try await waitForCancellationCount(connector, streams: 1)
+        try await Task.sleep(for: .milliseconds(200))
         XCTAssertEqual(
             connector.diagnosticsForTesting(),
             UniversalAiConnectorDiagnostics(
@@ -106,6 +134,10 @@ final class UniversalAiConnectorTests: XCTestCase {
                 streamCancellations: 1
             )
         )
+
+        // Prove task cancellation is sufficient even while the sequence stays
+        // alive; releasing it is not the trigger exercised by this test.
+        withExtendedLifetime(retainedStream) {}
     }
 
     func testParentTaskCancellationCancelsStreamAndThrowsCancellationError() async throws {
