@@ -59,6 +59,22 @@ The host-facing developer experience must converge on:
 - samples that consume package boundaries rather than internal source shortcuts;
 - installation and first-use snippets kept executable by consumer smoke tests.
 
+## Live provider and gateway verification gate
+
+Keep the normal commit, push, pull-request, and GitHub Actions path deterministic and secretless. Beginning with P4, any change that can affect live provider or Gateway behavior must also pass the affected live suite locally before the initial pull request is created and before every later push that updates that pull request. This includes later changes to the shared P3 transport, authentication, streaming, retry, error-mapping, or log-redaction paths after a live adapter exists.
+
+P4 must introduce a separate `./scripts/check-live.sh` entry point before its first adapter pull request. The live gate must:
+
+- read credentials only from the developer's process environment or an OS-backed credential store; any optional local env file must be ignored by Git and accompanied only by a value-free example;
+- use dedicated, revocable, low-quota test credentials and never print credentials, authorization headers, full request bodies containing sensitive input, or unredacted provider responses;
+- run the deterministic adapter suite first, then the smallest live response, streaming, error, and cancellation smoke tests needed for the affected provider or Gateway;
+- bind its evidence to the exact commit SHA and record the command, provider or Gateway target, model or test fixture, execution date, result, and proof boundaries in the pull-request review brief; and
+- treat a missing credential, unavailable provider, rate limit, or failed assertion as a blocked pull-request creation or update for affected live behavior, not as a skipped success.
+
+Any head change invalidates earlier local live evidence and requires the affected live suite to run again before the updated head is pushed. Documentation-only and unrelated deterministic changes do not require live credentials.
+
+After the draft pull request is created, the same affected live suite must run for the exact head through a protected GitHub Environment and act as a mandatory readiness and merge condition. Before the first P4 pull request, add its stable status to branch protection or make it a server-enforced dependency of a required aggregator; an Environment alone does not make the status a merge requirement. The live status must complete successfully for the exact independently reviewed head before the pull request leaves draft or any merge command runs; pending or skipped live verification is a blocker. Run that secret-bearing workflow only for trusted heads with least-privilege credentials and required approval; never expose secrets to fork pull requests or execute untrusted pull-request code through `pull_request_target`. The ordinary `ci.yml` workflow remains read-only and secretless. A maintainer must run the protected live gate on a trusted head when a fork contribution affects live behavior.
+
 ## Milestones
 
 | ID | Work package | Status | Evidence |
@@ -131,6 +147,8 @@ Default construction must select supported platform transport behavior without r
 
 Generation retries remain disabled by default. Never reconnect or retry after response content begins.
 
+P3 verification remains deterministic through Ktor `MockEngine` and local fixtures because no provider adapter is active yet. Once P4 establishes the live suite, any later P3 change that can affect live behavior is subject to the local pre-PR and protected GitHub live gates above.
+
 ## P4-P7: Adapters
 
 Implement adapters in order:
@@ -140,7 +158,9 @@ Implement adapters in order:
 3. OpenRouter and generic OpenAI-compatible endpoints
 4. Universal Gateway V2 canonical protocol
 
-Each adapter owns its provider DTOs, request translation, response translation, structured-output handling, streaming translation, capability reporting, and canonical error mapping. Live tests remain opt-in and secret-safe.
+Each adapter owns its provider DTOs, request translation, response translation, structured-output handling, streaming translation, capability reporting, and canonical error mapping. Each adapter milestone must add deterministic mock coverage and targeted live response, streaming, error, and cancellation smoke coverage. A pull request that adds or changes live adapter behavior may not be created or updated until the affected live suite passes locally for its exact head, and it may not merge until the protected GitHub Environment reruns that suite successfully for the same head.
+
+P4 also establishes the secret-safety baseline required by live testing: ignored local secret files, a value-free environment example, documented credential names and rotation procedure, log-redaction assertions, and the separate `./scripts/check-live.sh` command. Provider credentials are host-supplied test inputs; they must never be embedded in mobile or desktop artifacts, committed configuration, normal CI, samples, or logs.
 
 ## P8: Production distribution and host integration
 
@@ -155,6 +175,7 @@ Acceptance requires:
 - a desktop deterministic mode that starts without an account, network, gateway, provider credential, or secret;
 - an opt-in desktop live mode that accepts host-provided adapter configuration only after the corresponding adapter milestone is complete;
 - Gateway client configuration limited to its base URL and gateway credential provider, with provider credentials remaining on the Gateway server and no secret logging or committed credentials;
+- local pre-PR and protected GitHub live gates pass for any distribution or sample change that affects live provider or Gateway behavior;
 - self-contained desktop distributions built and smoke-tested on their matching macOS, Windows, and Linux hosts;
 - documented minimum toolchain and platform versions;
 - no manual framework copying, generated artifact commits, or repository-specific build steps for consumers.
@@ -164,7 +185,8 @@ Acceptance requires:
 Release `0.1.0-alpha.1` only after:
 
 - deterministic tests pass on JVM, Android, and iOS;
-- all initial adapters pass request, response, error, structured-output, streaming, and cancellation tests;
+- all initial adapters pass deterministic and live request, response, error, structured-output, streaming, and cancellation tests on the exact release head;
+- the complete live suite passes locally before the release pull request is created or updated and passes again through the protected GitHub Environment before merge;
 - Swift distribution and samples are verified;
 - the Android, iOS, and desktop demonstration screens are launch-tested and retain deterministic no-secret modes;
 - documented Android, iOS, JVM/Linux, JVM/Windows, and JVM/macOS consumer paths resolve and compile from released artifacts;

@@ -31,7 +31,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 
 ## Current Verification
 
-- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files.
+- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files, and regression-tests fail-closed secret scanning that cannot be suppressed by ripgrep configuration or ignore files.
 - Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
 - Mandatory push and PR check: `./scripts/check.sh --full` adds XCFramework assembly, Swift Package tests, and the iOS sample build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
@@ -45,7 +45,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
 - Sample simulator build: `./scripts/build-sample.sh`
-- Secret scan: `./scripts/secret-scan.sh`
+- Secret scan: `./scripts/secret-scan.sh` requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the scanner is missing or errors, and reports a match without printing the matched credential material.
 - Final whitespace check: `git diff --check`
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
@@ -58,7 +58,7 @@ Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 - Never use `--no-verify` or another mechanism to bypass repository hooks. If the required toolchain is unavailable or a check fails, treat the commit or push as blocked until the environment or failure is fixed.
 - GitHub Actions remain an independent merge gate; local success never replaces required remote checks.
 
-As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the Android application consumer on Linux and macOS; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove an Android emulator or physical device, iOS device, provider, gateway, or release behavior.
+The platform and consumer jobs in GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed on July 20, 2026, as bounded compatibility evidence. That pull-request run checked out GitHub's synthetic merge commit rather than the PR head, and its green hygiene result is not valid secret-scan evidence because `rg` was unavailable and the former scanner failed open. Cite only a later run whose logs show exact-head checkout plus the fail-closed scanner and its regression test executing successfully as exact-head repository-hygiene proof. CI still does not prove an Android emulator or physical device, iOS device, provider, gateway, or release behavior.
 
 ## Host Integration Standard
 
@@ -82,13 +82,26 @@ As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh
 ## Pull Request Review and Merge
 
 - Route PR review, merge-readiness, and merge requests through `$review-verify-merge-pr`.
+- Create every pull request as a draft. GitHub Actions must run while the pull request remains a draft; readiness is a gated state change, not the trigger for initial CI.
 - Before independent review, assemble a neutral review brief from the current user request, PR body, linked issue or plan, and verified implementation evidence. Include the problem, requirement sources, requirements and acceptance criteria, implementation decisions, out-of-scope behavior, evidence and proof boundaries, and exact head SHA.
-- Record the review brief in the PR description before merge and pass it with its source links to the reviewer. Do not pass expected findings or implementation conclusions as facts. Treat a missing, ambiguous, or stale review brief as a merge-readiness blocker.
-- Use the project `pr-reviewer` custom agent for an independent read-only review when it is available; the root agent remains responsible for verification and every GitHub state change.
+- Record the review brief in the PR description before independent review and pass it with its source links to the reviewer. Do not pass expected findings or implementation conclusions as facts. Treat a missing, ambiguous, or stale review brief as a merge-readiness blocker.
+- After creating or updating a draft pull request and its review brief, the same root agent must immediately invoke the project `pr-reviewer` custom agent for an independent read-only review of the exact head SHA. Review and required checks may run in parallel while the pull request remains a draft, but that parallelism never permits readiness or a merge attempt before every mandatory check completes successfully. The root agent remains active and responsible for verification and every GitHub state change.
 - Review the exact PR head for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and truthful documentation or evidence.
-- Before merging, confirm the reviewed head SHA is unchanged, required checks passed, no blocking review thread or requested change remains, local verification passed for the affected proof surface, and GitHub reports the PR mergeable.
+- Fix every blocking finding while the pull request remains a draft. Any head change invalidates the prior review, verification, and merge attempt: disable any auto-merge request, return the pull request to draft when necessary, refresh the review brief, and restart the entire gate for the new SHA.
+- Before leaving draft or attempting a merge, confirm the review brief is complete and current; the independently reviewed SHA equals GitHub's head SHA; all mandatory local verification passed for that exact SHA; every mandatory GitHub check completed successfully, including `Required checks` and any applicable protected live-verification status; no blocking finding, requested change, or unresolved thread remains; the diff stays in scope; and GitHub reports no merge conflict or unsatisfied base-update policy. A pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory check blocks both readiness and merge.
+- Verify through the GitHub APIs that `main` requires changes through a pull request, strictly requires the GitHub Actions `Required checks` status, requires conversation resolution, applies to administrators without a bypass, and prohibits force pushes and deletion. When a protected live-verification status becomes applicable, require it directly or through a server-enforced required-check dependency. Confirm `gh pr checks <number> --required` reports every applicable required status successfully. Missing or weakened enforcement blocks both readiness and merge.
 - Treat correctness, security, data-loss, public-contract, missing-test, and materially false status or verification findings as blockers.
-- Mark a draft ready or merge it only when the user's current request explicitly authorizes that action. Never bypass branch protection, force a merge, dismiss a valid review, or enable administrator overrides.
+- Mark a draft ready only after every gate above passes and the current user request explicitly authorizes that state change. A single request may authorize creating or updating the draft, running review, fixing in-scope findings, marking the clean reviewed head ready, and merging it; when that authorization is explicit, continue the same active task without asking for a second confirmation. When merge authorization is explicit and every gate is green, mark the draft ready, refresh the head SHA, required checks, reviews, unresolved threads, branch protection, and mergeability immediately before the merge command, and confirm the head is still the exact reviewed SHA. Then make the guarded native squash-merge attempt:
+
+  ```bash
+  gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
+  ```
+
+- `--match-head-commit` checks the head only when the command runs; it is not durable protection for a queued auto-merge request. Because every gate is already green, expect the command to merge immediately and inspect the PR state at once. If GitHub leaves the pull request open with auto-merge queued, immediately run `gh pr merge <number> --disable-auto`, verify the request is disabled and the PR remains unmerged, and report the blocker. Never leave a queued request active or wait for it to merge later.
+- If the head changes before the merge completes, disable any auto-merge request, return the pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the brief, and restart local verification, independent review, required-check inspection, protection inspection, and every other gate for the new SHA.
+- Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or enable an autonomous merger.
+- Keep normal GitHub Actions read-only and secretless. Do not add a write token, PAT, autonomous merger, merge logic, or `pull_request_target` to `ci.yml`.
+- After GitHub merges the pull request, inspect the resulting `main` workflow run and report its result.
 - Keep review-only tasks read-only. Do not fix findings, alter unrelated work, or push replacement commits unless the user separately requests implementation.
 
 ## Architecture Rules

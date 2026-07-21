@@ -21,6 +21,7 @@ run_hygiene() {
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
   "$ROOT/scripts/secret-scan.sh"
+  "$ROOT/scripts/tests/secret-scan-test.sh"
   git -C "$ROOT" diff --check
 
   local temp_index_directory

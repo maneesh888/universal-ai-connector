@@ -15,7 +15,7 @@ No AI provider, gateway, API key, or network integration is implemented yet.
 
 > **Current phase:** P1 cross-platform package baseline in progress.
 >
-> **Current P1 proof:** The Android application consumer passed unit tests, APK assembly, installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20, 2026. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed the Android application consumer alongside the JVM console, Android library, Apple P0 suite, hygiene, and `Required checks`. Product-facing iOS migration and iOS device delivery remain.
+> **Current P1 proof:** The Android application consumer passed unit tests, APK assembly, installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20, 2026. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) completed successfully for the then-configured Android application, JVM console, Android library, Apple P0, and required-check jobs. Its source-testing pull-request jobs checked out GitHub's synthetic merge commit rather than the exact branch head, so their results are bounded platform-compatibility evidence only. The run's hygiene conclusion is invalid because `rg` was unavailable and the former scanner failed open. Product-facing iOS migration and iOS device delivery remain.
 >
 > **Production status:** Architecture validation only—not a production AI client yet.
 
@@ -67,7 +67,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Canonical AI contracts and HTTP transport | ⏳ Planned |
 | OpenAI, Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
-On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the exact Android consumer head across the complete remote matrix.
+On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
 
 ### Milestone status
 
