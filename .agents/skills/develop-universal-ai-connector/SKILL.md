@@ -66,7 +66,7 @@ The established baseline is P0: Swift can consume the Kotlin/Native framework th
 ## Route Optional Development Tools
 
 - Use the `gh` CLI for remote repository context, pull requests, issues, reviews, workflow results, job logs, artifacts, and authorized writes. Use `gh api graphql` for review-thread or other GraphQL-only state.
-- Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report the blocker instead of silently switching tools. Request explicit authorization before remote writes.
+- Do not use the GitHub connector unless the user explicitly requests it. If `gh` is unavailable or unauthenticated, report the blocker instead of silently switching tools. Request explicit authorization before remote writes. A request that authorizes both implementation and creation or update of the resulting pull request supplies that remote-write authorization and activates the repository's default gated review, readiness, and guarded-merge lifecycle unless the latest user instruction narrows it.
 - Use the OpenAI Developer Docs MCP during P4 and later OpenAI contract work. Fetch current primary documentation instead of relying on model memory.
 - Use an available Xcode, simulator, or device MCP for exact Apple lifecycle and visual proof. Fall back to repository scripts when it is unavailable and state the missing proof surface.
 - Use browser tooling only for future web samples or published documentation.
@@ -113,6 +113,8 @@ Do not claim a target, sample, simulator, device slice, live provider, gateway, 
 ## Commit and Push Safely
 
 Do not commit or push without explicit user authorization.
+
+When the current request authorizes both implementation and creation or update of the resulting pull request, treat the necessary in-scope commit and push as explicitly authorized. After the draft is published, follow `$review-verify-merge-pr` through independent exact-head review, in-scope finding fixes, readiness, and the guarded native merge by default. Within that already-authorized lifecycle, `keep draft`, `remain draft`, or `do not mark ready` blocks readiness and merge, while `do not merge` permits readiness after clean gates but blocks the merge command. Those opt-outs never create state-change authority in a review-only task. A local-only implementation request never activates this lifecycle.
 
 When creating a branch, use the conventional naming policy in `AGENTS.md`: `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/` followed by a concise lowercase kebab-case description. Match the prefix to the work's primary purpose, omit issue numbers unless useful, and do not create new `codex/` branches. Never rename an existing branch or pull-request head solely to adopt the convention.
 

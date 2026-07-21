@@ -1,6 +1,6 @@
 ---
 name: review-verify-merge-pr
-description: Review a draft GitHub pull request for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and merge readiness; verify the exact PR head locally and against GitHub; and mark ready or perform a guarded native squash merge only when explicitly authorized and every gate has completed successfully. Use for requests to review a PR, decide whether a PR is ready, verify PR checks or evidence, mark a draft ready, or safely merge a clean PR.
+description: Review a draft GitHub pull request for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and merge readiness; verify the exact PR head locally and against GitHub; and carry an authorized implementation PR through readiness and a guarded native squash merge by default when every gate succeeds. Keep review-only requests read-only and honor explicit draft or merge opt-outs.
 ---
 
 # Review, Verify, and Safely Merge a PR
@@ -10,13 +10,13 @@ Apply one conservative gate from PR discovery through any authorized merge. Sepa
 ## Preserve the authority boundary
 
 - Treat `review`, `is this ready?`, and `what is blocking this?` as read-only requests.
-- Treat `merge`, `merge if clean`, or an equally explicit instruction in the current request as merge authorization. Do not infer it from earlier tasks or general repository ownership.
-- Treat `mark ready` as authorization to change draft state only after every review-completion gate passes. Do not infer merge authorization from it.
-- Treat creating or updating a pull request as authorization to invoke independent read-only review of its published exact head immediately, but not as authorization to change draft state or merge.
-- Allow one current request to bundle draft creation or update, review, in-scope finding fixes, readiness, and merge authorization. When the authorization is explicit, continue the same active task through those gates without requesting a second confirmation.
-- Keep the independent reviewer read-only. Let only the root agent perform a GitHub state change, and only when the current request explicitly authorizes that specific change.
+- Start the default implementation-PR lifecycle only when the current request authorizes both implementing changes and creating or updating the resulting pull request. A request for local implementation alone does not authorize a commit, push, pull request, readiness change, or merge.
+- Treat that implementation-and-PR authorization as conditional authorization for the root agent to commit and push the in-scope work, maintain the review brief, invoke independent review, fix in-scope findings, mark the clean reviewed head ready, and make the guarded native squash-merge attempt after every gate succeeds. Do not request a second confirmation between those stages.
+- Let the latest user instruction narrow or replace that default. Within an already-authorized implementation-PR lifecycle, `keep draft`, `remain draft`, or `do not mark ready` blocks both readiness and merge, while `do not merge` permits readiness after all gates pass but blocks the merge command. These opt-outs never create state-change authority in a review-only task. An instruction merely to create the pull request as a draft is the required starting state, not a keep-draft opt-out.
+- Treat an explicit `mark ready` request for an existing pull request as readiness-only authorization, and an explicit `merge` or `merge if clean` request as authorization for the same guarded readiness-and-merge path.
+- Keep the independent reviewer read-only. Only the root agent performs GitHub state changes under the applicable implementation-PR lifecycle or explicit state-change request.
 - Create pull requests as drafts and run GitHub Actions while they remain drafts. Do not mark a pull request ready merely to start CI.
-- Never bypass branch protection, force a merge, use `--admin` or another administrator override, weaken required checks, dismiss valid feedback, add an autonomous merger, or expose credentials.
+- Never bypass branch protection, force a merge, use `--admin` or another administrator override, weaken required checks, dismiss valid feedback, add a privileged CI-side or unattended background merger, or expose credentials.
 - Do not implement fixes during a review-only task. Report blockers and wait for a separate implementation request.
 
 ## 1. Establish repository and PR context
@@ -43,7 +43,7 @@ Require the brief to contain:
 - verification evidence and exact proof boundaries; and
 - the exact PR head SHA the brief describes.
 
-Record the brief in the PR description before independent review. Updating the description is a GitHub state change and requires explicit authorization; if authorization is absent, report the missing brief as a blocker rather than editing it. Refresh the brief whenever the requirements, scope, evidence, or head SHA materially changes.
+Record the brief in the PR description before independent review. Maintaining that description is part of the authorized implementation-PR lifecycle or an explicit PR-update request. During a review-only task, report a missing or stale brief as a blocker rather than editing it. Refresh the brief whenever the requirements, scope, evidence, or head SHA materially changes.
 
 Pass the independent reviewer the brief and its source material. Keep the handoff factual: do not include expected findings, tell the reviewer that the change is correct, or hide unresolved decisions.
 
@@ -78,7 +78,7 @@ Do not substitute green CI for missing local review or claim proof for an unexec
 
 ## 5. Apply the review-completion, readiness, and merge gates
 
-Refresh GitHub state after local verification and again immediately before any state change. Fix every blocking finding under separate implementation authorization while the pull request remains a draft. Any head change, including a finding fix, invalidates the previous review, verification, and merge attempt: disable any auto-merge request, return the pull request to draft when necessary, refresh the brief, and restart the entire gate for the new SHA.
+Refresh GitHub state after local verification and again immediately before any state change. During an authorized implementation-PR lifecycle, fix every in-scope blocking finding while the pull request remains a draft. A review-only task or a finding that materially expands the authorized work package requires a separate implementation request. Any head change, including a finding fix, invalidates the previous review, verification, and merge attempt: disable any auto-merge request, return the pull request to draft when necessary, refresh the brief, and restart the entire gate for the new SHA.
 
 Require all of the following:
 
@@ -93,21 +93,23 @@ Require all of the following:
 
 If any gate fails, leave the PR's state unchanged and report the blocker, evidence, exact head SHA, and next action.
 
-## 6. Perform only authorized state changes
-
-Apply authorization already stated in the current create-or-update request; do not require the user to repeat an explicit bundled permission after review completes. A create-or-update request without readiness or merge language still authorizes review only.
+## 6. Follow the authorized lifecycle and its latest override
 
 If the request is review-only, report the exact-head review result and every incomplete, failed, or satisfied readiness gate, then stop.
 
-If draft-state authorization is explicit, refresh every gate and mark the exact clean head ready for review only after they all pass. If merge authorization is not explicit, stop without attempting a merge.
+Re-evaluate the latest user instruction immediately before readiness and again immediately before the merge command. An opt-out narrows an existing lifecycle; it never authorizes a state change by itself. If a keep-draft opt-out arrives after the pull request became ready, disable any auto-merge request, return it to draft with `gh pr ready <number> --undo`, and verify that it is draft and unmerged. If a do-not-merge instruction arrives after readiness, disable any auto-merge request and verify that the pull request remains unmerged.
 
-If merge authorization is explicit:
+If the latest instruction says to keep the pull request in draft or not mark it ready, ensure it is draft, do not invoke the merge command, and report the exact-head review and gate results.
+
+If the latest instruction says not to merge, or explicitly authorizes readiness only, refresh every gate and mark the exact clean head ready only after they all pass, then stop without invoking a merge command.
+
+For an authorized implementation-PR lifecycle without an applicable opt-out, or an explicit request to merge an existing pull request:
 
 1. Keep the pull request in draft and wait until every mandatory local and GitHub check has completed successfully for the exact reviewed head.
-2. Refresh the head SHA, required checks, review decision, requested changes, unresolved review threads, branch protection, mergeability, scope, secret scan, and generated-artifact state one final time.
+2. Refresh the head SHA, required checks, review decision, requested changes, unresolved review threads, branch protection, mergeability, scope, secret scan, generated-artifact state, and latest user instruction one final time.
 3. Confirm the refreshed head is the independently reviewed and locally verified SHA and every gate still passes.
 4. Mark the draft ready if it is still a draft.
-5. Immediately refresh the head SHA and every GitHub gate again. Abort on any mismatch or failed gate.
+5. Immediately refresh the head SHA, every GitHub gate, and the latest user instruction again. Apply any new opt-out before continuing, and abort on any mismatch or failed gate.
 6. Invoke GitHub's native auto-merge command as a guarded immediate squash-merge attempt:
 
    ```bash
@@ -119,7 +121,7 @@ If merge authorization is explicit:
 9. If the head changes before the merge completes, disable any auto-merge request, return the pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the review brief, and restart local verification, independent review, and every gate for the new SHA.
 10. After GitHub merges the pull request, record the PR URL and resulting squash commit SHA, inspect the workflow run for the resulting `main` commit, and report its result. Never rewrite shared history to hide a failure.
 
-Keep normal GitHub Actions read-only and secretless. Do not add an autonomous merger, write token, PAT, merge logic, or `pull_request_target` to `ci.yml`; native merge controls and branch protection remain GitHub's enforcement boundary.
+Keep normal GitHub Actions read-only and secretless. Do not add a privileged CI-side or unattended background merger, write token, PAT, merge logic, or `pull_request_target` to `ci.yml`; native merge controls and branch protection remain GitHub's enforcement boundary.
 
 ## Report the result
 
