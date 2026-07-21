@@ -72,6 +72,7 @@ Check out or fetch the recorded PR head without modifying user work. Run the act
 - Run additional targeted tests when the active work package adds a proof surface not yet included in the full suite.
 - Treat the exact-head verification as blocked when the required toolchain is missing or any check cannot run; do not substitute a narrower command.
 - `--full` includes shell syntax validation, the repository secret scan, and whitespace checks.
+- Inspect local and GitHub logs to confirm every mandatory security tool actually executed. A green job whose scanner or other required dependency was missing is failed evidence, even when the job conclusion is `success`.
 
 Do not substitute green CI for missing local review or claim proof for an unexecuted simulator, device, live provider, gateway, distribution, or release surface. Record every command and result.
 
@@ -87,8 +88,8 @@ Require all of the following:
 4. No blocking finding, requested change, or unresolved review thread remains.
 5. GitHub reports no merge conflict, and every required base-update policy is satisfied.
 6. The diff stays inside the authorized work package and contains no secret or generated-artifact violation.
-7. Every mandatory local and GitHub check has completed successfully for the exact head, including the stable `Required checks` aggregator and any applicable protected live-verification status. Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks block both readiness and a merge attempt.
-8. The base branch is protected through GitHub with strict `Required checks` enforcement, required conversation resolution, administrator enforcement without a bypass, and force pushes and deletion disabled. Verify those values with the GitHub APIs, then confirm `gh pr checks <number> --required` reports the expected successful required status.
+7. Every mandatory local and GitHub check has completed successfully for the exact head, including the stable `Required checks` aggregator and any applicable protected live-verification status. Inspect logs for missing-tool or skipped-proof failures instead of trusting conclusions alone. Pending, in-progress, failed, cancelled, timed-out, skipped, missing, or invalidly executed mandatory checks block both readiness and a merge attempt.
+8. The base branch requires changes through a pull request and is protected through GitHub with strict `Required checks` enforcement, required conversation resolution, administrator enforcement without a bypass, and force pushes and deletion disabled. When a protected live-verification status is applicable, require it directly or through a server-enforced required-check dependency. Verify those values with the GitHub APIs, then confirm `gh pr checks <number> --required` reports every applicable successful required status.
 
 If any gate fails, leave the PR's state unchanged and report the blocker, evidence, exact head SHA, and next action.
 

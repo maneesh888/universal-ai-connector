@@ -31,7 +31,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 
 ## Current Verification
 
-- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files.
+- Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files, and regression-tests fail-closed secret scanning.
 - Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
 - Mandatory push and PR check: `./scripts/check.sh --full` adds XCFramework assembly, Swift Package tests, and the iOS sample build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
@@ -45,7 +45,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 - XCFramework: `./scripts/build-xcframework.sh`
 - Swift Package and simulator tests: `./scripts/test-swift-package.sh`
 - Sample simulator build: `./scripts/build-sample.sh`
-- Secret scan: `./scripts/secret-scan.sh`
+- Secret scan: `./scripts/secret-scan.sh` requires `rg` and fails closed when the scanner is missing or errors.
 - Final whitespace check: `git diff --check`
 
 Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
@@ -58,7 +58,7 @@ Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 - Never use `--no-verify` or another mechanism to bypass repository hooks. If the required toolchain is unavailable or a check fails, treat the commit or push as blocked until the environment or failure is fixed.
 - GitHub Actions remain an independent merge gate; local success never replaces required remote checks.
 
-As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) proves repository hygiene; shared tests and the JVM console consumer on Linux, Windows, and macOS; Android host tests and AAR packaging on Linux; the Android application consumer on Linux and macOS; the P0 Apple interoperability path on macOS; and the stable `Required checks` aggregator. CI still does not prove an Android emulator or physical device, iOS device, provider, gateway, or release behavior.
+The platform and consumer jobs in GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed on July 20, 2026, as bounded compatibility evidence. That pull-request run checked out GitHub's synthetic merge commit rather than the PR head, and its green hygiene result is not valid secret-scan evidence because `rg` was unavailable and the former scanner failed open. Cite only a later run whose logs show exact-head checkout plus the fail-closed scanner and its regression test executing successfully as exact-head repository-hygiene proof. CI still does not prove an Android emulator or physical device, iOS device, provider, gateway, or release behavior.
 
 ## Host Integration Standard
 
@@ -89,7 +89,7 @@ As of July 20, 2026, GitHub Actions run [29730678994](https://github.com/maneesh
 - Review the exact PR head for correctness, architecture, regressions, tests, security, public API and packaging boundaries, and truthful documentation or evidence.
 - Fix every blocking finding while the pull request remains a draft. Any head change invalidates the prior review, verification, and merge attempt: disable any auto-merge request, return the pull request to draft when necessary, refresh the review brief, and restart the entire gate for the new SHA.
 - Before leaving draft or attempting a merge, confirm the review brief is complete and current; the independently reviewed SHA equals GitHub's head SHA; all mandatory local verification passed for that exact SHA; every mandatory GitHub check completed successfully, including `Required checks` and any applicable protected live-verification status; no blocking finding, requested change, or unresolved thread remains; the diff stays in scope; and GitHub reports no merge conflict or unsatisfied base-update policy. A pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory check blocks both readiness and merge.
-- Verify through the GitHub APIs that `main` protection strictly requires the GitHub Actions `Required checks` status, requires conversation resolution, applies to administrators without a bypass, and prohibits force pushes and deletion. Confirm `gh pr checks <number> --required` reports the required status successfully. Missing or weakened enforcement blocks both readiness and merge.
+- Verify through the GitHub APIs that `main` requires changes through a pull request, strictly requires the GitHub Actions `Required checks` status, requires conversation resolution, applies to administrators without a bypass, and prohibits force pushes and deletion. When a protected live-verification status becomes applicable, require it directly or through a server-enforced required-check dependency. Confirm `gh pr checks <number> --required` reports every applicable required status successfully. Missing or weakened enforcement blocks both readiness and merge.
 - Treat correctness, security, data-loss, public-contract, missing-test, and materially false status or verification findings as blockers.
 - Mark a draft ready only after every gate above passes and the current user request explicitly authorizes that state change. A single request may authorize creating or updating the draft, running review, fixing in-scope findings, marking the clean reviewed head ready, and merging it; when that authorization is explicit, continue the same active task without asking for a second confirmation. When merge authorization is explicit and every gate is green, mark the draft ready, refresh the head SHA, required checks, reviews, unresolved threads, branch protection, and mergeability immediately before the merge command, and confirm the head is still the exact reviewed SHA. Then make the guarded native squash-merge attempt:
 

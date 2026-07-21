@@ -32,7 +32,7 @@ Run commands from the repository root:
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, fails closed when the tool is missing or errors, and has a regression test in every hygiene run. The full check then builds the XCFramework once and reuses it for Swift Package tests and the iOS sample build. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
 P1 currently has focused host-side checks while its samples and CI jobs are still being built:
 
@@ -70,17 +70,17 @@ The hooks are mandatory local gates. GitHub CI remains an independent remote enf
 
 `.github/workflows/ci.yml` runs for pull requests, pushes to `main`, and manual dispatches:
 
-- `Repository hygiene` runs secret and whitespace checks on Linux.
+- `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
 - `JVM + Android (Linux)` runs JVM shared tests, the JVM console consumer, Android host tests, Android AAR packaging, and the Android application consumer check with Java 21.
 - `JVM (Windows)` runs JVM shared tests and the JVM console consumer with Java 21.
-- `Apple POC + JVM (macOS)` runs the complete local `--full` suite, including Android library/application, JVM, and Apple verification, with Java 21.
+- `Apple POC + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, and Apple verification, with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
-Superseded runs on the same pull request or branch are cancelled. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
+Superseded runs on the same pull request or branch are cancelled. Pull-request jobs explicitly check out the PR head SHA; strict branch protection separately requires that head to be current with `main` before merge. The workflow grants read-only repository permissions and does not inherit or require secrets. Failed Apple checks retain deterministic test evidence for seven days.
 
 `.github/dependabot.yml` groups monthly GitHub Actions and Gradle updates so workflow and build dependencies do not silently age. Review and verify those pull requests like any other dependency change; do not auto-merge them without the required checks.
 
-GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed the complete matrix on July 20, 2026. It proves the JVM console consumer on Linux, Windows, and macOS, Android host tests, AAR packaging, and the Android application consumer on Linux and macOS, the complete Apple P0 suite on macOS, repository hygiene, and the stable `Required checks` aggregator. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. Do not label emulator/device, provider, gateway, distribution, or release behavior as CI-verified before the corresponding evidence exists.
+The platform and consumer portions of GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) passed on July 20, 2026, as bounded compatibility evidence. Its pull-request jobs checked out GitHub's synthetic merge commit rather than the PR head, and its green hygiene result does not prove secret scanning because `rg` was unavailable and the former scanner failed open. Use only a later run whose logs show exact-head checkout plus the fail-closed scanner and regression test executing successfully as exact-head hygiene evidence. The macOS Apple job remains responsible for Kotlin/Native, XCFramework, Swift Package, and iOS sample proof. Do not label emulator/device, provider, gateway, distribution, or release behavior as CI-verified before the corresponding evidence exists.
 
 Keep `Required checks` as the stable branch-protection status and make it depend on every supported P1 host job. Prefer one host job per materially different toolchain; do not add native targets solely to increase the matrix.
 
@@ -97,7 +97,7 @@ When a work package changes a public API, packaging, or sample:
 
 Remote dependency-resolution checks are added only when P8 activates publication. Until then, describe Maven and remote Swift Package distribution as planned, not available.
 
-Keep `main` protected in GitHub with strict status checks that require the GitHub Actions `Required checks` status, required conversation resolution, administrator enforcement without a bypass, and force pushes and branch deletion disabled. Configure this enforcement through GitHub repository settings rather than local scripts or workflow write permissions. Before a pull request leaves draft or any merge is attempted, verify the effective protection through the GitHub branch APIs and confirm `gh pr checks <number> --required` reports `Required checks` as successful. Missing, weakened, or unverifiable protection is a blocker.
+Keep `main` protected in GitHub by requiring changes through a pull request, strict status checks that require the GitHub Actions `Required checks` status, required conversation resolution, administrator enforcement without a bypass, and force pushes and branch deletion disabled. When a protected live-verification status becomes applicable, add it as a required status or as a server-enforced dependency of a required aggregator. Configure this enforcement through GitHub repository settings rather than local scripts or workflow write permissions. Before a pull request leaves draft or any merge is attempted, verify the effective protection through the GitHub branch APIs and confirm `gh pr checks <number> --required` reports every applicable required status as successful. Missing, weakened, or unverifiable protection is a blocker.
 
 ## GitHub CLI and connector routing
 
@@ -194,7 +194,7 @@ A draft PR may leave draft or proceed to a merge attempt only when:
 - the diff stays inside its authorized scope and contains no secret or generated-artifact violation;
 - GitHub reports no merge conflict or unsatisfied base-update policy;
 - every mandatory local and GitHub check has completed successfully for the exact head, including `Required checks` and any applicable protected live-verification status; and
-- GitHub's effective `main` protection strictly requires the Actions `Required checks` status and conversation resolution, applies to administrators without a bypass, and prohibits force pushes and deletion. The GitHub APIs and `gh pr checks <number> --required` must confirm that enforcement.
+- GitHub's effective `main` protection requires changes through a pull request, strictly requires the Actions `Required checks` status and conversation resolution, applies to administrators without a bypass, and prohibits force pushes and deletion. Any applicable protected live status must also be required directly or through a server-enforced dependency. The GitHub APIs and `gh pr checks <number> --required` must confirm that enforcement.
 
 Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks are blockers. Do not leave draft or invoke the merge command until all mandatory checks are terminal-success for the exact reviewed head.
 
@@ -217,4 +217,4 @@ If the head changes before the merge completes, disable any auto-merge request, 
 
 Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or merge a different head than the one reviewed. After GitHub merges the pull request, inspect the workflow run created for the resulting `main` commit and report its result.
 
-Keep normal GitHub Actions deterministic, read-only, and secretless; do not place an autonomous merger, write token, PAT, merge logic, or `pull_request_target` in `ci.yml`. Keep `main` protection configured in GitHub to require strict `Required checks` and conversation resolution, enforce the rule for administrators without bypass, and prohibit force pushes and deletion. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.
+Keep normal GitHub Actions deterministic, read-only, and secretless; do not place an autonomous merger, write token, PAT, merge logic, or `pull_request_target` in `ci.yml`. Keep `main` protection configured in GitHub to require the pull-request path, strict `Required checks`, conversation resolution, and any applicable protected live status, enforce the rule for administrators without bypass, and prohibit force pushes and deletion. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.
