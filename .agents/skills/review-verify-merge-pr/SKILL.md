@@ -101,7 +101,7 @@ Re-evaluate the latest user instruction immediately before readiness and again i
 
 If the latest instruction says to keep the pull request in draft or not mark it ready, ensure it is draft, do not invoke the merge command, and report the exact-head review and gate results.
 
-If the latest instruction says not to merge, or explicitly authorizes readiness only, refresh every gate and mark the exact clean head ready only after they all pass, then stop without invoking a merge command.
+Within an already-authorized implementation-PR lifecycle, if the latest instruction says not to merge, refresh every gate and mark the exact clean head ready only after they all pass, then stop without invoking a merge command. Separately, an explicit readiness-only request for an existing pull request authorizes that same readiness step but not a merge.
 
 For an authorized implementation-PR lifecycle without an applicable opt-out, or an explicit request to merge an existing pull request:
 
