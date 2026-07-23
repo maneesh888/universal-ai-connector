@@ -43,7 +43,7 @@ fi
 if rg --quiet \
   'productName = (UniversalAiConnectorBridge|UniversalAiConnectorPOC);' \
   "$PROJECT/project.pbxproj"; then
-  echo "The iOS project references an unsupported bridge or POC product." >&2
+  echo "The iOS project references the bridge or a retired compatibility product." >&2
   exit 1
 fi
 

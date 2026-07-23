@@ -28,7 +28,7 @@ The integration baseline is:
 - documented lifecycle, concurrency, cancellation, and cleanup behavior;
 - no callback bridge, generated Objective-C name, internal implementation package, or packaging detail exposed as supported host API.
 
-The POC names remain valid only while preserving the verified migration path. New samples should use non-POC, product-facing names. Remove the old path only after equivalent Kotlin and Swift integration tests pass.
+The POC names were retained only while preserving the verified migration path. Product-facing Kotlin and Swift integration parity was accepted through PR #9, so the closing P1 package removes the old path and prevents it from returning.
 
 ## Progress evidence
 
@@ -38,7 +38,7 @@ GitHub Actions run [29687591527](https://github.com/maneesh888/universal-ai-conn
 
 That merged baseline remained partial P1 evidence only: it did not include a JVM console sample, Android sample application, iOS ARM64 device slice, or expanded shared test matrix. Android emulator and physical-device behavior were not exercised.
 
-The current bounded P1 package adds `UniversalAiConnector` as the supported Android/JVM entry point and `samples/jvm-console` as a real `project(":bridge")` consumer. The client is reusable, concurrent, and thread-safe; it owns no coroutine scope or resource, requires no cleanup, and runs suspending work and cold flows in the caller's context. Its deterministic behavior covers one-shot response, ordered streaming, stable typed errors, and caller cancellation. The Kotlin API is hidden from Objective-C export so the verified Apple callback bridge and Swift façade remain the only supported Apple path.
+The July 19 bounded P1 package added `UniversalAiConnector` as the supported Android/JVM entry point and `samples/jvm-console` as a real `project(":bridge")` consumer. The client is reusable, concurrent, and thread-safe; it owns no coroutine scope or resource, requires no cleanup, and runs suspending work and cold flows in the caller's context. Its deterministic behavior covers one-shot response, ordered streaming, stable typed errors, and caller cancellation. The Kotlin API is hidden from Objective-C export so the verified Apple callback bridge and Swift façade remain the only supported Apple path.
 
 Local verification passed July 19, 2026: `:bridge:jvmTest`, `:bridge:testAndroidHostTest`, and `:bridge:iosSimulatorArm64Test` each ran 13 shared tests with zero failures; `:bridge:bundleAndroidMainAar` assembled the library; the JVM console `test`, `build`, `run`, and `consumerCheck` tasks passed with its one exact-output smoke test; and `./scripts/check.sh --full` passed XCFramework header validation, all 8 Swift tests, the iOS sample build, secret scanning, and whitespace validation.
 
@@ -52,18 +52,33 @@ The July 21, 2026 Apple delivery candidate adds an iOS ARM64 target beside iOS S
 
 Local verification passed July 21, 2026 with `./scripts/check.sh --full`. The JVM, Android host, and iOS Simulator suites each ran 13 cross-platform shared tests, and iOS Simulator additionally ran 7 Apple-adapter tests. Android AAR packaging and the JVM and Android consumers passed, and the artifact-boundary check confirmed that the Apple adapter is absent from both non-Apple artifacts. XCFramework assembly produced exactly `ios-arm64` and `ios-arm64-simulator`, each arm64 with an iOS 17.0 minimum, and both exported headers passed the Kotlin-client and `Flow` boundary checks. The aggregate Swift Package simulator scheme passed 15 product-facing tests plus all 8 retained POC tests. The product-only SwiftUI sample then built for the simulator and compiled and linked for `generic/platform=iOS` with signing disabled. Secret scanning and its fail-closed regression suite, generated-artifact exclusion, shell syntax, and whitespace checks passed. This is deterministic simulator and generic-device link evidence only; no physical iOS device was installed to or executed.
 
+The product-facing Apple surface was accepted at exact head `d8a34539d42d4dc3afe1d7c25509a6bc503c9769`. Its local full gate and independent review passed with no blocking findings, exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650) passed repository hygiene, Linux JVM/Android, Windows JVM, Apple/JVM, and `Required checks`, and PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) merged July 21, 2026 as `38fea295d5ee94e70109095d76ca7c6161caa994`. Physical-device execution, live networking, and remote distribution were not part of that acceptance.
+
+## Closing P1 cleanup
+
+The final bounded P1 package retires the migration-only surface now that the product Apple path is accepted:
+
+- remove the `UniversalAiConnectorPOC` Swift Package product, target, sources, and tests;
+- remove the exported common Kotlin POC callback bridge, handles, models, and instrumentation;
+- keep the deterministic fake behavior behind product-neutral internal implementation names;
+- retain the supported `UniversalAiConnector` Kotlin client, Apple-only callback adapter, Swift façade, and all three product samples;
+- fail packaging checks if retired POC classes or exported Apple-header symbols return;
+- replace remaining POC-era operational names in simulator configuration and CI internals; and
+- keep P2 implementation inactive while recording its future work-package plan.
+
+P1 remains `In progress` while this cleanup is a local candidate. Completion requires the complete local gate, independent review, and every required GitHub check to pass for the exact closing head. Only then may the roadmap mark P1 `Completed` and activate P2.
+
 ## Target structure
 
 ```text
 bridge/                                      Shared Kotlin client plus iOS-only callback adapters
 swift-package/Sources/UniversalAiConnector/ Product-facing supported Swift façade
-swift-package/Sources/UniversalAiConnectorPOC/ Retained POC compatibility façade
 samples/ios/UniversalAiConnectorSample/     SwiftUI product consumer
 samples/android/                             Android public-module consumer
 samples/jvm-console/                         Kotlin/JVM public-module consumer
 ```
 
-The product-facing Swift façade is the supported Apple API. Keep the retained POC product and tests only as migration coverage until the product path has equivalent exact-head integration evidence and is accepted. Then retire the POC surface in a bounded closing P1 cleanup before P2 begins; do not expose either callback adapter as a supported application API.
+The product-facing Swift façade is the only supported Apple API. Do not expose the private Apple callback adapter, revive the retired POC bridge, or add a second host-facing façade.
 
 ## Shared demonstration contract
 
@@ -147,6 +162,7 @@ Run common behavior on JVM, Android unit tests, and iOS Simulator wherever suppo
 - JVM sample compiles and runs on Linux, Windows, and macOS CI without OS-specific source changes.
 - Android library and sample compile.
 - Apple callback-adapter classes are absent from the JVM JAR and Android AAR.
+- Retired POC classes are absent from the JVM JAR, Android AAR, and both Apple framework headers.
 - iOS Simulator tests pass.
 - iOS device framework slice links in a generic device build.
 - Swift Package tests pass.
@@ -187,6 +203,7 @@ CI must not require API keys, running simulators outside the macOS job, or commi
 - The public sample APIs contain no provider-specific types.
 - First-use snippets for Kotlin and Swift are backed by compiling consumer samples.
 - No networking or secret-bearing configuration is introduced.
+- No migration-only POC product, callback type, or exported symbol remains.
 - README commands and sample paths are accurate on a clean checkout.
 - `./scripts/secret-scan.sh` and `git diff --check` pass.
 

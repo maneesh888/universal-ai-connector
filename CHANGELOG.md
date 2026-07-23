@@ -20,6 +20,8 @@ The project follows Semantic Versioning once published artifacts begin.
 - Non-interactive JVM console consumer with exact-output smoke coverage through the public Gradle project boundary.
 - Jetpack Compose Android consumer demonstrating the public client response, ordered stream, stable error, request cancellation, and stream stopping paths.
 - Repeatable Android install-and-launch script for a booted emulator or connected device.
+- Product-facing Swift Package façade and SwiftUI sample over a combined iOS device-and-simulator XCFramework.
+- Planning-only P2 canonical core and JSON contracts work package.
 
 ### Changed
 
@@ -32,3 +34,10 @@ The project follows Semantic Versioning once published artifacts begin.
 - Extended local checks and Linux/macOS CI definitions with Android application controller tests and debug APK assembly.
 - Recorded the P8 requirement for installable macOS, Windows, and Linux desktop demonstrations with deterministic and opt-in live Gateway modes.
 - Applied `UAC_ANDROID_SERIAL` consistently to Android sample installation and launch, with a deterministic launch-script regression test.
+- Renamed simulator-selection configuration to `UAC_SIMULATOR_NAME` and `UAC_SIMULATOR_DESTINATION`.
+- Added packaging regressions that reject retired POC classes and Apple-header symbols.
+
+### Removed
+
+- Temporary `UniversalAiConnectorPOC` Swift product, sources, and migration tests after product-facing parity acceptance.
+- Legacy exported Kotlin POC callback bridge, models, cancellation handle, and instrumentation.

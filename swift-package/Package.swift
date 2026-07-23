@@ -11,10 +11,6 @@ let package = Package(
             name: "UniversalAiConnector",
             targets: ["UniversalAiConnector"]
         ),
-        .library(
-            name: "UniversalAiConnectorPOC",
-            targets: ["UniversalAiConnectorPOC"]
-        ),
     ],
     targets: [
         .binaryTarget(
@@ -22,16 +18,8 @@ let package = Package(
             path: "Artifacts/UniversalAiConnectorBridge.xcframework"
         ),
         .target(
-            name: "UniversalAiConnectorPOC",
-            dependencies: ["UniversalAiConnectorBridge"]
-        ),
-        .target(
             name: "UniversalAiConnector",
             dependencies: ["UniversalAiConnectorBridge"]
-        ),
-        .testTarget(
-            name: "UniversalAiConnectorPOCTests",
-            dependencies: ["UniversalAiConnectorPOC"]
         ),
         .testTarget(
             name: "UniversalAiConnectorTests",

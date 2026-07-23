@@ -8,7 +8,7 @@ plugins {
 
 if (JavaVersion.current() != JavaVersion.VERSION_21) {
     throw GradleException(
-        "Java 21 is required to build the Universal AI Connector POC. " +
+        "Java 21 is required to build Universal AI Connector. " +
             "Current runtime: ${JavaVersion.current()}",
     )
 }
