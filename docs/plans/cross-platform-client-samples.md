@@ -66,7 +66,7 @@ The final bounded P1 package retires the migration-only surface now that the pro
 - replace remaining POC-era operational names in simulator configuration and CI internals; and
 - keep P2 implementation inactive while recording its future work-package plan.
 
-P1 remains `In progress` while this cleanup is a local candidate. Completion requires the complete local gate, independent review, and every required GitHub check to pass for the exact closing head. Only then may the roadmap mark P1 `Completed` and activate P2.
+P1 remains authoritatively `In progress` on remote `main` while its closing pull request is draft. After the implementation acceptance evidence exists, the final candidate must commit the proposed P1 `Completed` transition and every required closeout document before final independent review. Completion still requires the complete local gate, independent review, and every required GitHub check to pass for that exact closing head; the proposed transition becomes authoritative only when it merges. P2 remains `Not started` until a separate authorized activation after P1 closes.
 
 ## Target structure
 

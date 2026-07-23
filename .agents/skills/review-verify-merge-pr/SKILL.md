@@ -77,7 +77,7 @@ Review the root diff and relevant surrounding code, not only the PR description.
 
 Classify findings by severity and explain the user-visible or engineering impact. Treat a finding as blocking when it can cause incorrect behavior, a security or data-loss risk, a public-contract or packaging regression, an untested material behavior change, or a materially false readiness or verification claim.
 
-Report a blocking finding titled `milestone closeout missing or inconsistent` when the brief says `completes` but the required status transition is absent; the README, roadmap, active plan, or another required status document disagrees; more than one milestone would be `In progress`; the next milestone is activated prematurely; or the PR claims completion without satisfying every active-plan acceptance criterion. The reviewer reports this finding but remains strictly read-only.
+Report a blocking finding titled `milestone closeout missing or inconsistent` when the brief says `completes` but the required status transition is absent. Regardless of the declared milestone effect, report the same titled blocker when the README, roadmap, active plan, or another required status document disagrees; more than one milestone would be `In progress`; the next milestone is activated prematurely; or the PR claims completion without satisfying every active-plan acceptance criterion. The reviewer reports this finding but remains strictly read-only.
 
 ## 4. Verify the exact head completely
 
