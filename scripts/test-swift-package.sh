@@ -10,13 +10,28 @@ if [[ "${UAC_SKIP_XCFRAMEWORK_BUILD:-0}" != "1" ]]; then
   "$ROOT/scripts/build-xcframework.sh"
 fi
 
+if rg --quiet \
+  'UniversalAiConnectorPOC|PocBridge' \
+  "$ROOT/swift-package/Package.swift" \
+  "$ROOT/swift-package/Sources" \
+  "$ROOT/swift-package/Tests"; then
+  echo "The Swift Package contains a retired POC product or callback dependency." >&2
+  exit 1
+else
+  rg_status=$?
+  if [[ "$rg_status" -ne 1 ]]; then
+    echo "Failed to scan the Swift Package for retired POC symbols." >&2
+    exit 1
+  fi
+fi
+
 cd "$ROOT/swift-package"
 
 run_swift_package_tests() {
-  # The generated package scheme includes the product-facing and retained POC
-  # integration test targets; individual product schemes have no test action.
+  # With one supported product, Xcode generates one package scheme containing
+  # the product-facing integration test target.
   xcodebuild test \
-    -scheme UniversalAiConnector-Package \
+    -scheme UniversalAiConnector \
     -destination "$DESTINATION" \
     -derivedDataPath "$DERIVED_DATA" \
     "$@" \

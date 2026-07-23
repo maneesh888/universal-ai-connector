@@ -64,10 +64,10 @@ run_cross_platform_gradle_checks() {
     :samples:jvm-console:consumerCheck \
     :samples:android:consumerCheck
 
-  verify_apple_packaging_boundary
+  verify_platform_packaging_boundaries
 }
 
-verify_apple_packaging_boundary() {
+verify_platform_packaging_boundaries() {
   local jvm_jar="$ROOT/bridge/build/libs/bridge-jvm.jar"
   local android_aar="$ROOT/bridge/build/outputs/aar/bridge.aar"
   local temp_artifact_directory
@@ -115,6 +115,18 @@ verify_apple_packaging_boundary() {
       return 1
     fi
   fi
+  if grep -q '^com/maneesh/universalai/poc/.*\.class$' "$jvm_listing"; then
+    rm -rf -- "$temp_artifact_directory"
+    echo "JVM artifact must not contain retired POC classes: $jvm_jar" >&2
+    return 1
+  else
+    scan_status=$?
+    if (( scan_status != 1 )); then
+      rm -rf -- "$temp_artifact_directory"
+      echo "Could not scan JVM artifact listing for retired POC classes: $jvm_jar" >&2
+      return 1
+    fi
+  fi
 
   if ! unzip -qq "$android_aar" classes.jar -d "$temp_artifact_directory"; then
     rm -rf -- "$temp_artifact_directory"
@@ -143,9 +155,21 @@ verify_apple_packaging_boundary() {
       return 1
     fi
   fi
+  if grep -q '^com/maneesh/universalai/poc/.*\.class$' "$android_listing"; then
+    rm -rf -- "$temp_artifact_directory"
+    echo "Android artifact must not contain retired POC classes: $android_aar" >&2
+    return 1
+  else
+    scan_status=$?
+    if (( scan_status != 1 )); then
+      rm -rf -- "$temp_artifact_directory"
+      echo "Could not scan Android artifact listing for retired POC classes: $android_aar" >&2
+      return 1
+    fi
+  fi
 
   rm -rf -- "$temp_artifact_directory"
-  echo "Apple bridge classes are excluded from JVM and Android artifacts."
+  echo "Apple bridge classes remain platform-scoped and retired POC classes are absent."
 }
 
 run_quick() {

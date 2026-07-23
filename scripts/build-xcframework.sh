@@ -152,6 +152,14 @@ validate_framework_slice() {
     echo "Kotlin Flow leaked into the $identifier callback-bridge header." >&2
     exit 1
   fi
+  if grep -Eq 'UACBPoc|swift_name\("Poc' "$framework_header"; then
+    echo "A retired POC symbol leaked into the $identifier callback-bridge header." >&2
+    exit 1
+  fi
+  if ! grep -q '@interface UACBAppleConnectorBridge :' "$framework_header"; then
+    echo "The supported Apple callback bridge is missing from the $identifier header." >&2
+    exit 1
+  fi
 }
 
 validate_xcframework_metadata 0

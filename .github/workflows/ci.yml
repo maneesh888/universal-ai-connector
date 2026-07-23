@@ -116,7 +116,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  apple-poc:
+  apple-jvm:
     name: Apple + JVM (macOS)
     runs-on: macos-15
     timeout-minutes: 45
@@ -181,24 +181,24 @@ jobs:
       - hygiene
       - jvm-android-linux
       - jvm-windows
-      - apple-poc
+      - apple-jvm
     steps:
       - name: Confirm required jobs passed
         env:
           HYGIENE_RESULT: ${{ needs.hygiene.result }}
           JVM_ANDROID_LINUX_RESULT: ${{ needs.jvm-android-linux.result }}
           JVM_WINDOWS_RESULT: ${{ needs.jvm-windows.result }}
-          APPLE_POC_RESULT: ${{ needs.apple-poc.result }}
+          APPLE_JVM_RESULT: ${{ needs.apple-jvm.result }}
         run: |
           if [[ "$HYGIENE_RESULT" != "success" ||
                 "$JVM_ANDROID_LINUX_RESULT" != "success" ||
                 "$JVM_WINDOWS_RESULT" != "success" ||
-                "$APPLE_POC_RESULT" != "success" ]]; then
+                "$APPLE_JVM_RESULT" != "success" ]]; then
             echo "Required checks did not pass."
             echo "hygiene=$HYGIENE_RESULT"
             echo "jvm-android-linux=$JVM_ANDROID_LINUX_RESULT"
             echo "jvm-windows=$JVM_WINDOWS_RESULT"
-            echo "apple-poc=$APPLE_POC_RESULT"
+            echo "apple-jvm=$APPLE_JVM_RESULT"
             exit 1
           fi
 

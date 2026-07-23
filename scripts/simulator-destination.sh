@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ -n "${POC_SIMULATOR_DESTINATION:-}" ]]; then
-  echo "$POC_SIMULATOR_DESTINATION"
+if [[ -n "${UAC_SIMULATOR_DESTINATION:-}" ]]; then
+  echo "$UAC_SIMULATOR_DESTINATION"
   exit 0
 fi
 
-PREFERRED_NAME="${POC_SIMULATOR_NAME:-iPhone 17 Pro}"
+PREFERRED_NAME="${UAC_SIMULATOR_NAME:-iPhone 17 Pro}"
 DEVICE_ID="$(
   xcrun simctl list devices available -j |
-    POC_SIMULATOR_NAME="$PREFERRED_NAME" /usr/bin/python3 -c '
+    UAC_SIMULATOR_NAME="$PREFERRED_NAME" /usr/bin/python3 -c '
 import json
 import os
 import re
 import sys
 
 payload = json.load(sys.stdin)
-preferred_name = os.environ["POC_SIMULATOR_NAME"]
+preferred_name = os.environ["UAC_SIMULATOR_NAME"]
 candidates = []
 fallbacks = []
 

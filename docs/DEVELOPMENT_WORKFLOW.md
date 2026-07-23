@@ -32,9 +32,9 @@ Run commands from the repository root:
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
-The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the tool is missing or errors, reports matches without printing matched credential material, and has a regression test for those properties in every hygiene run. The full check then builds and validates one XCFramework containing iOS ARM64 device and simulator slices, reuses it for the product-facing and retained POC Swift integration tests, builds the SwiftUI sample for a simulator, and links that same sample for a generic iOS device. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
+The quick and full checks validate shell syntax, secrets, whitespace, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, the JVM console consumer, and the Android application's controller tests and debug APK assembly. The secret scanner requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the tool is missing or errors, reports matches without printing matched credential material, and has a regression test for those properties in every hygiene run. The full check then builds and validates one XCFramework containing iOS ARM64 device and simulator slices, runs the product-facing Swift integration tests, builds the SwiftUI sample for a simulator, and links that same sample for a generic iOS device. Packaging checks reject retired POC classes or Apple-header symbols. Standalone Swift scripts still build their own framework unless `UAC_SKIP_XCFRAMEWORK_BUILD=1` is set by the orchestrating check.
 
-P1 currently has focused host-side checks while its samples and CI jobs are still being built:
+The P1 closing package uses these focused host-side checks:
 
 ```bash
 ./gradlew :bridge:jvmTest
@@ -56,7 +56,7 @@ The JVM `consumerCheck` compiles the console against `project(":bridge")`, tests
 
 `build-sample-device.sh` uses Xcode's `generic/platform=iOS` destination with code signing disabled. It proves that the Swift Package product selects and links the XCFramework's `ios-arm64` slice; it does not install or execute the app on physical hardware.
 
-As P1 samples land, add their build/run commands to this document and the top-level check. Sample verification must use public Gradle module dependencies or the Swift Package product; do not compile shared source files directly into a sample.
+When a later milestone changes a supported sample or package boundary, update its build/run commands here and in the top-level check. Sample verification must use public Gradle module dependencies or the Swift Package product; do not compile shared source files directly into a sample.
 
 ## Mandatory local hooks
 

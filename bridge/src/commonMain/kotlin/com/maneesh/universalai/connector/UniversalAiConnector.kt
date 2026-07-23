@@ -2,8 +2,8 @@
 
 package com.maneesh.universalai.connector
 
-import com.maneesh.universalai.poc.PocEngine
-import com.maneesh.universalai.poc.PocFailure
+import com.maneesh.universalai.connector.internal.DeterministicConnectorEngine
+import com.maneesh.universalai.connector.internal.DeterministicConnectorFailure
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -19,7 +19,7 @@ import kotlin.native.HiddenFromObjC
  */
 @HiddenFromObjC
 class UniversalAiConnector {
-    private val engine = PocEngine()
+    private val engine = DeterministicConnectorEngine()
 
     /** The current library version. */
     val version: String
@@ -64,7 +64,7 @@ class UniversalAiConnector {
 private fun Throwable.toConnectorException(): UniversalAiConnectorException =
     when (this) {
         is UniversalAiConnectorException -> this
-        is PocFailure ->
+        is DeterministicConnectorFailure ->
             when (code) {
                 "invalid_input" ->
                     UniversalAiConnectorException(

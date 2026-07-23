@@ -2,9 +2,9 @@
 
 ## Scope
 
-This repository contains a verified iOS-Kotlin interoperability POC and the plans for evolving it into the Universal AI Connector V2 package.
+This repository contains the verified P0 iOS-Kotlin interoperability baseline and the cross-platform package foundation for evolving Universal AI Connector V2.
 
-The next approved scope is cross-platform targets, shared interoperability tests, thin iOS, Android, and JVM sample clients, and a measurable host-integration baseline. Do not add provider adapters, Ktor networking, canonical AI contracts, gateway integration, artifact publication, or OpenKeyboard integration before their work package is active in `docs/plans/universal-ai-connector-v2.md`.
+Execute only the work package marked active in `docs/plans/universal-ai-connector-v2.md`. A future milestone plan may be drafted while the current milestone closes, but planning does not activate its implementation. Do not add canonical AI contracts, provider adapters, Ktor networking, gateway integration, artifact publication, or OpenKeyboard integration before the corresponding work package is active.
 
 ## Start Every Task
 
@@ -49,7 +49,7 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 - Secret scan: `./scripts/secret-scan.sh` requires `rg`, disables ripgrep configuration and ignore rules, fails closed when the scanner is missing or errors, and reports a match without printing the matched credential material.
 - Final whitespace check: `git diff --check`
 
-Set `POC_SIMULATOR_DESTINATION` to override the default Xcode destination.
+Set `UAC_SIMULATOR_DESTINATION` to override the default Xcode destination.
 
 ## Mandatory Local Gates
 
