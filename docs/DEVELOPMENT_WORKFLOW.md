@@ -140,12 +140,14 @@ Use a concise, descriptive, lowercase kebab-case suffix. Avoid issue numbers unl
 5. Commit only after the mandatory pre-commit hook passes `./scripts/check.sh --quick`.
 6. Push only after the mandatory pre-push hook passes `./scripts/check.sh --full` from a clean worktree. This applies to both pull-request creation and every later update.
 7. Create the pull request as a draft. GitHub Actions run while the pull request remains a draft.
-8. Add or refresh the concise PR review brief from the implementation request, linked issue or plan, material decisions, scope, exact head SHA, verification summary, and proof limits. Separately assemble the richer structured reviewer packet from those sources, the root diff, and exact evidence.
-9. In the same active task, the root agent that created or updated the draft must invoke the project `pr-reviewer` agent to independently review the exact head SHA using the current concise PR brief, structured reviewer packet, and source links. Review and required checks may continue in parallel while the pull request remains a draft; every readiness and merge gate still waits for successful completion.
-10. Fix every blocking finding while the pull request remains a draft. If a fix or any other update changes the head SHA, disable any auto-merge request, return the pull request to draft when necessary, and restart local verification, the concise PR brief, reviewer packet, independent review, required-check inspection, protection inspection, thread inspection, and mergeability inspection for the new SHA.
-11. Use `gh` to wait for every mandatory GitHub check to complete successfully on the exact reviewed head, including `Required checks` and any applicable protected live-verification status. Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks block both readiness and a merge attempt.
-12. Verify `main` protection through the GitHub APIs and `gh pr checks <number> --required`. For an authorized implementation-PR lifecycle without an applicable user opt-out, every green gate requires the root agent to mark the exact reviewed head ready, refresh the head and all gates immediately, and make the guarded native squash-merge attempt without requesting another confirmation. If GitHub queues auto-merge instead of merging immediately, disable it at once, keep the pull request unmerged, and report the blocker.
-13. Update roadmap and README status only after the exact acceptance evidence exists.
+8. Add exactly one declaration to the concise PR review brief: `Milestone effect: none`, `Milestone effect: advances`, or `Milestone effect: completes`.
+9. For `completes`, keep the PR draft. Once the implementation candidate has the acceptance evidence required to propose completion, make the implementation/root agent update and commit the roadmap transition, active work-package status and evidence, README public status and next package when affected, and every other status document required by the active plan. Do this before final independent review; do not activate the next milestone prematurely.
+10. Add or refresh the concise PR review brief from the implementation request, linked issue or plan, material decisions, scope, milestone effect, exact head SHA, verification summary, and proof limits. Separately assemble the richer structured reviewer packet from those sources, the root diff, status-document consequences, and exact evidence.
+11. In the same active task, the root agent that created or updated the draft must invoke the project `pr-reviewer` agent to independently review the exact SHA of the final candidate using the current concise PR brief, structured reviewer packet, and source links. Review and required checks may continue in parallel while the pull request remains a draft; every readiness and merge gate still waits for successful completion.
+12. Fix every blocking finding while the pull request remains a draft. Marking a PR ready freezes the reviewed head. If a fix or any later update changes the head SHA, disable any auto-merge request, return the PR to draft when authorized and necessary, and restart local verification, the concise PR brief, reviewer packet, milestone-effect evaluation, independent review, required-check inspection, protection inspection, thread inspection, and mergeability inspection for the new SHA.
+13. Use `gh` to wait for every mandatory GitHub check to complete successfully on the exact reviewed head, including `Required checks` and any applicable protected live-verification status. Pending, in-progress, failed, cancelled, timed-out, skipped, or missing mandatory checks block both readiness and a merge attempt.
+14. Verify milestone-effect consistency, `main` protection through the GitHub APIs, and `gh pr checks <number> --required`. For an authorized implementation-PR lifecycle without an applicable user opt-out, every green gate requires the root agent to mark the exact reviewed head ready, refresh the head and all gates immediately, and make the guarded native squash-merge attempt without requesting another confirmation. If GitHub queues auto-merge instead of merging immediately, disable it at once, keep the pull request unmerged, and report the blocker.
+15. After merge, fetch remote `main` and reread its roadmap and relevant status documents. Assert that the declared milestone effect landed consistently; report an incomplete closeout instead of silently creating a follow-up commit when it did not.
 
 ### Review context
 
@@ -161,6 +163,7 @@ Keep a normal PR description proportional to the change and usually about 20-40 
 - Material behavior or constraint introduced by this PR
 - Requirement sources: linked issue, plan, or decision
 - Request-only delta: concise requirement not available in a durable source, if any
+- Milestone effect: none | advances | completes
 
 ## Verification
 - `<command or check>` — `<result>`
@@ -174,7 +177,23 @@ Keep a normal PR description proportional to the change and usually about 20-40 
 
 Before independent review, build a neutral reviewer packet from the concise PR brief, current implementation request, linked durable sources, root diff, and verified evidence. The packet includes the detailed problem, requirements and observable acceptance criteria, important decisions and constraints, out-of-scope behavior, evidence and proof boundaries, source links, and exact head SHA. Pass it directly to the reviewer without expected findings or a desired conclusion; it does not need to be duplicated in the PR description.
 
-Refresh the concise brief and reviewer packet when requirements, scope, evidence, or the head SHA materially changes. Requirements that exist only in a private implementation conversation must have a concise durable delta in the PR body and fuller detail in the packet. The live-evidence fields required by the roadmap must still be recorded in a concise redacted form or linked durable record. Missing, ambiguous, stale, or internally inconsistent material context across the brief, linked sources, and packet blocks merge readiness; brevity or lack of repeated linked text alone does not.
+Refresh the concise brief and reviewer packet when requirements, scope, milestone effect, evidence, or the head SHA materially changes. Requirements that exist only in a private implementation conversation must have a concise durable delta in the PR body and fuller detail in the packet. The live-evidence fields required by the roadmap must still be recorded in a concise redacted form or linked durable record. Missing, ambiguous, stale, or internally inconsistent material context across the brief, linked sources, and packet blocks merge readiness; brevity or lack of repeated linked text alone does not.
+
+Exact head SHA, check runs, independent-review results, and evidence generated by validating that same candidate are self-referential and belong in the PR review brief. The root agent may refresh those fields after checks or review finish without changing the candidate head. Do not require a merge SHA or final `main` CI run ID in repository documentation when adding it would require another commit and invalidate the evidence.
+
+### Atomic milestone closeout
+
+The milestone-effect declaration assigns the status consequence of the PR:
+
+- `none` changes no milestone progress or completion state.
+- `advances` adds implementation or evidence while leaving the active milestone incomplete.
+- `completes` claims that the active milestone's full acceptance boundary is satisfied and closes it in the same candidate.
+
+For `completes`, writing remains the implementation/root agent's responsibility. After the implementation acceptance evidence exists, keep the PR draft until the final candidate branch contains committed, mutually consistent proposed closeout updates for the roadmap, active work-package status and evidence, README public status and next package when affected, and every other repository status document required by the active plan. Commit these updates before final independent review and before readiness. Final exact-head review and checks validate the proposed transition, which becomes authoritative only when that candidate merges. Keep at most one milestone `In progress`; naming the next package does not authorize activating or implementing it before the current milestone is accepted.
+
+The read-only reviewer must report a blocking `milestone closeout missing or inconsistent` finding when a `completes` brief lacks the required transition. Regardless of the declared milestone effect, the same finding is mandatory when repository status documents disagree, more than one milestone would be `In progress`, the next milestone is activated prematurely, or the PR claims completion without satisfying the active plan's acceptance criteria. The reviewer never edits closeout files.
+
+Marking the PR ready freezes the independently reviewed and verified head. Any later commit makes the previous review and verification stale. When authorized and necessary, return the PR to draft, refresh the brief, packet, milestone effect, and exact SHA, rerun proportional local verification and GitHub checks, obtain a new independent exact-head review, and mark ready again only after every gate passes. A review-only request reports the stale-head blocker without changing files or PR state.
 
 ### Agent-assisted review and merge
 
@@ -189,6 +208,7 @@ The workflow separates responsibilities without splitting the task. After creati
 A draft PR may leave draft or proceed to a merge attempt only when:
 
 - the concise PR brief and reviewer packet are complete, current, and consistent;
+- the declared milestone effect matches the diff, roadmap, README, active plan, and evidence, with every required closeout document committed before final review for `completes`;
 - the independently reviewed head SHA is still GitHub's current head;
 - the affected local verification commands passed for that SHA;
 - no blocking correctness, architecture, regression, test, security, public-contract, packaging, or evidence finding remains;
@@ -221,8 +241,8 @@ gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
 
 Re-evaluate the latest user instruction immediately before readiness and again before the merge command. If a keep-draft opt-out arrives after readiness, disable any auto-merge request, run `gh pr ready <number> --undo`, and verify that the pull request is draft and unmerged. If a do-not-merge instruction arrives after readiness, disable any auto-merge request and verify that the pull request remains unmerged. Then report the new boundary instead of continuing.
 
-If the head changes before the merge completes, disable any auto-merge request, return a ready pull request to draft with `gh pr ready <number> --undo` when applicable, refresh the concise PR brief and reviewer packet, and restart local verification, independent review, and every GitHub gate for the new SHA.
+If the head changes before the merge completes, disable any auto-merge request, return a ready pull request to draft with `gh pr ready <number> --undo` when authorized and applicable, refresh the concise PR brief and reviewer packet, and restart local verification, independent review, milestone-effect consistency, and every GitHub gate for the new SHA.
 
-Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or merge a different head than the one reviewed. After GitHub merges the pull request, inspect the workflow run created for the resulting `main` commit and report its result.
+Never use `--admin`, bypass branch protection, dismiss valid feedback, force a merge, weaken required checks, or merge a different head than the one reviewed. After GitHub merges the pull request, inspect the workflow run created for the resulting `main` commit, fetch remote `main`, and reread the roadmap and every relevant status document from that ref. Assert that the declared milestone effect landed consistently. If the promised transition is absent or inconsistent, report the closeout as incomplete; do not let the reviewer write files and do not create or push a follow-up commit without explicit authorization.
 
 Keep normal GitHub Actions deterministic, read-only, and secretless; do not place an autonomous merger, write token, PAT, merge logic, or `pull_request_target` in `ci.yml`. Keep `main` protection configured in GitHub to require the pull-request path, strict `Required checks`, conversation resolution, and any applicable protected live status, enforce the rule for administrators without bypass, and prohibit force pushes and deletion. Repository skills and custom agents define the review procedure, while GitHub remains the enforcement and audit boundary.
