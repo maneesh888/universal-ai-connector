@@ -3,19 +3,33 @@ import Foundation
 /// Serializes stream callback, terminal, and cancellation races.
 final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
     typealias CancellationAction = @Sendable () -> Void
+    typealias TerminationAction = @Sendable () -> Void
 
     private let lock = NSLock()
+    private let terminationAction: TerminationAction
     private var continuation: AsyncThrowingStream<Element, Error>.Continuation?
     private var cancellationAction: CancellationAction?
     private var terminalElement: Element?
     private var terminalError: Error?
     private var cancellationActionInstalled = false
-    private var cancellationRequested = false
+    private var underlyingCancellationRequested = false
     private var finished = false
 
+    init(onTermination: @escaping TerminationAction = {}) {
+        terminationAction = onTermination
+    }
+
+    var isActive: Bool {
+        lock.lock()
+        let isActive = !finished
+        lock.unlock()
+        return isActive
+    }
+
+    @discardableResult
     func installContinuation(
         _ continuation: AsyncThrowingStream<Element, Error>.Continuation
-    ) {
+    ) -> Bool {
         let isFinished: Bool
         let terminalElement: Element?
         let terminalError: Error?
@@ -30,7 +44,7 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
         lock.unlock()
 
         guard isFinished else {
-            return
+            return true
         }
 
         if let terminalElement {
@@ -41,6 +55,7 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
         } else {
             continuation.finish()
         }
+        return false
     }
 
     /// Installs cancellation after the Kotlin call returns its handle.
@@ -52,7 +67,7 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
         lock.lock()
         if cancellationActionInstalled {
             shouldCancel = false
-        } else if cancellationRequested {
+        } else if underlyingCancellationRequested {
             cancellationActionInstalled = true
             shouldCancel = true
         } else if finished {
@@ -104,26 +119,30 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
 
         continuation?.yield(element)
         continuation?.finish()
+        terminationAction()
     }
 
     func finish() {
-        terminate(throwing: nil, cancellationRequested: false)
+        terminate(throwing: nil, cancellingUnderlyingOperation: false)
     }
 
     func fail(_ error: Error) {
-        terminate(throwing: error, cancellationRequested: false)
+        terminate(
+            throwing: error,
+            cancellingUnderlyingOperation: false
+        )
     }
 
     func cancel() {
         terminate(
             throwing: CancellationError(),
-            cancellationRequested: true
+            cancellingUnderlyingOperation: true
         )
     }
 
     private func terminate(
         throwing error: Error?,
-        cancellationRequested: Bool
+        cancellingUnderlyingOperation: Bool
     ) {
         let continuation: AsyncThrowingStream<Element, Error>.Continuation?
         let cancellationAction: CancellationAction?
@@ -136,10 +155,11 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
 
         finished = true
         terminalError = error
-        self.cancellationRequested = cancellationRequested
+        underlyingCancellationRequested = cancellingUnderlyingOperation
         continuation = self.continuation
         self.continuation = nil
-        cancellationAction = cancellationRequested ? self.cancellationAction : nil
+        cancellationAction =
+            cancellingUnderlyingOperation ? self.cancellationAction : nil
         self.cancellationAction = nil
         lock.unlock()
 
@@ -149,5 +169,6 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
         } else {
             continuation?.finish()
         }
+        terminationAction()
     }
 }

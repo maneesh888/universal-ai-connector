@@ -1,0 +1,296 @@
+package com.maneesh.universalai.connector
+
+import com.maneesh.universalai.connector.contract.ModelId
+import com.maneesh.universalai.connector.contract.ProviderId
+import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
+import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
+import com.maneesh.universalai.connector.contract.UniversalAiException
+import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiRequest
+import com.maneesh.universalai.connector.contract.UniversalAiResponse
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
+import com.maneesh.universalai.connector.contract.UniversalAiTarget
+import com.maneesh.universalai.connector.contract.UniversalAiTextInput
+import com.maneesh.universalai.connector.internal.ConnectorEngine
+import com.maneesh.universalai.connector.internal.ConnectorResourceOwnership
+import com.maneesh.universalai.connector.internal.DeterministicConnectorEngine
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
+
+class UniversalAiConnectorLifecycleTests {
+    @Test
+    fun ownedTransportClosesExactlyOnceAcrossConcurrentCloseCalls() = runTest {
+        val transport = RecordingTransport()
+        val connector =
+            UniversalAiConnector.createForTesting(
+                engineFactory = ::DeterministicConnectorEngine,
+                transport = transport,
+                ownership = ConnectorResourceOwnership.Owned,
+            )
+
+        List(32) {
+            async(Dispatchers.Default) {
+                connector.close()
+            }
+        }.awaitAll()
+        connector.close()
+
+        assertEquals(1, transport.closeCalls)
+    }
+
+    @Test
+    fun borrowedSharedTransportRemainsOpenAndUsable() = runTest {
+        val transport = RecordingTransport()
+        val first =
+            UniversalAiConnector.createForTesting(
+                engineFactory = ::DeterministicConnectorEngine,
+                transport = transport,
+                ownership = ConnectorResourceOwnership.Borrowed,
+            )
+        val second =
+            UniversalAiConnector.createForTesting(
+                engineFactory = ::DeterministicConnectorEngine,
+                transport = transport,
+                ownership = ConnectorResourceOwnership.Borrowed,
+            )
+
+        first.close()
+        second.close()
+
+        assertEquals(0, transport.closeCalls)
+        assertEquals(
+            "usable",
+            transport.execute(
+                request =
+                    ConnectorTransportRequest(
+                        method = "GET",
+                        url = "https://example.invalid/probe",
+                    ),
+            ) {
+                "usable"
+            },
+        )
+        assertEquals(1, transport.executeCalls)
+    }
+
+    @Test
+    fun constructionFailureClosesOnlyOwnedTransportAndPreservesFailure() {
+        val expected = IllegalStateException("construction failed")
+        val ownedTransport = RecordingTransport()
+        val ownedFailure =
+            assertFailsWith<IllegalStateException> {
+                UniversalAiConnector.createForTesting(
+                    engineFactory = { throw expected },
+                    transport = ownedTransport,
+                    ownership = ConnectorResourceOwnership.Owned,
+                )
+            }
+
+        assertSame(expected, ownedFailure)
+        assertEquals(1, ownedTransport.closeCalls)
+
+        val borrowedTransport = RecordingTransport()
+        val borrowedFailure =
+            assertFailsWith<IllegalStateException> {
+                UniversalAiConnector.createForTesting(
+                    engineFactory = { throw expected },
+                    transport = borrowedTransport,
+                    ownership = ConnectorResourceOwnership.Borrowed,
+                )
+            }
+
+        assertSame(expected, borrowedFailure)
+        assertEquals(0, borrowedTransport.closeCalls)
+    }
+
+    @Test
+    fun injectedEngineRemainsCallerOwnedSharedAndUnusedByDeterministicBehavior() = runTest {
+        val engine =
+            MockEngine {
+                respond(
+                    content = ByteReadChannel("probe"),
+                    status = HttpStatusCode.OK,
+                )
+            }
+        val first = UniversalAiConnector(engine)
+        val second = UniversalAiConnector(engine)
+
+        try {
+            assertEquals(
+                "Kotlin echo: first",
+                first.respond(request("first")).outputs.single().text,
+            )
+            first.close()
+            assertEquals(
+                "Kotlin echo: second",
+                second.respond(request("second")).outputs.single().text,
+            )
+            second.close()
+            assertTrue(engine.requestHistory.isEmpty())
+
+            val callerClient = HttpClient(engine)
+            try {
+                assertEquals(
+                    "probe",
+                    callerClient.get("https://example.invalid/probe").bodyAsText(),
+                )
+            } finally {
+                callerClient.close()
+            }
+            assertEquals(1, engine.requestHistory.size)
+        } finally {
+            first.close()
+            second.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun useAfterCloseReturnsOneStableCanonicalErrorAndVersionRemainsReadable() = runTest {
+        val connector = UniversalAiConnector()
+        val streamCreatedBeforeClose = connector.stream(request("stream"))
+        connector.close()
+
+        assertEquals(UniversalAiConnector.LIBRARY_VERSION, connector.version)
+        assertClosedFailure(
+            assertFailsWith<UniversalAiException> {
+                connector.respond(request("response"))
+            },
+        )
+
+        val events = mutableListOf<UniversalAiStreamEvent>()
+        assertClosedFailure(
+            assertFailsWith<UniversalAiException> {
+                streamCreatedBeforeClose.collect(events::add)
+            },
+        )
+        assertTrue(events.isEmpty())
+    }
+
+    @Test
+    fun closeCancelsActiveResponseAndStreamWithoutLateDelivery() = runTest {
+        val engine = BlockingEngine()
+        val connector = UniversalAiConnector(engine)
+        val response =
+            backgroundScope.async {
+                connector.respond(request("response"))
+            }
+        val stream =
+            backgroundScope.async {
+                connector.stream(request("stream")).toList()
+            }
+
+        engine.responseStarted.await()
+        engine.streamStarted.await()
+        connector.close()
+
+        assertFailsWith<CancellationException> {
+            response.await()
+        }
+        assertFailsWith<CancellationException> {
+            stream.await()
+        }
+        assertTrue(engine.responseCancelled)
+        assertTrue(engine.streamCancelled)
+    }
+
+    private fun assertClosedFailure(failure: UniversalAiException) {
+        assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+        assertEquals(UniversalAiErrorCode.InvalidRequest, failure.error.code)
+        assertEquals(UniversalAiConnector.CLOSED_MESSAGE, failure.error.message)
+        assertEquals(null, failure.error.metadata)
+        assertTrue(failure.error.extensions.isEmpty)
+    }
+
+    private fun request(content: String): UniversalAiRequest =
+        UniversalAiRequest(
+            target =
+                UniversalAiTarget(
+                    providerId = ProviderId.of("deterministic"),
+                    modelId = ModelId.of("echo-v1"),
+                ),
+            input =
+                listOf(
+                    UniversalAiTextInput(
+                        role = UniversalAiInputRole.User,
+                        content = content,
+                    ),
+                ),
+        )
+
+    private class RecordingTransport : ConnectorTransport {
+        var closeCalls: Int = 0
+            private set
+        var executeCalls: Int = 0
+            private set
+
+        override suspend fun <Result> execute(
+            request: ConnectorTransportRequest,
+            consumeResponse: suspend (ConnectorTransportResponse) -> Result,
+        ): Result {
+            executeCalls += 1
+            return consumeResponse(
+                ConnectorTransportResponse(
+                    statusCode = 204,
+                    headers = emptyList(),
+                    body = ConnectorTransportChunkReader { null },
+                ),
+            )
+        }
+
+        override fun close() {
+            closeCalls += 1
+        }
+    }
+
+    private class BlockingEngine : ConnectorEngine {
+        val responseStarted = CompletableDeferred<Unit>()
+        val streamStarted = CompletableDeferred<Unit>()
+        var responseCancelled: Boolean = false
+            private set
+        var streamCancelled: Boolean = false
+            private set
+
+        override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
+            responseStarted.complete(Unit)
+            try {
+                awaitCancellation()
+            } finally {
+                responseCancelled = true
+            }
+        }
+
+        override fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> = flow {
+            streamStarted.complete(Unit)
+            try {
+                awaitCancellation()
+            } finally {
+                streamCancelled = true
+            }
+        }
+    }
+}

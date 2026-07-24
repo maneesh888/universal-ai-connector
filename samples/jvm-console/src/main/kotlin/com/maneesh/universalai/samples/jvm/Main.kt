@@ -22,47 +22,51 @@ import kotlinx.coroutines.runBlocking
 internal object JvmConsoleSample {
     suspend fun execute(writeLine: (String) -> Unit) {
         val connector = UniversalAiConnector()
-        writeLine("Version: ${connector.version}")
+        try {
+            writeLine("Version: ${connector.version}")
 
-        val response = connector.respond(request("hello from JVM"))
-        writeLine("Response: ${response.textOutput()}")
+            val response = connector.respond(request("hello from JVM"))
+            writeLine("Response: ${response.textOutput()}")
 
-        val events = connector.stream(request("stream")).toList()
-        writeLine(
-            events.joinToString(
-                prefix = "Stream: ",
-                separator = " | ",
-                transform = { event -> event.render() },
-            ),
-        )
+            val events = connector.stream(request("stream")).toList()
+            writeLine(
+                events.joinToString(
+                    prefix = "Stream: ",
+                    separator = " | ",
+                    transform = { event -> event.render() },
+                ),
+            )
 
-        val forcedFailure =
-            try {
-                connector.respond(request(UniversalAiConnector.SIMULATED_ERROR_INPUT))
-                error("The deterministic forced error did not occur.")
-            } catch (failure: UniversalAiException) {
-                failure
-            }
-        writeLine(
-            "Error: ${forcedFailure.error.category.rawValue}/" +
-                "${forcedFailure.error.code.rawValue}: ${forcedFailure.error.message}",
-        )
-
-        coroutineScope {
-            val cancelledRequest =
-                async(start = CoroutineStart.UNDISPATCHED) {
-                    connector.respond(request("cancel this response"))
+            val forcedFailure =
+                try {
+                    connector.respond(request(UniversalAiConnector.SIMULATED_ERROR_INPUT))
+                    error("The deterministic forced error did not occur.")
+                } catch (failure: UniversalAiException) {
+                    failure
                 }
-            cancelledRequest.cancelAndJoin()
-            check(cancelledRequest.isCancelled)
-        }
-        writeLine("One-shot cancellation: cancelled")
+            writeLine(
+                "Error: ${forcedFailure.error.category.rawValue}/" +
+                    "${forcedFailure.error.code.rawValue}: ${forcedFailure.error.message}",
+            )
 
-        val firstDelta =
-            connector
-                .stream(request("stop"))
-                .first { event -> event.type == UniversalAiStreamEventType.OutputDelta }
-        writeLine("Stream stopped after event: ${firstDelta.render()}")
+            coroutineScope {
+                val cancelledRequest =
+                    async(start = CoroutineStart.UNDISPATCHED) {
+                        connector.respond(request("cancel this response"))
+                    }
+                cancelledRequest.cancelAndJoin()
+                check(cancelledRequest.isCancelled)
+            }
+            writeLine("One-shot cancellation: cancelled")
+
+            val firstDelta =
+                connector
+                    .stream(request("stop"))
+                    .first { event -> event.type == UniversalAiStreamEventType.OutputDelta }
+            writeLine("Stream stopped after event: ${firstDelta.render()}")
+        } finally {
+            connector.close()
+        }
     }
 
     private fun request(input: String): UniversalAiRequest =

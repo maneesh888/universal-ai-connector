@@ -4,9 +4,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -76,6 +78,22 @@ class AndroidSampleControllerTest {
             controller.runResponseCancellation()
 
             assertEquals("Response cancellation passed", controller.state.value.headline)
+            assertFalse(controller.state.value.isBusy)
+        }
+
+    @Test
+    fun closeCancelsActiveWorkAndIsSafeToRepeat() =
+        runTest {
+            val controller = AndroidSampleController(this)
+
+            controller.runResponse()
+            runCurrent()
+            assertTrue(controller.state.value.isBusy)
+
+            controller.close()
+            controller.close()
+            advanceUntilIdle()
+
             assertFalse(controller.state.value.isBusy)
         }
 }

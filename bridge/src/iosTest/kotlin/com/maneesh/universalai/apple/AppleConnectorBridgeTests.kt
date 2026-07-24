@@ -500,6 +500,66 @@ class AppleConnectorBridgeTests {
     }
 
     @Test
+    fun closeCancelsActiveOperationsAndIsSafeToRepeat() = runTest {
+        val bridge = AppleConnectorBridge(this)
+        bridge.resetInstrumentation()
+        var responseCallbackDelivered = false
+        var streamTerminalDelivered = false
+
+        bridge.respond(
+            request = request("active response"),
+            onSuccess = { responseCallbackDelivered = true },
+            onError = { responseCallbackDelivered = true },
+        )
+        bridge.stream(
+            request = request("active stream"),
+            onEvent = {},
+            onComplete = { streamTerminalDelivered = true },
+            onError = { streamTerminalDelivered = true },
+        )
+        runCurrent()
+
+        bridge.close()
+        bridge.close()
+        advanceUntilIdle()
+
+        assertEquals("0.1.0-alpha.1", bridge.version())
+        assertFalse(responseCallbackDelivered)
+        assertFalse(streamTerminalDelivered)
+        assertEquals(1, bridge.instrumentationSnapshot().responseCancellations)
+        assertEquals(1, bridge.instrumentationSnapshot().streamCancellations)
+    }
+
+    @Test
+    fun operationsAfterCloseUseStableCanonicalError() = runTest {
+        val bridge = AppleConnectorBridge(this)
+        val responseErrors = mutableListOf<AppleBridgeError>()
+        val streamErrors = mutableListOf<AppleBridgeError>()
+
+        bridge.close()
+        bridge.respond(
+            request = request("closed response"),
+            onSuccess = { error("Expected a closed-state response error.") },
+            onError = responseErrors::add,
+        )
+        bridge.stream(
+            request = request("closed stream"),
+            onEvent = { error("Expected no closed-state stream event.") },
+            onComplete = { error("Expected a closed-state stream error.") },
+            onError = streamErrors::add,
+        )
+        advanceUntilIdle()
+
+        listOf(responseErrors.single(), streamErrors.single()).forEach { failure ->
+            assertEquals("validation", failure.category)
+            assertEquals("invalid_request", failure.code)
+            assertEquals("The Universal AI Connector is closed.", failure.message)
+            assertNull(failure.metadata)
+            assertTrue(failure.extensions.entries.isEmpty())
+        }
+    }
+
+    @Test
     fun concurrentOperationsKeepIndependentExactlyOnceTerminals() = runTest {
         val bridge = AppleConnectorBridge(this)
         val responses = mutableListOf<AppleBridgeResponse>()

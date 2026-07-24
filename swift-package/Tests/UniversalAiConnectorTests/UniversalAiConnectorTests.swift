@@ -1371,6 +1371,141 @@ final class UniversalAiConnectorTests: XCTestCase {
         XCTAssertEqual(connector.diagnosticsForTesting().streamCancellations, 1)
     }
 
+    func testCloseIsIdempotentAndRejectsNewOperationsWithStableError() async {
+        let connector = UniversalAiConnector()
+
+        connector.close()
+        connector.close()
+
+        XCTAssertEqual(connector.version, "0.1.0-alpha.1")
+        do {
+            _ = try await connector.respond(to: request("closed response"))
+            XCTFail("Expected a closed-state response error.")
+        } catch {
+            assertClosedError(error)
+        }
+
+        var iterator =
+            connector.stream(request: request("closed stream"))
+                .makeAsyncIterator()
+        do {
+            _ = try await iterator.next()
+            XCTFail("Expected a closed-state stream error.")
+        } catch {
+            assertClosedError(error)
+        }
+    }
+
+    func testCloseCancelsResponseBeforeHandleInstallationWithoutHanging() async {
+        let enteredHook = AsyncSignal()
+        let releaseHook = DispatchSemaphore(value: 0)
+        let connector = UniversalAiConnector(
+            testingHooks: UniversalAiConnectorTestingHooks(
+                beforeResponseCancellationInstallation: {
+                    enteredHook.signal()
+                    releaseHook.wait()
+                }
+            )
+        )
+        let task = Task {
+            try await connector.respond(to: request("close response race"))
+        }
+
+        await enteredHook.wait()
+        connector.close()
+        connector.close()
+        releaseHook.signal()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected close to cancel the active response.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testCloseCancelsStreamBeforeHandleInstallationExactlyOnce() async throws {
+        let enteredHook = AsyncSignal()
+        let releaseHook = DispatchSemaphore(value: 0)
+        let connector = UniversalAiConnector(
+            testingHooks: UniversalAiConnectorTestingHooks(
+                beforeStreamCancellationInstallation: {
+                    enteredHook.signal()
+                    releaseHook.wait()
+                }
+            )
+        )
+        connector.resetDiagnosticsForTesting()
+        let task = Task {
+            for try await _ in connector.stream(
+                request: request("close stream race")
+            ) {
+                XCTFail("Close before handle installation must emit no events.")
+            }
+        }
+
+        await enteredHook.wait()
+        connector.close()
+        connector.close()
+        releaseHook.signal()
+
+        do {
+            try await task.value
+            XCTFail("Expected close to cancel the active stream.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        try await waitForCancellationCount(connector, streams: 1)
+        try await Task.sleep(for: .milliseconds(200))
+        XCTAssertEqual(connector.diagnosticsForTesting().streamCancellations, 1)
+    }
+
+    func testDeinitClosesAnActiveStream() async {
+        var connector: UniversalAiConnector? = UniversalAiConnector()
+        weak var releasedConnector = connector
+        var iterator =
+            connector!.stream(request: request("deinit stream"))
+                .makeAsyncIterator()
+
+        connector = nil
+
+        XCTAssertNil(releasedConnector)
+        do {
+            _ = try await iterator.next()
+            XCTFail("Expected deinitialization to cancel the active stream.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testConnectorLifecycleClosesRegisteredOperationsExactlyOnce() {
+        let lifecycle = LockedConnectorLifecycle()
+        let cancellationCount = LockedCounter()
+        let activeIdentifier = UUID()
+
+        XCTAssertTrue(
+            lifecycle.register(activeIdentifier) {
+                cancellationCount.increment()
+            }
+        )
+        XCTAssertTrue(lifecycle.close())
+        XCTAssertFalse(lifecycle.close())
+        XCTAssertEqual(cancellationCount.value, 1)
+        XCTAssertFalse(
+            lifecycle.register(UUID()) {
+                cancellationCount.increment()
+            }
+        )
+        XCTAssertEqual(cancellationCount.value, 1)
+    }
+
     func testLockedStateIgnoresLateTerminalsAfterPreinstallationCancellation() async {
         let state = LockedOperationState<String>()
         let continuationReady = AsyncSignal()
@@ -1831,6 +1966,27 @@ final class UniversalAiConnectorTests: XCTestCase {
         }
 
         XCTFail("Timed out waiting for cancellation diagnostics.")
+    }
+
+    private func assertClosedError(
+        _ error: Error,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard let error = error as? UniversalAiConnectorError else {
+            XCTFail("Unexpected error: \(error)", file: file, line: line)
+            return
+        }
+        XCTAssertEqual(error.category, .validation, file: file, line: line)
+        XCTAssertEqual(error.code, .invalidRequest, file: file, line: line)
+        XCTAssertEqual(
+            error.message,
+            "The Universal AI Connector is closed.",
+            file: file,
+            line: line
+        )
+        XCTAssertNil(error.metadata, file: file, line: line)
+        XCTAssertEqual(error.extensions, .empty, file: file, line: line)
     }
 }
 

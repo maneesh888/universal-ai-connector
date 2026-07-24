@@ -9,6 +9,7 @@ plugins {
 
 kotlin {
     val xcframework = XCFramework("UniversalAiConnectorBridge")
+    val ktorVersion = "3.5.1"
 
     jvm()
 
@@ -47,11 +48,25 @@ kotlin {
         commonMain.dependencies {
             api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+            api("io.ktor:ktor-client-core:$ktorVersion")
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+            implementation("io.ktor:ktor-client-mock:$ktorVersion")
+        }
+
+        jvmMain.dependencies {
+            implementation("io.ktor:ktor-client-cio:$ktorVersion")
+        }
+
+        androidMain.dependencies {
+            implementation("io.ktor:ktor-client-android:$ktorVersion")
+        }
+
+        iosMain.dependencies {
+            implementation("io.ktor:ktor-client-darwin:$ktorVersion")
         }
 
         jvmTest.dependencies {

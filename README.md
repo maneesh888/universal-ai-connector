@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P2%20complete%20%7C%20P3%20not%20started-2563eb)
+![Project stage](https://img.shields.io/badge/stage-P3--A%20complete%20%7C%20P3--B%20active-2563eb)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -13,7 +13,7 @@ The repository has completed its P1 cross-platform baseline and P2 provider-neut
 
 No AI provider, gateway, API key, or network integration is implemented yet.
 
-> **Current phase:** P2 canonical core and JSON contracts are completed. P3 HTTP transport and provider registry work remains `Not started` until separately activated.
+> **Current phase:** P2 canonical core and JSON contracts and P3-A transport construction are completed. P3 remains `In progress`, with P3-B URL, header, timeout, and redaction policy as the sole active work package.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -38,7 +38,7 @@ P1 established this package boundary through compiling iOS, Android, and JVM con
 Interoperability POC       ████████████████████ 100%  ✅ Complete
 Cross-platform baseline   ████████████████████ 100%  ✅ Complete
 Canonical AI contracts    ████████████████████ 100%  ✅ Complete
-HTTP client foundation    ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+HTTP client foundation    ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P3-A done; P3-B active
 Provider adapters         ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Gateway integration       ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
@@ -71,7 +71,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Physical iOS-device execution | ⏳ Not exercised |
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
-| HTTP transport | ⏳ Planned |
+| HTTP transport | 🚧 P3-A boundary and construction complete; P3-B active |
 | OpenAI, Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
@@ -83,7 +83,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P0 | iOS-Kotlin interoperability POC | ✅ Completed |
 | P1 | Cross-platform package and client samples | ✅ Completed |
 | P2 | Canonical core and JSON contracts | ✅ Completed |
-| P3 | HTTP transport and provider registry | ⏳ Planned |
+| P3 | HTTP transport and provider registry | 🚧 In progress; P3-B active |
 | P4 | OpenAI Responses adapter | ⏳ Planned |
 | P5 | Anthropic adapter | ⏳ Planned |
 | P6 | OpenRouter and compatible adapters | ⏳ Planned |
@@ -99,7 +99,7 @@ The detailed implementation and acceptance criteria are in the [cross-platform c
 
 ### P2 completion
 
-P2 was activated separately on July 24, 2026 after P1 completion. It now defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing networking or provider DTOs. P3 is the next roadmap milestone but remains `Not started`; this closeout does not activate transport work.
+P2 was activated separately on July 24, 2026 after P1 completion. It now defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A then established transport construction and lifecycle ownership; P3-B policy is now the sole active work package.
 
 ## Architecture direction
 
@@ -128,7 +128,7 @@ The planned host-facing shape is deliberately small:
 
 - Android and JVM share one Kotlin client and common models.
 - iOS uses one Swift façade over the packaged XCFramework.
-- Simple construction works without advanced transport setup; injectable transport is added with the P3 networking milestone.
+- Simple construction creates the supported platform transport without requiring an application to construct a Ktor `HttpClient`; advanced callers may inject a caller-owned `HttpClientEngine`.
 - Host coroutine or task cancellation propagates into connector work.
 - Samples consume public package boundaries and remain thin presentation layers.
 
@@ -136,7 +136,7 @@ Native Linux, Windows, and macOS artifacts are demand-driven. The initial deskto
 
 P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after provider and Gateway adapters exist. The JVM console remains the headless and server-oriented verification path.
 
-The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope or external resource, so no cleanup is required. `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation.
+The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes.
 
 ## Quick start
 
@@ -261,28 +261,33 @@ fun request(content: String) =
     )
 
 val connector = UniversalAiConnector()
-println(connector.version)
-val response = connector.respond(request("hello from JVM"))
-println(checkNotNull(response.outputs.single().text))
+try {
+    println(connector.version)
+    val response = connector.respond(request("hello from JVM"))
+    println(checkNotNull(response.outputs.single().text))
 
-connector.stream(request("stream")).collect { event ->
-    println("${event.sequence}: ${event.type.rawValue} ${event.delta.orEmpty()}")
+    connector.stream(request("stream")).collect { event ->
+        println("${event.sequence}: ${event.type.rawValue} ${event.delta.orEmpty()}")
+    }
+} finally {
+    connector.close()
 }
 ```
 
-Failures are delivered as `UniversalAiException` carrying a canonical category, raw-preserving code, stable safe message, optional metadata, and extensions. Cancellation remains caller-owned `CancellationException`; the sample cancels a one-shot request and stops a stream at its first output delta.
+Failures are delivered as `UniversalAiException` carrying a canonical category, raw-preserving code, stable safe message, optional metadata, and extensions. Cancellation remains caller-owned `CancellationException`; the sample cancels a one-shot request and stops a stream at its first output delta. Its `finally` block closes the connector on success, failure, or cancellation.
 
 The Kotlin API is hidden from Objective-C export so Apple consumers use the supported Swift façade. An Apple-only callback adapter delegates to the same Kotlin client without exporting `Flow` or Kotlin implementation types through the Swift API. It is compiled into the iOS frameworks as an implementation dependency of the supported Swift product and is excluded from the JVM JAR and Android AAR; those non-Apple artifact boundaries are checked by the repository gate. The XCFramework build validates both Apple headers and fails if the product Kotlin client or `Flow` leaks into either one.
 
 ## Android sample
 
-The Jetpack Compose application declares `implementation(project(":bridge"))` and uses the same `UniversalAiConnector` entry point as the JVM sample. `MainActivity` owns the coroutine lifetime through its lifecycle scope; cancelling that scope cancels active connector work, while the reusable connector itself owns no scope or cleanup resource.
+The Jetpack Compose application declares `implementation(project(":bridge"))` and uses the same `UniversalAiConnector` entry point as the JVM sample. `MainActivity` owns the coroutine lifetime through its lifecycle scope. Its controller cancels the active job and then closes the connector from `onDestroy`, releasing connector-owned transport resources without making the connector own the activity's coroutine scope.
 
 The minimal application path is:
 
 ```kotlin
-val connector = UniversalAiConnector()
-val request = UniversalAiRequest(
+private val connector = UniversalAiConnector()
+private var activeJob: Job? = null
+private val request = UniversalAiRequest(
     target = UniversalAiTarget(
         providerId = ProviderId.of("deterministic"),
         modelId = ModelId.of("echo-v1"),
@@ -295,13 +300,19 @@ val request = UniversalAiRequest(
     ),
 )
 
-lifecycleScope.launch {
+activeJob = lifecycleScope.launch {
     val response = connector.respond(request)
     println(checkNotNull(response.outputs.single().text))
 
     connector.stream(request).collect { event ->
         println("${event.sequence}: ${event.type.rawValue} ${event.delta.orEmpty()}")
     }
+}
+
+override fun onDestroy() {
+    activeJob?.cancel()
+    connector.close()
+    super.onDestroy()
 }
 ```
 
@@ -323,6 +334,9 @@ import UniversalAiConnector
 
 func runFirstUse() async throws {
     let connector = UniversalAiConnector()
+    defer {
+        connector.close()
+    }
     let request = UniversalAiRequest(
         target: UniversalAiTarget(
             providerId: UniversalAiProviderId(rawValue: "deterministic"),
@@ -344,11 +358,11 @@ func runFirstUse() async throws {
 }
 ```
 
-`UniversalAiConnector` is reusable, thread-safe, and supports concurrent responses and independently created streams. Each returned stream has one consuming task; concurrent iteration of the same stream is outside the supported contract. Each operation runs independently, and the façade and its Apple-only callback adapter own no long-lived coroutine job or external resource. The calling Swift task owns response lifetime, and the consuming task owns stream lifetime. Cancelling either task propagates to that Kotlin operation, including cancellation that races with handle installation.
+`UniversalAiConnector` is reusable, thread-safe, and supports concurrent responses and independently created streams. Each returned stream has one consuming task; concurrent iteration of the same stream is outside the supported contract. Each operation runs independently, and the façade owns no caller task or long-lived coroutine job. The calling Swift task owns response lifetime, and the consuming task owns stream lifetime. Cancelling either task propagates to that Kotlin operation, including cancellation that races with handle installation.
 
-Callers that need to stop a stream promptly must cancel its consuming task, as the sample does after the first event. A plain `break` does not itself guarantee prompt cancellation while the returned `AsyncThrowingStream` remains retained; the underlying operation is cancelled when its iterator and stream are released, or it may complete normally if retained. After active tasks and streams finish, are cancelled, or are released, no explicit `close` call is required and the connector can be released.
+Callers that need to stop a stream promptly must cancel its consuming task, as the sample does after the first event. A plain `break` does not itself guarantee prompt cancellation while the returned `AsyncThrowingStream` remains retained; the underlying operation is cancelled when its iterator and stream are released, or it may complete normally if retained. The owning Swift object should cancel its tasks and call the connector's synchronous, idempotent `close()` at its lifecycle boundary. Closing cancels any still-active connector operations and releases connector-owned transport resources; `deinit` performs the same close as a safety net.
 
-Failures arrive as `UniversalAiConnectorError`; Swift task cancellation remains `CancellationError`. The sample owns its tasks, cancels them when its view disappears, and provides explicit controls for:
+Failures arrive as `UniversalAiConnectorError`; Swift task cancellation remains `CancellationError`. The sample owns its tasks, cancels them when its view disappears, and closes the connector when its view model deinitializes. It provides explicit controls for:
 
 - an asynchronous response;
 - ordered streaming;
