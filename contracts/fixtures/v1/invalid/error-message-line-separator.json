@@ -1,0 +1,5 @@
+{
+  "category": "provider",
+  "code": "unsafe_message",
+  "message": "Safe prefix\u2028injected line."
+}

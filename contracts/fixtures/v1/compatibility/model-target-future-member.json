@@ -1,0 +1,7 @@
+{
+  "providerId": "future-provider",
+  "modelId": "future/model:v2",
+  "futureTargetMember": {
+    "mode": "future"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "contractVersion": "1",
+  "target": {
+    "providerId": "openai",
+    "modelId": "gpt-4.1-mini"
+  },
+  "input": [
+    {
+      "role": "system",
+      "content": "Answer concisely."
+    },
+    {
+      "role": "developer",
+      "content": "Return only the requested shape."
+    },
+    {
+      "role": "user",
+      "content": "Return an answer object."
+    },
+    {
+      "role": "assistant",
+      "content": "Acknowledged."
+    }
+  ],
+  "responseFormat": {
+    "kind": "json_schema",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Answer",
+      "type": "object",
+      "properties": {
+        "answer": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "answer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "generation": {
+    "maxOutputTokens": 512,
+    "temperature": 0.2,
+    "topP": 0.95,
+    "stopSequences": [
+      "\nEND"
+    ]
+  },
+  "extensions": {
+    "com.example.connector": {
+      "mode": "future",
+      "priority": 1.2300e+2,
+      "nested": {
+        "enabled": true
+      }
+    }
+  }
+}

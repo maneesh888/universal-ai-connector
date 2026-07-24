@@ -17,6 +17,8 @@ Do not infer a stronger level from a weaker one. Distribution proof remains P8 w
 
 ## Modes and cumulative gates
 
+Canonical-contract changes additionally require **contract conformance proof**: authoritative schemas are meta-valid, every fixture has one documented schema or semantic result, production encodings stay schema-valid for the governed corpus, and the embedded multiplatform mirror has zero drift from the tracked bundle.
+
 Run targeted checks while editing, then run only the highest final gate required by the selected mode:
 
 | Mode | Final gate | Additional proof |
@@ -35,6 +37,7 @@ Use the smallest commands that exercise the changed surface:
 
 | Changed surface | Targeted verification |
 |---|---|
+| Canonical contracts, schemas, or fixtures | `./scripts/check-contracts.sh --all` |
 | Shared Kotlin behavior | `./gradlew :bridge:jvmTest` |
 | Android host behavior | `./gradlew :bridge:testAndroidHostTest` |
 | Android packaging or consumer | `./gradlew :bridge:bundleAndroidMainAar` and/or `./gradlew :samples:android:consumerCheck` |
@@ -47,7 +50,7 @@ Use the smallest commands that exercise the changed surface:
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
-The quick gate covers hygiene, deterministic shell-script behavior, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, the simulator sample build, and generic-device link verification.
+The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, the simulator sample build, and generic-device link verification.
 
 When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
 
@@ -72,11 +75,11 @@ These hook requirements are safety gates; they do not make every task a Release 
 
 `.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch:
 
-- `Repository hygiene` validates the fail-closed scanner, secrets, and whitespace on Linux.
-- `JVM + Android (Linux)` verifies shared behavior, JVM consumption, Android host behavior, AAR packaging, and the Android consumer.
-- `JVM (Windows)` verifies the JVM tests and consumer with Java 21.
-- `Apple + JVM (macOS)` runs the complete local gate, including Apple packaging and sample proof.
-- `Required checks` supplies the stable branch-protection status.
+- `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
+- `JVM + Android (Linux)` runs shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer check with Java 21.
+- `JVM (Windows)` runs JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
+- `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
+- `Required checks` provides one stable branch-protection status.
 
 Pull-request jobs check out the exact PR head. Third-party actions remain pinned, workflow permissions remain read-only, and ordinary CI remains secretless. CI does not prove emulator/device execution, live providers, gateways, distribution, or release behavior without matching evidence.
 

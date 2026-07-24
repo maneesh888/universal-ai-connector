@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:model-descriptor",
+  "title": "Universal AI Connector V1 Model Descriptor",
+  "description": "A versioned provider-neutral model descriptor containing a fully materialized effective capability set.",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": "1"
+    },
+    "target": {
+      "$ref": "urn:universal-ai-connector:contract:v1:model-target"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "limits": {
+      "$ref": "urn:universal-ai-connector:contract:v1:model-token-limits"
+    },
+    "capabilities": {
+      "$ref": "urn:universal-ai-connector:contract:v1:capability-set"
+    },
+    "extensions": {
+      "$ref": "urn:universal-ai-connector:contract:v1:extensions"
+    }
+  },
+  "required": [
+    "contractVersion",
+    "target",
+    "capabilities"
+  ],
+  "additionalProperties": true
+}

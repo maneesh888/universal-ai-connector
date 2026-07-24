@@ -1,0 +1,11 @@
+{
+  "contractVersion": "1",
+  "target": {
+    "providerId": "example",
+    "modelId": "future-limits-only"
+  },
+  "limits": {
+    "futureTokenWindow": 262144
+  },
+  "capabilities": {}
+}

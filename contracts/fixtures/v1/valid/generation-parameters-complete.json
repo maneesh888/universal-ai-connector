@@ -1,0 +1,8 @@
+{
+  "maxOutputTokens": 512,
+  "temperature": 0.2,
+  "topP": 0.95,
+  "stopSequences": [
+    "\nEND"
+  ]
+}

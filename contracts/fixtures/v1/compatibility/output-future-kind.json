@@ -1,0 +1,18 @@
+{
+  "id": "out_future",
+  "index": 2,
+  "kind": "future_audio",
+  "extensions": {
+    "com.example.future": {
+      "codec": "future-codec",
+      "payload": [
+        1,
+        null,
+        true
+      ]
+    }
+  },
+  "futureOutputMember": {
+    "ignored": true
+  }
+}

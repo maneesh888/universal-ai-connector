@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:provider-id",
+  "title": "Universal AI Connector V1 Provider ID",
+  "description": "A stable lowercase provider-registry key. No normalization is applied.",
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 64,
+  "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$"
+}

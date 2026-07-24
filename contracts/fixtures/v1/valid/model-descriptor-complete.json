@@ -1,0 +1,36 @@
+{
+  "contractVersion": "1",
+  "target": {
+    "providerId": "example",
+    "modelId": "model-v1"
+  },
+  "displayName": "Example Model V1",
+  "limits": {
+    "contextWindowTokens": 131072,
+    "maxInputTokens": 114688,
+    "maxOutputTokens": 16384
+  },
+  "capabilities": {
+    "streaming": {
+      "support": "supported"
+    },
+    "structured_output": {
+      "support": "supported",
+      "limits": {
+        "max_schema_bytes": 65536,
+        "max_schema_depth": 16
+      }
+    }
+  },
+  "extensions": {
+    "com.example.connector": {
+      "descriptor": {
+        "tier": "alpha",
+        "flags": [
+          true,
+          null
+        ]
+      }
+    }
+  }
+}

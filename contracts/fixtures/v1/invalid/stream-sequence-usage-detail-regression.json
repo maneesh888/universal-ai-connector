@@ -1,0 +1,39 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_0"
+  },
+  {
+    "contractVersion": "1",
+    "type": "usage.updated",
+    "terminal": false,
+    "sequence": 2,
+    "responseId": "resp_0",
+    "usage": {
+      "inputTokens": 5,
+      "outputTokens": 0,
+      "totalTokens": 5,
+      "inputDetails": {
+        "cached": 3
+      }
+    }
+  },
+  {
+    "contractVersion": "1",
+    "type": "usage.updated",
+    "terminal": false,
+    "sequence": 3,
+    "responseId": "resp_0",
+    "usage": {
+      "inputTokens": 5,
+      "outputTokens": 0,
+      "totalTokens": 5,
+      "inputDetails": {
+        "cached": 2
+      }
+    }
+  }
+]

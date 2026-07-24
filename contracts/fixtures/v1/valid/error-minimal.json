@@ -1,0 +1,5 @@
+{
+  "category": "internal",
+  "code": "connector_failure",
+  "message": "The connector failed."
+}

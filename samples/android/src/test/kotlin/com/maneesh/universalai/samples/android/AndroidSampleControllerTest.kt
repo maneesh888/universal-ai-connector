@@ -25,20 +25,25 @@ class AndroidSampleControllerTest {
             assertEquals("Kotlin echo: hello from Android", state.response)
             assertEquals(
                 listOf(
-                    "1: Android stream 1",
-                    "2: Android stream 2",
-                    "3: Android stream 3",
-                    "4: Android stream 4",
-                    "5: Android stream 5",
+                    "1: response.started",
+                    "2: output.started",
+                    "3: output.delta · delta=Kotlin echo: ",
+                    "4: output.delta · delta=Android stream",
+                    "5: output.completed · output=Kotlin echo: Android stream",
+                    "6: response.completed · response=Kotlin echo: Android stream · terminal=true",
                 ),
                 state.streamEvents,
             )
             assertEquals(
-                "simulated_failure: The Universal AI Connector produced the requested simulated failure.",
+                "provider/simulated_failure: " +
+                    "The Universal AI Connector produced the requested simulated failure.",
                 state.error,
             )
             assertEquals("Cancelled before completion", state.responseCancellation)
-            assertEquals("Stopped after 1: stop Android stream 1", state.streamCancellation)
+            assertEquals(
+                "Stopped after 3: output.delta · delta=Kotlin echo: ",
+                state.streamCancellation,
+            )
             assertFalse(state.isBusy)
         }
 

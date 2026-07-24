@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:response",
+  "title": "Universal AI Connector V1 Response",
+  "description": "A versioned provider-neutral response with ordered outputs.",
+  "allOf": [
+    {
+      "$ref": "urn:universal-ai-connector:contract:v1:envelope"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "urn:universal-ai-connector:contract:v1:operation-id"
+        },
+        "requestId": {
+          "$ref": "urn:universal-ai-connector:contract:v1:operation-id"
+        },
+        "target": {
+          "$ref": "urn:universal-ai-connector:contract:v1:model-target"
+        },
+        "outputs": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "$ref": "urn:universal-ai-connector:contract:v1:output"
+          }
+        },
+        "usage": {
+          "$ref": "urn:universal-ai-connector:contract:v1:usage"
+        },
+        "completionReason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]{0,63}$"
+        },
+        "extensions": {
+          "$ref": "urn:universal-ai-connector:contract:v1:extensions"
+        }
+      },
+      "required": [
+        "id",
+        "target",
+        "outputs",
+        "completionReason"
+      ],
+      "additionalProperties": true
+    }
+  ]
+}

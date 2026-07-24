@@ -12,11 +12,11 @@ Produce one compact read-only work order without activating or implementing a mi
 1. Resolve the repository root and inspect `git status --short --branch`.
 2. Read `AGENTS.md`.
 3. Inspect only `Status`, `Milestones`, and the relevant milestone section in `docs/plans/universal-ai-connector-v2.md`.
-4. Follow the roadmap link to the active or requested work-package plan.
-5. Read only its status, objective, scope, current package, applicable verification, acceptance, and proof-limit sections.
+4. Follow the roadmap link to the active or requested work-package plan when one exists.
+5. When a plan exists, read only its status, objective, scope, current package, applicable verification, acceptance, and proof-limit sections. When none exists, define the next package as drafting that milestone plan from the roadmap section; do not invent implementation details.
 6. Read only `Purpose`, `Modes and cumulative gates`, and the applicable row in `Targeted check routing` from `docs/DEVELOPMENT_WORKFLOW.md`.
-7. If no milestone is active, identify the next planned package and state that implementation begins with activation. Do not activate it.
-8. Compute source digests with `git hash-object` for the roadmap, selected plan, `AGENTS.md`, and `docs/DEVELOPMENT_WORKFLOW.md`.
+7. If no milestone is active and a detailed plan exists, state that milestone implementation begins with activation. If no plan exists, make plan authoring the next package and keep the milestone inactive.
+8. Compute source digests with `git hash-object` for the roadmap, `AGENTS.md`, `docs/DEVELOPMENT_WORKFLOW.md`, and the selected plan when one exists.
 
 Read complete source files only when targeted sections are materially ambiguous or inconsistent.
 
@@ -63,5 +63,7 @@ When the roadmap names one unambiguous next package but no milestone is active:
 - say the next implementation request begins with the roadmap activation transition and then executes that package.
 
 Do not ask the user to authorize that routine activation separately. Report a blocking decision only when competing or missing roadmap state would materially change what activates.
+
+When the next milestone has no detailed work-package plan, return a Standard documentation package to draft that plan without activating the milestone. Set `Blocking decision: none`; the missing plan is the task, not a reason to wait.
 
 The implementation agent may rely on the work order while all listed digests match. A digest mismatch requires refreshing only the changed source and affected form fields.

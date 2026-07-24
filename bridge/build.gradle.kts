@@ -1,7 +1,9 @@
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization")
     id("com.android.kotlin.multiplatform.library")
 }
 
@@ -44,11 +46,22 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+            api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
         }
+
+        jvmTest.dependencies {
+            implementation("com.networknt:json-schema-validator:3.0.6")
+        }
     }
+}
+
+tasks.withType<Test>().configureEach {
+    val contractsDirectory = rootProject.layout.projectDirectory.dir("contracts")
+    inputs.dir(contractsDirectory)
+    systemProperty("uac.contracts.root", contractsDirectory.asFile.absolutePath)
 }

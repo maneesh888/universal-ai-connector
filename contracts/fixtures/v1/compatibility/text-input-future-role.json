@@ -1,0 +1,7 @@
+{
+  "role": "critic_v2",
+  "content": "Preserve this role.",
+  "futureInputMember": {
+    "mode": "future"
+  }
+}

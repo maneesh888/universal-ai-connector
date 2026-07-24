@@ -1,0 +1,16 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_0"
+  },
+  {
+    "contractVersion": "1",
+    "type": "future.trace",
+    "terminal": false,
+    "sequence": 2,
+    "responseId": "resp_other"
+  }
+]

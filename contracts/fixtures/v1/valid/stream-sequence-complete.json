@@ -1,0 +1,102 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "requestId": "req_complete",
+    "responseId": "resp_complete"
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.started",
+    "terminal": false,
+    "sequence": 2,
+    "requestId": "req_complete",
+    "responseId": "resp_complete",
+    "outputId": "out_0",
+    "outputIndex": 0
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.delta",
+    "terminal": false,
+    "sequence": 3,
+    "requestId": "req_complete",
+    "responseId": "resp_complete",
+    "outputId": "out_0",
+    "outputIndex": 0,
+    "delta": "Hel"
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.delta",
+    "terminal": false,
+    "sequence": 4,
+    "requestId": "req_complete",
+    "responseId": "resp_complete",
+    "outputId": "out_0",
+    "outputIndex": 0,
+    "delta": "lo"
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.completed",
+    "terminal": false,
+    "sequence": 5,
+    "requestId": "req_complete",
+    "responseId": "resp_complete",
+    "outputId": "out_0",
+    "outputIndex": 0,
+    "output": {
+      "id": "out_0",
+      "index": 0,
+      "kind": "text",
+      "text": "Hello"
+    }
+  },
+  {
+    "contractVersion": "1",
+    "type": "usage.updated",
+    "terminal": false,
+    "sequence": 6,
+    "requestId": "req_complete",
+    "responseId": "resp_complete",
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 1,
+      "totalTokens": 5
+    }
+  },
+  {
+    "contractVersion": "1",
+    "type": "response.completed",
+    "terminal": true,
+    "sequence": 7,
+    "requestId": "req_complete",
+    "responseId": "resp_complete",
+    "response": {
+      "contractVersion": "1",
+      "id": "resp_complete",
+      "requestId": "req_complete",
+      "target": {
+        "providerId": "openai",
+        "modelId": "gpt-4.1-mini"
+      },
+      "outputs": [
+        {
+          "id": "out_0",
+          "index": 0,
+          "kind": "text",
+          "text": "Hello"
+        }
+      ],
+      "usage": {
+        "inputTokens": 4,
+        "outputTokens": 2,
+        "totalTokens": 6
+      },
+      "completionReason": "stop"
+    }
+  }
+]

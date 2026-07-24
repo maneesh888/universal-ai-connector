@@ -1,0 +1,8 @@
+{
+  "category": "future_provider",
+  "code": "future_condition_v2",
+  "message": "A future error remains distinguishable.",
+  "futureErrorMember": {
+    "ignored": true
+  }
+}

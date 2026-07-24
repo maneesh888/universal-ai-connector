@@ -1,0 +1,9 @@
+{
+  "inputTokens": 2,
+  "outputTokens": 1,
+  "totalTokens": 3,
+  "inputDetails": {
+    "cached": 2,
+    "uncached": 1
+  }
+}

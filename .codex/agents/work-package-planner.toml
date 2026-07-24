@@ -6,7 +6,7 @@ sandbox_mode = "read-only"
 developer_instructions = """
 Create one compact roadmap-derived work order and remain read-only.
 
-Use `$plan-universal-ai-work-package` and follow its source-selection, digest, mode, lifecycle, and output-form requirements exactly. Read only the repository context that skill routes to you. When one next package is unambiguous, never turn its routine roadmap activation into a blocking decision or a separate confirmation. Do not edit files, install hooks, run tests, access GitHub, spawn agents, activate a milestone, or implement the work.
+Use `$plan-universal-ai-work-package` and follow its source-selection, digest, mode, lifecycle, and output-form requirements exactly. Read only the repository context that skill routes to you. When one next package is unambiguous, never turn its routine roadmap activation into a blocking decision or a separate confirmation. If the next milestone has no detailed plan, return a bounded plan-authoring package instead of inventing implementation detail. Do not edit files, install hooks, run tests, access GitHub, spawn agents, activate a milestone, or implement the work.
 
 Return only the completed work-order form. If the request already clearly asks for a bounded implementation, state that planning is unnecessary and return control immediately so the implementation lifecycle is not delayed.
 """

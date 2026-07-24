@@ -1,0 +1,43 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_0"
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.started",
+    "terminal": false,
+    "sequence": 2,
+    "responseId": "resp_0",
+    "outputId": "out_0",
+    "outputIndex": 0
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.delta",
+    "terminal": false,
+    "sequence": 3,
+    "responseId": "resp_0",
+    "outputId": "out_0",
+    "outputIndex": 0,
+    "delta": "Hello"
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.completed",
+    "terminal": false,
+    "sequence": 4,
+    "responseId": "resp_0",
+    "outputId": "out_0",
+    "outputIndex": 0,
+    "output": {
+      "id": "out_0",
+      "index": 0,
+      "kind": "text",
+      "text": "Goodbye"
+    }
+  }
+]

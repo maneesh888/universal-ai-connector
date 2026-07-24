@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:model-target",
+  "title": "Universal AI Connector V1 Model Target",
+  "description": "Provider-neutral selection of one provider-owned model.",
+  "type": "object",
+  "properties": {
+    "providerId": {
+      "$ref": "urn:universal-ai-connector:contract:v1:provider-id"
+    },
+    "modelId": {
+      "$ref": "urn:universal-ai-connector:contract:v1:model-id"
+    }
+  },
+  "required": [
+    "providerId",
+    "modelId"
+  ],
+  "additionalProperties": true
+}

@@ -1,0 +1,17 @@
+{
+  "id": "out_1",
+  "index": 1,
+  "kind": "structured_json",
+  "json": {
+    "answer": "Hello",
+    "confidence": 0.875
+  },
+  "extensions": {
+    "com.example.connector": {
+      "trace": "output-complete",
+      "nested": {
+        "preserved": true
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:stream-sequence",
+  "title": "Universal AI Connector V1 Stream Sequence",
+  "description": "An ordered event sequence used to verify cross-event correlation and terminal invariants.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "$ref": "urn:universal-ai-connector:contract:v1:stream-event"
+  }
+}

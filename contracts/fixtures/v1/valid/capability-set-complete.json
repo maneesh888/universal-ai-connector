@@ -1,0 +1,25 @@
+{
+  "streaming": {
+    "support": "supported",
+    "extensions": {
+      "com.example.connector": {
+        "delivery": {
+          "ordered": true
+        }
+      }
+    }
+  },
+  "structured_output": {
+    "support": "supported",
+    "limits": {
+      "max_schema_bytes": 65536,
+      "max_schema_depth": 16
+    }
+  },
+  "legacy_text": {
+    "support": "unsupported"
+  },
+  "embeddings": {
+    "support": "unknown"
+  }
+}

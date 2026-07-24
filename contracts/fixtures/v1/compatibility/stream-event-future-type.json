@@ -1,0 +1,15 @@
+{
+  "contractVersion": "1",
+  "type": "future.trace",
+  "terminal": false,
+  "sequence": 2,
+  "responseId": "resp_future",
+  "extensions": {
+    "com.example.future": {
+      "payload": {
+        "preserved": true
+      }
+    }
+  },
+  "futureEventMember": "ignored"
+}

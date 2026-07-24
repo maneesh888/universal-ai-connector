@@ -1,0 +1,7 @@
+{
+  "contractVersion": "1",
+  "type": "future.terminal",
+  "terminal": true,
+  "sequence": 1,
+  "responseId": "resp_0"
+}

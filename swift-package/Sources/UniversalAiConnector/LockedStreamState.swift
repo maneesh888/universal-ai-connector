@@ -7,6 +7,7 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: AsyncThrowingStream<Element, Error>.Continuation?
     private var cancellationAction: CancellationAction?
+    private var terminalElement: Element?
     private var terminalError: Error?
     private var cancellationActionInstalled = false
     private var cancellationRequested = false
@@ -16,10 +17,12 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
         _ continuation: AsyncThrowingStream<Element, Error>.Continuation
     ) {
         let isFinished: Bool
+        let terminalElement: Element?
         let terminalError: Error?
 
         lock.lock()
         isFinished = finished
+        terminalElement = self.terminalElement
         terminalError = self.terminalError
         if !isFinished {
             self.continuation = continuation
@@ -30,7 +33,10 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
             return
         }
 
-        if let terminalError {
+        if let terminalElement {
+            continuation.yield(terminalElement)
+            continuation.finish()
+        } else if let terminalError {
             continuation.finish(throwing: terminalError)
         } else {
             continuation.finish()
@@ -72,6 +78,32 @@ final class LockedStreamState<Element: Sendable>: @unchecked Sendable {
         lock.unlock()
 
         continuation?.yield(element)
+    }
+
+    /// Atomically accepts the explicit semantic terminal element.
+    ///
+    /// Marking the state finished before yielding prevents cancellation, a late
+    /// event, or the adapter's following normal-completion callback from winning
+    /// after the terminal event has been observed.
+    func yieldTerminal(_ element: Element) {
+        let continuation: AsyncThrowingStream<Element, Error>.Continuation?
+
+        lock.lock()
+        guard !finished else {
+            lock.unlock()
+            return
+        }
+
+        finished = true
+        terminalElement = element
+        terminalError = nil
+        continuation = self.continuation
+        self.continuation = nil
+        cancellationAction = nil
+        lock.unlock()
+
+        continuation?.yield(element)
+        continuation?.finish()
     }
 
     func finish() {

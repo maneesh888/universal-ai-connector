@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:request",
+  "title": "Universal AI Connector V1 Request",
+  "description": "A versioned provider-neutral request. Omitted responseFormat, generation, and extensions select their documented empty defaults.",
+  "allOf": [
+    {
+      "$ref": "urn:universal-ai-connector:contract:v1:envelope"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "target": {
+          "$ref": "urn:universal-ai-connector:contract:v1:model-target"
+        },
+        "input": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "urn:universal-ai-connector:contract:v1:text-input"
+          }
+        },
+        "responseFormat": {
+          "$ref": "urn:universal-ai-connector:contract:v1:response-format"
+        },
+        "generation": {
+          "$ref": "urn:universal-ai-connector:contract:v1:generation-parameters"
+        },
+        "extensions": {
+          "$ref": "urn:universal-ai-connector:contract:v1:extensions"
+        }
+      },
+      "required": [
+        "target",
+        "input"
+      ],
+      "additionalProperties": true
+    }
+  ]
+}

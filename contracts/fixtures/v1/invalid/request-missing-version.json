@@ -1,0 +1,12 @@
+{
+  "target": {
+    "providerId": "openai",
+    "modelId": "gpt-4.1-mini"
+  },
+  "input": [
+    {
+      "role": "user",
+      "content": "Hello"
+    }
+  ]
+}

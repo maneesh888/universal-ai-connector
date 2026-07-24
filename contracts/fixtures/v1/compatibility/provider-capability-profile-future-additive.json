@@ -1,0 +1,26 @@
+{
+  "contractVersion": "1",
+  "providerId": "example",
+  "capabilities": {
+    "future_audio": {
+      "support": "preview",
+      "limits": {
+        "max_channels": 2
+      }
+    }
+  },
+  "extensions": {
+    "com.example.future": {
+      "nested": [
+        true,
+        null,
+        {
+          "value": 1
+        }
+      ]
+    }
+  },
+  "futureProfileMember": {
+    "ignored": true
+  }
+}

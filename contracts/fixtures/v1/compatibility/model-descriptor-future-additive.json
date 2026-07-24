@@ -1,0 +1,33 @@
+{
+  "contractVersion": "1",
+  "target": {
+    "providerId": "example",
+    "modelId": "future-model",
+    "futureTargetMember": true
+  },
+  "displayName": "Future Model",
+  "limits": {
+    "contextWindowTokens": 262144,
+    "maxInputTokens": 245760,
+    "maxOutputTokens": 16384,
+    "futureLimit": 7
+  },
+  "capabilities": {
+    "future_audio": {
+      "support": "preview",
+      "limits": {
+        "max_channels": 2
+      }
+    }
+  },
+  "extensions": {
+    "com.example.future": {
+      "nested": {
+        "preserved": true
+      }
+    }
+  },
+  "futureDescriptorMember": {
+    "ignored": true
+  }
+}

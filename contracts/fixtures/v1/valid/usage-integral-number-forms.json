@@ -1,0 +1,11 @@
+{
+  "inputTokens": 1e0,
+  "outputTokens": 2.0,
+  "totalTokens": 3e0,
+  "inputDetails": {
+    "cached": 1.0
+  },
+  "outputDetails": {
+    "visible": 2e0
+  }
+}
