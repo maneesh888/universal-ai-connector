@@ -2,18 +2,19 @@
 
 ## Status and activation gate
 
-P2 is `Completed`. P3 is `Not started`, no work package is active, and this plan does not activate
-P3 or authorize product-code changes.
+P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
+P3-A is the sole active work package.
 
-P3 implementation may begin only through a separate roadmap transition that:
+The accepted activation transition:
 
 1. keeps every earlier milestone `Completed`;
 2. marks P3 as the only `In progress` milestone;
 3. names P3-A as the active work package; and
 4. leaves P4-P9 `Not started`.
 
-Until that transition is accepted, do not add Ktor dependencies, transport or registry production
-types, HTTP engines, SSE parsers, network configuration, or provider adapters.
+P3-A may add only the transport boundary, construction, ownership, cleanup, and focused lifecycle
+tests named below. URL/header policy, SSE, provider-registry behavior, and provider adapters remain
+inactive.
 
 ## Objective
 
@@ -158,10 +159,12 @@ The completed milestone must provide:
 
 ## Work packages
 
-All packages remain inactive until the roadmap activates P3. Execute them in order and keep only
-one active package at a time.
+Execute the packages in order and keep only one active package at a time. P3-A is active; P3-B
+through P3-E remain inactive.
 
 ### P3-A: Transport boundary and construction
+
+Status: `In progress`.
 
 - Add the minimum Ktor dependencies and supported engine wiring.
 - Define the internal provider-neutral transport boundary.
