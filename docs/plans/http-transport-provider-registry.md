@@ -3,18 +3,19 @@
 ## Status and activation gate
 
 P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
-P3-A is the sole active work package.
+P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B is now the
+sole active work package.
 
 The accepted activation transition:
 
 1. keeps every earlier milestone `Completed`;
 2. marks P3 as the only `In progress` milestone;
-3. names P3-A as the active work package; and
+3. initially named P3-A as the active work package; and
 4. leaves P4-P9 `Not started`.
 
-P3-A may add only the transport boundary, construction, ownership, cleanup, and focused lifecycle
-tests named below. URL/header policy, SSE, provider-registry behavior, and provider adapters remain
-inactive.
+The accepted P3-A transition added only the transport boundary, construction, ownership, cleanup,
+and focused lifecycle tests named below. P3-B may now add only URL, header, timeout, and redaction
+policy. SSE, provider-registry behavior, and provider adapters remain inactive.
 
 ## Objective
 
@@ -83,7 +84,6 @@ The completed milestone must provide:
 
 ### Out of scope
 
-- activating P3 as part of this planning change;
 - OpenAI, Anthropic, OpenRouter, OpenAI-compatible, or Gateway request/response DTOs;
 - provider authentication schemes, signing, payload translation, model discovery, or capability
   probing;
@@ -159,12 +159,12 @@ The completed milestone must provide:
 
 ## Work packages
 
-Execute the packages in order and keep only one active package at a time. P3-A is active; P3-B
-through P3-E remain inactive.
+Execute the packages in order and keep only one active package at a time. P3-A is complete, P3-B is
+active, and P3-C through P3-E remain inactive.
 
 ### P3-A: Transport boundary and construction
 
-Status: `In progress`.
+Status: `Completed` on July 24, 2026.
 
 - Add the minimum Ktor dependencies and supported engine wiring.
 - Define the internal provider-neutral transport boundary.
@@ -174,6 +174,8 @@ Status: `In progress`.
   an adapter.
 
 ### P3-B: URL, header, timeout, and redaction policy
+
+Status: `In progress`.
 
 - Implement base URL validation, normalization, and endpoint resolution.
 - Implement protected-header composition and injection rejection.
@@ -277,7 +279,7 @@ After P4 establishes the live suite, any later P3 change that can affect authent
 streaming, retry, error mapping, cancellation, or redaction must also pass the affected local
 pre-PR live gate and protected exact-head GitHub live gate required by the roadmap.
 
-For this plan-only change, run:
+For documentation-only changes to this plan, run:
 
 ```bash
 ./scripts/check.sh --hygiene
@@ -337,7 +339,13 @@ P3 does not prove:
 - OpenKeyboard or Gateway V1 integration; or
 - release readiness for `0.1.0-alpha.1`.
 
-This plan-only change proves no runtime behavior and makes no P3 implementation claim.
+The completed P3-A package proves deterministic provider-neutral request/response forwarding,
+platform-default engine construction, caller-owned engine injection, chunked response reads,
+callback failure cleanup, connector-owned exactly-once cleanup, shared borrowed-resource survival,
+partial-construction cleanup, active-operation cancellation, stable use-after-close errors, and
+existing Kotlin and Swift behavior through local `MockEngine`, host, package, and sample checks.
+It does not prove P3-B URL/header/timeout/redaction policy, P3-C SSE or response metadata, P3-D
+registry behavior, P3-E integrated adapter lifecycles, or any live-network behavior.
 
 ## Completion evidence
 
@@ -352,6 +360,27 @@ For every activated P3 package, record:
 - retry, cancellation, terminal, and redaction behavior proven;
 - proof limits and unexercised surfaces; and
 - the next incomplete P3 package.
+
+### P3-A completion record
+
+- Candidate branch: `feature/p3-transport-boundary`; the exact reviewed head, CI run, merge, and
+  resulting `main` evidence belong in the pull-request brief because embedding a candidate SHA in
+  its own commit would change that SHA.
+- Added Ktor 3.5.1 core, CIO, Android, Darwin, and MockEngine dependencies in the existing
+  `:bridge` module, with explicit platform-default client construction.
+- Added an internal provider-neutral callback-scoped request, response, raw-header, and byte-chunk
+  transport plus default-owned and caller-engine-injected construction.
+- Added deterministic forwarding, multi-chunk read, callback cleanup, owned/borrowed/shared
+  lifecycle, partial-construction failure, concurrent close, active cancellation, use-after-close,
+  Swift continuation/stream race, and public-header leak tests.
+- Updated Kotlin, Android, JVM, Apple bridge, Swift façade, and sample lifecycle boundaries without
+  connecting the transport to a provider adapter or making a live request.
+- Focused JVM, Android host, iOS Simulator, consumer, Swift Package, XCFramework, and iOS sample
+  checks passed; the commit/push hooks, exact-head CI, independent review, and guarded merge remain
+  the authoritative Release gates for the package transition.
+- Proof remains deterministic and secretless. No P3-B policy, P3-C parsing/metadata, P3-D registry,
+  provider, Gateway, physical-device execution, live-network behavior, or distribution is proven.
+- Next package: P3-B URL, header, timeout, and redaction policy.
 
 P3 completion becomes authoritative only after the closing pull request passes the full exact-head
 local gate, exact-head CI, independent review, guarded merge, and the resulting `main` workflow

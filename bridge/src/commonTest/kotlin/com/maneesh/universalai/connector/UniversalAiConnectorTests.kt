@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -51,6 +52,11 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class UniversalAiConnectorTests {
     private val connector = UniversalAiConnector()
+
+    @AfterTest
+    fun closeConnector() {
+        connector.close()
+    }
 
     @Test
     fun versionAndOneShotResponseUseTheCanonicalShape() = runTest {

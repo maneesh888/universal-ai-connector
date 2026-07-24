@@ -4,10 +4,12 @@ import UniversalAiConnectorBridge
 ///
 /// A connector is reusable and supports concurrent responses and independently
 /// created streams. Each returned stream supports one consuming task. Cancelling
-/// an operation's consuming task is propagated to Kotlin. The connector owns no
-/// caller-managed resource, so no explicit cleanup method is required.
+/// an operation's consuming task is propagated to Kotlin. Call ``close()`` when
+/// the connector is no longer needed; close is safe to repeat, cancels active
+/// operations, and is also performed automatically during deinitialization.
 public final class UniversalAiConnector: @unchecked Sendable {
     private let bridge: AppleConnectorBridge
+    private let lifecycle = LockedConnectorLifecycle()
     private let testingHooks: UniversalAiConnectorTestingHooks
 
     /// Creates a deterministic, secretless connector.
@@ -26,9 +28,25 @@ public final class UniversalAiConnector: @unchecked Sendable {
         self.testingHooks = testingHooks
     }
 
+    deinit {
+        close()
+    }
+
     /// The package version.
     public var version: String {
         bridge.version()
+    }
+
+    /// Cancels active work and releases connector-owned resources.
+    ///
+    /// Active operations throw `CancellationError`. New response and stream
+    /// operations fail with ``UniversalAiConnectorError`` after close begins.
+    /// Calling close repeatedly is safe.
+    public func close() {
+        guard lifecycle.close() else {
+            return
+        }
+        bridge.close()
     }
 
     /// Returns one deterministic canonical response.
@@ -39,6 +57,9 @@ public final class UniversalAiConnector: @unchecked Sendable {
     public func respond(
         to request: UniversalAiRequest
     ) async throws -> UniversalAiResponse {
+        guard lifecycle.isOpen else {
+            throw Self.closedError
+        }
         try Task.checkCancellation()
         do {
             try UniversalAiContractValidation.validateRequest(request)
@@ -47,11 +68,28 @@ public final class UniversalAiConnector: @unchecked Sendable {
         }
         try Task.checkCancellation()
 
-        let state = LockedOperationState<UniversalAiResponse>()
+        let operationIdentifier = UUID()
+        let lifecycle = self.lifecycle
+        let state = LockedOperationState<UniversalAiResponse> {
+            lifecycle.unregister(operationIdentifier)
+        }
+        guard lifecycle.register(
+            operationIdentifier,
+            onClose: {
+                state.cancel()
+            }
+        ) else {
+            throw Self.closedError
+        }
 
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
-                state.installContinuation(continuation)
+                guard state.installContinuation(continuation) else {
+                    return
+                }
+                guard state.isActive else {
+                    return
+                }
 
                 let handle = bridge.respond(
                     request: request.toBridge(),
@@ -92,15 +130,30 @@ public final class UniversalAiConnector: @unchecked Sendable {
     public func stream(
         request: UniversalAiRequest
     ) -> AsyncThrowingStream<UniversalAiStreamEvent, Error> {
-        let state = LockedStreamState<UniversalAiStreamEvent>()
+        let operationIdentifier = UUID()
+        let lifecycle = self.lifecycle
+        let state = LockedStreamState<UniversalAiStreamEvent> {
+            lifecycle.unregister(operationIdentifier)
+        }
         let testingHooks = self.testingHooks
+        let registered = lifecycle.register(
+            operationIdentifier,
+            onClose: {
+                state.cancel()
+            }
+        )
+        if !registered {
+            state.fail(Self.closedError)
+        }
 
         let callbackStream = AsyncThrowingStream<UniversalAiStreamEvent, Error> {
             continuation in
             continuation.onTermination = { @Sendable _ in
                 state.cancel()
             }
-            state.installContinuation(continuation)
+            guard state.installContinuation(continuation) else {
+                return
+            }
 
             if Task.isCancelled {
                 state.cancel()
@@ -117,6 +170,9 @@ public final class UniversalAiConnector: @unchecked Sendable {
             }
             if Task.isCancelled {
                 state.cancel()
+                return
+            }
+            guard state.isActive else {
                 return
             }
 
@@ -164,6 +220,12 @@ public final class UniversalAiConnector: @unchecked Sendable {
             streamCancellations: Int(snapshot.streamCancellations)
         )
     }
+
+    private static let closedError = UniversalAiConnectorError(
+        trustedCategory: .validation,
+        code: .invalidRequest,
+        message: "The Universal AI Connector is closed."
+    )
 
     private static func map(
         _ error: AppleBridgeError

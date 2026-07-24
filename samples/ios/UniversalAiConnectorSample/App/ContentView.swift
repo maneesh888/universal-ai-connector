@@ -103,6 +103,10 @@ final class UniversalAiConnectorViewModel: ObservableObject {
         version = connector.version
     }
 
+    deinit {
+        connector.close()
+    }
+
     func runResponse() {
         guard !isResponseRunning else {
             return

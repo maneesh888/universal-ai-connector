@@ -116,6 +116,11 @@ internal class AndroidSampleController(
             }
         }
 
+    fun close() {
+        activeJob?.cancel()
+        connector.close()
+    }
+
     private fun launchOperation(
         runningHeadline: String,
         operation: suspend () -> Unit,

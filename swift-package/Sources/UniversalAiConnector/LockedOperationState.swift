@@ -3,34 +3,50 @@ import Foundation
 /// Serializes continuation, callback, and cancellation races for one response.
 final class LockedOperationState<Value: Sendable>: @unchecked Sendable {
     typealias CancellationAction = @Sendable () -> Void
+    typealias TerminationAction = @Sendable () -> Void
 
     private let lock = NSLock()
+    private let terminationAction: TerminationAction
     private var continuation: CheckedContinuation<Value, Error>?
     private var cancellationAction: CancellationAction?
     private var completion: Result<Value, Error>?
     private var cancellationActionInstalled = false
-    private var cancellationRequested = false
+    private var underlyingCancellationRequested = false
     private var finished = false
 
-    func installContinuation(_ continuation: CheckedContinuation<Value, Error>) {
+    init(onTermination: @escaping TerminationAction = {}) {
+        terminationAction = onTermination
+    }
+
+    var isActive: Bool {
+        lock.lock()
+        let isActive = !finished
+        lock.unlock()
+        return isActive
+    }
+
+    @discardableResult
+    func installContinuation(
+        _ continuation: CheckedContinuation<Value, Error>
+    ) -> Bool {
         let pendingCompletion: Result<Value, Error>?
+        let installed: Bool
 
         lock.lock()
         if finished {
             pendingCompletion = completion
-        } else if cancellationRequested {
-            finished = true
-            completion = .failure(CancellationError())
-            pendingCompletion = completion
+            installed = false
         } else {
             self.continuation = continuation
             pendingCompletion = nil
+            installed = true
         }
         lock.unlock()
 
         if let pendingCompletion {
             continuation.resume(with: pendingCompletion)
         }
+        return installed
     }
 
     /// Installs cancellation after the Kotlin call returns its handle.
@@ -43,7 +59,7 @@ final class LockedOperationState<Value: Sendable>: @unchecked Sendable {
         lock.lock()
         if cancellationActionInstalled {
             shouldCancel = false
-        } else if cancellationRequested {
+        } else if underlyingCancellationRequested {
             cancellationActionInstalled = true
             shouldCancel = true
         } else if finished {
@@ -70,6 +86,16 @@ final class LockedOperationState<Value: Sendable>: @unchecked Sendable {
     }
 
     func cancel() {
+        finish(
+            with: .failure(CancellationError()),
+            cancellingUnderlyingOperation: true
+        )
+    }
+
+    private func finish(
+        with result: Result<Value, Error>,
+        cancellingUnderlyingOperation: Bool = false
+    ) {
         let continuation: CheckedContinuation<Value, Error>?
         let cancellationAction: CancellationAction?
 
@@ -79,35 +105,18 @@ final class LockedOperationState<Value: Sendable>: @unchecked Sendable {
             return
         }
 
-        cancellationRequested = true
         finished = true
-        completion = .failure(CancellationError())
+        completion = result
+        underlyingCancellationRequested = cancellingUnderlyingOperation
         continuation = self.continuation
         self.continuation = nil
-        cancellationAction = self.cancellationAction
+        cancellationAction =
+            cancellingUnderlyingOperation ? self.cancellationAction : nil
         self.cancellationAction = nil
         lock.unlock()
 
         cancellationAction?()
-        continuation?.resume(throwing: CancellationError())
-    }
-
-    private func finish(with result: Result<Value, Error>) {
-        let continuation: CheckedContinuation<Value, Error>?
-
-        lock.lock()
-        guard !finished else {
-            lock.unlock()
-            return
-        }
-
-        finished = true
-        completion = result
-        continuation = self.continuation
-        self.continuation = nil
-        cancellationAction = nil
-        lock.unlock()
-
         continuation?.resume(with: result)
+        terminationAction()
     }
 }

@@ -56,9 +56,10 @@ import kotlin.native.HiddenFromObjC
 /**
  * Product-named callback adapter used privately by the supported Swift Package façade.
  *
- * The default adapter owns no long-lived coroutine scope or resource. Every call launches an
- * independent operation on [Dispatchers.Default], and its returned handle cancels only that call.
- * Cancellation intentionally delivers no success, completion, or error callback.
+ * The default adapter owns its connector transport but no long-lived coroutine scope. Every call
+ * launches an independent operation on [Dispatchers.Default], and its returned handle cancels
+ * only that call. Cancellation intentionally delivers no success, completion, or error callback.
+ * [close] releases connector-owned resources and is safe to call repeatedly.
  */
 class AppleConnectorBridge internal constructor(
     private val connector: UniversalAiConnector,
@@ -77,6 +78,11 @@ class AppleConnectorBridge internal constructor(
     )
 
     fun version(): String = connector.version
+
+    /** Closes connector-owned resources. Safe to call repeatedly. */
+    fun close() {
+        connector.close()
+    }
 
     fun respond(
         request: AppleBridgeRequest,

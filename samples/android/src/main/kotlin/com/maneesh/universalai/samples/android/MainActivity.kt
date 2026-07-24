@@ -44,6 +44,11 @@ class MainActivity : ComponentActivity() {
         }
         controller.runCompleteDemo()
     }
+
+    override fun onDestroy() {
+        controller.close()
+        super.onDestroy()
+    }
 }
 
 @Composable
