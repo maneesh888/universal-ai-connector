@@ -17,7 +17,7 @@ Bind every conclusion and state change to one exact PR head.
 - Do not request another confirmation between requested lifecycle stages.
 - Stop for a material scope expansion, destructive action, unavailable credential/external dependency, or a failed mandatory gate.
 
-Never bypass branch protection, hooks, scanners, or required checks; use `--admin`; force a merge; dismiss valid feedback; expose credentials; or add an unattended merger.
+Never bypass branch protection, hooks, scanners, or required checks; never use `--admin`, force a merge, dismiss valid feedback, expose credentials, or add an unattended merger.
 
 ## Establish the exact target
 
@@ -81,14 +81,14 @@ Otherwise:
 1. Refresh the head, checks, reviews, threads, protection, mergeability, scope, and latest user instruction.
 2. Confirm the head remains the exact reviewed and locally verified SHA.
 3. Mark the draft ready.
-4. Refresh the same state once more and abort on any mismatch or new opt-out.
+4. Refresh the same state once more. On any head, gate, protection, mergeability, scope, or review mismatch, disable any queued auto-merge, return the PR to draft when applicable, and restart the exact-head cycle or report the blocker. On a late `keep draft`, disable any queued auto-merge, run `gh pr ready <number> --undo`, verify draft and unmerged, and stop. On a late `do not merge`, disable any queued auto-merge, verify unmerged, and stop; the PR may remain ready.
 5. Run:
 
    ```bash
    gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
    ```
 
-6. Inspect PR state immediately. If GitHub queues auto-merge instead of merging, disable it, verify the PR remains unmerged, and report the blocker.
+6. Inspect PR state immediately. If GitHub queues auto-merge instead of merging, disable it. Apply a late `keep draft` by returning the PR to draft; otherwise leave its current draft/readiness state. Verify unmerged and report the blocker.
 7. If the head changes before completion, disable auto-merge, return the PR to draft when applicable, and restart the exact-head cycle.
 
 Never leave queued auto-merge active.
