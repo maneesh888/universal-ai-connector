@@ -2,12 +2,13 @@
 
 ## Status
 
-- Repository stage: P2 canonical core and JSON contracts in progress
-- Current implementation: the accepted P1 host baseline plus a local P2 canonical-contract candidate under acceptance verification
-- Active work package: P2-J compatibility hardening and acceptance
+- Repository stage: P2 canonical core and JSON contracts completed; P3 not started
+- Current implementation: the accepted P1 host baseline plus the provider-neutral P2 canonical-contract baseline
+- Active work package: none; P3 requires separate activation
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
-- P2 activation: authorized July 24, 2026 after P1 completion; P2 is the only `In progress` milestone, ADRs 0001-0007 and the P2-D readiness decision are accepted, and P2-J is active
+- P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
+- P2 closeout authority: the transition in this milestone-closing candidate is accepted only after exact-head review and required checks pass, the pull request merges, and the resulting `main` workflow is inspected; those self-referential identifiers belong in the pull-request brief
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -105,7 +106,7 @@ After the draft pull request is created, the same affected live suite must run f
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
 | P1 | Cross-platform package and client-sample baseline | Completed | Product Kotlin API, JVM console, Android app, and Apple façade/sample accepted; closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed local verification, independent review, exact-head run 29991895652, PR #12 merge, and resulting `main` run 29993494307 |
-| P2 | Canonical core and JSON contracts | In progress | Activated July 24, 2026 after P1 completion; ADRs 0001-0007 and P2-D readiness are accepted, implementation packages P2-E through P2-I are present, and P2-J acceptance is active |
+| P2 | Canonical core and JSON contracts | Completed | Provider-neutral Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic compatibility checks, and host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |
 | P5 | Anthropic adapter | Not started | |
