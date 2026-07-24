@@ -1,0 +1,24 @@
+{
+  "contractVersion": "1",
+  "target": {
+    "providerId": "a",
+    "modelId": "モデル/v1"
+  },
+  "input": [
+    {
+      "role": "user",
+      "content": "x"
+    }
+  ],
+  "responseFormat": {
+    "kind": "json_schema",
+    "schema": true
+  },
+  "generation": {
+    "maxOutputTokens": 1048576,
+    "temperature": 0.0,
+    "topP": 1.0,
+    "stopSequences": []
+  },
+  "extensions": {}
+}

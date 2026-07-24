@@ -32,9 +32,10 @@ Write the description in lowercase kebab-case. Keep the full branch name concise
 ## Current Verification
 
 - Hygiene only: `./scripts/check.sh --hygiene` validates shell syntax, secrets, and whitespace, including untracked files, and regression-tests fail-closed secret scanning that cannot be suppressed by ripgrep configuration or ignore files.
-- Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, JVM and Android shared tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
+- Mandatory commit check: `./scripts/check.sh --quick` adds Android sample script tests, canonical contract tests on JVM, Android host, and iOS Simulator, shared behavior tests, Android AAR packaging, iOS Simulator bridge tests, and the JVM and Android consumers.
 - Mandatory push and PR check: `./scripts/check.sh --full` adds combined device-and-simulator XCFramework assembly and validation, Swift Package tests, the iOS simulator sample build, and a generic iOS-device sample link/build.
 - JVM shared tests: `./gradlew :bridge:jvmTest`
+- Canonical contract conformance: `./scripts/check-contracts.sh --all`
 - JVM console consumer: `./gradlew :samples:jvm-console:consumerCheck`
 - JVM console application: `./gradlew :samples:jvm-console:run`
 - Android shared host tests: `./gradlew :bridge:testAndroidHostTest`

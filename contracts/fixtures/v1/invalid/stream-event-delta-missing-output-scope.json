@@ -1,0 +1,8 @@
+{
+  "contractVersion": "1",
+  "type": "output.delta",
+  "terminal": false,
+  "sequence": 1,
+  "responseId": "resp_0",
+  "delta": "Hello"
+}

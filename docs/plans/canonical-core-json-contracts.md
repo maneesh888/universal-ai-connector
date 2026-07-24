@@ -2,7 +2,7 @@
 
 ## Status and activation gate
 
-This document remains a planning artifact. P1 is `Completed`, P2 is `Not started`, and no roadmap milestone is currently `In progress`. Activating P2 requires a separate authorized status transition that names its first active ADR package.
+P1 and P2 are `Completed`. P2 was separately authorized and activated on July 24, 2026, P2-A was its first package, and P2-J closed the milestone. P3 remains `Not started` and requires separate activation.
 
 Creating and reviewing this plan does not authorize canonical-contract implementation. Do not add serialization dependencies, canonical models, schemas, fixtures, generated contract artifacts, or canonical host APIs until all of the following are true:
 
@@ -13,7 +13,7 @@ Creating and reviewing this plan does not authorize canonical-contract implement
 5. the roadmap records P1 as `Completed`; and
 6. the roadmap marks P2 as the only `In progress` milestone and names the first active ADR package.
 
-Items 1-5 were satisfied by P1 closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946`, exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652), PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12), and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307). Item 6 remains the separate P2 activation gate. P1 completion and P2 activation are separate status changes.
+Items 1-4 were satisfied by P1 closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946`, exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652), PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12), and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307). Item 5 was recorded by roadmap-closeout PR [#14](https://github.com/maneesh888/universal-ai-connector/pull/14) at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed. Item 6 was satisfied by the separate July 24, 2026 authorization that made P2 the sole `In progress` milestone and named P2-A first. P1 completion and P2 activation remain separate status changes.
 
 ## Objective
 
@@ -267,7 +267,11 @@ Retain compatibility fixtures after release. Removal follows the versioning ADR 
 
 ## Work packages
 
-Execute one package at a time. Keep P2 as the only roadmap milestone `In progress`.
+P2-A through P2-J are complete. No P3 work package is active.
+
+Final package: P2-J compatibility hardening and acceptance. ADRs 0001-0007 and the P2-D
+readiness decision are accepted; implementation packages P2-E through P2-I and the P2-J
+acceptance corpus, audits, host builds, and status reconciliation are complete.
 
 ### P2-A: Error, cancellation, and streaming ADRs
 
@@ -336,6 +340,8 @@ No implementation package begins unless P2-D concludes that all prerequisite dec
 - Update the JVM, Android, and iOS samples together after the canonical host shape is stable.
 
 ### P2-J: Compatibility hardening and acceptance
+
+Status: `Completed`.
 
 - Complete the fixture corpus and public-surface audits.
 - Compile all documented first-use paths.
@@ -452,4 +458,4 @@ For every P2 package, record:
 - proof limits and unexercised surfaces; and
 - the next incomplete P2 package.
 
-P2-J may mark the milestone completed only after the roadmap acceptance criteria, this plan's acceptance criteria, mandatory local checks, independent review, required GitHub checks, and resulting `main` verification all agree.
+This atomic closeout is accepted only after the roadmap acceptance criteria, this plan's acceptance criteria, mandatory local checks, independent exact-head review, required GitHub checks, merge, and resulting `main` verification agree. Exact self-referential evidence remains in the milestone-closing pull-request brief. P3 is the next incomplete milestone but remains `Not started`.

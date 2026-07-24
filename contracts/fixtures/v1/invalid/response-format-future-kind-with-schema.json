@@ -1,0 +1,6 @@
+{
+  "kind": "future_binary",
+  "schema": {
+    "type": "string"
+  }
+}

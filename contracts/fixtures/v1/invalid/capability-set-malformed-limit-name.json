@@ -1,0 +1,8 @@
+{
+  "structured_output": {
+    "support": "supported",
+    "limits": {
+      "Bad Limit": 1
+    }
+  }
+}

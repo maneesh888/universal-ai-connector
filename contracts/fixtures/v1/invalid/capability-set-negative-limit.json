@@ -1,0 +1,8 @@
+{
+  "structured_output": {
+    "support": "supported",
+    "limits": {
+      "max_schema_depth": -1
+    }
+  }
+}

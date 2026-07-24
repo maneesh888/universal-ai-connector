@@ -1,0 +1,39 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_future"
+  },
+  {
+    "contractVersion": "1",
+    "type": "future.trace",
+    "terminal": false,
+    "sequence": 2,
+    "responseId": "resp_future",
+    "extensions": {
+      "com.example.future": {
+        "payload": "preserved"
+      }
+    },
+    "futureEventMember": true
+  },
+  {
+    "contractVersion": "1",
+    "type": "response.completed",
+    "terminal": true,
+    "sequence": 3,
+    "responseId": "resp_future",
+    "response": {
+      "contractVersion": "1",
+      "id": "resp_future",
+      "target": {
+        "providerId": "future-provider",
+        "modelId": "future/model:v2"
+      },
+      "outputs": [],
+      "completionReason": "future_pause"
+    }
+  }
+]

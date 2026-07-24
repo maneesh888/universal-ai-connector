@@ -1,0 +1,61 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_equivalent"
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.started",
+    "terminal": false,
+    "sequence": 2,
+    "responseId": "resp_equivalent",
+    "outputId": "out_0",
+    "outputIndex": 0
+  },
+  {
+    "contractVersion": "1",
+    "type": "output.completed",
+    "terminal": false,
+    "sequence": 3,
+    "responseId": "resp_equivalent",
+    "outputId": "out_0",
+    "outputIndex": 0,
+    "output": {
+      "id": "out_0",
+      "index": 0,
+      "kind": "structured_json",
+      "json": {
+        "value": 1.0
+      }
+    }
+  },
+  {
+    "contractVersion": "1",
+    "type": "response.completed",
+    "terminal": true,
+    "sequence": 4,
+    "responseId": "resp_equivalent",
+    "response": {
+      "contractVersion": "1",
+      "id": "resp_equivalent",
+      "target": {
+        "providerId": "openai",
+        "modelId": "gpt-4.1-mini"
+      },
+      "outputs": [
+        {
+          "id": "out_0",
+          "index": 0,
+          "kind": "structured_json",
+          "json": {
+            "value": 1
+          }
+        }
+      ],
+      "completionReason": "stop"
+    }
+  }
+]

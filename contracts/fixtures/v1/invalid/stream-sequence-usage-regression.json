@@ -1,0 +1,33 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_0"
+  },
+  {
+    "contractVersion": "1",
+    "type": "usage.updated",
+    "terminal": false,
+    "sequence": 2,
+    "responseId": "resp_0",
+    "usage": {
+      "inputTokens": 5,
+      "outputTokens": 2,
+      "totalTokens": 7
+    }
+  },
+  {
+    "contractVersion": "1",
+    "type": "usage.updated",
+    "terminal": false,
+    "sequence": 3,
+    "responseId": "resp_0",
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 2,
+      "totalTokens": 6
+    }
+  }
+]

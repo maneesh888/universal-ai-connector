@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:envelope",
+  "title": "Universal AI Connector V1 Contract Envelope",
+  "description": "The minimum versioned shape shared by independently encoded V1 request, response, stream-event, provider-profile, and model-descriptor envelopes. Reusable component schemas inherit version context from their containing envelope.",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": "1"
+    }
+  },
+  "required": [
+    "contractVersion"
+  ],
+  "additionalProperties": true
+}

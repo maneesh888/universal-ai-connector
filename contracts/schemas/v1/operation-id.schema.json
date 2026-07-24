@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:operation-id",
+  "title": "Universal AI Connector V1 Operation Identifier",
+  "description": "An opaque request, response, or output identifier. Unicode validity, whitespace exclusion, and the UTF-8 byte limit are semantic constraints.",
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 256
+}

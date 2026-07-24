@@ -1,7 +1,16 @@
 package com.maneesh.universalai.samples.android
 
 import com.maneesh.universalai.connector.UniversalAiConnector
-import com.maneesh.universalai.connector.UniversalAiConnectorException
+import com.maneesh.universalai.connector.contract.ModelId
+import com.maneesh.universalai.connector.contract.ProviderId
+import com.maneesh.universalai.connector.contract.UniversalAiException
+import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiRequest
+import com.maneesh.universalai.connector.contract.UniversalAiResponse
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
+import com.maneesh.universalai.connector.contract.UniversalAiTarget
+import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -12,8 +21,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -40,28 +48,29 @@ internal class AndroidSampleController(
 
     fun runCompleteDemo() =
         launchOperation("Running every deterministic path") {
-            val response = connector.respond(RESPONSE_INPUT)
-            mutableState.update { it.copy(response = response) }
+            val response = connector.respond(request(RESPONSE_INPUT))
+            mutableState.update { it.copy(response = response.textOutput()) }
 
             val streamEvents =
-                connector.stream(STREAM_INPUT).toList().map { event ->
-                    "${event.sequence}: ${event.text}"
-                }
+                connector
+                    .stream(request(STREAM_INPUT))
+                    .toList()
+                    .map { event -> event.render() }
             mutableState.update { it.copy(streamEvents = streamEvents) }
 
             mutableState.update { it.copy(error = captureStableError()) }
             proveResponseCancellation()
-            mutableState.update { it.copy(streamCancellation = stopStreamAfterFirstEvent()) }
+            mutableState.update { it.copy(streamCancellation = stopStreamAtFirstOutputDelta()) }
             mutableState.update { it.copy(headline = "All deterministic paths passed") }
         }
 
     fun runResponse() =
         launchOperation("Requesting one response") {
-            val response = connector.respond(RESPONSE_INPUT)
+            val response = connector.respond(request(RESPONSE_INPUT))
             mutableState.update {
                 it.copy(
                     headline = "One-shot response passed",
-                    response = response,
+                    response = response.textOutput(),
                 )
             }
         }
@@ -69,9 +78,10 @@ internal class AndroidSampleController(
     fun runStream() =
         launchOperation("Collecting the ordered stream") {
             val streamEvents =
-                connector.stream(STREAM_INPUT).toList().map { event ->
-                    "${event.sequence}: ${event.text}"
-                }
+                connector
+                    .stream(request(STREAM_INPUT))
+                    .toList()
+                    .map { event -> event.render() }
             mutableState.update {
                 it.copy(
                     headline = "Ordered stream passed",
@@ -97,11 +107,11 @@ internal class AndroidSampleController(
         }
 
     fun runStreamCancellation() =
-        launchOperation("Stopping a stream after one event") {
+        launchOperation("Stopping at the first output delta") {
             mutableState.update {
                 it.copy(
                     headline = "Stream cancellation passed",
-                    streamCancellation = stopStreamAfterFirstEvent(),
+                    streamCancellation = stopStreamAtFirstOutputDelta(),
                 )
             }
         }
@@ -134,28 +144,75 @@ internal class AndroidSampleController(
 
     private suspend fun captureStableError(): String =
         try {
-            connector.respond(UniversalAiConnector.SIMULATED_ERROR_INPUT)
+            connector.respond(request(UniversalAiConnector.SIMULATED_ERROR_INPUT))
             error("The deterministic simulated error did not occur.")
-        } catch (failure: UniversalAiConnectorException) {
-            "${failure.code.stableValue}: ${failure.message}"
+        } catch (failure: UniversalAiException) {
+            "${failure.error.category.rawValue}/${failure.error.code.rawValue}: " +
+                failure.error.message
         }
 
     private suspend fun proveResponseCancellation() {
         coroutineScope {
-            val request =
+            val requestJob =
                 async(start = CoroutineStart.UNDISPATCHED) {
-                    connector.respond("cancel this Android response")
+                    connector.respond(request("cancel this Android response"))
                 }
-            request.cancelAndJoin()
-            check(request.isCancelled)
+            requestJob.cancelAndJoin()
+            check(requestJob.isCancelled)
         }
         mutableState.update { it.copy(responseCancellation = "Cancelled before completion") }
     }
 
-    private suspend fun stopStreamAfterFirstEvent(): String {
-        val firstEvent = connector.stream("stop Android stream").take(1).single()
-        return "Stopped after ${firstEvent.sequence}: ${firstEvent.text}"
+    private suspend fun stopStreamAtFirstOutputDelta(): String {
+        val firstDelta =
+            connector
+                .stream(request("stop Android stream"))
+                .first { event -> event.type == UniversalAiStreamEventType.OutputDelta }
+        return "Stopped after ${firstDelta.render()}"
     }
+
+    private fun request(input: String): UniversalAiRequest =
+        UniversalAiRequest(
+            target =
+                UniversalAiTarget(
+                    providerId = ProviderId.of("deterministic"),
+                    modelId = ModelId.of("echo-v1"),
+                ),
+            input =
+                listOf(
+                    UniversalAiTextInput(
+                        role = UniversalAiInputRole.User,
+                        content = input,
+                    ),
+                ),
+        )
+
+    private fun UniversalAiResponse.textOutput(): String =
+        checkNotNull(outputs.single().text) {
+            "The deterministic connector must return one text output."
+        }
+
+    private fun UniversalAiStreamEvent.render(): String =
+        buildString {
+            append(sequence)
+            append(": ")
+            append(type.rawValue)
+            delta?.let { value ->
+                append(" · delta=")
+                append(value)
+            }
+            output?.let { completedOutput ->
+                append(" · output=")
+                append(checkNotNull(completedOutput.text))
+            }
+            response?.let { completedResponse ->
+                append(" · response=")
+                append(completedResponse.textOutput())
+            }
+            if (terminal) {
+                append(" · terminal=true")
+            }
+        }
 
     private companion object {
         const val RESPONSE_INPUT = "hello from Android"

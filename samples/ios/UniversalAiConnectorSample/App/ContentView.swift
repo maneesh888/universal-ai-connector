@@ -48,7 +48,7 @@ struct ContentView: View {
                 }
 
                 Section("Stream cancellation") {
-                    Button("Cancel stream task after first event") {
+                    Button("Cancel stream task after first output delta") {
                         viewModel.runStreamCancellation()
                     }
                     .disabled(viewModel.isStreamCancellationRunning)
@@ -120,7 +120,10 @@ final class UniversalAiConnectorViewModel: ObservableObject {
             }
 
             do {
-                responseResult = try await connector.respond(to: "hello from SwiftUI")
+                let response = try await connector.respond(
+                    to: canonicalRequest("hello from SwiftUI")
+                )
+                responseResult = responseText(response)
             } catch is CancellationError {
                 responseResult = "Cancelled with CancellationError."
             } catch {
@@ -147,8 +150,10 @@ final class UniversalAiConnectorViewModel: ObservableObject {
 
             do {
                 var events: [String] = []
-                for try await event in connector.stream(input: "chunk") {
-                    events.append("\(event.sequence): \(event.text)")
+                for try await event in connector.stream(
+                    request: canonicalRequest("chunk")
+                ) {
+                    events.append(eventText(event))
                     streamResult = events.joined(separator: " | ")
                 }
             } catch is CancellationError {
@@ -176,8 +181,11 @@ final class UniversalAiConnectorViewModel: ObservableObject {
             }
 
             do {
-                let response = try await connector.respond(to: "__force_error__")
-                forcedErrorResult = "Unexpected success: \(response)"
+                let response = try await connector.respond(
+                    to: canonicalRequest("__force_error__")
+                )
+                forcedErrorResult =
+                    "Unexpected success: \(responseText(response))"
             } catch is CancellationError {
                 forcedErrorResult = "Cancelled with CancellationError."
             } catch {
@@ -202,14 +210,17 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                 responseCancellationTask = nil
             }
 
-            let request = Task {
-                try await self.connector.respond(to: "cancel this response")
+            let requestTask = Task {
+                try await self.connector.respond(
+                    to: self.canonicalRequest("cancel this response")
+                )
             }
-            request.cancel()
+            requestTask.cancel()
 
             do {
-                let response = try await request.value
-                responseCancellationResult = "Unexpected success: \(response)"
+                let response = try await requestTask.value
+                responseCancellationResult =
+                    "Unexpected success: \(responseText(response))"
             } catch is CancellationError {
                 responseCancellationResult = "Cancelled with CancellationError."
             } catch {
@@ -224,7 +235,7 @@ final class UniversalAiConnectorViewModel: ObservableObject {
         }
 
         isStreamCancellationRunning = true
-        streamCancellationResult = "Waiting for event 1…"
+        streamCancellationResult = "Waiting for first output delta…"
         streamCancellationTask = Task { [weak self] in
             guard let self else {
                 return
@@ -234,27 +245,29 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                 streamCancellationTask = nil
             }
 
-            let (firstEvents, firstEventContinuation) =
+            let (firstDeltas, firstDeltaContinuation) =
                 AsyncStream.makeStream(of: UniversalAiStreamEvent.self)
             let consumingTask = Task {
                 defer {
-                    firstEventContinuation.finish()
+                    firstDeltaContinuation.finish()
                 }
 
-                var isFirstEvent = true
-                for try await event in connector.stream(input: "cancel stream") {
-                    if isFirstEvent {
-                        isFirstEvent = false
-                        firstEventContinuation.yield(event)
-                        firstEventContinuation.finish()
+                var isFirstDelta = true
+                for try await event in connector.stream(
+                    request: canonicalRequest("cancel stream")
+                ) {
+                    if isFirstDelta && event.type == .outputDelta {
+                        isFirstDelta = false
+                        firstDeltaContinuation.yield(event)
+                        firstDeltaContinuation.finish()
                     }
                 }
             }
 
             do {
                 try await withTaskCancellationHandler {
-                    var firstEventIterator = firstEvents.makeAsyncIterator()
-                    guard let event = await firstEventIterator.next() else {
+                    var firstDeltaIterator = firstDeltas.makeAsyncIterator()
+                    guard let event = await firstDeltaIterator.next() else {
                         try Task.checkCancellation()
                         try await consumingTask.value
                         streamCancellationResult = "Unexpected stream completion."
@@ -262,14 +275,14 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                     }
 
                     streamCancellationResult =
-                        "Received \(event.sequence): \(event.text)"
+                        "Received \(eventText(event))"
                         + "; cancelling the consuming task…"
                     consumingTask.cancel()
                     try await consumingTask.value
                     streamCancellationResult = "Unexpected stream completion."
                 } onCancel: {
                     consumingTask.cancel()
-                    firstEventContinuation.finish()
+                    firstDeltaContinuation.finish()
                 }
             } catch is CancellationError {
                 if streamCancellationResult.hasPrefix("Received ") {
@@ -297,13 +310,40 @@ final class UniversalAiConnectorViewModel: ObservableObject {
             return String(describing: error)
         }
 
-        switch connectorError {
-        case .invalidInput:
-            return "invalid_input"
-        case let .simulatedFailure(code, message):
-            return "\(code): \(message)"
-        case let .connectorFailure(message):
-            return "connector_failure: \(message)"
+        return "\(connectorError.category.rawValue)/"
+            + "\(connectorError.code.rawValue): \(connectorError.message)"
+    }
+
+    private func canonicalRequest(_ content: String) -> UniversalAiRequest {
+        UniversalAiRequest(
+            target: UniversalAiTarget(
+                providerId: UniversalAiProviderId(rawValue: "deterministic"),
+                modelId: UniversalAiModelId(rawValue: "echo-v1")
+            ),
+            input: [
+                UniversalAiTextInput(role: .user, content: content),
+            ]
+        )
+    }
+
+    private func responseText(_ response: UniversalAiResponse) -> String {
+        response.outputs.first?.text ?? "No text output."
+    }
+
+    private func eventText(_ event: UniversalAiStreamEvent) -> String {
+        var fields = ["\(event.sequence): \(event.type.rawValue)"]
+        if let delta = event.delta {
+            fields.append("delta=\(delta)")
         }
+        if let output = event.output {
+            fields.append("output=\(output.text ?? output.kind.rawValue)")
+        }
+        if let response = event.response {
+            fields.append("response=\(responseText(response))")
+        }
+        if event.terminal {
+            fields.append("terminal=true")
+        }
+        return fields.joined(separator: " · ")
     }
 }

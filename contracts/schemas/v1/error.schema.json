@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:error",
+  "title": "Universal AI Connector V1 Error",
+  "description": "A stable provider-neutral failure. Caller cancellation is never represented by this contract. Single-line display and logging restrictions on message are semantic constraints.",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9._-]{0,63}$"
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9._-]{0,127}$"
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "metadata": {
+      "type": "object",
+      "maxProperties": 256,
+      "propertyNames": {
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+      },
+      "additionalProperties": {
+        "$ref": "urn:universal-ai-connector:contract:v1:extension-value"
+      }
+    },
+    "extensions": {
+      "$ref": "urn:universal-ai-connector:contract:v1:extensions"
+    }
+  },
+  "required": [
+    "category",
+    "code",
+    "message"
+  ],
+  "additionalProperties": true
+}

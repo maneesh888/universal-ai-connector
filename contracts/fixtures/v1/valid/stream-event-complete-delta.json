@@ -1,0 +1,16 @@
+{
+  "contractVersion": "1",
+  "type": "output.delta",
+  "terminal": false,
+  "sequence": 3,
+  "requestId": "req_0",
+  "responseId": "resp_0",
+  "outputId": "out_0",
+  "outputIndex": 0,
+  "delta": "Hello",
+  "extensions": {
+    "com.example.connector": {
+      "trace": "delta-event"
+    }
+  }
+}

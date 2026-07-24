@@ -1,0 +1,8 @@
+{
+  "streaming": {
+    "support": "unsupported",
+    "limits": {
+      "future_limit": 1
+    }
+  }
+}

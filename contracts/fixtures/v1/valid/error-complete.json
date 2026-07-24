@@ -1,0 +1,18 @@
+{
+  "category": "provider",
+  "code": "simulated_failure",
+  "message": "The deterministic provider reported a safe failure.",
+  "metadata": {
+    "requestPath": "/input/0/content",
+    "retryable": false,
+    "attempt": 1,
+    "nested": {
+      "preserved": null
+    }
+  },
+  "extensions": {
+    "com.example.connector": {
+      "trace": "safe-trace"
+    }
+  }
+}

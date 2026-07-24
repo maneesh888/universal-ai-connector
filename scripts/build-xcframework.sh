@@ -116,6 +116,25 @@ validate_framework_slice() {
   local framework_binary="$framework/UniversalAiConnectorBridge"
   local minimum_os_version
   local architectures
+  local unsupported_contract_pattern
+  unsupported_contract_pattern="$(
+    printf '%s' \
+      'ExtensionNamespace|ExtensionNumber|ExtensionValue|UACBExtensions|' \
+      'swift_name\("Extensions|CanonicalJson|Kotlinx_serialization|KSerializer|JsonElement|' \
+      'ProviderId|ModelId|UniversalAiTarget|UniversalAiTextInput|UniversalAiInputRole|' \
+      'UniversalAiResponseFormat|StructuredOutputSchema|UniversalAiGenerationParameters|' \
+      'UniversalAiRequest|RequestId|ResponseId|OutputId|StructuredOutputValue|' \
+      'UniversalAiOutputKind|UniversalAiOutput|UniversalAiUsage|UniversalAiErrorCategory|' \
+      'UniversalAiErrorCode|UniversalAiError|UniversalAiException|' \
+      'UniversalAiCompletionReason|UniversalAiResponse|' \
+      'UniversalAiStreamEventType|UniversalAiStreamEvent|UniversalAiStreamSequenceValidator|' \
+      'UniversalAiCapabilityName|UniversalAiCapabilitySupportState|' \
+      'UniversalAiCapabilitySupport|UniversalAiCapabilityLimitName|' \
+      'UniversalAiCapabilityDeclaration|UniversalAiCapabilitySet|' \
+      'UniversalAiProviderCapabilityProfile|UniversalAiModelTokenLimits|' \
+      'UniversalAiModelDescriptor|' \
+      'GovernedJsonSchemaSubset'
+  )"
 
   if [[ ! -f "$framework_info" ]]; then
     echo "Expected framework metadata was not generated at: $framework_info" >&2
@@ -150,6 +169,10 @@ validate_framework_slice() {
   fi
   if grep -q 'Kotlinx_coroutines_coreFlow' "$framework_header"; then
     echo "Kotlin Flow leaked into the $identifier callback-bridge header." >&2
+    exit 1
+  fi
+  if grep -Eq "$unsupported_contract_pattern" "$framework_header"; then
+    echo "A canonical Kotlin or serialization implementation type leaked into the $identifier callback-bridge header." >&2
     exit 1
   fi
   if grep -Eq 'UACBPoc|swift_name\("Poc' "$framework_header"; then

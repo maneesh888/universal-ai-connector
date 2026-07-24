@@ -1,0 +1,18 @@
+{
+  "future_audio": {
+    "support": "conditionally_supported",
+    "limits": {
+      "max_frame_bytes": 4096
+    },
+    "extensions": {
+      "com.example.future": {
+        "nested": {
+          "mode": "preserve"
+        }
+      }
+    },
+    "futureDeclarationMember": {
+      "ignored": true
+    }
+  }
+}

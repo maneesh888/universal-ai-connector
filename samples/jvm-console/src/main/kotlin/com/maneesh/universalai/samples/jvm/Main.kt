@@ -1,12 +1,21 @@
 package com.maneesh.universalai.samples.jvm
 
 import com.maneesh.universalai.connector.UniversalAiConnector
-import com.maneesh.universalai.connector.UniversalAiConnectorException
+import com.maneesh.universalai.connector.contract.ModelId
+import com.maneesh.universalai.connector.contract.ProviderId
+import com.maneesh.universalai.connector.contract.UniversalAiException
+import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiRequest
+import com.maneesh.universalai.connector.contract.UniversalAiResponse
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
+import com.maneesh.universalai.connector.contract.UniversalAiTarget
+import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 
@@ -15,41 +24,89 @@ internal object JvmConsoleSample {
         val connector = UniversalAiConnector()
         writeLine("Version: ${connector.version}")
 
-        val response = connector.respond("hello from JVM")
-        writeLine("Response: $response")
+        val response = connector.respond(request("hello from JVM"))
+        writeLine("Response: ${response.textOutput()}")
 
-        val events = connector.stream("stream").toList()
+        val events = connector.stream(request("stream")).toList()
         writeLine(
             events.joinToString(
                 prefix = "Stream: ",
                 separator = " | ",
-            ) { event -> "${event.sequence}:${event.text}" },
+                transform = { event -> event.render() },
+            ),
         )
 
         val forcedFailure =
             try {
-                connector.respond(UniversalAiConnector.SIMULATED_ERROR_INPUT)
+                connector.respond(request(UniversalAiConnector.SIMULATED_ERROR_INPUT))
                 error("The deterministic forced error did not occur.")
-            } catch (failure: UniversalAiConnectorException) {
+            } catch (failure: UniversalAiException) {
                 failure
             }
         writeLine(
-            "Error: ${forcedFailure.code.stableValue}: ${forcedFailure.message}",
+            "Error: ${forcedFailure.error.category.rawValue}/" +
+                "${forcedFailure.error.code.rawValue}: ${forcedFailure.error.message}",
         )
 
         coroutineScope {
             val cancelledRequest =
                 async(start = CoroutineStart.UNDISPATCHED) {
-                    connector.respond("cancel this response")
+                    connector.respond(request("cancel this response"))
                 }
             cancelledRequest.cancelAndJoin()
             check(cancelledRequest.isCancelled)
         }
         writeLine("One-shot cancellation: cancelled")
 
-        val firstEvent = connector.stream("stop").take(1).toList().single()
-        writeLine("Stream stopped after event: ${firstEvent.sequence}:${firstEvent.text}")
+        val firstDelta =
+            connector
+                .stream(request("stop"))
+                .first { event -> event.type == UniversalAiStreamEventType.OutputDelta }
+        writeLine("Stream stopped after event: ${firstDelta.render()}")
     }
+
+    private fun request(input: String): UniversalAiRequest =
+        UniversalAiRequest(
+            target =
+                UniversalAiTarget(
+                    providerId = ProviderId.of("deterministic"),
+                    modelId = ModelId.of("echo-v1"),
+                ),
+            input =
+                listOf(
+                    UniversalAiTextInput(
+                        role = UniversalAiInputRole.User,
+                        content = input,
+                    ),
+                ),
+        )
+
+    private fun UniversalAiResponse.textOutput(): String =
+        checkNotNull(outputs.single().text) {
+            "The deterministic connector must return one text output."
+        }
+
+    private fun UniversalAiStreamEvent.render(): String =
+        buildString {
+            append(sequence)
+            append(':')
+            append(type.rawValue)
+            delta?.let { value ->
+                append(":delta=")
+                append(value)
+            }
+            output?.let { completedOutput ->
+                append(":output=")
+                append(checkNotNull(completedOutput.text))
+            }
+            response?.let { completedResponse ->
+                append(":response=")
+                append(completedResponse.textOutput())
+            }
+            if (terminal) {
+                append(":terminal=true")
+            }
+        }
 }
 
 fun main() =

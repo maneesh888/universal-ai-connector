@@ -1,0 +1,12 @@
+{
+  "inputTokens": 3,
+  "outputTokens": 2,
+  "totalTokens": 5,
+  "inputDetails": {
+    "future_cached_v2": 3
+  },
+  "outputDetails": {
+    "future_reasoning_v2": 2
+  },
+  "futureUsageMember": "ignored"
+}

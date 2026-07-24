@@ -1,0 +1,7 @@
+{
+  "contractVersion": "1",
+  "futureMember": {
+    "enabled": true,
+    "mode": "future"
+  }
+}

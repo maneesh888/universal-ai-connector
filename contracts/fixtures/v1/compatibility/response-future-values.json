@@ -1,0 +1,26 @@
+{
+  "contractVersion": "1",
+  "id": "resp_future",
+  "target": {
+    "providerId": "future-provider",
+    "modelId": "future/model:v2",
+    "futureTargetMember": true
+  },
+  "outputs": [
+    {
+      "id": "out_future",
+      "index": 0,
+      "kind": "future_audio",
+      "extensions": {
+        "com.example.future": {
+          "payload": "preserved"
+        }
+      },
+      "futureOutputMember": true
+    }
+  ],
+  "completionReason": "future_pause",
+  "futureResponseMember": {
+    "ignored": true
+  }
+}

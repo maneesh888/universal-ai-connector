@@ -1,0 +1,33 @@
+[
+  {
+    "contractVersion": "1",
+    "type": "response.started",
+    "terminal": false,
+    "sequence": 1,
+    "responseId": "resp_0"
+  },
+  {
+    "contractVersion": "1",
+    "type": "response.completed",
+    "terminal": true,
+    "sequence": 2,
+    "responseId": "resp_0",
+    "response": {
+      "contractVersion": "1",
+      "id": "resp_0",
+      "target": {
+        "providerId": "openai",
+        "modelId": "gpt-4.1-mini"
+      },
+      "outputs": [],
+      "completionReason": "stop"
+    }
+  },
+  {
+    "contractVersion": "1",
+    "type": "future.trace",
+    "terminal": false,
+    "sequence": 3,
+    "responseId": "resp_0"
+  }
+]

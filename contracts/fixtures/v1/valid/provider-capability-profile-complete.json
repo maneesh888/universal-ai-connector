@@ -1,0 +1,22 @@
+{
+  "contractVersion": "1",
+  "providerId": "example",
+  "capabilities": {
+    "streaming": {
+      "support": "supported",
+      "limits": {
+        "delivery_window": 8
+      }
+    },
+    "structured_output": {
+      "support": "unsupported"
+    }
+  },
+  "extensions": {
+    "com.example.connector": {
+      "profile": {
+        "tier": "deterministic"
+      }
+    }
+  }
+}

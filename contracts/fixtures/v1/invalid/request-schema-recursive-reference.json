@@ -1,0 +1,24 @@
+{
+  "contractVersion": "1",
+  "target": {
+    "providerId": "openai",
+    "modelId": "gpt-4.1-mini"
+  },
+  "input": [
+    {
+      "role": "user",
+      "content": "Hello"
+    }
+  ],
+  "responseFormat": {
+    "kind": "json_schema",
+    "schema": {
+      "$defs": {
+        "node": {
+          "$ref": "#/$defs/node"
+        }
+      },
+      "$ref": "#/$defs/node"
+    }
+  }
+}
