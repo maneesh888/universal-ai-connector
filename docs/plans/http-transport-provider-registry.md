@@ -130,8 +130,9 @@ The completed milestone must provide:
 - Combine consecutive `data` fields with newline separators, ignore comments, retain defined
   `event`, `id`, and `retry` fields as transport metadata, and dispatch only on a complete event
   delimiter or defined end-of-stream rule.
-- Reject malformed UTF-8 and invalid numeric metadata deterministically without exposing partial
-  response content as a retryable pre-content failure.
+- Reject malformed UTF-8 deterministically without exposing partial response content as a
+  retryable pre-content failure. Ignore an invalid, negative, or overflowing SSE `retry` field for
+  that event while continuing to process its other fields.
 - Define the exact point at which response content has begun. At and after that point, transport
   reconnect and generation retry are forbidden.
 - Extract request IDs from a documented, case-insensitive allowlist with deterministic precedence.
@@ -143,8 +144,9 @@ The completed milestone must provide:
 
 - Register internal provider adapter descriptors by normalized provider identifier.
 - Reject duplicate identifiers deterministically instead of silently replacing an entry.
-- Resolve unknown identifiers to the existing stable canonical unsupported-provider or
-  configuration error.
+- Resolve unknown identifiers to the existing canonical `provider/connector_failure` error with a
+  safe message that identifies the unknown provider. P3 does not add a new canonical error category
+  or code for registry lookup.
 - Preserve deterministic registration and lookup behavior under concurrent reads.
 - Keep registry mutation confined to construction or an explicitly synchronized internal
   lifecycle; ordinary requests do not mutate global state.
