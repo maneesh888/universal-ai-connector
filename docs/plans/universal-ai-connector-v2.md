@@ -2,13 +2,12 @@
 
 ## Status
 
-- Repository stage: P1 cross-platform baseline closing package in progress
+- Repository stage: P1 cross-platform package and client-sample baseline completed
 - Current implementation: one product-facing Kotlin client, local JVM and Android consumers, and one product-facing Swift façade/sample over a combined iOS device-and-simulator XCFramework
-- Active work package: P1 closing cleanup and acceptance
+- Active work package: none; P2 is the next milestone but remains `Not started` pending a separate authorized activation
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
-- Current bounded P1 package: retire the temporary POC Swift and callback surfaces, keep only product-facing host paths, and prevent legacy symbols from returning
-- Current P1 completion gate: full local verification, independent review, and required GitHub checks for the exact closing head; P1 remains `In progress` until that evidence exists
-- P2 planning: the future work package is documented in `canonical-core-json-contracts.md`, but P2 implementation remains `Not started` until P1 is accepted and recorded as completed
+- P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
+- P2 planning: the next work package is documented in `canonical-core-json-contracts.md`, but P2 implementation remains `Not started` until a separate authorized activation marks it as the only `In progress` milestone
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -105,8 +104,8 @@ After the draft pull request is created, the same affected live suite must run f
 | ID | Work package | Status | Evidence |
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
-| P1 | Cross-platform package and client-sample baseline | In progress | Product Kotlin API, JVM console, and Android app passed bounded CI run 29730678994; Android API 36.1 emulator launch passed July 20; the product Apple surface passed exact-head run 29826390650 and merged through PR #9; the closing legacy-surface retirement still requires exact-head acceptance |
-| P2 | Canonical core and JSON contracts | Not started | Work-package plan drafted; implementation is blocked on P1 completion |
+| P1 | Cross-platform package and client-sample baseline | Completed | Product Kotlin API, JVM console, Android app, and Apple façade/sample accepted; closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed local verification, independent review, exact-head run 29991895652, PR #12 merge, and resulting `main` run 29993494307 |
+| P2 | Canonical core and JSON contracts | Not started | Work-package plan drafted; this is the next milestone, and implementation requires a separate authorized activation |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |
 | P5 | Anthropic adapter | Not started | |

@@ -56,7 +56,7 @@ The product-facing Apple surface was accepted at exact head `d8a34539d42d4dc3afe
 
 ## Closing P1 cleanup
 
-The final bounded P1 package retires the migration-only surface now that the product Apple path is accepted:
+The final bounded P1 package retired the migration-only surface after the product Apple path was accepted:
 
 - remove the `UniversalAiConnectorPOC` Swift Package product, target, sources, and tests;
 - remove the exported common Kotlin POC callback bridge, handles, models, and instrumentation;
@@ -66,7 +66,7 @@ The final bounded P1 package retires the migration-only surface now that the pro
 - replace remaining POC-era operational names in simulator configuration and CI internals; and
 - keep P2 implementation inactive while recording its future work-package plan.
 
-P1 remains authoritatively `In progress` on remote `main` while its closing pull request is draft. After the implementation acceptance evidence exists, the final candidate must commit the proposed P1 `Completed` transition and every required closeout document before final independent review. Completion still requires the complete local gate, independent review, and every required GitHub check to pass for that exact closing head; the proposed transition becomes authoritative only when it merges. P2 remains `Not started` until a separate authorized activation after P1 closes.
+P1 is `Completed`. The closing implementation head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the forced deterministic behavior and consumer matrix, `./scripts/check.sh --full`, and independent review with no blocking findings. Exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed repository hygiene, Linux, Windows, macOS, and `Required checks`; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026 as `718eed9eb14adf4660a122828bf327dd397cbfec`; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed the same required matrix. This evidence satisfies the acceptance criteria below without claiming physical-device, live-provider, gateway, remote-distribution, or release proof. P2 remains `Not started` until a separate authorized activation marks it as the only `In progress` milestone.
 
 ## Target structure
 

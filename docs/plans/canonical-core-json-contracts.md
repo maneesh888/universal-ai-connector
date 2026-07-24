@@ -2,7 +2,7 @@
 
 ## Status and activation gate
 
-This document is a planning artifact. P2 is `Not started`, and P1 remains the only active roadmap milestone.
+This document remains a planning artifact. P1 is `Completed`, P2 is `Not started`, and no roadmap milestone is currently `In progress`. Activating P2 requires a separate authorized status transition that names its first active ADR package.
 
 Creating and reviewing this plan does not authorize canonical-contract implementation. Do not add serialization dependencies, canonical models, schemas, fixtures, generated contract artifacts, or canonical host APIs until all of the following are true:
 
@@ -13,7 +13,7 @@ Creating and reviewing this plan does not authorize canonical-contract implement
 5. the roadmap records P1 as `Completed`; and
 6. the roadmap marks P2 as the only `In progress` milestone and names the first active ADR package.
 
-P1 completion and P2 activation are separate status changes even if this plan lands with the P1 cleanup.
+Items 1-5 were satisfied by P1 closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946`, exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652), PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12), and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307). Item 6 remains the separate P2 activation gate. P1 completion and P2 activation are separate status changes.
 
 ## Objective
 
