@@ -1,0 +1,6 @@
+interface:
+  display_name: "Plan Universal AI Work Package"
+  short_description: "Create concise roadmap work orders"
+  default_prompt: "Use $plan-universal-ai-work-package to create a concise, source-bound work order for the repository's next task."
+policy:
+  allow_implicit_invocation: false

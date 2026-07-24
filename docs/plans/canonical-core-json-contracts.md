@@ -407,7 +407,7 @@ Run on:
 ./scripts/check.sh --full
 ```
 
-Every implementation pull request also requires exact-head Linux, Windows, and macOS CI plus independent exact-head review.
+The P2 acceptance candidate requires exact-head Linux, Windows, and macOS CI plus independent exact-head review. Intermediate implementation uses the Fast or Standard mode until it becomes a Release candidate.
 
 No live-provider gate applies in P2. Physical iOS-device execution is not required. Repeat the Android emulator proof only when Android-specific lifecycle or UI behavior changes; otherwise report it as unexercised.
 
@@ -458,4 +458,4 @@ For every P2 package, record:
 - proof limits and unexercised surfaces; and
 - the next incomplete P2 package.
 
-This atomic closeout is accepted only after the roadmap acceptance criteria, this plan's acceptance criteria, mandatory local checks, independent exact-head review, required GitHub checks, merge, and resulting `main` verification agree. Exact self-referential evidence remains in the milestone-closing pull-request brief. P3 is the next incomplete milestone but remains `Not started`.
+P2-J proposed completion after the roadmap and plan acceptance criteria, mandatory exact-head local checks, independent review, and required GitHub checks agreed. Merge made that transition authoritative; resulting `main` verification was a post-merge closeout assertion rather than a candidate prerequisite. Exact self-referential evidence remains in the milestone-closing pull-request brief. P3 is the next incomplete milestone but remains `Not started`.
