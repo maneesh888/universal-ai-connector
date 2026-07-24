@@ -12,7 +12,7 @@
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
 
-This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing.
+This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
 ## Product boundary
 
@@ -230,17 +230,3 @@ The following remain outside this package roadmap until explicitly activated:
 - agent frameworks, tool execution, RAG, and multimodal inputs
 - native desktop library targets without a demonstrated no-JVM or native-language consumer requirement; the planned P8 graphical desktop demo uses Kotlin/JVM
 - Java-specific, JavaScript, and Wasm façades until their consumer demand and maintenance cost are approved
-
-## Session reporting
-
-Every completed work package must report:
-
-- repository branch or worktree;
-- files and modules changed;
-- tests and builds executed;
-- pass/fail results;
-- public contract changes;
-- generated contract fixtures;
-- remaining risks;
-- next incomplete work package;
-- commit ID when committed.
