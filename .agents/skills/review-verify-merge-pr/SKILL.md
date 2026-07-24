@@ -54,7 +54,7 @@ For `completes`, require consistent proposed roadmap, active-plan, affected READ
 5. Run `./scripts/check.sh --full` on the exact Release head. Run additional active-plan proof only when applicable.
 6. Confirm required security tools and regressions actually executed without revealing matched material.
 
-Review-only work reports findings and stops. During an autonomous implementation lifecycle, fix in-scope blockers while the PR remains draft. A head change invalidates local Release evidence, the reviewer result, and GitHub gate conclusions; refresh the PR brief and repeat the exact-head cycle.
+Review-only work reports findings and stops. During an autonomous implementation lifecycle, fix in-scope blockers while the PR remains draft. Any head change invalidates local Release evidence, the reviewer result, and GitHub gate conclusions. If the PR had already become ready, immediately disable any auto-merge request and return it to draft, including after a `do not merge` hold or a queued merge was disabled. Refresh the PR brief and repeat the exact-head cycle before readiness; in review-only work, report the required recovery without changing state.
 
 ## Readiness gate
 
