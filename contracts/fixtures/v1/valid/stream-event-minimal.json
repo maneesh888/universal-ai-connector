@@ -1,0 +1,7 @@
+{
+  "contractVersion": "1",
+  "type": "response.started",
+  "terminal": false,
+  "sequence": 1,
+  "responseId": "resp_0"
+}

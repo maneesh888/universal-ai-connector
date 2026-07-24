@@ -1,0 +1,8 @@
+{
+  "contractVersion": null,
+  "target": {
+    "providerId": "example",
+    "modelId": "model-v1"
+  },
+  "capabilities": {}
+}

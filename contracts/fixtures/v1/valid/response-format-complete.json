@@ -1,0 +1,7 @@
+{
+  "kind": "json_schema",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}

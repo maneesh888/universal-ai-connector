@@ -1,0 +1,17 @@
+{
+  "com.example.connector": {
+    "nullValue": null,
+    "booleanValue": true,
+    "stringValue": "preserved",
+    "numberValue": 1.2300e+4,
+    "arrayValue": [
+      null,
+      false,
+      "nested",
+      -2.5
+    ],
+    "objectValue": {
+      "nested": true
+    }
+  }
+}

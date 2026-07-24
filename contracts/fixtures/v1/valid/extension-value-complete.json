@@ -1,0 +1,15 @@
+{
+  "nullValue": null,
+  "booleanValue": true,
+  "stringValue": "preserved",
+  "numberValue": 1.2300e+40,
+  "arrayValue": [
+    null,
+    false,
+    "nested",
+    -2.5
+  ],
+  "objectValue": {
+    "nested": true
+  }
+}

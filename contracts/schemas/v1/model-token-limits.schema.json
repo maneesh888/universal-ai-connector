@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:model-token-limits",
+  "title": "Universal AI Connector V1 Model Token Limits",
+  "description": "Optional positive model-token maxima. An empty object means no known V1 ceilings; future-only members are accepted and ignored, while known-field cross-limit rules are semantic constraints.",
+  "type": "object",
+  "properties": {
+    "contextWindowTokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "maxInputTokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "maxOutputTokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    }
+  },
+  "additionalProperties": true
+}

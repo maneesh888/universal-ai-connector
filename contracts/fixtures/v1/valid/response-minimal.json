@@ -1,0 +1,10 @@
+{
+  "contractVersion": "1",
+  "id": "resp_0",
+  "target": {
+    "providerId": "openai",
+    "modelId": "gpt-4.1-mini"
+  },
+  "outputs": [],
+  "completionReason": "stop"
+}

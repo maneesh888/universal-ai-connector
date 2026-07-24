@@ -2,8 +2,8 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P1%20baseline%20complete-16a34a)
-![JVM tests](https://img.shields.io/badge/JVM%20tests-7%20passing-16a34a)
+![Project stage](https://img.shields.io/badge/stage-P2%20canonical%20contracts-2563eb)
+![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
 
@@ -13,9 +13,10 @@ The repository has completed its P1 cross-platform baseline. Apple applications 
 
 No AI provider, gateway, API key, or network integration is implemented yet.
 
-> **Current phase:** P1 cross-platform package baseline completed; P2 canonical contracts are next but not yet activated.
+> **Current phase:** P2 canonical core and JSON contracts are in progress after the accepted P1 baseline.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
+> Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
 >
 > **Accepted bounded proof:** The product Apple path covers 15 Swift integration tests, the two-slice XCFramework, simulator sample compilation, and generic iOS-device linking. The Android application separately passed installation, launch, and deterministic UI inspection on a local API 36.1 Pixel 8 emulator on July 20. Physical iOS-device execution has not been performed.
 >
@@ -34,7 +35,7 @@ P1 established this package boundary through compiling iOS, Android, and JVM con
 ```text
 Interoperability POC       ████████████████████ 100%  ✅ Complete
 Cross-platform baseline   ████████████████████ 100%  ✅ Complete
-Canonical AI contracts    ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Canonical AI contracts    ░░░░░░░░░░░░░░░░░░░░   0%  🚧 In progress
 HTTP client foundation    ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Provider adapters         ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Gateway integration       ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
@@ -67,7 +68,8 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Graphical JVM desktop demonstration | ⏳ Planned for P8 distribution work |
 | Physical iOS-device execution | ⏳ Not exercised |
 | JVM sample client | ✅ Verified locally |
-| Canonical AI contracts and HTTP transport | ⏳ Planned |
+| Canonical AI contracts | 🚧 P2 implementation and acceptance in progress |
+| HTTP transport | ⏳ Planned |
 | OpenAI, Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
@@ -78,7 +80,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 |---|---|---|
 | P0 | iOS-Kotlin interoperability POC | ✅ Completed |
 | P1 | Cross-platform package and client samples | ✅ Completed |
-| P2 | Canonical core and JSON contracts | ⏳ Planned |
+| P2 | Canonical core and JSON contracts | 🚧 In progress |
 | P3 | HTTP transport and provider registry | ⏳ Planned |
 | P4 | OpenAI Responses adapter | ⏳ Planned |
 | P5 | Anthropic adapter | ⏳ Planned |
@@ -93,7 +95,9 @@ The product-facing Apple package and closing legacy-surface cleanup are accepted
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
-The [P2 canonical-contract plan](docs/plans/canonical-core-json-contracts.md) is the next milestone, but P2 implementation remains inactive until a separate authorized activation marks it as the only milestone in progress.
+### P2 in progress
+
+P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, and Swift-native façade mappings without introducing networking or provider DTOs. Decision records and the complete deterministic acceptance matrix remain part of the active milestone.
 
 ## Architecture direction
 
@@ -179,10 +183,10 @@ On macOS, the full check covers:
 - Android shared host tests and AAR packaging
 - the JVM console consumer test and executable
 - the Android consumer controller tests and debug APK
-- 7 product-facing shared tests on JVM, Android host, and iOS Simulator
-- 7 additional Apple-adapter tests on iOS Simulator
+- canonical schema, fixture, serialization, and semantic-validation tests on JVM, Android host, and iOS Simulator
+- product-facing shared and Apple-adapter tests on iOS Simulator
 - device-and-simulator XCFramework generation and slice validation
-- 15 product-facing Swift Package integration tests
+- product-facing Swift Package integration tests
 - iOS simulator sample build
 - generic iOS-device sample link/build
 - secret scanning
@@ -211,6 +215,7 @@ Run individual checks when needed:
 ./scripts/test-swift-package.sh
 ./scripts/build-sample.sh
 ./scripts/build-sample-device.sh
+./scripts/check-contracts.sh --all
 ./scripts/secret-scan.sh
 git diff --check
 ```
@@ -231,16 +236,39 @@ The console sample declares only `implementation(project(":bridge"))` for connec
 The first-use path is:
 
 ```kotlin
+import com.maneesh.universalai.connector.UniversalAiConnector
+import com.maneesh.universalai.connector.contract.ModelId
+import com.maneesh.universalai.connector.contract.ProviderId
+import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiRequest
+import com.maneesh.universalai.connector.contract.UniversalAiTarget
+import com.maneesh.universalai.connector.contract.UniversalAiTextInput
+
+fun request(content: String) =
+    UniversalAiRequest(
+        target = UniversalAiTarget(
+            providerId = ProviderId.of("deterministic"),
+            modelId = ModelId.of("echo-v1"),
+        ),
+        input = listOf(
+            UniversalAiTextInput(
+                role = UniversalAiInputRole.User,
+                content = content,
+            ),
+        ),
+    )
+
 val connector = UniversalAiConnector()
 println(connector.version)
-println(connector.respond("hello from JVM"))
+val response = connector.respond(request("hello from JVM"))
+println(checkNotNull(response.outputs.single().text))
 
-connector.stream("stream").collect { event ->
-    println("${event.sequence}: ${event.text}")
+connector.stream(request("stream")).collect { event ->
+    println("${event.sequence}: ${event.type.rawValue} ${event.delta.orEmpty()}")
 }
 ```
 
-Failures are delivered as `UniversalAiConnectorException` with a typed `UniversalAiErrorCode` and stable string value. Cancellation is controlled by the caller's coroutine or flow collection; the sample cancels a one-shot request and stops a stream after its first event without input or orchestration sleeps.
+Failures are delivered as `UniversalAiException` carrying a canonical category, raw-preserving code, stable safe message, optional metadata, and extensions. Cancellation remains caller-owned `CancellationException`; the sample cancels a one-shot request and stops a stream at its first output delta.
 
 The Kotlin API is hidden from Objective-C export so Apple consumers use the supported Swift façade. An Apple-only callback adapter delegates to the same Kotlin client without exporting `Flow` or Kotlin implementation types through the Swift API. It is compiled into the iOS frameworks as an implementation dependency of the supported Swift product and is excluded from the JVM JAR and Android AAR; those non-Apple artifact boundaries are checked by the repository gate. The XCFramework build validates both Apple headers and fails if the product Kotlin client or `Flow` leaks into either one.
 
@@ -252,11 +280,25 @@ The minimal application path is:
 
 ```kotlin
 val connector = UniversalAiConnector()
+val request = UniversalAiRequest(
+    target = UniversalAiTarget(
+        providerId = ProviderId.of("deterministic"),
+        modelId = ModelId.of("echo-v1"),
+    ),
+    input = listOf(
+        UniversalAiTextInput(
+            role = UniversalAiInputRole.User,
+            content = "hello from Android",
+        ),
+    ),
+)
 
 lifecycleScope.launch {
-    val response = connector.respond("hello from Android")
-    connector.stream("Android stream").collect { event ->
-        println("${event.sequence}: ${event.text}")
+    val response = connector.respond(request)
+    println(checkNotNull(response.outputs.single().text))
+
+    connector.stream(request).collect { event ->
+        println("${event.sequence}: ${event.type.rawValue} ${event.delta.orEmpty()}")
     }
 }
 ```
@@ -279,11 +321,23 @@ import UniversalAiConnector
 
 func runFirstUse() async throws {
     let connector = UniversalAiConnector()
-    let response = try await connector.respond(to: "hello from Swift")
-    print(response)
+    let request = UniversalAiRequest(
+        target: UniversalAiTarget(
+            providerId: UniversalAiProviderId(rawValue: "deterministic"),
+            modelId: UniversalAiModelId(rawValue: "echo-v1")
+        ),
+        input: [
+            UniversalAiTextInput(
+                role: .user,
+                content: "hello from Swift"
+            ),
+        ]
+    )
+    let response = try await connector.respond(to: request)
+    print(response.outputs.first?.text ?? "No text output.")
 
-    for try await event in connector.stream(input: "stream") {
-        print("\(event.sequence): \(event.text)")
+    for try await event in connector.stream(request: request) {
+        print("\(event.sequence): \(event.type.rawValue) \(event.delta ?? "")")
     }
 }
 ```
@@ -313,6 +367,7 @@ The second command compiles and links against the `ios-arm64` framework slice us
 
 ```text
 bridge/                 Kotlin Multiplatform bridge and tests
+contracts/              Versioned JSON Schemas and compatibility fixtures
 swift-package/          Supported Swift façade and Swift tests
 samples/ios/            Standalone iOS SwiftUI sample
 samples/android/        Jetpack Compose public-module Android consumer
@@ -327,7 +382,7 @@ Generated XCFrameworks, build directories, DerivedData, `.xcresult` bundles, and
 
 The package roadmap is documented in [`docs/plans/universal-ai-connector-v2.md`](docs/plans/universal-ai-connector-v2.md).
 
-The complete P1 package and its acceptance evidence are recorded in [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md). The P2 decision and implementation sequence is documented in [`docs/plans/canonical-core-json-contracts.md`](docs/plans/canonical-core-json-contracts.md), but remains inactive until a separate authorized activation.
+The complete P1 package and its acceptance evidence are recorded in [`docs/plans/cross-platform-client-samples.md`](docs/plans/cross-platform-client-samples.md). The active P2 decision and implementation sequence is documented in [`docs/plans/canonical-core-json-contracts.md`](docs/plans/canonical-core-json-contracts.md).
 
 Provider and gateway work begins only after the cross-platform package foundation and canonical contracts are stable. Production Maven and remote Swift Package distribution is planned for P8 after the client contract and transport are established.
 

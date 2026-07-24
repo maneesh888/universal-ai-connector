@@ -22,6 +22,7 @@ run_hygiene() {
 
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
+  "$ROOT/scripts/check-contracts.sh" --layout-only
   git -C "$ROOT" diff --check
 
   local temp_index_directory
@@ -56,11 +57,10 @@ run_script_tests() {
 }
 
 run_cross_platform_gradle_checks() {
+  "$ROOT/scripts/check-contracts.sh" --all
+
   "$ROOT/gradlew" \
-    :bridge:jvmTest \
-    :bridge:testAndroidHostTest \
     :bridge:bundleAndroidMainAar \
-    :bridge:iosSimulatorArm64Test \
     :samples:jvm-console:consumerCheck \
     :samples:android:consumerCheck
 

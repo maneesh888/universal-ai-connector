@@ -2,12 +2,17 @@
 
 package com.maneesh.universalai.connector
 
+import com.maneesh.universalai.connector.contract.UniversalAiRequest
+import com.maneesh.universalai.connector.contract.UniversalAiResponse
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
+import com.maneesh.universalai.connector.contract.toUniversalAiException
+import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.DeterministicConnectorEngine
-import com.maneesh.universalai.connector.internal.DeterministicConnectorFailure
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlin.native.HiddenFromObjC
 
 /**
@@ -18,21 +23,23 @@ import kotlin.native.HiddenFromObjC
  * flows run in the caller's coroutine context; cancelling the caller cancels the active operation.
  */
 @HiddenFromObjC
-class UniversalAiConnector {
-    private val engine = DeterministicConnectorEngine()
+class UniversalAiConnector internal constructor(
+    private val engine: ConnectorEngine,
+) {
+    constructor() : this(DeterministicConnectorEngine())
 
     /** The current library version. */
     val version: String
         get() = LIBRARY_VERSION
 
     /** Returns one deterministic response in the caller's coroutine context. */
-    suspend fun respond(input: String): String =
+    suspend fun respond(request: UniversalAiRequest): UniversalAiResponse =
         try {
-            engine.respond(input)
+            engine.respond(request)
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (failure: Throwable) {
-            throw failure.toConnectorException()
+            throw failure.toUniversalAiException()
         }
 
     /**
@@ -40,19 +47,15 @@ class UniversalAiConnector {
      *
      * Cancelling collection immediately cancels the active stream.
      */
-    fun stream(input: String): Flow<UniversalAiStreamEvent> =
-        engine
-            .stream(input)
-            .map { event ->
-                UniversalAiStreamEvent(
-                    sequence = event.sequence,
-                    text = event.text,
-                )
-            }.catch { failure ->
+    fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
+        flow {
+            emitAll(engine.stream(request))
+        }
+            .catch { failure ->
                 if (failure is CancellationException) {
                     throw failure
                 }
-                throw failure.toConnectorException()
+                throw failure.toUniversalAiException()
             }
 
     companion object {
@@ -60,29 +63,3 @@ class UniversalAiConnector {
         const val SIMULATED_ERROR_INPUT: String = "__force_error__"
     }
 }
-
-private fun Throwable.toConnectorException(): UniversalAiConnectorException =
-    when (this) {
-        is UniversalAiConnectorException -> this
-        is DeterministicConnectorFailure ->
-            when (code) {
-                "invalid_input" ->
-                    UniversalAiConnectorException(
-                        code = UniversalAiErrorCode.INVALID_INPUT,
-                        message = "Input must not be empty.",
-                    )
-                "simulated_failure" ->
-                    UniversalAiConnectorException(
-                        code = UniversalAiErrorCode.SIMULATED_FAILURE,
-                        message = "The Universal AI Connector produced the requested simulated failure.",
-                    )
-                else -> connectorFailure()
-            }
-        else -> connectorFailure()
-    }
-
-private fun Throwable.connectorFailure(): UniversalAiConnectorException =
-    UniversalAiConnectorException(
-        code = UniversalAiErrorCode.CONNECTOR_FAILURE,
-        message = message ?: "Unknown Universal AI Connector failure.",
-    )

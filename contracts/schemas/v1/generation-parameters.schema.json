@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:generation-parameters",
+  "title": "Universal AI Connector V1 Generation Parameters",
+  "description": "Provider-neutral generation intent. Duplicate and aggregate stop-sequence limits are semantic constraints.",
+  "type": "object",
+  "properties": {
+    "maxOutputTokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "temperature": {
+      "description": "Semantic validation requires a finite binary64 value whose JSON rendering preserves the exact mathematical input value.",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "topP": {
+      "description": "Semantic validation requires a finite binary64 value whose JSON rendering preserves the exact mathematical input value.",
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "maximum": 1.0
+    },
+    "stopSequences": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      }
+    }
+  },
+  "additionalProperties": true
+}

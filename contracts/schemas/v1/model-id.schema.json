@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:universal-ai-connector:contract:v1:model-id",
+  "title": "Universal AI Connector V1 Model ID",
+  "description": "An exact provider-owned model identifier. UTF-8 byte, whitespace, control-character, and Unicode-well-formedness rules are semantic constraints.",
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 256
+}

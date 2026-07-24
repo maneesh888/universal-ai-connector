@@ -1,0 +1,17 @@
+{
+  "contractVersion": "1",
+  "type": "response.completed",
+  "terminal": false,
+  "sequence": 1,
+  "responseId": "resp_0",
+  "response": {
+    "contractVersion": "1",
+    "id": "resp_0",
+    "target": {
+      "providerId": "openai",
+      "modelId": "gpt-4.1-mini"
+    },
+    "outputs": [],
+    "completionReason": "stop"
+  }
+}

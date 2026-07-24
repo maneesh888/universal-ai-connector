@@ -2,12 +2,12 @@
 
 ## Status
 
-- Repository stage: P1 cross-platform package and client-sample baseline completed
-- Current implementation: one product-facing Kotlin client, local JVM and Android consumers, and one product-facing Swift façade/sample over a combined iOS device-and-simulator XCFramework
-- Active work package: none; P2 is the next milestone but remains `Not started` pending a separate authorized activation
+- Repository stage: P2 canonical core and JSON contracts in progress
+- Current implementation: the accepted P1 host baseline plus a local P2 canonical-contract candidate under acceptance verification
+- Active work package: P2-J compatibility hardening and acceptance
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
-- P2 planning: the next work package is documented in `canonical-core-json-contracts.md`, but P2 implementation remains `Not started` until a separate authorized activation marks it as the only `In progress` milestone
+- P2 activation: authorized July 24, 2026 after P1 completion; P2 is the only `In progress` milestone, ADRs 0001-0007 and the P2-D readiness decision are accepted, and P2-J is active
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -105,7 +105,7 @@ After the draft pull request is created, the same affected live suite must run f
 |---|---|---|---|
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
 | P1 | Cross-platform package and client-sample baseline | Completed | Product Kotlin API, JVM console, Android app, and Apple façade/sample accepted; closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed local verification, independent review, exact-head run 29991895652, PR #12 merge, and resulting `main` run 29993494307 |
-| P2 | Canonical core and JSON contracts | Not started | Work-package plan drafted; this is the next milestone, and implementation requires a separate authorized activation |
+| P2 | Canonical core and JSON contracts | In progress | Activated July 24, 2026 after P1 completion; ADRs 0001-0007 and P2-D readiness are accepted, implementation packages P2-E through P2-I are present, and P2-J acceptance is active |
 | P3 | HTTP transport and provider registry | Not started | |
 | P4 | OpenAI Responses adapter | Not started | |
 | P5 | Anthropic adapter | Not started | |
@@ -147,7 +147,9 @@ Acceptance requires:
 
 ## P2: Canonical core and JSON contracts
 
-Use the planning-only work package in `canonical-core-json-contracts.md`. Do not activate its ADR or implementation packages until P1 is completed and P2 is the only milestone marked `In progress`.
+Use the active work package in `canonical-core-json-contracts.md`. P2 was activated only after P1
+completed and P2 became the sole milestone marked `In progress`; ADRs 0001-0007 and the P2-D
+readiness review now govern its implementation.
 
 Define provider-neutral identifiers, targets, inputs, response formats, generation parameters, responses, outputs, usage, capabilities, model descriptors, errors, and streaming events.
 

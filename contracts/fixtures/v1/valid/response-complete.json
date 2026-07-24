@@ -1,0 +1,36 @@
+{
+  "contractVersion": "1",
+  "id": "resp_complete",
+  "requestId": "req_complete",
+  "target": {
+    "providerId": "openai",
+    "modelId": "gpt-4.1-mini"
+  },
+  "outputs": [
+    {
+      "id": "out_0",
+      "index": 0,
+      "kind": "text",
+      "text": "Hello"
+    },
+    {
+      "id": "out_1",
+      "index": 1,
+      "kind": "structured_json",
+      "json": {
+        "answer": "Hello"
+      }
+    }
+  ],
+  "usage": {
+    "inputTokens": 4,
+    "outputTokens": 2,
+    "totalTokens": 6
+  },
+  "completionReason": "stop",
+  "extensions": {
+    "com.example.connector": {
+      "trace": "response-complete"
+    }
+  }
+}
