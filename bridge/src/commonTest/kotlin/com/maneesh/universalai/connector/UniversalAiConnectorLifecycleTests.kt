@@ -14,6 +14,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.ConnectorResourceOwnership
 import com.maneesh.universalai.connector.internal.DeterministicConnectorEngine
+import com.maneesh.universalai.connector.internal.transport.ConnectorBaseUrl
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
@@ -88,7 +89,8 @@ class UniversalAiConnectorLifecycleTests {
                 request =
                     ConnectorTransportRequest(
                         method = "GET",
-                        url = "https://example.invalid/probe",
+                        baseUrl = ConnectorBaseUrl.parse("https://example.invalid"),
+                        endpoint = "probe",
                     ),
             ) {
                 "usable"

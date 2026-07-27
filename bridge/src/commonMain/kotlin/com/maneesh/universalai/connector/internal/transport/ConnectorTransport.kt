@@ -3,15 +3,24 @@ package com.maneesh.universalai.connector.internal.transport
 /**
  * Provider-neutral request data accepted by the connector's internal HTTP transport.
  *
- * URL and header policy are deliberately owned by later transport-policy work. This boundary
- * preserves the adapter-provided URL and ordered header fields without interpreting them.
+ * The request is assembled from a validated base URL, an adapter-relative endpoint, and ordered
+ * caller/adapter header fields. URL and header policy is applied before Ktor observes the request.
  */
-internal data class ConnectorTransportRequest(
+internal class ConnectorTransportRequest(
     val method: String,
-    val url: String,
-    val headers: List<ConnectorTransportHeader> = emptyList(),
+    baseUrl: ConnectorBaseUrl,
+    endpoint: String,
+    callerHeaders: List<ConnectorTransportHeader> = emptyList(),
+    adapterHeaders: List<ConnectorTransportHeader> = emptyList(),
     val body: ByteArray? = null,
-)
+) {
+    val url: String = baseUrl.resolve(endpoint)
+    val headers: List<ConnectorTransportHeader> =
+        ConnectorHeaderPolicy.compose(
+            callerHeaders = callerHeaders,
+            adapterHeaders = adapterHeaders,
+        )
+}
 
 /** One raw HTTP header field. Repeated fields remain separate ordered entries. */
 internal data class ConnectorTransportHeader(
