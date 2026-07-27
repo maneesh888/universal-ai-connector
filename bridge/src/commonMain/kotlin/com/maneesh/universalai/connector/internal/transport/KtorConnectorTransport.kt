@@ -2,6 +2,10 @@ package com.maneesh.universalai.connector.internal.transport
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.headers
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
@@ -9,6 +13,8 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpMethod
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.readAvailable
+import kotlinx.coroutines.CancellationException
+import kotlinx.io.IOException
 
 /**
  * Creates the platform-default Ktor client owned by its returned transport.
@@ -24,41 +30,66 @@ internal fun createDefaultKtorTransport(): ConnectorTransport =
  *
  * Ktor clients constructed from an existing engine leave that engine under caller ownership.
  */
-internal fun createKtorTransport(httpEngine: HttpClientEngine): ConnectorTransport =
-    KtorConnectorTransport(HttpClient(httpEngine))
+internal fun createKtorTransport(
+    httpEngine: HttpClientEngine,
+    timeouts: ConnectorTransportTimeouts = ConnectorTransportTimeouts(),
+): ConnectorTransport =
+    KtorConnectorTransport(
+        httpClient =
+            HttpClient(httpEngine) {
+                install(HttpTimeout)
+            },
+        timeouts = timeouts,
+    )
 
 private class KtorConnectorTransport(
     private val httpClient: HttpClient,
+    private val timeouts: ConnectorTransportTimeouts = ConnectorTransportTimeouts(),
 ) : ConnectorTransport {
     override suspend fun <Result> execute(
         request: ConnectorTransportRequest,
         consumeResponse: suspend (ConnectorTransportResponse) -> Result,
-    ): Result =
-        httpClient
-            .prepareRequest(request.url) {
-                method = HttpMethod(request.method)
-                headers {
-                    request.headers.forEach { header ->
-                        append(header.name, header.value)
+    ): Result {
+        try {
+            return httpClient
+                .prepareRequest(request.url) {
+                    method = HttpMethod(request.method)
+                    timeout {
+                        connectTimeoutMillis = timeouts.connectTimeoutMillis
+                        requestTimeoutMillis = timeouts.requestTimeoutMillis
                     }
-                }
-                request.body?.let(::setBody)
-            }.execute { response ->
-                consumeResponse(
-                    ConnectorTransportResponse(
-                        statusCode = response.status.value,
-                        headers =
-                            buildList {
-                                response.headers.entries().forEach { (name, values) ->
-                                    values.forEach { value ->
-                                        add(ConnectorTransportHeader(name, value))
+                    headers {
+                        request.headers.forEach { header ->
+                            append(header.name, header.value)
+                        }
+                    }
+                    request.body?.let(::setBody)
+                }.execute { response ->
+                    consumeResponse(
+                        ConnectorTransportResponse(
+                            statusCode = response.status.value,
+                            headers =
+                                buildList {
+                                    response.headers.entries().forEach { (name, values) ->
+                                        values.forEach { value ->
+                                            add(ConnectorTransportHeader(name, value))
+                                        }
                                     }
-                                }
-                            },
-                        body = KtorConnectorTransportChunkReader(response.bodyAsChannel()),
-                    ),
-                )
-            }
+                                },
+                            body = KtorConnectorTransportChunkReader(response.bodyAsChannel()),
+                        ),
+                    )
+                }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (_: ConnectTimeoutException) {
+            throw connectionTimeoutException()
+        } catch (_: HttpRequestTimeoutException) {
+            throw requestTimeoutException()
+        } catch (_: IOException) {
+            throw transportFailureException()
+        }
+    }
 
     override fun close() {
         httpClient.close()

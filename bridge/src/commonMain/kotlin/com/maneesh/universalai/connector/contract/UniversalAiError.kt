@@ -87,6 +87,9 @@ value class UniversalAiErrorCode private constructor(
         val UnsupportedTerminalEvent = UniversalAiErrorCode("unsupported_terminal_event")
         val SimulatedFailure = UniversalAiErrorCode("simulated_failure")
         val ConnectorFailure = UniversalAiErrorCode("connector_failure")
+        val ConnectionTimeout = UniversalAiErrorCode("connection_timeout")
+        val RequestTimeout = UniversalAiErrorCode("request_timeout")
+        val TransportFailure = UniversalAiErrorCode("transport_failure")
 
         private val Known =
             setOf(
@@ -97,6 +100,9 @@ value class UniversalAiErrorCode private constructor(
                 UnsupportedTerminalEvent,
                 SimulatedFailure,
                 ConnectorFailure,
+                ConnectionTimeout,
+                RequestTimeout,
+                TransportFailure,
             )
 
         fun of(rawValue: String): UniversalAiErrorCode {

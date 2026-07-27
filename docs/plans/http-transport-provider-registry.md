@@ -3,8 +3,9 @@
 ## Status and activation gate
 
 P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
-P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B is now the
-sole active work package.
+P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B completed its
+URL, header, timeout, canonical-error, and redaction scope on July 27, 2026. P3-C is now the sole
+active work package.
 
 The accepted activation transition:
 
@@ -14,8 +15,10 @@ The accepted activation transition:
 4. leaves P4-P9 `Not started`.
 
 The accepted P3-A transition added only the transport boundary, construction, ownership, cleanup,
-and focused lifecycle tests named below. P3-B may now add only URL, header, timeout, and redaction
-policy. SSE, provider-registry behavior, and provider adapters remain inactive.
+and focused lifecycle tests named below. The P3-B transition added only URL, header, timeout,
+canonical-error, and redaction policy plus the deterministic tests named below. P3-C may now add
+only SSE framing, response metadata, and response-content-start behavior. Provider-registry
+behavior and provider adapters remain inactive.
 
 ## Objective
 
@@ -159,8 +162,8 @@ The completed milestone must provide:
 
 ## Work packages
 
-Execute the packages in order and keep only one active package at a time. P3-A is complete, P3-B is
-active, and P3-C through P3-E remain inactive.
+Execute the packages in order and keep only one active package at a time. P3-A and P3-B are
+complete, P3-C is active, and P3-D through P3-E remain inactive.
 
 ### P3-A: Transport boundary and construction
 
@@ -175,7 +178,7 @@ Status: `Completed` on July 24, 2026.
 
 ### P3-B: URL, header, timeout, and redaction policy
 
-Status: `In progress`.
+Status: `Completed` on July 27, 2026.
 
 - Implement base URL validation, normalization, and endpoint resolution.
 - Implement protected-header composition and injection rejection.
@@ -183,6 +186,8 @@ Status: `In progress`.
 - Add bounded diagnostic redaction and adversarial secret-leak fixtures.
 
 ### P3-C: SSE and response metadata
+
+Status: `In progress`.
 
 - Implement incremental SSE framing and parsing.
 - Extract request-ID and retry-after metadata.
@@ -344,8 +349,13 @@ platform-default engine construction, caller-owned engine injection, chunked res
 callback failure cleanup, connector-owned exactly-once cleanup, shared borrowed-resource survival,
 partial-construction cleanup, active-operation cancellation, stable use-after-close errors, and
 existing Kotlin and Swift behavior through local `MockEngine`, host, package, and sample checks.
-It does not prove P3-B URL/header/timeout/redaction policy, P3-C SSE or response metadata, P3-D
-registry behavior, P3-E integrated adapter lifecycles, or any live-network behavior.
+
+The completed P3-B package proves deterministic base-URL validation and endpoint resolution,
+case-insensitive protected-header composition, header-injection rejection, applied connect and
+whole-request timeout configuration, canonical timeout and transport-failure mapping, caller
+cancellation preservation, and bounded sensitive-header redaction through common-code and
+`MockEngine` tests. It does not prove P3-C SSE or response metadata, P3-D registry behavior, P3-E
+integrated adapter lifecycles, any provider or Gateway behavior, or any live-network behavior.
 
 ## Completion evidence
 
@@ -381,6 +391,32 @@ For every activated P3 package, record:
 - Proof remains deterministic and secretless. No P3-B policy, P3-C parsing/metadata, P3-D registry,
   provider, Gateway, physical-device execution, live-network behavior, or distribution is proven.
 - Next package: P3-B URL, header, timeout, and redaction policy.
+
+### P3-B completion record
+
+- Candidate branch: `feature/p3-transport-policy`; the exact reviewed head, CI run, merge, and
+  resulting `main` evidence belong in the pull-request brief because embedding a candidate SHA in
+  its own commit would change that SHA.
+- Added common-code base-URL validation and normalization that rejects credentials, fragments,
+  unsupported schemes, ambiguous traversal, encoded separators, and authority-replacing
+  endpoints while preserving optional path prefixes and explicit ports.
+- Added deterministic case-insensitive caller, adapter, and transport header composition with
+  protected transport-owned names, fixed safe validation failures, strict control-character and
+  size rejection, and repeated-field ordering for the winning source.
+- Installed Ktor's timeout plugin on every supported transport construction path, applied bounded
+  connect and whole-request timeout settings per request, and mapped connect timeout, request
+  timeout, and pre-response I/O failure to fixed canonical transport errors while preserving
+  caller cancellation.
+- Added bounded diagnostic redaction by normalized sensitive header name, including adversarial
+  fixtures that place sensitive values in diagnostic text, non-sensitive header values, malformed
+  header fields, and oversized diagnostics.
+- Focused JVM, Android host, and iOS Simulator transport-policy and lifecycle tests passed. The
+  commit/push hooks, exact-head CI, independent review, and guarded merge remain the authoritative
+  Release gates for this package transition.
+- Proof remains deterministic and secretless. No SSE parsing or response metadata, provider
+  registry, provider or Gateway adapter, live networking, physical-device execution, or
+  distribution is proven.
+- Next package: P3-C SSE and response metadata.
 
 P3 completion becomes authoritative only after the closing pull request passes the full exact-head
 local gate, exact-head CI, independent review, guarded merge, and the resulting `main` workflow
