@@ -13,7 +13,7 @@ The repository has completed its P1 cross-platform baseline and P2 provider-neut
 
 No AI provider, gateway, API key, or network integration is implemented yet.
 
-> **Current phase:** P2 canonical core and JSON contracts and P3-A/P3-B transport construction and policy are completed. P3 remains `In progress`, with P3-C deterministic buffered request/response execution as the sole active work package.
+> **Current phase:** P2 canonical core and JSON contracts and P3-A/P3-B transport construction and policy are completed. P3 remains `In progress`, with P3-C SSE and response metadata as the sole active work package.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -99,7 +99,7 @@ The detailed implementation and acceptance criteria are in the [cross-platform c
 
 ### P2 completion
 
-P2 was activated separately on July 24, 2026 after P1 completion. It now defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, and P3-B added URL, header, timeout, canonical error, and redaction policy. P3-C deterministic buffered execution is now the sole active work package.
+P2 was activated separately on July 24, 2026 after P1 completion. It now defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, and P3-B added URL, header, timeout, canonical error, and redaction policy. P3-C SSE and response metadata is now the sole active work package.
 
 ## Architecture direction
 
