@@ -44,8 +44,10 @@ internal class ConnectorBaseUrl private constructor(
             if (
                 configuredValue.isBlank() ||
                 configuredValue != configuredValue.trim() ||
+                !configuredValue.hasExplicitSupportedScheme() ||
                 configuredValue.hasUnsafeTransportCharacter() ||
-                '\\' in configuredValue
+                '\\' in configuredValue ||
+                '#' in configuredValue
             ) {
                 throw invalidBaseUrl()
             }
@@ -101,7 +103,7 @@ internal data class ConnectorTransportTimeouts(
 }
 
 /**
- * Case-insensitive header composition with transport, adapter, then caller safety boundaries.
+ * Case-insensitive header composition with caller, adapter, then transport precedence.
  *
  * Adapter values replace caller values with the same normalized name. Transport values replace
  * both. Repeated fields from the winning source retain their order.
@@ -305,21 +307,71 @@ private fun String.hasAmbiguousPath(): Boolean {
     ) {
         return true
     }
-    return segments.any { encodedSegment ->
-        var decoded = encodedSegment
-        repeat(MAX_PATH_DECODE_PASSES) {
-            decoded =
-                try {
-                    decoded.decodeURLPart()
-                } catch (_: Throwable) {
-                    return true
-                }
-            if (decoded == "." || decoded == ".." || '/' in decoded || '\\' in decoded) {
+    return segments.any(String::hasUnsafeDecodedPathSegment)
+}
+
+private fun String.hasUnsafeDecodedPathSegment(): Boolean {
+    var decoded = this
+    repeat(MAX_PATH_DECODE_PASSES) {
+        if (decoded == "." || decoded == ".." || '/' in decoded || '\\' in decoded) {
+            return true
+        }
+        val next =
+            try {
+                decoded.decodeURLPart()
+            } catch (_: Throwable) {
                 return true
             }
+        if (next == decoded) {
+            return false
         }
-        false
+        decoded = next
     }
+    return true
+}
+
+private fun String.hasExplicitSupportedScheme(): Boolean {
+    val separatorIndex = indexOf("://")
+    if (separatorIndex <= 0) {
+        return false
+    }
+    val authorityStart = separatorIndex + 3
+    val authorityEnd =
+        indexOfAny(
+            chars = charArrayOf('/', '?', '#'),
+            startIndex = authorityStart,
+        ).takeIf { it >= 0 } ?: length
+    if (
+        substring(0, separatorIndex).lowercase() !in SUPPORTED_SCHEMES ||
+        authorityStart >= authorityEnd
+    ) {
+        return false
+    }
+    return substring(authorityStart, authorityEnd).hasValidAuthorityShape()
+}
+
+private fun String.hasValidAuthorityShape(): Boolean {
+    if (isEmpty() || '@' in this) {
+        return false
+    }
+    if (startsWith('[')) {
+        val closingBracket = indexOf(']')
+        if (closingBracket <= 1) {
+            return false
+        }
+        val suffix = substring(closingBracket + 1)
+        return suffix.isEmpty() ||
+            (suffix.startsWith(':') && suffix.length > 1 && suffix.drop(1).all(Char::isDigit))
+    }
+    if (count { character -> character == ':' } > 1) {
+        return false
+    }
+    val portSeparator = lastIndexOf(':')
+    if (portSeparator < 0) {
+        return isNotEmpty()
+    }
+    return substring(0, portSeparator).isNotEmpty() &&
+        substring(portSeparator + 1).let { port -> port.isNotEmpty() && port.all(Char::isDigit) }
 }
 
 private fun String.encodedBasePath(): String {
@@ -354,13 +406,11 @@ private fun Char.isUnsafeHeaderValueCharacter(): Boolean =
         code in 0x2066..0x2069
 
 private fun String.isSensitiveHeaderName(): Boolean {
-    val normalized = trim().lowercase()
-    val segments = normalized.split('-', '_')
-    return "authorization" in normalized ||
-        "cookie" in normalized ||
-        "api-key" in normalized ||
-        "apikey" in normalized ||
-        segments.any { segment -> segment == "token" || segment == "secret" }
+    val compactName =
+        trim()
+            .lowercase()
+            .filter(Char::isLetterOrDigit)
+    return SENSITIVE_HEADER_NAME_MARKERS.any(compactName::contains)
 }
 
 private fun String.sanitizeDiagnosticText(): String =
@@ -385,17 +435,29 @@ private fun String.boundedDiagnostic(): String {
 private const val MAX_HEADER_FIELDS: Int = 128
 private const val MAX_HEADER_NAME_CHARACTERS: Int = 256
 private const val MAX_HEADER_VALUE_BYTES: Int = 8_192
-private const val MAX_PATH_DECODE_PASSES: Int = 2
+private const val MAX_PATH_DECODE_PASSES: Int = 8
 private const val DIAGNOSTIC_TRUNCATION_MARKER: String = "[TRUNCATED]"
 
 private val SUPPORTED_SCHEMES: Set<String> = setOf("http", "https")
 private val HEADER_NAME_PATTERN: Regex = Regex("^[!#$%&'*+.^_`|~0-9A-Za-z-]+$")
+private val SENSITIVE_HEADER_NAME_MARKERS: Set<String> =
+    setOf(
+        "authorization",
+        "auth",
+        "cookie",
+        "apikey",
+        "token",
+        "secret",
+        "credential",
+        "key",
+    )
 private val PROTECTED_HEADER_NAMES: Set<String> =
     setOf(
         "connection",
         "content-length",
         "expect",
         "host",
+        "proxy-authorization",
         "proxy-connection",
         "te",
         "trailer",

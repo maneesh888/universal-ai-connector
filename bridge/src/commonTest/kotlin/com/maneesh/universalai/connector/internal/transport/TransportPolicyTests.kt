@@ -24,6 +24,10 @@ class TransportPolicyTests {
             "https://example.invalid/prefix%20value/",
             ConnectorBaseUrl.parse("https://example.invalid/prefix%20value/").value,
         )
+        assertEquals(
+            "https://[2001:db8::1]:8443/api/",
+            ConnectorBaseUrl.parse("https://[2001:db8::1]:8443/api").value,
+        )
     }
 
     @Test
@@ -33,15 +37,26 @@ class TransportPolicyTests {
                 "",
                 " https://example.invalid",
                 "https://example.invalid ",
+                "example.invalid/api",
+                "//example.invalid/api",
+                "https:example.invalid/api",
+                "https:///api",
+                "https://:443/api",
+                "https://example.invalid:/api",
+                "https://user@/api",
+                "https://2001:db8::1/api",
                 "ftp://example.invalid/api",
                 "https://user@example.invalid/api",
                 "https://user:password@example.invalid/api",
                 "https://example.invalid/api?mode=unsafe",
+                "https://example.invalid/api#",
                 "https://example.invalid/api#fragment",
                 "https://example.invalid/api/../v1",
                 "https://example.invalid/api/%2e%2e/v1",
                 "https://example.invalid/api/%252e%252e/v1",
+                "https://example.invalid/api/%25252e%25252e/v1",
                 "https://example.invalid/api%2fv1",
+                "https://example.invalid/api%25252fv1",
                 "https://example.invalid/api//v1",
                 "https://example.invalid\\api",
                 "https://example.invalid/\u0000",
@@ -49,7 +64,7 @@ class TransportPolicyTests {
 
         invalidValues.forEach { invalidValue ->
             val failure =
-                assertFailsWith<UniversalAiException> {
+                assertFailsWith<UniversalAiException>("accepted invalid base URL: $invalidValue") {
                     ConnectorBaseUrl.parse(invalidValue)
                 }
             assertValidationFailure(failure, INVALID_BASE_URL_MESSAGE)
@@ -86,7 +101,9 @@ class TransportPolicyTests {
                 "models/../../responses",
                 "%2e%2e/responses",
                 "%252e%252e/responses",
+                "%25252e%25252e/responses",
                 "models%2fprivate",
+                "models%25252fprivate",
                 "models//list",
                 "models\\list",
                 "models#fragment",
@@ -147,6 +164,7 @@ class TransportPolicyTests {
             "content-length",
             "Transfer-Encoding",
             "Connection",
+            "Proxy-Authorization",
             "Proxy-Connection",
             "TE",
             "Trailer",
@@ -243,16 +261,28 @@ class TransportPolicyTests {
         val authorizationValue = "fake-authorization-sensitive-value"
         val apiKeyValue = "fake-api-key-sensitive-value"
         val cookieValue = "fake-cookie-sensitive-value"
+        val underscoreApiKeyValue = "fake-underscore-api-key-sensitive-value"
+        val tokenValue = "fake-access-token-sensitive-value"
+        val secretValue = "fake-client-secret-sensitive-value"
+        val credentialValue = "fake-credential-sensitive-value"
+        val subscriptionKeyValue = "fake-subscription-key-sensitive-value"
         val diagnostic =
             ConnectorDiagnosticRedactor.redact(
                 message =
-                    "request failed for $authorizationValue / $apiKeyValue / $cookieValue" +
+                    "request failed for $authorizationValue / $apiKeyValue / $cookieValue / " +
+                        "$underscoreApiKeyValue / $tokenValue / $secretValue / " +
+                        "$credentialValue / $subscriptionKeyValue" +
                         "x".repeat(2_000),
                 headers =
                     listOf(
                         ConnectorTransportHeader("AUTHORIZATION", authorizationValue),
                         ConnectorTransportHeader("x-Api-Key", apiKeyValue),
                         ConnectorTransportHeader("Cookie", cookieValue),
+                        ConnectorTransportHeader("X-API_KEY", underscoreApiKeyValue),
+                        ConnectorTransportHeader("X-AccessToken", tokenValue),
+                        ConnectorTransportHeader("X-ClientSecret", secretValue),
+                        ConnectorTransportHeader("X-Credential-Id", credentialValue),
+                        ConnectorTransportHeader("X-Subscription-Key", subscriptionKeyValue),
                         ConnectorTransportHeader(
                             "X-Correlation",
                             "prefix-$authorizationValue-suffix",
@@ -268,6 +298,11 @@ class TransportPolicyTests {
             authorizationValue,
             apiKeyValue,
             cookieValue,
+            underscoreApiKeyValue,
+            tokenValue,
+            secretValue,
+            credentialValue,
+            subscriptionKeyValue,
             "fake-malformed-sensitive-value",
         ).forEach { sensitiveValue ->
             assertFalse(diagnostic.contains(sensitiveValue))
