@@ -28,6 +28,14 @@ class TransportPolicyTests {
             "https://[2001:db8::1]:8443/api/",
             ConnectorBaseUrl.parse("https://[2001:db8::1]:8443/api").value,
         )
+        assertEquals(
+            "https://example.invalid:443/api/",
+            ConnectorBaseUrl.parse("https://example.invalid:443/api").value,
+        )
+        assertEquals(
+            "http://example.invalid:80/api/",
+            ConnectorBaseUrl.parse("http://example.invalid:80/api").value,
+        )
     }
 
     @Test
@@ -85,6 +93,22 @@ class TransportPolicyTests {
         assertEquals(
             "https://example.invalid:9443/api/v1/models/list?limit=2&mode=fake",
             baseUrl.resolve("models/list?limit=2&mode=fake"),
+        )
+    }
+
+    @Test
+    fun relativeEndpointPreservesExplicitDefaultPort() {
+        assertEquals(
+            "https://example.invalid:443/api/v1/responses?mode=fake",
+            ConnectorBaseUrl
+                .parse("https://example.invalid:443/api/v1")
+                .resolve("responses?mode=fake"),
+        )
+        assertEquals(
+            "http://[2001:db8::1]:80/api/models",
+            ConnectorBaseUrl
+                .parse("http://[2001:db8::1]:80/api")
+                .resolve("models"),
         )
     }
 

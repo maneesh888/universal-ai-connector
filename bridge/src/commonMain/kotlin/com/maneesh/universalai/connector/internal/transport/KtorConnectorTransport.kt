@@ -50,6 +50,7 @@ private class KtorConnectorTransport(
         request: ConnectorTransportRequest,
         consumeResponse: suspend (ConnectorTransportResponse) -> Result,
     ): Result {
+        var responseConsumerFailure: Throwable? = null
         try {
             return httpClient
                 .prepareRequest(request.url) {
@@ -65,7 +66,7 @@ private class KtorConnectorTransport(
                     }
                     request.body?.let(::setBody)
                 }.execute { response ->
-                    consumeResponse(
+                    val transportResponse =
                         ConnectorTransportResponse(
                             statusCode = response.status.value,
                             headers =
@@ -77,16 +78,30 @@ private class KtorConnectorTransport(
                                     }
                                 },
                             body = KtorConnectorTransportChunkReader(response.bodyAsChannel()),
-                        ),
-                    )
+                        )
+                    try {
+                        consumeResponse(transportResponse)
+                    } catch (failure: Throwable) {
+                        responseConsumerFailure = failure
+                        throw failure
+                    }
                 }
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (_: ConnectTimeoutException) {
+        } catch (failure: ConnectTimeoutException) {
+            if (failure === responseConsumerFailure) {
+                throw failure
+            }
             throw connectionTimeoutException()
-        } catch (_: HttpRequestTimeoutException) {
+        } catch (failure: HttpRequestTimeoutException) {
+            if (failure === responseConsumerFailure) {
+                throw failure
+            }
             throw requestTimeoutException()
-        } catch (_: IOException) {
+        } catch (failure: IOException) {
+            if (failure === responseConsumerFailure) {
+                throw failure
+            }
             throw transportFailureException()
         }
     }
@@ -100,14 +115,24 @@ private class KtorConnectorTransportChunkReader(
     private val channel: ByteReadChannel,
 ) : ConnectorTransportChunkReader {
     override suspend fun readChunk(): ByteArray? {
-        val buffer = ByteArray(DEFAULT_CHUNK_SIZE)
-        while (true) {
-            when (val bytesRead = channel.readAvailable(buffer)) {
-                -1 -> return null
-                0 -> continue
-                buffer.size -> return buffer
-                else -> return buffer.copyOf(bytesRead)
+        try {
+            val buffer = ByteArray(DEFAULT_CHUNK_SIZE)
+            while (true) {
+                when (val bytesRead = channel.readAvailable(buffer)) {
+                    -1 -> return null
+                    0 -> continue
+                    buffer.size -> return buffer
+                    else -> return buffer.copyOf(bytesRead)
+                }
             }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (_: ConnectTimeoutException) {
+            throw connectionTimeoutException()
+        } catch (_: HttpRequestTimeoutException) {
+            throw requestTimeoutException()
+        } catch (_: IOException) {
+            throw transportFailureException()
         }
     }
 

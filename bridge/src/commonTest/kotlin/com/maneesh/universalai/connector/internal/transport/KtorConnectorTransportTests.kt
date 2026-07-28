@@ -12,8 +12,11 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
+import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
@@ -142,6 +145,33 @@ class KtorConnectorTransportTests {
     }
 
     @Test
+    fun callbackIoFailurePropagatesWithoutTransportRemapping() = runTest {
+        val engine =
+            MockEngine {
+                respond(
+                    content = ByteReadChannel("response"),
+                    status = HttpStatusCode.OK,
+                )
+            }
+        val transport = createKtorTransport(engine)
+        val expected = IOException("consumer I/O failed")
+
+        try {
+            val delivered =
+                assertFailsWith<IOException> {
+                    transport.execute(defaultRequest()) {
+                        throw expected
+                    }
+                }
+
+            assertSame(expected, delivered)
+        } finally {
+            transport.close()
+            engine.close()
+        }
+    }
+
+    @Test
     fun requestTimeoutIsEnforcedAndMapsToCanonicalTransportFailure() = runTest {
         val engine =
             MockEngine {
@@ -235,6 +265,46 @@ class KtorConnectorTransportTests {
                         error("No response is expected.")
                     }
                 }
+
+            assertTransportFailure(
+                failure = delivered,
+                code = UniversalAiErrorCode.TransportFailure,
+                message = TRANSPORT_FAILURE_MESSAGE,
+            )
+            assertFalse(delivered.toString().contains(sourceMessage))
+        } finally {
+            transport.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun responseBodyIoFailureStillMapsToFixedCanonicalTransportFailure() = runTest {
+        val sourceMessage = "fake-body-io-sensitive-detail"
+        val responseBody = ByteChannel()
+        val callbackStarted = CompletableDeferred<Unit>()
+        val engine =
+            MockEngine {
+                respond(
+                    content = responseBody,
+                    status = HttpStatusCode.OK,
+                )
+            }
+        val transport = createKtorTransport(engine)
+
+        try {
+            val operation =
+                async {
+                    assertFailsWith<UniversalAiException> {
+                        transport.execute(defaultRequest()) { response ->
+                            callbackStarted.complete(Unit)
+                            readAll(response.body)
+                        }
+                    }
+                }
+            callbackStarted.await()
+            responseBody.cancel(IOException(sourceMessage))
+            val delivered = operation.await()
 
             assertTransportFailure(
                 failure = delivered,

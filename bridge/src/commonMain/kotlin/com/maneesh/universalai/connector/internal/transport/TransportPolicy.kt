@@ -17,8 +17,9 @@ import io.ktor.http.encodedPath
  */
 internal class ConnectorBaseUrl private constructor(
     private val normalizedUrl: Url,
+    private val explicitPort: Int?,
 ) {
-    val value: String = normalizedUrl.toString()
+    val value: String = normalizedUrl.renderWithExplicitPort(explicitPort)
 
     fun resolve(relativeEndpoint: String): String {
         validateRelativeEndpoint(relativeEndpoint)
@@ -36,7 +37,7 @@ internal class ConnectorBaseUrl private constructor(
         ) {
             throw invalidRelativeEndpoint()
         }
-        return resolved.toString()
+        return resolved.renderWithExplicitPort(explicitPort)
     }
 
     companion object {
@@ -74,7 +75,10 @@ internal class ConnectorBaseUrl private constructor(
             val builder = URLBuilder(parsed)
             val prefix = parsed.encodedPath.trimEnd('/')
             builder.encodedPath = if (prefix.isEmpty()) "/" else "$prefix/"
-            return ConnectorBaseUrl(builder.build())
+            return ConnectorBaseUrl(
+                normalizedUrl = builder.build(),
+                explicitPort = configuredValue.explicitPortOrNull(),
+            )
         }
     }
 }
@@ -383,6 +387,33 @@ private fun String.encodedBasePath(): String {
     val queryStart = indexOf('?', startIndex = pathStart).takeIf { it >= 0 } ?: length
     val fragmentStart = indexOf('#', startIndex = pathStart).takeIf { it >= 0 } ?: length
     return substring(pathStart, minOf(queryStart, fragmentStart))
+}
+
+private fun String.explicitPortOrNull(): Int? {
+    val authorityStart = indexOf("://") + 3
+    val authorityEnd =
+        indexOfAny(
+            chars = charArrayOf('/', '?', '#'),
+            startIndex = authorityStart,
+        ).takeIf { it >= 0 } ?: length
+    val authority = substring(authorityStart, authorityEnd)
+    val portText =
+        if (authority.startsWith('[')) {
+            authority.substringAfter(']', missingDelimiterValue = "").removePrefix(":")
+                .takeIf(String::isNotEmpty)
+        } else {
+            authority.substringAfterLast(':', missingDelimiterValue = "")
+                .takeIf { it.isNotEmpty() && ':' in authority }
+        }
+    return portText?.toIntOrNull() ?: if (portText == null) null else throw invalidBaseUrl()
+}
+
+private fun Url.renderWithExplicitPort(explicitPort: Int?): String {
+    if (explicitPort == null) {
+        return toString()
+    }
+    val renderedHost = if (':' in host && !host.startsWith('[')) "[$host]" else host
+    return "${protocol.name}://$renderedHost:$explicitPort$encodedPathAndQuery"
 }
 
 private fun String.hasUnsafeTransportCharacter(): Boolean =
