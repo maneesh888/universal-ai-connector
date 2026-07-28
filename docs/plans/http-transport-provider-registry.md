@@ -2,9 +2,10 @@
 
 ## Status and activation gate
 
-P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
-P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B is now the
-sole active work package.
+P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone. P3-A
+completed its transport-boundary and construction scope on July 24, 2026, and P3-B completed its
+URL, header, timeout, and redaction policy scope on July 28, 2026. P3-C is now the sole active work
+package.
 
 The accepted activation transition:
 
@@ -13,9 +14,10 @@ The accepted activation transition:
 3. initially named P3-A as the active work package; and
 4. leaves P4-P9 `Not started`.
 
-The accepted P3-A transition added only the transport boundary, construction, ownership, cleanup,
-and focused lifecycle tests named below. P3-B may now add only URL, header, timeout, and redaction
-policy. SSE, provider-registry behavior, and provider adapters remain inactive.
+The accepted P3-A and P3-B transitions added only the transport boundary, construction, ownership,
+cleanup, URL/header policy, bounded timeouts, canonical timeout mapping, redaction, and focused
+tests named below. P3-C may now add only SSE parsing and response metadata. Provider-registry
+behavior and provider adapters remain inactive.
 
 ## Objective
 
@@ -159,8 +161,8 @@ The completed milestone must provide:
 
 ## Work packages
 
-Execute the packages in order and keep only one active package at a time. P3-A is complete, P3-B is
-active, and P3-C through P3-E remain inactive.
+Execute the packages in order and keep only one active package at a time. P3-A and P3-B are
+complete, P3-C is active, and P3-D through P3-E remain inactive.
 
 ### P3-A: Transport boundary and construction
 
@@ -175,7 +177,7 @@ Status: `Completed` on July 24, 2026.
 
 ### P3-B: URL, header, timeout, and redaction policy
 
-Status: `In progress`.
+Status: `Completed` on July 28, 2026.
 
 - Implement base URL validation, normalization, and endpoint resolution.
 - Implement protected-header composition and injection rejection.
@@ -183,6 +185,8 @@ Status: `In progress`.
 - Add bounded diagnostic redaction and adversarial secret-leak fixtures.
 
 ### P3-C: SSE and response metadata
+
+Status: `In progress`.
 
 - Implement incremental SSE framing and parsing.
 - Extract request-ID and retry-after metadata.
@@ -339,13 +343,15 @@ P3 does not prove:
 - OpenKeyboard or Gateway V1 integration; or
 - release readiness for `0.1.0-alpha.1`.
 
-The completed P3-A package proves deterministic provider-neutral request/response forwarding,
-platform-default engine construction, caller-owned engine injection, chunked response reads,
-callback failure cleanup, connector-owned exactly-once cleanup, shared borrowed-resource survival,
-partial-construction cleanup, active-operation cancellation, stable use-after-close errors, and
-existing Kotlin and Swift behavior through local `MockEngine`, host, package, and sample checks.
-It does not prove P3-B URL/header/timeout/redaction policy, P3-C SSE or response metadata, P3-D
-registry behavior, P3-E integrated adapter lifecycles, or any live-network behavior.
+The completed P3-A and P3-B packages prove deterministic provider-neutral request/response
+forwarding, platform-default engine construction, caller-owned engine injection, chunked response
+reads, callback failure cleanup, connector-owned exactly-once cleanup, shared borrowed-resource
+survival, partial-construction cleanup, active-operation cancellation, stable use-after-close
+errors, URL normalization and safe endpoint resolution, case-insensitive protected-header
+composition, header-injection rejection, bounded timeout configuration, canonical timeout mapping,
+caller-cancellation preservation, and bounded diagnostic redaction through local `MockEngine`,
+host, package, and sample checks. They do not prove P3-C SSE or response metadata, P3-D registry
+behavior, P3-E integrated adapter lifecycles, or any live-network behavior.
 
 ## Completion evidence
 
@@ -381,6 +387,29 @@ For every activated P3 package, record:
 - Proof remains deterministic and secretless. No P3-B policy, P3-C parsing/metadata, P3-D registry,
   provider, Gateway, physical-device execution, live-network behavior, or distribution is proven.
 - Next package: P3-B URL, header, timeout, and redaction policy.
+
+### P3-B completion record
+
+- Candidate branch: `feature/p3b-transport-policy`; the exact reviewed head, CI run, merge, and
+  resulting `main` evidence belong in the pull-request brief because embedding a candidate SHA in
+  its own commit would change that SHA.
+- Added one shared internal policy that normalizes HTTP(S) base URLs once, preserves authority,
+  port, and path prefixes, resolves only safe relative endpoints, and rejects credentials,
+  fragments, traversal, encoded separators, and authority replacement.
+- Added case-insensitive source-aware header composition with deterministic safe precedence,
+  transport-owned and adapter-owned protections, duplicate and control-character rejection, and
+  bounded redacted diagnostics that omit URLs and credential-equivalent header values.
+- Added distinct bounded connect and whole-request timeouts to the provider-neutral request,
+  installed Ktor timeout behavior for every existing platform engine path, and mapped connection
+  and request timeouts to fixed safe canonical transport errors without converting caller
+  cancellation.
+- Added adversarial shared fixtures and `MockEngine` coverage for URL, header, timeout,
+  cancellation, and secret-leak behavior. Focused JVM, Android host, and iOS Simulator checks
+  passed; commit/push hooks, exact-head CI, independent review, and guarded merge remain the
+  authoritative Release gates for the package transition.
+- Proof remains deterministic and secretless. No P3-C SSE/metadata, P3-D registry, provider,
+  Gateway, physical-device execution, live-network behavior, or distribution is proven.
+- Next package: P3-C SSE and response metadata.
 
 P3 completion becomes authoritative only after the closing pull request passes the full exact-head
 local gate, exact-head CI, independent review, guarded merge, and the resulting `main` workflow

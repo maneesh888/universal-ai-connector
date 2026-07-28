@@ -3,14 +3,16 @@ package com.maneesh.universalai.connector.internal.transport
 /**
  * Provider-neutral request data accepted by the connector's internal HTTP transport.
  *
- * URL and header policy are deliberately owned by later transport-policy work. This boundary
- * preserves the adapter-provided URL and ordered header fields without interpreting them.
+ * Requests produced by [ConnectorTransportPolicy] carry an already-resolved URL, composed
+ * headers, and bounded timeout configuration. The transport still accepts direct requests for
+ * deterministic low-level tests.
  */
 internal data class ConnectorTransportRequest(
     val method: String,
     val url: String,
     val headers: List<ConnectorTransportHeader> = emptyList(),
     val body: ByteArray? = null,
+    val timeouts: ConnectorTransportTimeouts = ConnectorTransportTimeouts.Default,
 )
 
 /** One raw HTTP header field. Repeated fields remain separate ordered entries. */
