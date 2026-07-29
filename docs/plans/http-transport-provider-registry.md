@@ -147,9 +147,9 @@ The completed milestone must provide:
 - Extract request IDs case-insensitively using `x-request-id`, `request-id`, then
   `x-correlation-id` precedence. Within one name, the first valid field wins. Normalize surrounding
   optional whitespace, reject control characters, and bound the retained value to 256 UTF-8 bytes.
-- Parse the first valid `Retry-After` delta-seconds or HTTP-date field into a non-negative delay
-  bounded to one day. Invalid, negative, past, or overflowing values remain absent rather than
-  driving a retry.
+- Parse the first valid `Retry-After` delta-seconds or HTTP-date field, whose raw value is bounded
+  to 128 bytes, into a non-negative delay bounded to one day. Invalid, negative, past, oversized,
+  or overflowing values remain absent rather than driving a retry.
 - Preserve backpressure and cancel the underlying response body when a stream consumer cancels.
 
 ## Provider registry contract

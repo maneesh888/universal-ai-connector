@@ -14,7 +14,8 @@ internal data class ConnectorResponseMetadata(
  *
  * Request-ID precedence is `x-request-id`, `request-id`, then `x-correlation-id`. Within one
  * header name, the first valid field wins. `Retry-After` uses the first valid field and accepts
- * either non-negative delta-seconds or an HTTP date no more than one day in the future.
+ * either non-negative delta-seconds or an HTTP date no more than one day in the future. Its raw
+ * ASCII field value is limited to 128 bytes before optional whitespace is removed.
  */
 internal object ConnectorResponseMetadataExtractor {
     fun extract(
@@ -67,10 +68,12 @@ internal object ConnectorResponseMetadataExtractor {
         value: String,
         nowEpochMilliseconds: Long,
     ): Long? {
+        if (value.length > MAX_RETRY_AFTER_VALUE_BYTES) {
+            return null
+        }
         val normalized = value.trim(' ', '\t')
         if (
             normalized.isEmpty() ||
-            normalized.length > MAX_RETRY_AFTER_VALUE_BYTES ||
             normalized.any { character -> character.code !in 0x20..0x7e }
         ) {
             return null

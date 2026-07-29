@@ -100,6 +100,20 @@ class ResponseMetadataTests {
                     nowEpochMilliseconds = FIXED_NOW_MILLIS,
                 ).retryAfterMillis,
         )
+        assertEquals(
+            42_000,
+            ConnectorResponseMetadataExtractor
+                .extract(
+                    headers =
+                        listOf(
+                            ConnectorTransportHeader(
+                                "Retry-After",
+                                " ".repeat(126) + "42",
+                            ),
+                        ),
+                    nowEpochMilliseconds = FIXED_NOW_MILLIS,
+                ).retryAfterMillis,
+        )
     }
 
     @Test
@@ -122,6 +136,7 @@ class ResponseMetadataTests {
             "not-a-date",
             Long.MAX_VALUE.toString(),
             "1".repeat(129),
+            " ".repeat(129) + "42",
         ).forEach { value ->
             assertNull(
                 ConnectorResponseMetadataExtractor

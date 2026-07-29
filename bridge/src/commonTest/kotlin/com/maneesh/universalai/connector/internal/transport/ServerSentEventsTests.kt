@@ -4,10 +4,13 @@ import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -284,6 +287,32 @@ class ServerSentEventsTests {
         runCurrent()
         operation.cancelAndJoin()
 
+        assertNull(reader.readEvent())
+    }
+
+    @Test
+    fun cancellationBetweenCallsSuppressesAnAlreadyBufferedEvent() = runTest {
+        val reader =
+            ConnectorServerSentEventReader(
+                chunkReader(
+                    listOf(
+                        "data: first\n\ndata: late\n\n".encodeToByteArray(),
+                    ),
+                ),
+            )
+        val delivered = mutableListOf<String>()
+        val operation =
+            async {
+                reader.readEvent()?.let { event -> delivered += event.data }
+                currentCoroutineContext().cancel()
+                reader.readEvent()?.let { event -> delivered += event.data }
+            }
+
+        assertFailsWith<CancellationException> {
+            operation.await()
+        }
+
+        assertEquals(listOf("first"), delivered)
         assertNull(reader.readEvent())
     }
 

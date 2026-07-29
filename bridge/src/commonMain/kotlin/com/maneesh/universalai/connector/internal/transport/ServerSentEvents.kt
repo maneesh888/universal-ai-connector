@@ -1,6 +1,8 @@
 package com.maneesh.universalai.connector.internal.transport
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 /** One incrementally framed server-sent event. */
 internal data class ConnectorServerSentEvent(
@@ -38,8 +40,10 @@ internal class ConnectorServerSentEventReader(
             return null
         }
         try {
+            currentCoroutineContext().ensureActive()
             while (true) {
                 if (chunkIndex >= chunk.size) {
+                    currentCoroutineContext().ensureActive()
                     if (reachedEndOfStream) {
                         validateUnterminatedLine()
                         terminateAndDiscard()
@@ -54,17 +58,28 @@ internal class ConnectorServerSentEventReader(
                     chunkIndex = 0
                 }
 
+                if (chunkIndex % CANCELLATION_CHECK_INTERVAL_BYTES == 0) {
+                    currentCoroutineContext().ensureActive()
+                }
                 val byte = chunk[chunkIndex++]
                 when (byte) {
                     CARRIAGE_RETURN -> {
-                        finishLine()?.let { return it }
+                        val parsed = finishLine()
+                        if (parsed != null) {
+                            currentCoroutineContext().ensureActive()
+                            return parsed
+                        }
                         previousByteWasCarriageReturn = true
                     }
                     LINE_FEED -> {
                         if (previousByteWasCarriageReturn) {
                             previousByteWasCarriageReturn = false
                         } else {
-                            finishLine()?.let { return it }
+                            val parsed = finishLine()
+                            if (parsed != null) {
+                                currentCoroutineContext().ensureActive()
+                                return parsed
+                            }
                         }
                     }
                     else -> {
@@ -208,6 +223,7 @@ private fun parseSseRetry(value: String): Long? {
 }
 
 private const val INITIAL_LINE_CAPACITY: Int = 256
+private const val CANCELLATION_CHECK_INTERVAL_BYTES: Int = 4_096
 private const val MAX_SSE_LINE_BYTES: Int = 1_048_576
 private const val MAX_SSE_EVENT_DATA_BYTES: Int = 1_048_576
 private const val MAX_SSE_RETRY_MILLIS: Long = 86_400_000
