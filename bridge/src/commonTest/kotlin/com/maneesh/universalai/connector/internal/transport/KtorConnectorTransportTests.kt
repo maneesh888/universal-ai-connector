@@ -26,6 +26,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class KtorConnectorTransportTests {
     @Test
@@ -59,6 +60,8 @@ class KtorConnectorTransportTests {
                         Headers.build {
                             append("X-Response", "one")
                             append("X-Response", "two")
+                            append("X-Request-Id", "request-123")
+                            append("Retry-After", "15")
                         },
                 )
             }
@@ -86,7 +89,12 @@ class KtorConnectorTransportTests {
                             .filter { header -> header.name.equals("X-Response", ignoreCase = true) }
                             .map(ConnectorTransportHeader::value),
                     )
-                    readAll(response.body)
+                    assertEquals("request-123", response.metadata.requestId)
+                    assertEquals(15_000, response.metadata.retryAfterMillis)
+                    assertFalse(response.hasResponseContentStarted)
+                    val body = readAll(response.body)
+                    assertTrue(response.hasResponseContentStarted)
+                    body
                 }
 
             assertContentEquals(responseBody, received)

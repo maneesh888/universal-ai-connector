@@ -232,6 +232,8 @@ internal const val CONNECTION_TIMEOUT_MESSAGE: String =
 internal const val REQUEST_TIMEOUT_MESSAGE: String =
     "The HTTP request exceeded its configured timeout."
 internal const val TRANSPORT_FAILURE_MESSAGE: String = "The HTTP transport failed."
+internal const val MALFORMED_RESPONSE_STREAM_MESSAGE: String =
+    "The HTTP response stream is malformed."
 
 internal fun connectionTimeoutException(): UniversalAiException =
     transportException(
@@ -249,6 +251,12 @@ internal fun transportFailureException(): UniversalAiException =
     transportException(
         code = UniversalAiErrorCode.TransportFailure,
         message = TRANSPORT_FAILURE_MESSAGE,
+    )
+
+internal fun malformedResponseStreamException(): UniversalAiException =
+    transportException(
+        code = UniversalAiErrorCode.TransportFailure,
+        message = MALFORMED_RESPONSE_STREAM_MESSAGE,
     )
 
 private fun transportException(
