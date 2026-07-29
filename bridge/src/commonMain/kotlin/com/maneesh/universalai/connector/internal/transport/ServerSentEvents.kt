@@ -44,11 +44,11 @@ internal class ConnectorServerSentEventReader(
             while (true) {
                 if (chunkIndex >= chunk.size) {
                     if (reachedEndOfStream) {
-                        validateUnterminatedLine()
-                        terminateAndDiscard()
-                        // Close the cancellation race only after terminal state is finalized.
-                        currentCoroutineContext().ensureActive()
-                        return null
+                        return runSseTerminalFinalization {
+                            validateUnterminatedLine()
+                            terminateAndDiscard()
+                            null
+                        }
                     }
                     currentCoroutineContext().ensureActive()
                     val nextChunk = body.readChunk()
@@ -189,6 +189,25 @@ internal class ConnectorServerSentEventReader(
         line.clear()
         resetEvent()
     }
+}
+
+/**
+ * Runs bounded terminal work without allowing a concurrent cancellation to become a normal or
+ * failure terminal. The same context is checked before and after the work, and before propagating
+ * a failure raised while finalizing.
+ */
+internal suspend fun <T> runSseTerminalFinalization(block: () -> T): T {
+    val context = currentCoroutineContext()
+    context.ensureActive()
+    val result =
+        try {
+            block()
+        } catch (failure: Throwable) {
+            context.ensureActive()
+            throw failure
+        }
+    context.ensureActive()
+    return result
 }
 
 private class MutableByteBuffer {

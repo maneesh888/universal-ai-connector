@@ -317,13 +317,13 @@ class ServerSentEventsTests {
     }
 
     @Test
-    fun cancellationAsEndOfStreamArrivesDoesNotReturnNormalCompletion() = runTest {
+    fun cancellationAtMalformedEndOfStreamOutranksFailureAndTerminates() = runTest {
         var readCount = 0
         val reader =
             ConnectorServerSentEventReader(
                 ConnectorTransportChunkReader {
                     when (readCount++) {
-                        0 -> "data: unterminated".encodeToByteArray()
+                        0 -> byteArrayOf(0xc3.toByte())
                         else -> {
                             currentCoroutineContext().cancel()
                             null
@@ -331,13 +331,74 @@ class ServerSentEventsTests {
                     }
                 },
             )
-        val operation = async { reader.readEvent() }
+        val outcome = CompletableDeferred<String>()
+        val operation =
+            async {
+                try {
+                    reader.readEvent()
+                    outcome.complete("normal")
+                } catch (_: CancellationException) {
+                    outcome.complete("cancelled")
+                } catch (_: Throwable) {
+                    outcome.complete("failure")
+                }
+            }
 
-        assertFailsWith<CancellationException> {
-            operation.await()
-        }
+        runCurrent()
 
+        assertEquals("cancelled", outcome.await())
+        operation.join()
         assertNull(reader.readEvent())
+    }
+
+    @Test
+    fun terminalFinalizationRejectsNormalResultAfterCancellation() = runTest {
+        val outcome = CompletableDeferred<String>()
+        val operation =
+            async {
+                val operationContext = currentCoroutineContext()
+                try {
+                    runSseTerminalFinalization {
+                        operationContext.cancel()
+                        null
+                    }
+                    outcome.complete("normal")
+                } catch (_: CancellationException) {
+                    outcome.complete("cancelled")
+                } catch (_: Throwable) {
+                    outcome.complete("failure")
+                }
+            }
+
+        runCurrent()
+
+        assertEquals("cancelled", outcome.await())
+        operation.join()
+    }
+
+    @Test
+    fun terminalFinalizationPrefersCancellationToConcurrentFailure() = runTest {
+        val outcome = CompletableDeferred<String>()
+        val operation =
+            async {
+                val operationContext = currentCoroutineContext()
+                try {
+                    runSseTerminalFinalization {
+                        operationContext.cancel()
+                        error("synthetic terminal failure")
+                    }
+                    outcome.complete("normal")
+                } catch (_: CancellationException) {
+                    outcome.complete("cancelled")
+                } catch (_: Throwable) {
+                    outcome.complete("failure")
+                }
+            }
+
+        runCurrent()
+
+        assertEquals("cancelled", outcome.await())
+        operation.join()
     }
 
     private fun singleByteChunks(value: String): List<ByteArray> =
