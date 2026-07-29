@@ -34,12 +34,55 @@ internal data class ConnectorTransportHeader(
 internal class ConnectorTransportResponse(
     val statusCode: Int,
     val headers: List<ConnectorTransportHeader>,
-    val body: ConnectorTransportChunkReader,
-)
+    body: ConnectorTransportChunkReader,
+) {
+    private val trackingBody = ContentTrackingChunkReader(body)
+
+    /**
+     * Transport metadata normalized from response headers.
+     *
+     * Request IDs use the precedence documented by [ConnectorResponseMetadataExtractor].
+     * Retry-after values are bounded and expressed as a delay from response receipt.
+     */
+    val metadata: ConnectorResponseMetadata = ConnectorResponseMetadataExtractor.extract(headers)
+
+    /**
+     * A body reader that records the response-content-start boundary before returning the first
+     * non-empty byte chunk. Headers alone do not start response content.
+     */
+    val body: ConnectorTransportChunkReader = trackingBody
+
+    /**
+     * Whether at least one response-body byte has been returned to the response consumer.
+     *
+     * Generation retries are disabled throughout P3. Future retry or reconnect decisions must
+     * also treat `true` as an unconditional prohibition.
+     */
+    val hasResponseContentStarted: Boolean
+        get() = trackingBody.hasStarted
+}
 
 /** Reads the next available response-body chunk, or returns `null` at end of stream. */
 internal fun interface ConnectorTransportChunkReader {
     suspend fun readChunk(): ByteArray?
+}
+
+private class ContentTrackingChunkReader(
+    private val delegate: ConnectorTransportChunkReader,
+) : ConnectorTransportChunkReader {
+    var hasStarted: Boolean = false
+        private set
+
+    override suspend fun readChunk(): ByteArray? {
+        while (true) {
+            val chunk = delegate.readChunk() ?: return null
+            if (chunk.isEmpty()) {
+                continue
+            }
+            hasStarted = true
+            return chunk
+        }
+    }
 }
 
 /**

@@ -4,8 +4,9 @@
 
 P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
 P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B completed its
-URL, header, timeout, canonical-error, and redaction scope on July 27, 2026. P3-C is now the sole
-active work package.
+URL, header, timeout, canonical-error, and redaction scope on July 27, 2026. P3-C completed its SSE,
+response-metadata, and response-content-start scope on July 29, 2026. P3-D is now the sole active
+work package.
 
 The accepted activation transition:
 
@@ -16,9 +17,9 @@ The accepted activation transition:
 
 The accepted P3-A transition added only the transport boundary, construction, ownership, cleanup,
 and focused lifecycle tests named below. The P3-B transition added only URL, header, timeout,
-canonical-error, and redaction policy plus the deterministic tests named below. P3-C may now add
-only SSE framing, response metadata, and response-content-start behavior. Provider-registry
-behavior and provider adapters remain inactive.
+canonical-error, and redaction policy plus the deterministic tests named below. The P3-C
+transition added only SSE framing, response metadata, response-content-start behavior, and the
+deterministic tests named below. Provider adapters remain inactive.
 
 ## Objective
 
@@ -137,11 +138,18 @@ The completed milestone must provide:
 - Reject malformed UTF-8 deterministically without exposing partial response content as a
   retryable pre-content failure. Ignore an invalid, negative, or overflowing SSE `retry` field for
   that event while continuing to process its other fields.
-- Define the exact point at which response content has begun. At and after that point, transport
-  reconnect and generation retry are forbidden.
-- Extract request IDs from a documented, case-insensitive allowlist with deterministic precedence.
-- Parse `Retry-After` delta-seconds and HTTP-date forms into bounded metadata. Invalid, negative, or
-  overflowing values remain absent rather than driving a retry.
+- Bound each decoded SSE line and dispatched event-data value to 1 MiB, and bound a valid SSE
+  `retry` value to one day. Exceeding the line or event-data bound is a fixed safe transport
+  failure; an excessive optional `retry` field remains absent.
+- Response content begins immediately after the body reader obtains its first non-empty byte chunk
+  and before that chunk is returned to the response consumer or parser. At and after that point,
+  transport reconnect and generation retry are forbidden.
+- Extract request IDs case-insensitively using `x-request-id`, `request-id`, then
+  `x-correlation-id` precedence. Within one name, the first valid field wins. Normalize surrounding
+  optional whitespace, reject control characters, and bound the retained value to 256 UTF-8 bytes.
+- Parse the first valid `Retry-After` delta-seconds or HTTP-date field, whose raw value is bounded
+  to 128 bytes, into a non-negative delay bounded to one day. Invalid, negative, past, oversized,
+  or overflowing values remain absent rather than driving a retry.
 - Preserve backpressure and cancel the underlying response body when a stream consumer cancels.
 
 ## Provider registry contract
@@ -162,8 +170,8 @@ The completed milestone must provide:
 
 ## Work packages
 
-Execute the packages in order and keep only one active package at a time. P3-A and P3-B are
-complete, P3-C is active, and P3-D through P3-E remain inactive.
+Execute the packages in order and keep only one active package at a time. P3-A through P3-C are
+complete, P3-D is active, and P3-E remains inactive.
 
 ### P3-A: Transport boundary and construction
 
@@ -187,7 +195,7 @@ Status: `Completed` on July 27, 2026.
 
 ### P3-C: SSE and response metadata
 
-Status: `In progress`.
+Status: `Completed` on July 29, 2026.
 
 - Implement incremental SSE framing and parsing.
 - Extract request-ID and retry-after metadata.
@@ -195,6 +203,8 @@ Status: `In progress`.
 - Add chunk-boundary, line-ending, malformed-input, cancellation, and end-of-stream fixtures.
 
 ### P3-D: Provider registry
+
+Status: `In progress`.
 
 - Implement deterministic internal registration and lookup.
 - Cover duplicate, unknown, normalized-identifier, concurrent-read, and lifecycle cases.
@@ -357,6 +367,14 @@ cancellation preservation, and bounded sensitive-header redaction through common
 `MockEngine` tests. It does not prove P3-C SSE or response metadata, P3-D registry behavior, P3-E
 integrated adapter lifecycles, any provider or Gateway behavior, or any live-network behavior.
 
+The completed P3-C package proves deterministic incremental SSE framing across arbitrary chunks,
+LF/CRLF/CR line endings, split UTF-8 code points, BOM, defined fields, blank delimiters, comments,
+malformed UTF-8, bounded input, cancellation, and unterminated end-of-stream behavior. It also
+proves case-insensitive bounded request-ID and retry-after extraction plus the exact first-body-byte
+content-start boundary through common-code and `MockEngine` tests. It does not prove P3-D registry
+behavior, P3-E integrated adapter lifecycles, provider or Gateway protocol behavior, automatic
+retry or reconnect behavior, or any live-network behavior.
+
 ## Completion evidence
 
 For every activated P3 package, record:
@@ -417,6 +435,32 @@ For every activated P3 package, record:
   registry, provider or Gateway adapter, live networking, physical-device execution, or
   distribution is proven.
 - Next package: P3-C SSE and response metadata.
+
+### P3-C completion record
+
+- Candidate branch: `feature/p3c-sse-metadata`; the exact reviewed head, CI run, merge, and
+  resulting `main` evidence belong in the pull-request brief because embedding a candidate SHA in
+  its own commit would change that SHA.
+- Added a pull-based common-code SSE reader that preserves backpressure, handles arbitrary byte
+  boundaries and LF/CRLF/CR delimiters, validates split UTF-8 and BOM input, combines `data`
+  fields, retains `event`, `id`, and bounded valid `retry` metadata, ignores comments and invalid
+  optional fields, and discards unterminated end-of-stream records.
+- Added fixed safe malformed-stream mapping, 1 MiB line and event-data bounds, cancellation-terminal
+  parser behavior, and deterministic fixtures for one-byte chunks, multi-byte Unicode, repeated
+  fields, blank events, malformed UTF-8, excessive input, partial records, and cancellation during
+  or between events.
+- Added case-insensitive request-ID extraction with documented precedence and a 256-byte bound,
+  plus delta-seconds and HTTP-date `Retry-After` extraction bounded to one day.
+- Defined response content as started immediately after the first non-empty body chunk is obtained
+  and before it reaches the response consumer or parser. Generation retries remain disabled, and
+  the retained boundary makes any future post-content retry or reconnect ineligible.
+- Focused JVM, Android host, and iOS Simulator transport tests passed. The commit/push hooks,
+  exact-head CI, independent review, and guarded merge remain the authoritative Release gates for
+  the package transition.
+- Proof remains deterministic and secretless. No provider registry, provider or Gateway adapter,
+  automatic retry or reconnect, live networking, physical-device execution, or distribution is
+  proven.
+- Next package: P3-D provider registry.
 
 P3 completion becomes authoritative only after the closing pull request passes the full exact-head
 local gate, exact-head CI, independent review, guarded merge, and the resulting `main` workflow
