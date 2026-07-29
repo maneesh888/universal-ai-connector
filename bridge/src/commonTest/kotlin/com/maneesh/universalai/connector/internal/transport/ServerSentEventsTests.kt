@@ -316,6 +316,30 @@ class ServerSentEventsTests {
         assertNull(reader.readEvent())
     }
 
+    @Test
+    fun cancellationAsEndOfStreamArrivesDoesNotReturnNormalCompletion() = runTest {
+        var readCount = 0
+        val reader =
+            ConnectorServerSentEventReader(
+                ConnectorTransportChunkReader {
+                    when (readCount++) {
+                        0 -> "data: unterminated".encodeToByteArray()
+                        else -> {
+                            currentCoroutineContext().cancel()
+                            null
+                        }
+                    }
+                },
+            )
+        val operation = async { reader.readEvent() }
+
+        assertFailsWith<CancellationException> {
+            operation.await()
+        }
+
+        assertNull(reader.readEvent())
+    }
+
     private fun singleByteChunks(value: String): List<ByteArray> =
         value.encodeToByteArray().map { byte -> byteArrayOf(byte) }
 

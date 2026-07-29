@@ -47,6 +47,7 @@ internal class ConnectorServerSentEventReader(
                     if (reachedEndOfStream) {
                         validateUnterminatedLine()
                         terminateAndDiscard()
+                        currentCoroutineContext().ensureActive()
                         return null
                     }
                     val nextChunk = body.readChunk()
