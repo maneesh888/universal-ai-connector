@@ -43,13 +43,14 @@ internal class ConnectorServerSentEventReader(
             currentCoroutineContext().ensureActive()
             while (true) {
                 if (chunkIndex >= chunk.size) {
-                    currentCoroutineContext().ensureActive()
                     if (reachedEndOfStream) {
                         validateUnterminatedLine()
                         terminateAndDiscard()
+                        // Close the cancellation race only after terminal state is finalized.
                         currentCoroutineContext().ensureActive()
                         return null
                     }
+                    currentCoroutineContext().ensureActive()
                     val nextChunk = body.readChunk()
                     if (nextChunk == null) {
                         reachedEndOfStream = true
