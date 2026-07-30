@@ -54,6 +54,7 @@ run_hygiene() {
 
 run_script_tests() {
   "$ROOT/scripts/tests/run-android-sample-test.sh"
+  "$ROOT/scripts/tests/xcframework-header-audit-test.sh"
 }
 
 run_cross_platform_gradle_checks() {

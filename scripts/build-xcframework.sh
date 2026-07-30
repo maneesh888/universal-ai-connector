@@ -6,6 +6,9 @@ SOURCE="$ROOT/bridge/build/XCFrameworks/debug/UniversalAiConnectorBridge.xcframe
 DESTINATION="$ROOT/swift-package/Artifacts/UniversalAiConnectorBridge.xcframework"
 XCFRAMEWORK_INFO="$DESTINATION/Info.plist"
 
+# shellcheck source=xcframework-header-audit.sh
+source "$ROOT/scripts/xcframework-header-audit.sh"
+
 "$ROOT/gradlew" :bridge:assembleUniversalAiConnectorBridgeDebugXCFramework
 
 if [[ ! -d "$SOURCE" ]]; then
@@ -163,26 +166,26 @@ validate_framework_slice() {
     exit 1
   fi
 
-  if grep -q '@interface UACBUniversalAiConnector :' "$framework_header"; then
-    echo "Product Kotlin client leaked into the $identifier callback-bridge header." >&2
-    exit 1
-  fi
-  if grep -q 'Kotlinx_coroutines_coreFlow' "$framework_header"; then
-    echo "Kotlin Flow leaked into the $identifier callback-bridge header." >&2
-    exit 1
-  fi
-  if grep -Eq 'Ktor|HttpClient|HttpClientEngine' "$framework_header"; then
-    echo "A Ktor transport implementation type leaked into the $identifier callback-bridge header." >&2
-    exit 1
-  fi
-  if grep -Eq "$unsupported_contract_pattern" "$framework_header"; then
-    echo "A canonical Kotlin or serialization implementation type leaked into the $identifier callback-bridge header." >&2
-    exit 1
-  fi
-  if grep -Eq 'UACBPoc|swift_name\("Poc' "$framework_header"; then
-    echo "A retired POC symbol leaked into the $identifier callback-bridge header." >&2
-    exit 1
-  fi
+  uac_reject_xcframework_header_pattern \
+    "$framework_header" \
+    '@interface UACBUniversalAiConnector :' \
+    "Product Kotlin client leaked into the $identifier callback-bridge header."
+  uac_reject_xcframework_header_pattern \
+    "$framework_header" \
+    'Kotlinx_coroutines_coreFlow' \
+    "Kotlin Flow leaked into the $identifier callback-bridge header."
+  uac_reject_xcframework_header_pattern \
+    "$framework_header" \
+    'Ktor|HttpClient|HttpClientEngine|ConnectorTransport|ProviderRegistry|ProviderRegistration|CoroutineScope' \
+    "A transport, registry, or coroutine implementation type leaked into the $identifier callback-bridge header."
+  uac_reject_xcframework_header_pattern \
+    "$framework_header" \
+    "$unsupported_contract_pattern" \
+    "A canonical Kotlin or serialization implementation type leaked into the $identifier callback-bridge header."
+  uac_reject_xcframework_header_pattern \
+    "$framework_header" \
+    'UACBPoc|swift_name\("Poc' \
+    "A retired POC symbol leaked into the $identifier callback-bridge header."
   if ! grep -q '@interface UACBAppleConnectorBridge :' "$framework_header"; then
     echo "The supported Apple callback bridge is missing from the $identifier header." >&2
     exit 1
