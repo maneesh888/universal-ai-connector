@@ -1,6 +1,7 @@
 package com.maneesh.universalai.connector.internal
 
 import com.maneesh.universalai.connector.contract.OutputId
+import com.maneesh.universalai.connector.contract.ProviderId
 import com.maneesh.universalai.connector.contract.ResponseId
 import com.maneesh.universalai.connector.contract.UniversalAiCompletionReason
 import com.maneesh.universalai.connector.contract.UniversalAiError
@@ -59,7 +60,7 @@ internal class DeterministicConnectorEngine : ConnectorEngine {
 
     private fun validateRequest(request: UniversalAiRequest) {
         if (
-            request.target.providerId.rawValue != DETERMINISTIC_PROVIDER_ID ||
+            request.target.providerId != DETERMINISTIC_PROVIDER_ID ||
             request.target.modelId.rawValue != DETERMINISTIC_MODEL_ID
         ) {
             throw invalidRequest(UNSUPPORTED_TARGET_MESSAGE)
@@ -189,7 +190,6 @@ internal class DeterministicConnectorEngine : ConnectorEngine {
     }
 
     private companion object {
-        const val DETERMINISTIC_PROVIDER_ID = "deterministic"
         const val DETERMINISTIC_MODEL_ID = "echo-v1"
         const val FORCE_ERROR_INPUT = "__force_error__"
         const val ECHO_PREFIX = "Kotlin echo: "
@@ -208,3 +208,5 @@ internal class DeterministicConnectorEngine : ConnectorEngine {
         val OUTPUT_ID = OutputId.of("deterministic-output-0")
     }
 }
+
+internal val DETERMINISTIC_PROVIDER_ID: ProviderId = ProviderId.of("deterministic")

@@ -103,7 +103,7 @@ class UniversalAiConnectorTests {
                     "hello",
                     providerId = "other",
                 ),
-            message = "The deterministic connector supports only target deterministic/echo-v1.",
+            message = "The requested provider is not registered.",
         )
         assertInvalidRequest(
             request =

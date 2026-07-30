@@ -14,6 +14,9 @@ import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.ConnectorResourceLease
 import com.maneesh.universalai.connector.internal.ConnectorResourceOwnership
 import com.maneesh.universalai.connector.internal.DeterministicConnectorEngine
+import com.maneesh.universalai.connector.internal.provider.ProviderRegistration
+import com.maneesh.universalai.connector.internal.provider.ProviderRegistry
+import com.maneesh.universalai.connector.internal.provider.ProviderRoutingConnectorEngine
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.createDefaultKtorTransport
 import com.maneesh.universalai.connector.internal.transport.createKtorTransport
@@ -183,11 +186,13 @@ class UniversalAiConnector private constructor(
             engineFactory: () -> ConnectorEngine,
             transport: ConnectorTransport,
             ownership: ConnectorResourceOwnership,
+            providerRegistrations: List<ProviderRegistration> = emptyList(),
         ): UniversalAiConnector =
             connectorComponents(
                 transportFactory = { transport },
                 transportOwnership = ownership,
                 engineFactory = engineFactory,
+                providerRegistrations = providerRegistrations,
             ).let(::UniversalAiConnector)
 
         private fun defaultComponents(): ConnectorComponents =
@@ -206,6 +211,7 @@ class UniversalAiConnector private constructor(
             transportFactory: () -> ConnectorTransport,
             transportOwnership: ConnectorResourceOwnership,
             engineFactory: () -> ConnectorEngine = ::DeterministicConnectorEngine,
+            providerRegistrations: List<ProviderRegistration> = emptyList(),
         ): ConnectorComponents {
             val lease =
                 ConnectorResourceLease.of(
@@ -214,7 +220,11 @@ class UniversalAiConnector private constructor(
                 )
             return try {
                 ConnectorComponents(
-                    engine = engineFactory(),
+                    engine =
+                        ProviderRoutingConnectorEngine(
+                            registry = ProviderRegistry(providerRegistrations),
+                            deterministicEngine = engineFactory(),
+                        ),
                     transportLease = lease,
                 )
             } catch (failure: Throwable) {
