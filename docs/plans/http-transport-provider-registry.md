@@ -5,8 +5,9 @@
 P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
 P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B completed its
 URL, header, timeout, canonical-error, and redaction scope on July 27, 2026. P3-C completed its SSE,
-response-metadata, and response-content-start scope on July 29, 2026. P3-D is now the sole active
-work package.
+response-metadata, and response-content-start scope on July 29, 2026. P3-D completed its provider
+registration, lookup, and primary-client routing scope on July 30, 2026. P3-E is now the sole
+active work package.
 
 The accepted activation transition:
 
@@ -19,7 +20,8 @@ The accepted P3-A transition added only the transport boundary, construction, ow
 and focused lifecycle tests named below. The P3-B transition added only URL, header, timeout,
 canonical-error, and redaction policy plus the deterministic tests named below. The P3-C
 transition added only SSE framing, response metadata, response-content-start behavior, and the
-deterministic tests named below. Provider adapters remain inactive.
+deterministic tests named below. The P3-D transition added only the internal provider registry,
+primary-client lookup, and deterministic tests named below. Provider adapters remain inactive.
 
 ## Objective
 
@@ -170,8 +172,8 @@ The completed milestone must provide:
 
 ## Work packages
 
-Execute the packages in order and keep only one active package at a time. P3-A through P3-C are
-complete, P3-D is active, and P3-E remains inactive.
+Execute the packages in order and keep only one active package at a time. P3-A through P3-D are
+complete, and P3-E is active.
 
 ### P3-A: Transport boundary and construction
 
@@ -204,7 +206,7 @@ Status: `Completed` on July 29, 2026.
 
 ### P3-D: Provider registry
 
-Status: `In progress`.
+Status: `Completed` on July 30, 2026.
 
 - Implement deterministic internal registration and lookup.
 - Cover duplicate, unknown, normalized-identifier, concurrent-read, and lifecycle cases.
@@ -212,6 +214,8 @@ Status: `In progress`.
 - Connect registry lookup to the primary client without exposing provider-specific host APIs.
 
 ### P3-E: Lifecycle integration and acceptance
+
+Status: `In progress`.
 
 - Integrate transport cancellation, streaming cleanup, and exactly-once terminal behavior.
 - Apply only construction, injection, ownership, and cleanup changes required in the supported
@@ -375,6 +379,13 @@ content-start boundary through common-code and `MockEngine` tests. It does not p
 behavior, P3-E integrated adapter lifecycles, provider or Gateway protocol behavior, automatic
 retry or reconnect behavior, or any live-network behavior.
 
+The completed P3-D package proves immutable per-client registration and lookup by canonical
+provider identifier, deterministic ordering and duplicate rejection, concurrent reads, canonical
+unknown-provider preflight, fake response and stream routing through the primary client, and
+registry construction and client-close behavior through common-code tests. It does not prove P3-E
+integrated transport and adapter lifecycles, a real provider or Gateway adapter, provider
+capability discovery, or any live-network behavior.
+
 ## Completion evidence
 
 For every activated P3 package, record:
@@ -461,6 +472,27 @@ For every activated P3 package, record:
   automatic retry or reconnect, live networking, physical-device execution, or distribution is
   proven.
 - Next package: P3-D provider registry.
+
+### P3-D completion record
+
+- Candidate branch: `feature/p3d-provider-registry`; the exact reviewed head, CI run, merge, and
+  resulting `main` evidence belong in the pull-request brief because embedding a candidate SHA in
+  its own commit would change that SHA.
+- Added an immutable per-client internal registry whose canonical `ProviderId` keys retain their
+  validated raw values, whose observable ordering is deterministic, and whose duplicate detection
+  runs during construction without request-time or global mutation.
+- Added internal primary-client routing that selects registered fake adapter handles, preserves
+  the accepted zero-network deterministic mode, and maps an unknown provider to the existing
+  canonical `validation/invalid_request` error.
+- Added deterministic empty-registry, canonical-identifier, ordering, duplicate, concurrent-read,
+  fake response and stream routing, client-close, and failed-construction cleanup tests.
+- Focused JVM, Android host, and iOS Simulator tests passed. The commit/push hooks, exact-head CI,
+  independent review, and guarded merge remain the authoritative Release gates for the package
+  transition.
+- Proof remains deterministic and secretless. No real provider or Gateway adapter, provider DTO,
+  authentication, capability discovery, live networking, physical-device execution, or
+  distribution is proven.
+- Next package: P3-E lifecycle integration and acceptance.
 
 P3 completion becomes authoritative only after the closing pull request passes the full exact-head
 local gate, exact-head CI, independent review, guarded merge, and the resulting `main` workflow
