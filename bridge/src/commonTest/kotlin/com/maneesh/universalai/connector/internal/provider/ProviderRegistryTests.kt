@@ -39,7 +39,7 @@ import kotlin.test.assertTrue
 class ProviderRegistryTests {
     @Test
     fun emptyRegistryHasNoSupportedProvider() {
-        val registry = ProviderRegistry(emptyList())
+        val registry = ProviderRegistry(emptyList(), RecordingTransport())
 
         assertTrue(registry.providerIds.isEmpty())
         assertNull(registry.adapterOrNull(ProviderId.of("future-provider")))
@@ -55,6 +55,7 @@ class ProviderRegistryTests {
                     registration("z-provider", secondAdapter),
                     registration("provider_name-v1", firstAdapter),
                 ),
+                RecordingTransport(),
             )
 
         assertEquals(
@@ -78,10 +79,37 @@ class ProviderRegistryTests {
                         registration("a-provider", FakeProviderAdapter()),
                         registration("a-provider", FakeProviderAdapter()),
                     ),
+                    RecordingTransport(),
                 )
             }
 
         assertEquals("Provider 'a-provider' is registered more than once.", failure.message)
+    }
+
+    @Test
+    fun duplicateIdentifiersFailBeforeTransportBoundFactoriesRun() {
+        var factoryCalls = 0
+        val transport = RecordingTransport()
+
+        assertFailsWith<IllegalArgumentException> {
+            ProviderRegistry(
+                registrations =
+                    listOf(
+                        ProviderRegistration(ProviderId.of("duplicate")) {
+                            factoryCalls += 1
+                            FakeProviderAdapter()
+                        },
+                        ProviderRegistration(ProviderId.of("duplicate")) {
+                            factoryCalls += 1
+                            FakeProviderAdapter()
+                        },
+                    ),
+                transport = transport,
+            )
+        }
+
+        assertEquals(0, factoryCalls)
+        assertEquals(0, transport.closeCalls)
     }
 
     @Test
@@ -91,6 +119,7 @@ class ProviderRegistryTests {
         val registry =
             ProviderRegistry(
                 listOf(ProviderRegistration(providerId, adapter)),
+                RecordingTransport(),
             )
 
         val resolved =

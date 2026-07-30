@@ -10,6 +10,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiResponse
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.DETERMINISTIC_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -17,26 +18,40 @@ import kotlinx.coroutines.flow.flow
 /**
  * One internal provider registration.
  *
- * P3 registrations contain only a canonical provider identity and an internal adapter handle.
- * Provider configuration and wire DTOs remain outside the registry.
+ * P3 registrations contain only a canonical provider identity and an internal adapter factory.
+ * The factory is bound once to its connector's transport after duplicate validation. Provider
+ * configuration and wire DTOs remain outside the registry.
  */
 internal class ProviderRegistration(
     val providerId: ProviderId,
-    val adapter: ConnectorEngine,
-)
+    private val adapterFactory: (ConnectorTransport) -> ConnectorEngine,
+) {
+    constructor(
+        providerId: ProviderId,
+        adapter: ConnectorEngine,
+    ) : this(
+        providerId = providerId,
+        adapterFactory = { adapter },
+    )
+
+    fun createAdapter(transport: ConnectorTransport): ConnectorEngine =
+        adapterFactory(transport)
+}
 
 /**
  * Immutable per-client provider registry.
  *
  * Canonical [ProviderId] values are already validated registry keys whose raw values are
  * deliberately never normalized, so the registry does not case-fold or rewrite them. Entries are
- * sorted once at construction, duplicate identities are rejected, and request-time lookup
+ * sorted once at construction, duplicate identities are rejected before any adapter factory runs,
+ * adapters are created exactly once against the connector transport, and request-time lookup
  * performs no mutation.
  */
 internal class ProviderRegistry(
     registrations: List<ProviderRegistration>,
+    transport: ConnectorTransport,
 ) {
-    private val registrationsById: Map<ProviderId, ProviderRegistration>
+    private val adaptersById: Map<ProviderId, ConnectorEngine>
 
     init {
         val ordered = registrations.sortedBy { registration -> registration.providerId.rawValue }
@@ -47,16 +62,18 @@ internal class ProviderRegistry(
                 "Provider '${duplicate.providerId.rawValue}' is registered more than once.",
             )
         }
-        registrationsById =
-            ordered.associateByTo(linkedMapOf()) { registration -> registration.providerId }
+        adaptersById =
+            ordered.associateTo(linkedMapOf()) { registration ->
+                registration.providerId to registration.createAdapter(transport)
+            }
     }
 
     /** Returns a deterministic snapshot for internal discovery and verification. */
     val providerIds: List<ProviderId>
-        get() = registrationsById.keys.toList()
+        get() = adaptersById.keys.toList()
 
     fun adapterOrNull(providerId: ProviderId): ConnectorEngine? =
-        registrationsById[providerId]?.adapter
+        adaptersById[providerId]
 }
 
 /**

@@ -214,6 +214,25 @@ class UniversalAiConnectorTests {
     }
 
     @Test
+    fun streamSuppressesDuplicateTerminalLateEventAndLateFailure() = runTest {
+        val engine = LateAfterTerminalEngine()
+        val connector = UniversalAiConnector(engine)
+
+        try {
+            val events = connector.stream(request("late attempts")).toList()
+
+            assertEquals((1L..6L).toList(), events.map(UniversalAiStreamEvent::sequence))
+            assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
+            assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
+            assertTrue(engine.duplicateTerminalAttempted)
+            assertTrue(engine.lateEventAttempted)
+            assertTrue(engine.lateFailureAttempted)
+        } finally {
+            connector.close()
+        }
+    }
+
+    @Test
     fun forcedStreamFailureEmitsNoEvents() = runTest {
         val events = mutableListOf<UniversalAiStreamEvent>()
         val failure =
@@ -552,6 +571,63 @@ class UniversalAiConnectorTests {
         }
     }
 
+    private class LateAfterTerminalEngine : ConnectorEngine {
+        private val delegate = DeterministicConnectorEngine()
+
+        var duplicateTerminalAttempted: Boolean = false
+            private set
+        var lateEventAttempted: Boolean = false
+            private set
+        var lateFailureAttempted: Boolean = false
+            private set
+
+        override suspend fun respond(request: UniversalAiRequest) = delegate.respond(request)
+
+        override fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
+            flow {
+                val events = delegate.stream(request).toList()
+                events.dropLast(1).forEach { event -> emit(event) }
+
+                val terminal = events.last()
+                try {
+                    emit(terminal)
+                } catch (_: Throwable) {
+                    // This nonconforming engine keeps exercising host-boundary arbitration.
+                }
+
+                duplicateTerminalAttempted = true
+                try {
+                    emit(terminal)
+                } catch (_: Throwable) {
+                    // The connector has already accepted one authoritative terminal.
+                }
+
+                lateEventAttempted = true
+                try {
+                    emit(
+                        UniversalAiStreamEvent(
+                            type = UniversalAiStreamEventType.of("response.progress"),
+                            terminal = false,
+                            sequence = terminal.sequence + 1,
+                            responseId = terminal.responseId,
+                            requestId = terminal.requestId,
+                        ),
+                    )
+                } catch (_: Throwable) {
+                    // Late events must not cross the connector boundary.
+                }
+
+                lateFailureAttempted = true
+                throw UniversalAiException(
+                    UniversalAiError(
+                        category = UniversalAiErrorCategory.Provider,
+                        code = UniversalAiErrorCode.SimulatedFailure,
+                        message = LATE_FAILURE_MESSAGE,
+                    ),
+                )
+            }
+    }
+
     private class SynchronousFailureEngine : ConnectorEngine {
         private val delegate = DeterministicConnectorEngine()
         var streamCalls: Int = 0
@@ -580,6 +656,7 @@ class UniversalAiConnectorTests {
     private companion object {
         const val PARTIAL_EVENT_COUNT = 3
         const val PARTIAL_FAILURE_MESSAGE = "The deterministic partial stream failed."
+        const val LATE_FAILURE_MESSAGE = "The deterministic stream failed after its terminal."
         const val SYNCHRONOUS_FAILURE_DETAIL = "source-sensitive failure detail"
     }
 }

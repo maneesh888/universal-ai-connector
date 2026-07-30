@@ -9,6 +9,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
+import com.maneesh.universalai.connector.contract.UniversalAiStreamSequenceValidator
 import com.maneesh.universalai.connector.contract.toUniversalAiException
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.ConnectorResourceLease
@@ -31,8 +32,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.job
 import kotlinx.coroutines.supervisorScope
@@ -94,7 +98,9 @@ class UniversalAiConnector private constructor(
     /**
      * Returns a cold, ordered stream that runs in the collector's coroutine context.
      *
-     * Cancelling collection immediately cancels the active stream.
+     * Cancelling collection immediately cancels the active stream. A successful stream delivers
+     * exactly one terminal event; the first terminal is authoritative and suppresses late
+     * upstream events or failures.
      */
     fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
         flow {
@@ -114,19 +120,33 @@ class UniversalAiConnector private constructor(
         channelFlow<ConnectorStreamSignal> {
             ensureOpen()
             val operationJob = coroutineContext.job
+            val validator = UniversalAiStreamSequenceValidator()
+            var terminalAccepted = false
             val closeHandle =
                 closeSignal.invokeOnCompletion {
                     operationJob.cancel(closedOperationCancellation())
                 }
             try {
-                source.collect { event ->
-                    send(ConnectorStreamSignal.Event(event))
-                }
+                source
+                    .onEach { event ->
+                        if (!terminalAccepted) {
+                            validator.accept(event)
+                            send(ConnectorStreamSignal.Event(event))
+                            terminalAccepted = event.terminal
+                        }
+                    }
+                    .takeWhile { !terminalAccepted }
+                    .collect()
+                validator.finish()
             } catch (failure: Throwable) {
                 if (!operationJob.isActive) {
                     throw failure
                 }
-                send(ConnectorStreamSignal.Failure(failure))
+                if (terminalAccepted) {
+                    validator.finish()
+                } else {
+                    send(ConnectorStreamSignal.Failure(failure))
+                }
             } finally {
                 closeHandle.dispose()
             }
@@ -213,16 +233,21 @@ class UniversalAiConnector private constructor(
             engineFactory: () -> ConnectorEngine = ::DeterministicConnectorEngine,
             providerRegistrations: List<ProviderRegistration> = emptyList(),
         ): ConnectorComponents {
+            val transport = transportFactory()
             val lease =
                 ConnectorResourceLease.of(
-                    transport = transportFactory(),
+                    transport = transport,
                     ownership = transportOwnership,
                 )
             return try {
                 ConnectorComponents(
                     engine =
                         ProviderRoutingConnectorEngine(
-                            registry = ProviderRegistry(providerRegistrations),
+                            registry =
+                                ProviderRegistry(
+                                    registrations = providerRegistrations,
+                                    transport = transport,
+                                ),
                             deterministicEngine = engineFactory(),
                         ),
                     transportLease = lease,
