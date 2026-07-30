@@ -2,13 +2,15 @@
 
 ## Status
 
-- Repository stage: P3 HTTP transport and provider registry in progress
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, P3-A HTTP transport construction and lifecycle foundation, P3-B transport policy, P3-C SSE and response metadata, and P3-D provider registry
-- Active work package: P3-E lifecycle integration and acceptance
+- Repository stage: P3 HTTP transport and provider registry completed; P4 not started
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, and completed P3 provider-neutral transport, policy, SSE, metadata, registry, and integrated lifecycle foundation
+- Active work package: none; P4 requires separate activation
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
 - P2 closeout authority: the transition in this milestone-closing candidate is accepted only after exact-head review and required checks pass, the pull request merges, and the resulting `main` workflow is inspected; those self-referential identifiers belong in the pull-request brief
+- P3 completion: P3-A through P3-E delivered injectable Ktor transport, URL/header/timeout policy, bounded SSE and response metadata, immutable per-client provider registration, transport-bound adapter construction, cancellation/cleanup integration, and authoritative terminal arbitration through deterministic tests and existing host consumers
+- P3 closeout authority: the transition in this milestone-closing candidate is accepted only after the full local gate, exact-head review and required checks, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -107,7 +109,7 @@ After the draft pull request is created, the same affected live suite must run f
 | P0 | iOS-Kotlin interoperability POC | Completed | 6 Kotlin tests, 8 Swift tests, XCFramework and sample build passed July 17, 2026 |
 | P1 | Cross-platform package and client-sample baseline | Completed | Product Kotlin API, JVM console, Android app, and Apple façade/sample accepted; closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed local verification, independent review, exact-head run 29991895652, PR #12 merge, and resulting `main` run 29993494307 |
 | P2 | Canonical core and JSON contracts | Completed | Provider-neutral Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic compatibility checks, and host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P3 | HTTP transport and provider registry | In progress | P3-A through P3-D completed; P3-E active |
+| P3 | HTTP transport and provider registry | Completed | Provider-neutral transport, policy, SSE/metadata, registry, and integrated lifecycle behavior accepted through deterministic tests and existing host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P4 | OpenAI Responses adapter | Not started | |
 | P5 | Anthropic adapter | Not started | |
 | P6 | OpenRouter and OpenAI-compatible adapters | Not started | |

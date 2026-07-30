@@ -2,12 +2,14 @@
 
 ## Status and activation gate
 
-P2 is `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone, and
-P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B completed its
+P2 and P3 are `Completed`. P3 was activated on July 24, 2026 as the only `In progress` milestone,
+and P3-A completed its transport-boundary and construction scope on July 24, 2026. P3-B completed its
 URL, header, timeout, canonical-error, and redaction scope on July 27, 2026. P3-C completed its SSE,
 response-metadata, and response-content-start scope on July 29, 2026. P3-D completed its provider
-registration, lookup, and primary-client routing scope on July 30, 2026. P3-E is now the sole
-active work package.
+registration, lookup, and primary-client routing scope on July 30, 2026. P3-E completed integrated
+adapter construction, transport cancellation, streaming cleanup, authoritative terminal behavior,
+and acceptance reconciliation on July 30, 2026. P4 remains `Not started` and requires separate
+activation.
 
 The accepted activation transition:
 
@@ -21,7 +23,10 @@ and focused lifecycle tests named below. The P3-B transition added only URL, hea
 canonical-error, and redaction policy plus the deterministic tests named below. The P3-C
 transition added only SSE framing, response metadata, response-content-start behavior, and the
 deterministic tests named below. The P3-D transition added only the internal provider registry,
-primary-client lookup, and deterministic tests named below. Provider adapters remain inactive.
+primary-client lookup, and deterministic tests named below. The P3-E transition bound internal
+adapter factories to each connector transport, integrated cancellation and streaming cleanup,
+made the first valid terminal authoritative, and reconciled deterministic acceptance evidence.
+Provider adapters remain inactive.
 
 ## Objective
 
@@ -172,8 +177,8 @@ The completed milestone must provide:
 
 ## Work packages
 
-Execute the packages in order and keep only one active package at a time. P3-A through P3-D are
-complete, and P3-E is active.
+Execute the packages in order and keep only one active package at a time. P3-A through P3-E are
+complete.
 
 ### P3-A: Transport boundary and construction
 
@@ -215,7 +220,7 @@ Status: `Completed` on July 30, 2026.
 
 ### P3-E: Lifecycle integration and acceptance
 
-Status: `In progress`.
+Status: `Completed` on July 30, 2026.
 
 - Integrate transport cancellation, streaming cleanup, and exactly-once terminal behavior.
 - Apply only construction, injection, ownership, and cleanup changes required in the supported
@@ -494,7 +499,37 @@ For every activated P3 package, record:
   distribution is proven.
 - Next package: P3-E lifecycle integration and acceptance.
 
-P3 completion becomes authoritative only after the closing pull request passes the full exact-head
-local gate, exact-head CI, independent review, guarded merge, and the resulting `main` workflow
-inspection required by repository policy. Until then, the roadmap remains the authority for P3
-status.
+### P3-E completion record
+
+- Candidate branch: `feature/p3e-lifecycle-acceptance`; the exact reviewed head, CI run, merge, and
+  resulting `main` evidence belong in the pull-request brief because embedding a candidate SHA in
+  its own commit would change that SHA.
+- Bound each internal provider adapter factory exactly once to its connector's transport after
+  deterministic duplicate validation, without exposing transport or registry implementation
+  types through supported host APIs.
+- Made the common Kotlin stream boundary validate successful canonical sequences, deliver the
+  first valid terminal exactly once, suppress duplicate terminals, late frames, and late failures,
+  and convert a normal end without a terminal into a fixed safe connector failure. The Swift
+  façade retains its native cancellation and terminal arbitration over this shared behavior.
+- Added deterministic integrated `MockEngine` coverage for pending-response cancellation through a
+  registered adapter, active response-body cancellation and cleanup, missing-terminal rejection,
+  and authoritative-terminal behavior with late upstream data. Existing concurrency, shared
+  ownership, close-race, SSE cancellation, redaction, and registry tests remain in the matrix.
+- Focused JVM, Android host, and iOS Simulator lifecycle suites passed. The mandatory commit/push
+  hooks, complete exact-head local gate, exact-head CI, independent review, guarded merge, and
+  resulting `main` inspection remain the authoritative Release evidence in the pull-request brief.
+- Redaction remains bounded by normalized sensitive-header names; existing artifact/header and
+  provider-neutral public-surface checks exclude Ktor, registry implementations, provider DTOs,
+  coroutine plumbing, and Apple-only bridge types from unsupported boundaries. Deterministic
+  samples retain zero-network behavior and require no credentials.
+- Proof remains deterministic and secretless. No real provider or Gateway adapter,
+  authentication, provider DTO, live networking, physical-device or Android-emulator execution,
+  remote distribution, or alpha-release readiness is proven.
+- Next milestone: P4 OpenAI Responses adapter, which remains `Not started` until separately
+  activated.
+
+This atomic P3 closeout is accepted only after the roadmap acceptance criteria, this plan's
+acceptance criteria, the full exact-head local gate, independent exact-head review, required
+GitHub checks, guarded merge, and resulting `main` verification agree. Exact self-referential
+evidence remains in the milestone-closing pull-request brief. P4 is the next incomplete milestone
+but remains `Not started`.

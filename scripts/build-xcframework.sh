@@ -171,8 +171,10 @@ validate_framework_slice() {
     echo "Kotlin Flow leaked into the $identifier callback-bridge header." >&2
     exit 1
   fi
-  if grep -Eq 'Ktor|HttpClient|HttpClientEngine' "$framework_header"; then
-    echo "A Ktor transport implementation type leaked into the $identifier callback-bridge header." >&2
+  if grep -Eq \
+    'Ktor|HttpClient|HttpClientEngine|ConnectorTransport|ProviderRegistry|ProviderRegistration|CoroutineScope' \
+    "$framework_header"; then
+    echo "A transport, registry, or coroutine implementation type leaked into the $identifier callback-bridge header." >&2
     exit 1
   fi
   if grep -Eq "$unsupported_contract_pattern" "$framework_header"; then
