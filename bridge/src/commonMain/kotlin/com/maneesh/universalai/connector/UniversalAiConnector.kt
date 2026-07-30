@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.supervisorScope
 import kotlin.native.HiddenFromObjC
@@ -121,29 +122,38 @@ class UniversalAiConnector private constructor(
             ensureOpen()
             val operationJob = coroutineContext.job
             val validator = UniversalAiStreamSequenceValidator()
+            val terminalArbiter: CompletableJob = Job()
             var terminalAccepted = false
             val closeHandle =
                 closeSignal.invokeOnCompletion {
-                    operationJob.cancel(closedOperationCancellation())
+                    val cancellation = closedOperationCancellation()
+                    if (terminalArbiter.completeExceptionally(cancellation)) {
+                        operationJob.cancel(cancellation)
+                    }
                 }
             try {
                 source
                     .onEach { event ->
                         if (!terminalAccepted) {
                             validator.accept(event)
+                            if (event.terminal) {
+                                operationJob.ensureActive()
+                                if (!terminalArbiter.complete()) {
+                                    throw closedOperationCancellation()
+                                }
+                                terminalAccepted = true
+                            }
                             send(ConnectorStreamSignal.Event(event))
-                            terminalAccepted = event.terminal
                         }
                     }
                     .takeWhile { !terminalAccepted }
                     .collect()
                 validator.finish()
             } catch (failure: Throwable) {
-                if (!operationJob.isActive) {
-                    throw failure
-                }
                 if (terminalAccepted) {
                     validator.finish()
+                } else if (!operationJob.isActive) {
+                    throw failure
                 } else {
                     send(ConnectorStreamSignal.Failure(failure))
                 }

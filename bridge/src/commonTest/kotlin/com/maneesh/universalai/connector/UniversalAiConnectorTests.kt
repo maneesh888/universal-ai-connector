@@ -214,6 +214,26 @@ class UniversalAiConnectorTests {
     }
 
     @Test
+    fun deliveredTerminalWinsAConcurrentConnectorClose() = runTest {
+        var completionCause: Throwable? = IllegalStateException("Not completed")
+        val events =
+            connector
+                .stream(request("terminal close race"))
+                .onEach { event ->
+                    if (event.terminal) {
+                        connector.close()
+                    }
+                }
+                .onCompletion { completionCause = it }
+                .toList()
+
+        assertEquals((1L..6L).toList(), events.map(UniversalAiStreamEvent::sequence))
+        assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
+        assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
+        assertNull(completionCause)
+    }
+
+    @Test
     fun streamSuppressesDuplicateTerminalLateEventAndLateFailure() = runTest {
         val engine = LateAfterTerminalEngine()
         val connector = UniversalAiConnector(engine)
