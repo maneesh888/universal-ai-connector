@@ -154,8 +154,13 @@ variables; it is not a credentials file and new contributors do not create it.
 | Ripgrep (`rg`) | Fail-closed secret scanning |
 | Java 21 JDK | Gradle, Kotlin Multiplatform, Android, and JVM builds |
 | Android SDK platform 36 and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
-| Xcode 26.x on Apple silicon macOS | Kotlin/Native, Swift Package, and iOS sample verification |
+| Xcode on Apple silicon macOS | Kotlin/Native, Swift Package, and iOS sample verification |
 | iOS 17 or newer simulator runtime | Apple simulator tests and sample build |
+
+GitHub Apple verification currently runs with Xcode 16.4, and the complete local gate has also
+passed with Xcode 26.0. The minimum supported Xcode version has not been established; the
+preflight checks that the selected Apple tools are available, and the actual build remains the
+compatibility authority.
 
 After installing those tools, run the read-only preflight before enabling hooks:
 

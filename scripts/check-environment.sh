@@ -132,22 +132,13 @@ require_android_sdk() {
 }
 
 require_apple_toolchain() {
-  local xcode_version
-
   if [[ "$(uname -s)" != "Darwin" ]]; then
     echo "The complete local gate requires macOS because it builds the Apple package and samples." >&2
     return 1
   fi
 
-  require_command xcodebuild "Install and select Xcode 26.x." || return 1
+  require_command xcodebuild "Install and select Xcode." || return 1
   require_command xcrun "Install and select Xcode command-line tools." || return 1
-
-  xcode_version="$(xcodebuild -version 2>/dev/null | sed -n '1s/^Xcode //p')"
-  if [[ "$xcode_version" != 26.* ]]; then
-    echo "Contributor environment requires Xcode 26.x for the complete gate." >&2
-    echo "Detected Xcode version: ${xcode_version:-unknown}" >&2
-    return 1
-  fi
 }
 
 require_standard_env
