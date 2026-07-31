@@ -57,6 +57,7 @@ resolve_selected_jdk_jar() {
         sed -n 's/^[[:space:]]*java\.home = //p' |
         head -n 1
     )"
+    java_home="${java_home%$'\r'}"
     if [[ -z "$java_home" ]]; then
       echo "Contributor environment could not determine the selected JDK home." >&2
       echo "Resolved Gradle java: $java_path" >&2

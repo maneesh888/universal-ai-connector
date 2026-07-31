@@ -93,6 +93,7 @@ require_java_21() {
       sed -n 's/^[[:space:]]*java\.specification\.version = //p' |
       head -n 1
   )"
+  java_specification_version="${java_specification_version%$'\r'}"
 
   if [[ "$java_specification_version" != "21" ]]; then
     echo "Contributor environment requires Java 21 for $MODE checks." >&2

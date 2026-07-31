@@ -34,6 +34,16 @@ write_java() {
     "printf '%s\\n' '    java.home = $java_home' '    java.specification.version = $version' >&2"
 }
 
+write_windows_java() {
+  local path="$1"
+  local version="$2"
+  local java_home="$3"
+
+  write_executable "$path" \
+    '#!/bin/sh' \
+    "printf '%s\\r\\n' '    java.home = $java_home' '    java.specification.version = $version' >&2"
+}
+
 record_failure() {
   echo "$1" >&2
   FAILURES=$((FAILURES + 1))
@@ -60,7 +70,7 @@ write_java "$FAKE_JAVA_17_HOME/bin/java" 17 "$FAKE_JAVA_17_HOME"
 write_executable "$FAKE_JAVA_17_HOME/bin/jar" '#!/bin/sh' 'exit 0'
 write_java "$FAKE_JAVA_21_HOME/bin/java" 21 "$FAKE_JAVA_21_HOME"
 write_executable "$FAKE_JAVA_21_HOME/bin/jar" '#!/bin/sh' 'exit 0'
-write_java "$FAKE_PATH/java" 21 "$FAKE_PATH_JAVA_HOME"
+write_windows_java "$FAKE_PATH/java" 21 "$FAKE_PATH_JAVA_HOME"
 write_executable "$FAKE_PATH_JAVA_HOME/bin/jar" '#!/bin/sh' 'exit 0'
 write_executable "$FAKE_PATH/jar" '#!/bin/sh' 'exit 69'
 
@@ -110,7 +120,7 @@ if [[ "$java_status" -ne 0 ]]; then
   record_failure "Contributor environment preflight rejected Gradle's Java 21 from JAVA_HOME."
 fi
 
-write_java "$FAKE_PATH/java" 21 "$FAKE_PATH_JAVA_HOME"
+write_windows_java "$FAKE_PATH/java" 21 "$FAKE_PATH_JAVA_HOME"
 resolved_jar="$(
   JAVA_HOME="" PATH="$FAKE_PATH" \
     /bin/bash "$ROOT/scripts/resolve-jdk-tool.sh" jar
