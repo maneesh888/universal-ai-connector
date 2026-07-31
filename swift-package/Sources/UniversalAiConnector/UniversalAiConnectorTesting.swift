@@ -3,15 +3,18 @@ import UniversalAiConnectorBridge
 struct UniversalAiConnectorTestingHooks: Sendable {
     var beforeResponseCancellationInstallation: @Sendable () -> Void
     var beforeStreamCancellationInstallation: @Sendable () -> Void
+    var onStreamCancellationRequested: @Sendable () -> Void
 
     init(
         beforeResponseCancellationInstallation: @escaping @Sendable () -> Void = {},
-        beforeStreamCancellationInstallation: @escaping @Sendable () -> Void = {}
+        beforeStreamCancellationInstallation: @escaping @Sendable () -> Void = {},
+        onStreamCancellationRequested: @escaping @Sendable () -> Void = {}
     ) {
         self.beforeResponseCancellationInstallation =
             beforeResponseCancellationInstallation
         self.beforeStreamCancellationInstallation =
             beforeStreamCancellationInstallation
+        self.onStreamCancellationRequested = onStreamCancellationRequested
     }
 }
 

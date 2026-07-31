@@ -200,6 +200,7 @@ public final class UniversalAiConnector: @unchecked Sendable {
             }
             state.installCancellation {
                 handleBox.cancel()
+                testingHooks.onStreamCancellationRequested()
             }
             if Task.isCancelled {
                 state.cancel()
