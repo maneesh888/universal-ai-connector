@@ -16,10 +16,15 @@ EOF
 }
 
 run_hygiene() {
+  local preflight_mode="${1:---hygiene}"
+
+  "$ROOT/scripts/check-environment.sh" "$preflight_mode"
+
   while IFS= read -r shell_file; do
     bash -n "$ROOT/$shell_file"
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
+  "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
@@ -174,14 +179,14 @@ verify_platform_packaging_boundaries() {
 }
 
 run_quick() {
-  run_hygiene
+  run_hygiene --quick
   run_script_tests
   run_cross_platform_gradle_checks
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
-  run_hygiene
+  run_hygiene --full
   run_script_tests
   run_cross_platform_gradle_checks
 
@@ -196,7 +201,7 @@ run_full() {
 
 case "$MODE" in
   --hygiene|hygiene)
-    run_hygiene
+    run_hygiene --hygiene
     ;;
   --quick|quick)
     run_quick

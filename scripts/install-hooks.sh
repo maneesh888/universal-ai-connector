@@ -10,6 +10,8 @@ if [[ "$ROOT" != "$EXPECTED_ROOT" ]]; then
   exit 1
 fi
 
+"$EXPECTED_ROOT/scripts/check-environment.sh" --hygiene
+
 if [[ -n "$HOOKS_PATH" && "$HOOKS_PATH" != ".githooks" ]]; then
   echo "A different core.hooksPath is already configured: $HOOKS_PATH" >&2
   echo "Remove or migrate that configuration before installing these hooks." >&2

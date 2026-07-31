@@ -142,12 +142,46 @@ The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConne
 
 ## Quick start
 
-Requirements:
+### Contributor setup
 
-- Java 21
-- macOS on Apple silicon and Xcode 26.x for Apple verification
-- An installed iOS 17 or newer simulator runtime
-- Android SDK platform 36 and Build Tools 36.1 for the P1 Android checks
+The source checkout uses standard command-line tools in addition to Xcode. The `env` command
+mentioned below is the operating system utility that runs a command with temporary environment
+variables; it is not a credentials file and new contributors do not create it.
+
+| Tool | Why this repository needs it |
+|---|---|
+| Git and Bash | Source control, hooks, and committed verification scripts |
+| Ripgrep (`rg`) | Fail-closed secret scanning |
+| Java 21 JDK | Gradle, Kotlin Multiplatform, Android, and JVM builds |
+| Android SDK platform 36 and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
+| Xcode 26.x on Apple silicon macOS | Kotlin/Native, Swift Package, and iOS sample verification |
+| iOS 17 or newer simulator runtime | Apple simulator tests and sample build |
+
+After installing those tools, run the read-only preflight before enabling hooks:
+
+```bash
+./scripts/check-environment.sh --full
+./scripts/install-hooks.sh
+```
+
+The preflight does not install software or change shell files. It explains a missing or
+misconfigured tool and stops before a long build begins. Use `--hygiene` when only documentation
+or shell checks are needed, and `--quick` for the pre-commit toolchain.
+
+If the preflight reports a non-standard `env`, a personal executable is shadowing the operating
+system command. Diagnose it with:
+
+```bash
+type -a env
+env UAC_ENV_COMMAND_PROBE=works \
+  /bin/sh -c 'test "$UAC_ENV_COMMAND_PROBE" = works'
+```
+
+Rename the conflicting personal executable and keep PATH setup in `.zprofile`, `.zshrc`, or the
+matching profile for the contributor's shell. Do not change the repository security test to
+accommodate a command that does not implement standard `env NAME=value command` behavior.
+
+The Gradle wrapper is committed, so a separate Gradle installation is not required.
 
 Run the JVM console consumer on any supported JVM host:
 
