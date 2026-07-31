@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="${1:---hygiene}"
 
 usage() {
@@ -71,61 +72,14 @@ require_standard_env() {
   fi
 }
 
-resolve_gradle_java() {
-  local java_path
-
-  if [[ -n "${JAVA_HOME:-}" ]]; then
-    if [[ -x "$JAVA_HOME/jre/sh/java" ]]; then
-      java_path="$JAVA_HOME/jre/sh/java"
-    else
-      java_path="$JAVA_HOME/bin/java"
-    fi
-
-    if [[ ! -x "$java_path" ]]; then
-      echo "Contributor environment has an invalid JAVA_HOME: $JAVA_HOME" >&2
-      echo "Gradle could not execute its selected Java command: $java_path" >&2
-      return 1
-    fi
-  else
-    java_path="$(command -v java || true)"
-    if [[ -z "$java_path" ]]; then
-      echo "Contributor environment is missing 'java': Java 21 is required by the Gradle build." >&2
-      return 1
-    fi
-  fi
-
-  printf '%s' "$java_path"
-}
-
-resolve_jdk_jar() {
-  local jar_path
-
-  if [[ -n "${JAVA_HOME:-}" ]]; then
-    jar_path="$JAVA_HOME/bin/jar"
-    if [[ ! -x "$jar_path" ]]; then
-      echo "Contributor environment requires a complete JDK at JAVA_HOME." >&2
-      echo "Could not execute the selected JDK packaging tool: $jar_path" >&2
-      return 1
-    fi
-  else
-    jar_path="$(command -v jar || true)"
-    if [[ -z "$jar_path" ]]; then
-      echo "Contributor environment is missing 'jar': a Java 21 JDK is required for packaging checks." >&2
-      return 1
-    fi
-  fi
-
-  printf '%s' "$jar_path"
-}
-
 require_java_21() {
   local java_path
   local java_settings
   local java_specification_version
   local java_status
 
-  java_path="$(resolve_gradle_java)" || return 1
-  resolve_jdk_jar >/dev/null || return 1
+  java_path="$("$ROOT/scripts/resolve-jdk-tool.sh" java)" || return 1
+  "$ROOT/scripts/resolve-jdk-tool.sh" jar >/dev/null || return 1
 
   java_status=0
   java_settings="$("$java_path" -XshowSettings:properties -version 2>&1)" || java_status=$?

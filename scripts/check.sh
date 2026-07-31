@@ -80,12 +80,10 @@ verify_platform_packaging_boundaries() {
   local jvm_listing
   local android_listing
   local android_classes_jar
+  local jar_command
   local scan_status
 
-  if ! command -v jar >/dev/null 2>&1; then
-    echo "Apple packaging boundary check requires jar." >&2
-    return 1
-  fi
+  jar_command="$("$ROOT/scripts/resolve-jdk-tool.sh" jar)" || return 1
   if ! command -v unzip >/dev/null 2>&1; then
     echo "Apple packaging boundary check requires unzip." >&2
     return 1
@@ -104,7 +102,7 @@ verify_platform_packaging_boundaries() {
   android_listing="$temp_artifact_directory/android-classes.txt"
   android_classes_jar="$temp_artifact_directory/classes.jar"
 
-  if ! jar tf "$jvm_jar" >"$jvm_listing"; then
+  if ! "$jar_command" tf "$jvm_jar" >"$jvm_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Could not inspect JVM artifact: $jvm_jar" >&2
     return 1
@@ -144,7 +142,7 @@ verify_platform_packaging_boundaries() {
     echo "Android artifact does not contain classes.jar: $android_aar" >&2
     return 1
   fi
-  if ! jar tf "$android_classes_jar" >"$android_listing"; then
+  if ! "$jar_command" tf "$android_classes_jar" >"$android_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Could not inspect Android classes.jar from: $android_aar" >&2
     return 1
