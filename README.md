@@ -159,8 +159,8 @@ variables; it is not a credentials file and new contributors do not create it.
 
 GitHub Apple verification currently runs with Xcode 16.4, and the complete local gate has also
 passed with Xcode 26.0. The minimum supported Xcode version has not been established; the
-preflight checks that the selected Apple tools are available, and the actual build remains the
-compatibility authority.
+preflight checks that the selected Xcode can run and resolve the iOS Simulator SDK, and the actual
+build remains the compatibility authority.
 
 After installing those tools, run the read-only preflight before enabling hooks:
 

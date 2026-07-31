@@ -71,25 +71,80 @@ require_standard_env() {
   fi
 }
 
+resolve_gradle_java() {
+  local java_path
+
+  if [[ -n "${JAVA_HOME:-}" ]]; then
+    if [[ -x "$JAVA_HOME/jre/sh/java" ]]; then
+      java_path="$JAVA_HOME/jre/sh/java"
+    else
+      java_path="$JAVA_HOME/bin/java"
+    fi
+
+    if [[ ! -x "$java_path" ]]; then
+      echo "Contributor environment has an invalid JAVA_HOME: $JAVA_HOME" >&2
+      echo "Gradle could not execute its selected Java command: $java_path" >&2
+      return 1
+    fi
+  else
+    java_path="$(command -v java || true)"
+    if [[ -z "$java_path" ]]; then
+      echo "Contributor environment is missing 'java': Java 21 is required by the Gradle build." >&2
+      return 1
+    fi
+  fi
+
+  printf '%s' "$java_path"
+}
+
+resolve_jdk_jar() {
+  local jar_path
+
+  if [[ -n "${JAVA_HOME:-}" ]]; then
+    jar_path="$JAVA_HOME/bin/jar"
+    if [[ ! -x "$jar_path" ]]; then
+      echo "Contributor environment requires a complete JDK at JAVA_HOME." >&2
+      echo "Could not execute the selected JDK packaging tool: $jar_path" >&2
+      return 1
+    fi
+  else
+    jar_path="$(command -v jar || true)"
+    if [[ -z "$jar_path" ]]; then
+      echo "Contributor environment is missing 'jar': a Java 21 JDK is required for packaging checks." >&2
+      return 1
+    fi
+  fi
+
+  printf '%s' "$jar_path"
+}
+
 require_java_21() {
   local java_path
+  local java_settings
   local java_specification_version
+  local java_status
 
-  require_command java "Java 21 is required by the Gradle build." || return 1
-  require_command jar "The Java 21 JDK, not only a JRE, is required for packaging checks." || return 1
+  java_path="$(resolve_gradle_java)" || return 1
+  resolve_jdk_jar >/dev/null || return 1
 
-  java_path="$(command -v java)"
+  java_status=0
+  java_settings="$("$java_path" -XshowSettings:properties -version 2>&1)" || java_status=$?
+  if [[ "$java_status" -ne 0 ]]; then
+    echo "Contributor environment could not inspect Gradle's selected Java executable." >&2
+    echo "Resolved Gradle java: $java_path" >&2
+    return 1
+  fi
   java_specification_version="$(
-    java -XshowSettings:properties -version 2>&1 |
+    printf '%s\n' "$java_settings" |
       sed -n 's/^[[:space:]]*java\.specification\.version = //p' |
       head -n 1
   )"
 
   if [[ "$java_specification_version" != "21" ]]; then
     echo "Contributor environment requires Java 21 for $MODE checks." >&2
-    echo "Resolved java: $java_path" >&2
+    echo "Resolved Gradle java: $java_path" >&2
     echo "Detected Java specification version: ${java_specification_version:-unknown}" >&2
-    echo "Select a Java 21 JDK through JAVA_HOME and PATH, then rerun this command." >&2
+    echo "Set JAVA_HOME to a Java 21 JDK, or unset it and select Java 21 through PATH." >&2
     return 1
   fi
 }
@@ -132,6 +187,11 @@ require_android_sdk() {
 }
 
 require_apple_toolchain() {
+  local simulator_sdk_path
+  local simulator_sdk_status
+  local xcodebuild_path
+  local xcodebuild_status
+
   if [[ "$(uname -s)" != "Darwin" ]]; then
     echo "The complete local gate requires macOS because it builds the Apple package and samples." >&2
     return 1
@@ -139,6 +199,24 @@ require_apple_toolchain() {
 
   require_command xcodebuild "Install and select Xcode." || return 1
   require_command xcrun "Install and select Xcode command-line tools." || return 1
+
+  xcodebuild_path="$(command -v xcodebuild)"
+  xcodebuild_status=0
+  xcodebuild -version >/dev/null 2>&1 || xcodebuild_status=$?
+  if [[ "$xcodebuild_status" -ne 0 ]]; then
+    echo "Contributor environment could not execute the selected Xcode: $xcodebuild_path" >&2
+    echo "Select a complete Xcode installation with xcode-select or DEVELOPER_DIR." >&2
+    return 1
+  fi
+
+  simulator_sdk_status=0
+  simulator_sdk_path="$(xcrun --sdk iphonesimulator --show-sdk-path 2>/dev/null)" ||
+    simulator_sdk_status=$?
+  if [[ "$simulator_sdk_status" -ne 0 || -z "$simulator_sdk_path" ]]; then
+    echo "Contributor environment could not resolve the iOS Simulator SDK through xcrun: $(command -v xcrun)" >&2
+    echo "Install the iOS Simulator platform for the selected Xcode." >&2
+    return 1
+  fi
 }
 
 require_standard_env
