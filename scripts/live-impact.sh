@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT="${UAC_REPOSITORY_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 BASE_SHA="${1:-}"
 HEAD_SHA="${2:-}"
-OPENAI_ADAPTER_PATH="bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
 
 usage() {
   echo "Usage: ./scripts/live-impact.sh <base-sha> <head-sha>" >&2
@@ -27,39 +26,8 @@ if ! git -C "$ROOT" merge-base "$BASE_SHA" "$HEAD_SHA" >/dev/null 2>&1; then
   exit 2
 fi
 
-ADAPTER_PATHS_FILE="$(mktemp)"
 CHANGED_PATHS_FILE="$(mktemp)"
-trap 'rm -f "$ADAPTER_PATHS_FILE" "$CHANGED_PATHS_FILE"' EXIT
-
-tree_contains_adapter() {
-  local revision="$1"
-
-  if ! git -C "$ROOT" ls-tree \
-    -r \
-    --name-only \
-    -z \
-    "$revision" \
-    -- "$OPENAI_ADAPTER_PATH" > "$ADAPTER_PATHS_FILE"; then
-    echo "Live-impact classification could not inspect the requested commit." >&2
-    exit 2
-  fi
-
-  [[ -s "$ADAPTER_PATHS_FILE" ]]
-}
-
-base_contains_adapter=false
-head_contains_adapter=false
-if tree_contains_adapter "$BASE_SHA"; then
-  base_contains_adapter=true
-fi
-if tree_contains_adapter "$HEAD_SHA"; then
-  head_contains_adapter=true
-fi
-
-if [[ "$base_contains_adapter" != "true" && "$head_contains_adapter" != "true" ]]; then
-  echo "false"
-  exit 0
-fi
+trap 'rm -f "$CHANGED_PATHS_FILE"' EXIT
 
 if ! git -C "$ROOT" diff \
   --name-only \

@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
 CLASSIFIER="$TEST_REPOSITORY/scripts/live-impact.sh"
-OPENAI_DIRECTORY="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
+OPENAI_DIRECTORY="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider"
 
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
@@ -25,6 +25,19 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "baseline"
 BASE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
+printf '%s\n' "pre-adapter documentation" >> "$TEST_REPOSITORY/README.md"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "pre-adapter docs"
+PRE_ADAPTER_DOCS_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$BASE_SHA" "$PRE_ADAPTER_DOCS_SHA")" != "false" ]]; then
+  echo "Documentation-only changes must remain secretless." >&2
+  exit 1
+fi
+
 printf '%s\n' "foundation" > "$TEST_REPOSITORY/scripts/check-live.sh"
 git -C "$TEST_REPOSITORY" add .
 git -C "$TEST_REPOSITORY" \
@@ -33,18 +46,13 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "gate foundation"
 FOUNDATION_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$BASE_SHA" "$FOUNDATION_SHA")" != "false" ]]; then
-  echo "Pre-adapter gate foundation must remain secretless." >&2
+if [[ "$("$CLASSIFIER" "$PRE_ADAPTER_DOCS_SHA" "$FOUNDATION_SHA")" != "true" ]]; then
+  echo "Changing the installed live gate must require live verification." >&2
   exit 1
 fi
 
 mkdir -p "$OPENAI_DIRECTORY"
 printf '%s\n' "internal adapter marker" > "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
-adapter_index=1
-while [[ "$adapter_index" -le 1024 ]]; do
-  printf '%s\n' "synthetic adapter marker" > "$OPENAI_DIRECTORY/SyntheticAdapter${adapter_index}.kt"
-  adapter_index=$((adapter_index + 1))
-done
 git -C "$TEST_REPOSITORY" add .
 git -C "$TEST_REPOSITORY" \
   -c user.name="Live Impact Test" \
@@ -53,7 +61,7 @@ git -C "$TEST_REPOSITORY" \
 ADAPTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$ADAPTER_SHA")" != "true" ]]; then
-  echo "Adding the OpenAI adapter must require live verification." >&2
+  echo "Adding an adapter outside any sentinel package must require live verification." >&2
   exit 1
 fi
 
@@ -166,7 +174,7 @@ if [[ ! -f "$BROKEN_TREE_OBJECT_PATH" ]]; then
 fi
 rm "$BROKEN_TREE_OBJECT_PATH"
 if "$CLASSIFIER" "$RUNTIME_SHA" "$TYPE_CHANGE_SHA" >/dev/null 2>&1; then
-  echo "Tree inspection failures must fail closed." >&2
+  echo "Diff tree failures must fail closed." >&2
   exit 1
 fi
 

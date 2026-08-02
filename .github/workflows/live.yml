@@ -61,31 +61,32 @@ jobs:
                   "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
               )"
             else
-              openai_adapter_path="bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
-              base_adapter_paths="$RUNNER_TEMP/base-openai-adapter-paths"
-              head_adapter_paths="$RUNNER_TEMP/head-openai-adapter-paths"
-              if ! git ls-tree \
-                -r \
+              bootstrap_changed_paths="$RUNNER_TEMP/live-bootstrap-changed-paths"
+              if ! git diff \
                 --name-only \
+                --diff-filter=ACDMRT \
                 -z \
-                "$PR_BASE_SHA" \
-                -- "$openai_adapter_path" > "$base_adapter_paths"; then
-                echo "Live-impact bootstrap could not inspect the base commit."
+                "$PR_BASE_SHA...$PR_HEAD_SHA" > "$bootstrap_changed_paths"; then
+                echo "Live-impact bootstrap could not compare the requested commits."
                 exit 1
               fi
-              if ! git ls-tree \
-                -r \
-                --name-only \
-                -z \
-                "$PR_HEAD_SHA" \
-                -- "$openai_adapter_path" > "$head_adapter_paths"; then
-                echo "Live-impact bootstrap could not inspect the head commit."
-                exit 1
-              fi
-              if [[ -s "$base_adapter_paths" || -s "$head_adapter_paths" ]]; then
-                echo "Live-impact bootstrap refuses a head containing adapter behavior."
-                exit 1
-              fi
+              while IFS= read -r -d '' bootstrap_changed_path; do
+                case "$bootstrap_changed_path" in
+                  bridge/src/* | \
+                    bridge/build.gradle.kts | \
+                    build.gradle.kts | \
+                    settings.gradle.kts | \
+                    gradle.properties | \
+                    gradle/* | \
+                    buildSrc/* | \
+                    build-logic/* | \
+                    gradlew | \
+                    gradlew.bat)
+                    echo "Live-impact bootstrap refuses source or build behavior."
+                    exit 1
+                    ;;
+                esac
+              done < "$bootstrap_changed_paths"
               live_required=false
             fi
             head_sha="$PR_HEAD_SHA"
