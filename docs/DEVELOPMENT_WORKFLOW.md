@@ -20,10 +20,10 @@ Do not infer a stronger level from a weaker one. Distribution proof remains P8 w
 Canonical-contract changes additionally require **contract conformance proof**: authoritative schemas are meta-valid, every fixture has one documented schema or semantic result, production encodings stay schema-valid for the governed corpus, and the embedded multiplatform mirror has zero drift from the tracked bundle.
 
 Run `./scripts/check-environment.sh` on a new clone before enabling hooks. It is a read-only
-preflight: `--hygiene` validates standard shell, Git, and secret-scan tools; `--quick` also
-validates Java 21 and the Android SDK; and `--full` also validates the Apple toolchain. Normal
-repository gates invoke the matching preflight automatically. A preflight failure is a machine
-setup blocker, not permission to weaken the affected test or bypass a hook.
+preflight: `--hygiene` validates standard shell, Git, Ruby YAML parsing, and secret-scan tools;
+`--quick` also validates Java 21 and the Android SDK; and `--full` also validates the Apple
+toolchain. Normal repository gates invoke the matching preflight automatically. A preflight
+failure is a machine setup blocker, not permission to weaken the affected test or bypass a hook.
 
 Run targeted checks while editing, then run only the highest final gate required by the selected mode:
 
@@ -65,6 +65,19 @@ P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate.
 verification and before initial PR creation or every later push. The dedicated protected workflow
 reruns the same command for the exact head and exposes the stable `Required live verification`
 status.
+
+## Dependency updates
+
+Dependabot checks Gradle dependencies monthly, but routine version-update pull requests are limited
+to SemVer patches. Android build tooling, Compose, and Lifecycle patches use separate groups so an
+incompatible host-platform dependency cannot invalidate otherwise independent updates. Other
+patches remain separate unless a cohesive group is added deliberately.
+
+Minor and major version upgrades require an explicit maintenance task that evaluates toolchain,
+platform, public-contract, packaging, and live-impact consequences before changing the accepted
+baseline. This restriction applies to routine version updates; security updates retain their
+separate Dependabot path. A failed automated dependency pull request is closed rather than merged,
+rebased repeatedly, or expanded into an incidental platform upgrade.
 
 ## Hooks
 
