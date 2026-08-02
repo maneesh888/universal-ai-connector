@@ -60,6 +60,12 @@ The quick gate covers hygiene, deterministic shell-script behavior, canonical co
 
 When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
 
+P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
+`--quick` or `--full`: affected adapter or shared-live changes run it after deterministic
+verification and before initial PR creation or every later push. The dedicated protected workflow
+reruns the same command for the exact head and exposes the stable `Required live verification`
+status.
+
 ## Hooks
 
 Enable committed hooks once per clone or worktree before the first commit or push in an implementation lifecycle:
@@ -89,6 +95,13 @@ These hook requirements are safety gates; they do not make every task a Release 
 - `Required checks` provides one stable branch-protection status.
 
 Pull-request jobs check out the exact PR head. Third-party actions remain pinned, workflow permissions remain read-only, and ordinary CI remains secretless. CI does not prove emulator/device execution, live providers, gateways, distribution, or release behavior without matching evidence.
+
+`.github/workflows/live.yml` remains separate from ordinary CI. It classifies live impact
+secretlessly, runs affected same-repository heads through the protected `live-provider`
+Environment, blocks affected fork heads from credentials, and reports `Required live
+verification`. Its stable status job uses the credential-free `live-policy` Environment, whose
+successful deployment is a server-required merge condition. A pre-adapter foundation or unrelated
+documentation head passes without requesting provider secrets, but still requires policy approval.
 
 ## Host integration
 
