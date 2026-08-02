@@ -2,21 +2,13 @@
 
 ## Status and activation gate
 
-P0-P3 are `Completed`. P4 remains `Not started`, there is no active work package, and this
-planning document does not activate the milestone or authorize provider implementation.
+P0-P3 are `Completed`. P4 was activated on August 2, 2026 as the only `In progress`
+milestone, and P5-P9 remain `Not started`.
 
-The future P4 activation transition must:
-
-1. keep P0-P3 `Completed`;
-2. mark P4 as the only `In progress` milestone;
-3. name P4-A as the sole active work package;
-4. leave P5-P9 `Not started`; and
-5. preserve the P3 public-host and lifecycle baseline unless P4-A records an approved,
-   provider-neutral compatibility decision.
-
-Current OpenAI documentation may be consulted only after that activation transition is accepted.
-P4-A must bind its protocol decisions and fixtures to the official sources and retrieval date used
-by the implementation.
+P4-A completed the protocol, configuration, and live-safety readiness foundation without adding
+provider request or response behavior. P4-B is the sole active work package. It preserves the P3
+public-host and lifecycle baseline while implementing the approved provider-neutral configuration
+boundary and the first internal OpenAI adapter behavior.
 
 ## Objective
 
@@ -112,45 +104,74 @@ The completed milestone must provide:
 
 ## P4-A readiness decisions
 
-P4-A must close the following decisions before provider behavior is implemented.
+P4-A closed the following decisions before provider behavior was activated.
 
 ### Authoritative provider protocol
 
-- Record the official Responses request, response, streaming-event, structured-output, error, and
-  authentication sources used, including retrieval dates.
-- Inventory only the protocol subset required by the accepted canonical contracts.
-- Record any provider feature intentionally unsupported by P4 and its fixed canonical behavior.
-- Make committed fixtures synthetic and credential-free; official examples may guide structure
-  but must not be copied as an ungoverned compatibility corpus.
+The following official OpenAI sources were consulted on August 2, 2026 and govern the P4 subset:
+
+- [Text generation and Responses request/response guidance](https://developers.openai.com/api/docs/guides/text)
+- [Streaming Responses and semantic event guidance](https://developers.openai.com/api/docs/guides/streaming-responses)
+- [Structured Outputs with `text.format`](https://developers.openai.com/api/docs/guides/structured-outputs)
+- [API error and status guidance](https://developers.openai.com/api/docs/guides/error-codes)
+- [Production API-key safety guidance](https://developers.openai.com/api/docs/guides/production-best-practices)
+
+P4 implements only the protocol subset required by the accepted canonical contracts. The
+out-of-scope provider features listed above fail through existing validation or capability
+boundaries rather than acquiring provider-specific public APIs. Committed fixtures are synthetic
+and credential-free; official examples may guide their shape but are not copied as an ungoverned
+compatibility corpus.
 
 ### Configuration and credentials
 
-- Define one provider-neutral configuration and credential-supplier boundary reusable by later
-  adapters.
-- Keep credential acquisition host-owned, synchronous at request construction unless an approved
-  lifecycle decision requires otherwise, and free of application-storage policy.
-- Define missing, blank, expired, rejected, and supplier-failure behavior without leaking secret
-  material.
-- Preserve the zero-configuration deterministic client and samples.
-- If this boundary changes supported Kotlin or Swift construction, record the compatibility
-  rationale, update both façades together, and compile every affected first-use path.
+- P4-B adds one provider-neutral, immutable per-client configuration keyed by canonical provider
+  identifier. It carries a validated provider base URL and a synchronous host-owned credential
+  supplier; no provider DTO or credential value enters a canonical request.
+- The supplier is invoked once when constructing each network request. It is not invoked during
+  client construction, capability lookup, deterministic fake execution, or sample startup, and
+  its return value is not retained in client, request, canonical, diagnostic, or evidence state.
+- Missing or blank credentials and supplier failures become fixed safe authentication failures
+  before transport dispatch. Provider rejection remains a bounded canonical provider error.
+  Secret values never appear in the resulting message or cause chain.
+- The runtime library never reads process-global environment or application storage. Only the
+  separate live-test runner reads the documented process environment and passes a credential into
+  the same host-owned boundary exercised by production code.
+- The existing zero-configuration deterministic client and samples remain unchanged. Adding this
+  provider-neutral construction option is an additive compatibility cost needed by every live
+  adapter. P4-B must update the Kotlin client and Swift-native façade together and compile all
+  documented first-use paths without exposing Kotlin callback plumbing in Swift.
 
 ### Live verification and merge protection
 
-- Define one value-free local setup path and one documented credential name after activation.
-- Define the exact low-cost live model or model-selection input without committing an account
-  identifier or credential.
-- Define a safe, intentional provider-error smoke case that does not disclose or invalidate the
-  live credential.
-- Define how an active live stream is cancelled after observable content and how the test proves
-  cleanup without depending on an unbounded delay.
-- Add a protected workflow that accepts only a trusted exact commit, uses Environment approval and
-  least-privilege permissions, and refuses a stale or moving ref.
-- Never use `pull_request_target`, expose secrets to fork code, print response bodies, or make the
-  ordinary secretless CI workflow depend on credential availability.
-- Establish the stable live status as a branch-protection requirement, or as a server-enforced
-  dependency of an existing required aggregator, before an adapter-behavior pull request can leave
-  draft.
+- `.env.live.example` documents the value-free `OPENAI_API_KEY` and `OPENAI_LIVE_MODEL` inputs;
+  `.env.live` and its local variants are ignored. The credential belongs to a dedicated,
+  least-privilege, revocable test project and the selected bounded-cost model remains an
+  environment-owned input rather than committed account configuration.
+- `./scripts/check-live.sh openai` requires a clean exact commit, optionally verifies
+  `UAC_LIVE_EXPECTED_SHA`, removes every live input from the deterministic JVM test, then invokes
+  the dedicated OpenAI live Gradle task. A missing credential, model, task, provider result, or
+  assertion fails rather than skips.
+- The intentional provider-error case uses a synthetic unsupported model identifier and requires
+  the fixed canonical mapping without printing the response body or invalidating the credential.
+- The active-stream cancellation case waits only until the first non-empty observable delta under
+  a hard timeout, cancels the consumer, and asserts prompt response-body closure with no later
+  canonical event or terminal.
+- `.github/workflows/live.yml` checks a trusted exact head with read-only repository permission,
+  blocks affected fork code from credentials, and places the credential-bearing job behind the
+  protected `live-provider` Environment. It does not use `pull_request_target` or make ordinary CI
+  depend on credentials.
+- Once this P4-A foundation reaches the default branch, the trusted classifier conservatively
+  requires protected live verification for every bridge source, bridge build, Swift package,
+  repository build-infrastructure, or live-gate change. It never infers adapter activation from an
+  internal package path or sentinel file. The one-time bootstrap rejects bridge source, Swift
+  package, and build behavior while the trusted classifier is not yet present.
+- The stable status job targets a separate, credential-free `live-policy` Environment. An active
+  branch ruleset requires a successful deployment to that Environment before merge, so
+  candidate-controlled workflow code cannot self-produce merge readiness without server-enforced
+  maintainer approval. The credential-bearing `live-provider` Environment remains separate and is
+  requested only for affected trusted heads.
+- `Required live verification` becomes a required branch-protection status immediately after this
+  foundation reaches `main`, before an adapter-behavior pull request is opened or leaves draft.
 
 ## Adapter contract
 
@@ -219,7 +240,7 @@ time.
 
 ### P4-A: Protocol, configuration, and live-safety readiness
 
-Status: `Not started`.
+Status: `Completed` on August 2, 2026.
 
 - Bind the supported protocol subset to current official sources.
 - Resolve the provider-neutral configuration and credential-supplier boundary.
@@ -228,9 +249,21 @@ Status: `Not started`.
 - Configure the stable protected live status before adapter behavior can leave draft.
 - Add no provider request/response implementation.
 
+Completion record:
+
+- added the value-free local input convention, exact-head fail-closed runner, deterministic
+  runner and impact-classifier regressions, and protected live workflow;
+- created the protected `live-provider` GitHub Environment without storing a repository
+  credential or model value;
+- created the credential-free `live-policy` Environment and required-deployment branch rule that
+  server-enforces approval of the stable policy result;
+- activated P4-B only after recording the provider-neutral credential/configuration decision; and
+- limited proof to secret-safety and gate behavior because the dedicated live Gradle task and all
+  provider protocol behavior begin in P4-B.
+
 ### P4-B: Non-streaming request and response translation
 
-Status: `Not started`.
+Status: `In progress`.
 
 - Add internal provider registration and wire DTOs for the accepted non-streaming subset.
 - Implement authentication, request translation, response translation, usage, and metadata.
@@ -381,7 +414,7 @@ Every exact head that adds or changes live adapter behavior must pass the affect
 before its initial pull request is created and before every later push:
 
 ```bash
-./scripts/check-live.sh
+./scripts/check-live.sh openai
 ```
 
 The live command must run deterministic affected tests first. Missing credentials, unavailable
