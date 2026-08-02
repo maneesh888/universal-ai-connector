@@ -14,7 +14,24 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    allow:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
     groups:
-      kotlin-and-gradle:
+      android-build-tooling-patches:
         patterns:
-          - "*"
+          - "com.android.application"
+          - "com.android.kotlin.multiplatform.library"
+        update-types:
+          - "patch"
+      compose-patches:
+        patterns:
+          - "androidx.compose:*"
+        update-types:
+          - "patch"
+      lifecycle-patches:
+        patterns:
+          - "androidx.lifecycle:*"
+        update-types:
+          - "patch"

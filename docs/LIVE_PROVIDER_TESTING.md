@@ -83,6 +83,18 @@ approval is separate from `live-provider` approval and never releases provider c
 Missing configuration, rejected approval, skipped execution, rate limiting, provider outage, or a
 test failure is a blocker rather than a skipped success.
 
+### Merge-banner runbook
+
+`Missing successful active live-policy deployment` means the latest pull-request head has not yet
+completed the credential-free policy approval. An older pull request or an earlier commit cannot
+satisfy this exact-head gate. This message does not indicate a merge conflict or provider
+credential failure.
+
+First confirm ordinary required checks are successful. Close an invalid or superseded pull request
+instead of approving its environments. For a valid unaffected head, approve `live-policy`. For a
+valid affected same-repository head, approve `live-provider`, wait for the protected provider suite
+to pass, and then approve `live-policy`. Every head change requires fresh exact-head results.
+
 ## Rotation
 
 Rotate the test key immediately when:

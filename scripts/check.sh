@@ -27,6 +27,7 @@ run_hygiene() {
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
+  "$ROOT/scripts/tests/dependabot-policy-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
   git -C "$ROOT" diff --check
 
