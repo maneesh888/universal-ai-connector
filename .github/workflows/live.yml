@@ -52,7 +52,13 @@ jobs:
               echo "The checked-out commit does not match the pull-request head."
               exit 1
             fi
-            live_required="$(./scripts/live-impact.sh "$PR_BASE_SHA" "$PR_HEAD_SHA")"
+            trusted_classifier="$RUNNER_TEMP/live-impact.sh"
+            git show "$PR_BASE_SHA:scripts/live-impact.sh" > "$trusted_classifier"
+            chmod +x "$trusted_classifier"
+            live_required="$(
+              UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+                "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
+            )"
             head_sha="$PR_HEAD_SHA"
             if [[ "$PR_HEAD_REPOSITORY" == "$REPOSITORY" ]]; then
               trusted_head=true

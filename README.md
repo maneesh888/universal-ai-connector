@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P3%20complete%20%7C%20P4%20not%20started-2563eb)
+![Project stage](https://img.shields.io/badge/stage-P4%20in%20progress-2563eb)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -11,9 +11,12 @@ Universal AI Connector is an independent Kotlin Multiplatform project for exposi
 
 The repository has completed its P1 cross-platform baseline and P2 provider-neutral contract foundation. Apple applications use the product-facing `UniversalAiConnector` Swift Package product over one local XCFramework containing iOS ARM64 device and simulator slices. The Swift façade preserves asynchronous response, streaming, stable errors, cancellation, concurrency, and exactly-once terminal handling. Android and JVM share the product-facing Kotlin client through the public Gradle module boundary.
 
-No AI provider, gateway, API key, or network integration is implemented yet.
+No AI provider behavior or Gateway integration is implemented yet. P4-A established only the
+secret-safe live-verification foundation for the first provider adapter.
 
-> **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport and registry are completed. P4 OpenAI Responses adapter work remains `Not started` until separately activated.
+> **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
+> and registry are completed. P4 is active: P4-A established protocol, configuration, and
+> live-safety readiness, and P4-B non-streaming OpenAI Responses translation is next.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -41,7 +44,7 @@ Interoperability POC       █████████████████�
 Cross-platform baseline   ████████████████████ 100%  ✅ Complete
 Canonical AI contracts    ████████████████████ 100%  ✅ Complete
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
-Provider adapters         ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Provider adapters         ░░░░░░░░░░░░░░░░░░░░   0%  🚧 In progress
 Gateway integration       ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
@@ -86,7 +89,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P1 | Cross-platform package and client samples | ✅ Completed |
 | P2 | Canonical core and JSON contracts | ✅ Completed |
 | P3 | HTTP transport and provider registry | ✅ Completed |
-| P4 | OpenAI Responses adapter | ⏳ Planned |
+| P4 | OpenAI Responses adapter | 🚧 In progress |
 | P5 | Anthropic adapter | ⏳ Planned |
 | P6 | OpenRouter and compatible adapters | ⏳ Planned |
 | P7 | Universal Gateway V2 adapter | ⏳ Planned |
@@ -101,7 +104,7 @@ The detailed implementation and acceptance criteria are in the [cross-platform c
 
 ### P2 and P3 completion
 
-P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, P3-B added URL, header, timeout, canonical error, and redaction policy, P3-C added bounded incremental SSE framing, response metadata, and the first-body-byte content-start boundary, P3-D added deterministic internal provider registration and primary-client lookup, and P3-E bound adapter construction to transport lifecycle while completing cancellation, cleanup, authoritative-terminal, host-boundary, and acceptance proof. P4 remains separately gated and not started.
+P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, P3-B added URL, header, timeout, canonical error, and redaction policy, P3-C added bounded incremental SSE framing, response metadata, and the first-body-byte content-start boundary, P3-D added deterministic internal provider registration and primary-client lookup, and P3-E bound adapter construction to transport lifecycle while completing cancellation, cleanup, authoritative-terminal, host-boundary, and acceptance proof. P4 was activated on August 2, 2026. P4-A established its protocol, provider-neutral configuration decision, secret-safety convention, and protected live-verification foundation without implementing provider behavior; P4-B non-streaming Responses translation is active.
 
 ## Architecture direction
 
@@ -142,12 +145,51 @@ The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConne
 
 ## Quick start
 
-Requirements:
+### Contributor setup
 
-- Java 21
-- macOS on Apple silicon and Xcode 26.x for Apple verification
-- An installed iOS 17 or newer simulator runtime
-- Android SDK platform 36 and Build Tools 36.1 for the P1 Android checks
+The source checkout uses standard command-line tools in addition to Xcode. The `env` command
+mentioned below is the operating system utility that runs a command with temporary environment
+variables; it is not a credentials file and new contributors do not create it.
+
+| Tool | Why this repository needs it |
+|---|---|
+| Git and Bash | Source control, hooks, and committed verification scripts |
+| Ripgrep (`rg`) | Fail-closed secret scanning |
+| Java 21 JDK | Gradle, Kotlin Multiplatform, Android, and JVM builds |
+| Android SDK platform 36 and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
+| Xcode on Apple silicon macOS | Kotlin/Native, Swift Package, and iOS sample verification |
+| iOS 17 or newer simulator runtime | Apple simulator tests and sample build |
+
+GitHub Apple verification currently runs with Xcode 16.4, and the complete local gate has also
+passed with Xcode 26.0. The minimum supported Xcode version has not been established; the
+preflight checks that the selected Xcode can run and resolve the iOS Simulator SDK, and the actual
+build remains the compatibility authority.
+
+After installing those tools, run the read-only preflight before enabling hooks:
+
+```bash
+./scripts/check-environment.sh --full
+./scripts/install-hooks.sh
+```
+
+The preflight does not install software or change shell files. It explains a missing or
+misconfigured tool and stops before a long build begins. Use `--hygiene` when only documentation
+or shell checks are needed, and `--quick` for the pre-commit toolchain.
+
+If the preflight reports a non-standard `env`, a personal executable is shadowing the operating
+system command. Diagnose it with:
+
+```bash
+type -a env
+env UAC_ENV_COMMAND_PROBE=works \
+  /bin/sh -c 'test "$UAC_ENV_COMMAND_PROBE" = works'
+```
+
+Rename the conflicting personal executable and keep PATH setup in `.zprofile`, `.zshrc`, or the
+matching profile for the contributor's shell. Do not change the repository security test to
+accommodate a command that does not implement standard `env NAME=value command` behavior.
+
+The Gradle wrapper is committed, so a separate Gradle installation is not required.
 
 Run the JVM console consumer on any supported JVM host:
 

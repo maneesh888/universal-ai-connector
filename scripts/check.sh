@@ -16,10 +16,15 @@ EOF
 }
 
 run_hygiene() {
+  local preflight_mode="${1:---hygiene}"
+
+  "$ROOT/scripts/check-environment.sh" "$preflight_mode"
+
   while IFS= read -r shell_file; do
     bash -n "$ROOT/$shell_file"
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
+  "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
@@ -77,12 +82,10 @@ verify_platform_packaging_boundaries() {
   local jvm_listing
   local android_listing
   local android_classes_jar
+  local jar_command
   local scan_status
 
-  if ! command -v jar >/dev/null 2>&1; then
-    echo "Apple packaging boundary check requires jar." >&2
-    return 1
-  fi
+  jar_command="$("$ROOT/scripts/resolve-jdk-tool.sh" jar)" || return 1
   if ! command -v unzip >/dev/null 2>&1; then
     echo "Apple packaging boundary check requires unzip." >&2
     return 1
@@ -101,7 +104,7 @@ verify_platform_packaging_boundaries() {
   android_listing="$temp_artifact_directory/android-classes.txt"
   android_classes_jar="$temp_artifact_directory/classes.jar"
 
-  if ! jar tf "$jvm_jar" >"$jvm_listing"; then
+  if ! "$jar_command" tf "$jvm_jar" >"$jvm_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Could not inspect JVM artifact: $jvm_jar" >&2
     return 1
@@ -141,7 +144,7 @@ verify_platform_packaging_boundaries() {
     echo "Android artifact does not contain classes.jar: $android_aar" >&2
     return 1
   fi
-  if ! jar tf "$android_classes_jar" >"$android_listing"; then
+  if ! "$jar_command" tf "$android_classes_jar" >"$android_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Could not inspect Android classes.jar from: $android_aar" >&2
     return 1
@@ -176,14 +179,14 @@ verify_platform_packaging_boundaries() {
 }
 
 run_quick() {
-  run_hygiene
+  run_hygiene --quick
   run_script_tests
   run_cross_platform_gradle_checks
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
-  run_hygiene
+  run_hygiene --full
   run_script_tests
   run_cross_platform_gradle_checks
 
@@ -198,7 +201,7 @@ run_full() {
 
 case "$MODE" in
   --hygiene|hygiene)
-    run_hygiene
+    run_hygiene --hygiene
     ;;
   --quick|quick)
     run_quick

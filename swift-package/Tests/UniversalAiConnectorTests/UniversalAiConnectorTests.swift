@@ -1428,16 +1428,21 @@ final class UniversalAiConnectorTests: XCTestCase {
 
     func testCloseCancelsStreamBeforeHandleInstallationExactlyOnce() async throws {
         let enteredHook = AsyncSignal()
+        let cancellationRequested = AsyncSignal()
+        let cancellationRequestCount = LockedCounter()
         let releaseHook = DispatchSemaphore(value: 0)
         let connector = UniversalAiConnector(
             testingHooks: UniversalAiConnectorTestingHooks(
                 beforeStreamCancellationInstallation: {
                     enteredHook.signal()
                     releaseHook.wait()
+                },
+                onStreamCancellationRequested: {
+                    cancellationRequestCount.increment()
+                    cancellationRequested.signal()
                 }
             )
         )
-        connector.resetDiagnosticsForTesting()
         let task = Task {
             for try await _ in connector.stream(
                 request: request("close stream race")
@@ -1460,9 +1465,8 @@ final class UniversalAiConnectorTests: XCTestCase {
             XCTFail("Unexpected error: \(error)")
         }
 
-        try await waitForCancellationCount(connector, streams: 1)
-        try await Task.sleep(for: .milliseconds(200))
-        XCTAssertEqual(connector.diagnosticsForTesting().streamCancellations, 1)
+        await cancellationRequested.wait()
+        XCTAssertEqual(cancellationRequestCount.value, 1)
     }
 
     func testDeinitClosesAnActiveStream() async {

@@ -65,6 +65,19 @@ if [[ "$("$CLASSIFIER" "$ADAPTER_SHA" "$DOCS_SHA")" != "false" ]]; then
   exit 1
 fi
 
+printf '%s\n' "rootProject.name = \"live-impact-fixture\"" > "$TEST_REPOSITORY/settings.gradle.kts"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "change live build infrastructure"
+BUILD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$DOCS_SHA" "$BUILD_SHA")" != "true" ]]; then
+  echo "Changing build infrastructure with an active adapter must require live verification." >&2
+  exit 1
+fi
+
 printf '%s\n' "runtime change" >> "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" add .
 git -C "$TEST_REPOSITORY" \
@@ -73,7 +86,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change adapter"
 RUNTIME_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$DOCS_SHA" "$RUNTIME_SHA")" != "true" ]]; then
+if [[ "$("$CLASSIFIER" "$BUILD_SHA" "$RUNTIME_SHA")" != "true" ]]; then
   echo "Changing an active adapter must require live verification." >&2
   exit 1
 fi

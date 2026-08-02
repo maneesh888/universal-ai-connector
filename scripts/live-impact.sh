@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="${UAC_REPOSITORY_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 BASE_SHA="${1:-}"
 HEAD_SHA="${2:-}"
 OPENAI_ADAPTER_PATH="bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
@@ -39,7 +39,14 @@ while IFS= read -r changed_path; do
   case "$changed_path" in
     bridge/src/* | \
       bridge/build.gradle.kts | \
-      gradle/libs.versions.toml | \
+      build.gradle.kts | \
+      settings.gradle.kts | \
+      gradle.properties | \
+      gradle/* | \
+      buildSrc/* | \
+      build-logic/* | \
+      gradlew | \
+      gradlew.bat | \
       scripts/check-live.sh | \
       scripts/live-impact.sh | \
       .github/workflows/live.yml)
