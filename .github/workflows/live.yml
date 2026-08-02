@@ -52,13 +52,25 @@ jobs:
               echo "The checked-out commit does not match the pull-request head."
               exit 1
             fi
-            trusted_classifier="$RUNNER_TEMP/live-impact.sh"
-            git show "$PR_BASE_SHA:scripts/live-impact.sh" > "$trusted_classifier"
-            chmod +x "$trusted_classifier"
-            live_required="$(
-              UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
-                "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
-            )"
+            if git cat-file -e "$PR_BASE_SHA:scripts/live-impact.sh" 2>/dev/null; then
+              trusted_classifier="$RUNNER_TEMP/live-impact.sh"
+              git show "$PR_BASE_SHA:scripts/live-impact.sh" > "$trusted_classifier"
+              chmod +x "$trusted_classifier"
+              live_required="$(
+                UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+                  "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
+              )"
+            else
+              openai_adapter_path="bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
+              if git ls-tree -r --name-only "$PR_BASE_SHA" -- "$openai_adapter_path" |
+                  grep -q . ||
+                git ls-tree -r --name-only "$PR_HEAD_SHA" -- "$openai_adapter_path" |
+                  grep -q .; then
+                echo "Live-impact bootstrap refuses a head containing adapter behavior."
+                exit 1
+              fi
+              live_required=false
+            fi
             head_sha="$PR_HEAD_SHA"
             if [[ "$PR_HEAD_REPOSITORY" == "$REPOSITORY" ]]; then
               trusted_head=true
