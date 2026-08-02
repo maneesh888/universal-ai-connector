@@ -71,10 +71,10 @@ Fork pull-request code never receives live credentials. A maintainer must inspec
 move the approved commit to a same-repository branch, and use that trusted head for protected live
 verification. Never use `pull_request_target` to execute contribution code.
 
-The repository push ruleset restricts `.github/workflows/**` across the fork network. A pull
-request therefore cannot replace the protected workflow and manufacture the required status.
-Changing a workflow requires explicit ruleset maintenance outside the pull request, followed by
-the full Release lifecycle before the restriction is restored.
+The stable status job targets the credential-free `live-policy` Environment. A branch ruleset
+requires a successful deployment to that Environment before merge, so candidate workflow changes
+cannot manufacture merge readiness without server-enforced maintainer approval. This policy
+approval is separate from `live-provider` approval and never releases provider credentials.
 
 Missing configuration, rejected approval, skipped execution, rate limiting, provider outage, or a
 test failure is a blocker rather than a skipped success.

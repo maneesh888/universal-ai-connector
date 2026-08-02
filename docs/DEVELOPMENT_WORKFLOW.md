@@ -99,8 +99,9 @@ Pull-request jobs check out the exact PR head. Third-party actions remain pinned
 `.github/workflows/live.yml` remains separate from ordinary CI. It classifies live impact
 secretlessly, runs affected same-repository heads through the protected `live-provider`
 Environment, blocks affected fork heads from credentials, and reports `Required live
-verification`. A pre-adapter foundation or unrelated documentation head passes the stable status
-without requesting secrets.
+verification`. Its stable status job uses the credential-free `live-policy` Environment, whose
+successful deployment is a server-required merge condition. A pre-adapter foundation or unrelated
+documentation head passes without requesting provider secrets, but still requires policy approval.
 
 ## Host integration
 

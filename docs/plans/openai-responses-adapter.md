@@ -160,11 +160,11 @@ compatibility corpus.
   blocks affected fork code from credentials, and places the credential-bearing job behind the
   protected `live-provider` Environment. It does not use `pull_request_target` or make ordinary CI
   depend on credentials.
-- An active repository push ruleset restricts `.github/workflows/**` throughout the fork network,
-  so a candidate cannot replace the trusted workflow and self-produce its required status. The
-  repository owner has a temporary bootstrap bypass only until this foundation merges; that bypass
-  is removed during resulting-`main` inspection. Later workflow maintenance requires an explicit,
-  audited ruleset change outside the pull request and a fresh Release review.
+- The stable status job targets a separate, credential-free `live-policy` Environment. An active
+  branch ruleset requires a successful deployment to that Environment before merge, so
+  candidate-controlled workflow code cannot self-produce merge readiness without server-enforced
+  maintainer approval. The credential-bearing `live-provider` Environment remains separate and is
+  requested only for affected trusted heads.
 - `Required live verification` becomes a required branch-protection status immediately after this
   foundation reaches `main`, before an adapter-behavior pull request is opened or leaves draft.
 
@@ -250,8 +250,8 @@ Completion record:
   runner and impact-classifier regressions, and protected live workflow;
 - created the protected `live-provider` GitHub Environment without storing a repository
   credential or model value;
-- established the server-enforced workflow-directory restriction, with its one-time owner
-  bootstrap bypass scheduled for removal immediately after merge;
+- created the credential-free `live-policy` Environment and required-deployment branch rule that
+  server-enforces approval of the stable policy result;
 - activated P4-B only after recording the provider-neutral credential/configuration decision; and
 - limited proof to secret-safety and gate behavior because the dedicated live Gradle task and all
   provider protocol behavior begin in P4-B.

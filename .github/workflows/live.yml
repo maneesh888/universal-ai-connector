@@ -137,6 +137,7 @@ jobs:
       - protected-openai-live
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    environment: live-policy
     steps:
       - name: Enforce live verification policy
         env:
