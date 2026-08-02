@@ -62,10 +62,27 @@ jobs:
               )"
             else
               openai_adapter_path="bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
-              if git ls-tree -r --name-only "$PR_BASE_SHA" -- "$openai_adapter_path" |
-                  grep -q . ||
-                git ls-tree -r --name-only "$PR_HEAD_SHA" -- "$openai_adapter_path" |
-                  grep -q .; then
+              base_adapter_paths="$RUNNER_TEMP/base-openai-adapter-paths"
+              head_adapter_paths="$RUNNER_TEMP/head-openai-adapter-paths"
+              if ! git ls-tree \
+                -r \
+                --name-only \
+                -z \
+                "$PR_BASE_SHA" \
+                -- "$openai_adapter_path" > "$base_adapter_paths"; then
+                echo "Live-impact bootstrap could not inspect the base commit."
+                exit 1
+              fi
+              if ! git ls-tree \
+                -r \
+                --name-only \
+                -z \
+                "$PR_HEAD_SHA" \
+                -- "$openai_adapter_path" > "$head_adapter_paths"; then
+                echo "Live-impact bootstrap could not inspect the head commit."
+                exit 1
+              fi
+              if [[ -s "$base_adapter_paths" || -s "$head_adapter_paths" ]]; then
                 echo "Live-impact bootstrap refuses a head containing adapter behavior."
                 exit 1
               fi

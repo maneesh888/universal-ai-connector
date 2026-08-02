@@ -40,6 +40,11 @@ fi
 
 mkdir -p "$OPENAI_DIRECTORY"
 printf '%s\n' "internal adapter marker" > "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
+adapter_index=1
+while [[ "$adapter_index" -le 1024 ]]; do
+  printf '%s\n' "synthetic adapter marker" > "$OPENAI_DIRECTORY/SyntheticAdapter${adapter_index}.kt"
+  adapter_index=$((adapter_index + 1))
+done
 git -C "$TEST_REPOSITORY" add .
 git -C "$TEST_REPOSITORY" \
   -c user.name="Live Impact Test" \
@@ -147,6 +152,21 @@ UNRELATED_SHA="$(
 )"
 if "$CLASSIFIER" "$REMOVAL_SHA" "$UNRELATED_SHA" >/dev/null 2>&1; then
   echo "Unrelated valid commits must fail closed." >&2
+  exit 1
+fi
+
+OPENAI_RELATIVE_DIRECTORY="${OPENAI_DIRECTORY#"$TEST_REPOSITORY"/}"
+BROKEN_TREE_OBJECT="$(
+  git -C "$TEST_REPOSITORY" rev-parse "$RUNTIME_SHA:$OPENAI_RELATIVE_DIRECTORY"
+)"
+BROKEN_TREE_OBJECT_PATH="$TEST_REPOSITORY/.git/objects/${BROKEN_TREE_OBJECT:0:2}/${BROKEN_TREE_OBJECT:2}"
+if [[ ! -f "$BROKEN_TREE_OBJECT_PATH" ]]; then
+  echo "Expected a loose adapter tree object for the failure regression test." >&2
+  exit 1
+fi
+rm "$BROKEN_TREE_OBJECT_PATH"
+if "$CLASSIFIER" "$RUNTIME_SHA" "$TYPE_CHANGE_SHA" >/dev/null 2>&1; then
+  echo "Tree inspection failures must fail closed." >&2
   exit 1
 fi
 

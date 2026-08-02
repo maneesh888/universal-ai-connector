@@ -27,21 +27,39 @@ if ! git -C "$ROOT" merge-base "$BASE_SHA" "$HEAD_SHA" >/dev/null 2>&1; then
   exit 2
 fi
 
-adapter_active=false
-if git -C "$ROOT" ls-tree -r --name-only "$BASE_SHA" -- "$OPENAI_ADAPTER_PATH" |
-    grep -q . ||
-  git -C "$ROOT" ls-tree -r --name-only "$HEAD_SHA" -- "$OPENAI_ADAPTER_PATH" |
-    grep -q .; then
-  adapter_active=true
+ADAPTER_PATHS_FILE="$(mktemp)"
+CHANGED_PATHS_FILE="$(mktemp)"
+trap 'rm -f "$ADAPTER_PATHS_FILE" "$CHANGED_PATHS_FILE"' EXIT
+
+tree_contains_adapter() {
+  local revision="$1"
+
+  if ! git -C "$ROOT" ls-tree \
+    -r \
+    --name-only \
+    -z \
+    "$revision" \
+    -- "$OPENAI_ADAPTER_PATH" > "$ADAPTER_PATHS_FILE"; then
+    echo "Live-impact classification could not inspect the requested commit." >&2
+    exit 2
+  fi
+
+  [[ -s "$ADAPTER_PATHS_FILE" ]]
+}
+
+base_contains_adapter=false
+head_contains_adapter=false
+if tree_contains_adapter "$BASE_SHA"; then
+  base_contains_adapter=true
+fi
+if tree_contains_adapter "$HEAD_SHA"; then
+  head_contains_adapter=true
 fi
 
-if [[ "$adapter_active" != "true" ]]; then
+if [[ "$base_contains_adapter" != "true" && "$head_contains_adapter" != "true" ]]; then
   echo "false"
   exit 0
 fi
-
-CHANGED_PATHS_FILE="$(mktemp)"
-trap 'rm -f "$CHANGED_PATHS_FILE"' EXIT
 
 if ! git -C "$ROOT" diff \
   --name-only \
