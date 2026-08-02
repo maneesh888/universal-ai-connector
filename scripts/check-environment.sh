@@ -178,6 +178,7 @@ require_standard_env
 require_command bash "Bash runs the committed repository scripts."
 require_command git "Git provides source and worktree checks."
 require_command rg "Ripgrep performs fail-closed secret scanning."
+require_command ruby "Ruby validates the parsed Dependabot YAML policy."
 
 if [[ "$MODE" == "--quick" || "$MODE" == "--full" ]]; then
   require_java_21

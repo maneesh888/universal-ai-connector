@@ -4,67 +4,72 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CONFIG="$ROOT/.github/dependabot.yml"
 
-EXPECTED_GRADLE_POLICY='  - package-ecosystem: gradle
-    directory: /
-    schedule:
-      interval: monthly
-    allow:
-      - dependency-name: *
-        update-types:
-          - version-update:semver-patch
-    groups:
-      android-build-tooling-patches:
-        patterns:
-          - com.android.application
-          - com.android.kotlin.multiplatform.library
-        update-types:
-          - patch
-      compose-patches:
-        patterns:
-          - androidx.compose:*
-        update-types:
-          - patch
-      lifecycle-patches:
-        patterns:
-          - androidx.lifecycle:*
-        update-types:
-          - patch'
-
-normalize_gradle_policy() {
-  local policy_file="$1"
-
-  awk '
-    /^  - package-ecosystem:/ {
-      if (in_gradle) {
-        exit
-      }
-      in_gradle = ($0 == "  - package-ecosystem: gradle")
-    }
-    in_gradle {
-      line = $0
-      gsub(/"/, "", line)
-      apostrophe = sprintf("%c", 39)
-      gsub(apostrophe, "", line)
-      sub(/[[:space:]]+$/, "", line)
-      print line
-    }
-  ' "$policy_file"
-}
-
 validate_policy() {
   local policy_file="$1"
-  local actual_policy
 
   [[ -f "$policy_file" ]] || return 1
-  actual_policy="$(normalize_gradle_policy "$policy_file")"
-  [[ "$actual_policy" == "$EXPECTED_GRADLE_POLICY" ]]
+  ruby - "$policy_file" <<'RUBY'
+require "yaml"
+
+policy_file = ARGV.fetch(0)
+expected = {
+  "package-ecosystem" => "gradle",
+  "directory" => "/",
+  "schedule" => {
+    "interval" => "monthly",
+  },
+  "allow" => [
+    {
+      "dependency-name" => "*",
+      "update-types" => [
+        "version-update:semver-patch",
+      ],
+    },
+  ],
+  "groups" => {
+    "android-build-tooling-patches" => {
+      "patterns" => [
+        "com.android.application",
+        "com.android.kotlin.multiplatform.library",
+      ],
+      "update-types" => [
+        "patch",
+      ],
+    },
+    "compose-patches" => {
+      "patterns" => [
+        "androidx.compose:*",
+      ],
+      "update-types" => [
+        "patch",
+      ],
+    },
+    "lifecycle-patches" => {
+      "patterns" => [
+        "androidx.lifecycle:*",
+      ],
+      "update-types" => [
+        "patch",
+      ],
+    },
+  },
+}
+
+begin
+  document = YAML.safe_load_file(policy_file, aliases: false)
+  updates = document.fetch("updates")
+  gradle_updates = updates.select do |entry|
+    entry.is_a?(Hash) && entry["package-ecosystem"] == "gradle"
+  end
+  exit(gradle_updates.length == 1 && gradle_updates.first == expected ? 0 : 1)
+rescue KeyError, Psych::Exception, TypeError
+  exit(1)
+end
+RUBY
 }
 
 if ! validate_policy "$CONFIG"; then
   echo "Dependabot Gradle policy must retain the exact patch-only isolated groups." >&2
-  diff -u \
-    <(printf '%s\n' "$EXPECTED_GRADLE_POLICY") \
-    <(normalize_gradle_policy "$CONFIG") >&2 || true
   exit 1
 fi
 
@@ -105,6 +110,39 @@ awk '
 
 if validate_policy "$SPLIT_ALLOW_RULE"; then
   echo "An unrestricted wildcard allow rule must not borrow a patch limit from another entry." >&2
+  exit 1
+fi
+
+DUPLICATE_GRADLE_POLICY="$TEST_DIRECTORY/duplicate-gradle-policy.yml"
+cp "$CONFIG" "$DUPLICATE_GRADLE_POLICY"
+awk '
+  $0 == "  - package-ecosystem: gradle" {
+    copy = 1
+  }
+  copy {
+    print
+  }
+' "$CONFIG" >> "$DUPLICATE_GRADLE_POLICY"
+
+if validate_policy "$DUPLICATE_GRADLE_POLICY"; then
+  echo "Multiple Gradle update policies must fail validation." >&2
+  exit 1
+fi
+
+BARE_WILDCARD_ALLOW="$TEST_DIRECTORY/bare-wildcard-allow.yml"
+awk '
+  !changed && $0 == "      - dependency-name: \"*\"" {
+    print "      - dependency-name: *"
+    changed = 1
+    next
+  }
+  {
+    print
+  }
+' "$CONFIG" > "$BARE_WILDCARD_ALLOW"
+
+if validate_policy "$BARE_WILDCARD_ALLOW"; then
+  echo "Invalid YAML must fail policy validation." >&2
   exit 1
 fi
 

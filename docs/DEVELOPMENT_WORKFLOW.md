@@ -20,10 +20,10 @@ Do not infer a stronger level from a weaker one. Distribution proof remains P8 w
 Canonical-contract changes additionally require **contract conformance proof**: authoritative schemas are meta-valid, every fixture has one documented schema or semantic result, production encodings stay schema-valid for the governed corpus, and the embedded multiplatform mirror has zero drift from the tracked bundle.
 
 Run `./scripts/check-environment.sh` on a new clone before enabling hooks. It is a read-only
-preflight: `--hygiene` validates standard shell, Git, and secret-scan tools; `--quick` also
-validates Java 21 and the Android SDK; and `--full` also validates the Apple toolchain. Normal
-repository gates invoke the matching preflight automatically. A preflight failure is a machine
-setup blocker, not permission to weaken the affected test or bypass a hook.
+preflight: `--hygiene` validates standard shell, Git, Ruby YAML parsing, and secret-scan tools;
+`--quick` also validates Java 21 and the Android SDK; and `--full` also validates the Apple
+toolchain. Normal repository gates invoke the matching preflight automatically. A preflight
+failure is a machine setup blocker, not permission to weaken the affected test or bypass a hook.
 
 Run targeted checks while editing, then run only the highest final gate required by the selected mode:
 
