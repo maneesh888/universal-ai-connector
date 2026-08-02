@@ -22,6 +22,11 @@ for revision in "$BASE_SHA" "$HEAD_SHA"; do
   fi
 done
 
+if ! git -C "$ROOT" merge-base "$BASE_SHA" "$HEAD_SHA" >/dev/null 2>&1; then
+  echo "Live-impact classification requires commits with a common ancestor." >&2
+  exit 2
+fi
+
 adapter_active=false
 if git -C "$ROOT" ls-tree -r --name-only "$BASE_SHA" -- "$OPENAI_ADAPTER_PATH" |
     grep -q . ||
@@ -35,7 +40,19 @@ if [[ "$adapter_active" != "true" ]]; then
   exit 0
 fi
 
-while IFS= read -r changed_path; do
+CHANGED_PATHS_FILE="$(mktemp)"
+trap 'rm -f "$CHANGED_PATHS_FILE"' EXIT
+
+if ! git -C "$ROOT" diff \
+  --name-only \
+  --diff-filter=ACDMRT \
+  -z \
+  "$BASE_SHA...$HEAD_SHA" > "$CHANGED_PATHS_FILE"; then
+  echo "Live-impact classification could not compare the requested commits." >&2
+  exit 2
+fi
+
+while IFS= read -r -d '' changed_path; do
   case "$changed_path" in
     bridge/src/* | \
       bridge/build.gradle.kts | \
@@ -54,11 +71,6 @@ while IFS= read -r changed_path; do
       exit 0
       ;;
   esac
-done < <(
-  git -C "$ROOT" diff \
-    --name-only \
-    --diff-filter=ACDMRT \
-    "$BASE_SHA...$HEAD_SHA"
-)
+done < "$CHANGED_PATHS_FILE"
 
 echo "false"

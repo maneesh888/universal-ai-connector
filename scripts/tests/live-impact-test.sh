@@ -65,6 +65,21 @@ if [[ "$("$CLASSIFIER" "$ADAPTER_SHA" "$DOCS_SHA")" != "false" ]]; then
   exit 1
 fi
 
+CONTROL_CHARACTER_PATH="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/control"$'\n'"character.kt"
+mkdir -p "$(dirname "$CONTROL_CHARACTER_PATH")"
+printf '%s\n' "control character path" > "$CONTROL_CHARACTER_PATH"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "add protected control-character path"
+CONTROL_CHARACTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$DOCS_SHA" "$CONTROL_CHARACTER_SHA")" != "true" ]]; then
+  echo "Protected control-character paths must require live verification." >&2
+  exit 1
+fi
+
 printf '%s\n' "rootProject.name = \"live-impact-fixture\"" > "$TEST_REPOSITORY/settings.gradle.kts"
 git -C "$TEST_REPOSITORY" add .
 git -C "$TEST_REPOSITORY" \
@@ -73,7 +88,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change live build infrastructure"
 BUILD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$DOCS_SHA" "$BUILD_SHA")" != "true" ]]; then
+if [[ "$("$CLASSIFIER" "$CONTROL_CHARACTER_SHA" "$BUILD_SHA")" != "true" ]]; then
   echo "Changing build infrastructure with an active adapter must require live verification." >&2
   exit 1
 fi
@@ -120,6 +135,18 @@ fi
 
 if "$CLASSIFIER" invalid "$REMOVAL_SHA" >/dev/null 2>&1; then
   echo "Invalid revisions must fail closed." >&2
+  exit 1
+fi
+
+EMPTY_TREE_SHA="$(git -C "$TEST_REPOSITORY" hash-object -t tree /dev/null)"
+UNRELATED_SHA="$(
+  git -C "$TEST_REPOSITORY" \
+    -c user.name="Live Impact Test" \
+    -c user.email="live-impact@example.invalid" \
+    commit-tree "$EMPTY_TREE_SHA" -m "unrelated history"
+)"
+if "$CLASSIFIER" "$REMOVAL_SHA" "$UNRELATED_SHA" >/dev/null 2>&1; then
+  echo "Unrelated valid commits must fail closed." >&2
   exit 1
 fi
 
