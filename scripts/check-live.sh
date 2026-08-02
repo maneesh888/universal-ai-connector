@@ -23,6 +23,22 @@ fail() {
   exit "${2:-1}"
 }
 
+CHECKOUT_STATUS_FILE="$(mktemp)"
+trap 'rm -f "$CHECKOUT_STATUS_FILE"' EXIT
+
+require_clean_checkout() {
+  if ! git -C "$ROOT" status \
+    --porcelain=v1 \
+    -z \
+    --untracked-files=all > "$CHECKOUT_STATUS_FILE"; then
+    fail "Live verification could not inspect checkout state."
+  fi
+
+  if [[ -s "$CHECKOUT_STATUS_FILE" ]]; then
+    fail "Live verification requires a clean checkout bound to committed HEAD."
+  fi
+}
+
 if [[ "$PROVIDER" != "openai" || "$#" -ne 1 ]]; then
   usage >&2
   exit 2
@@ -39,9 +55,7 @@ if [[ ! "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
   fail "Live verification could not resolve an exact 40-character HEAD SHA."
 fi
 
-if [[ -n "$(git -C "$ROOT" status --porcelain=v1 --untracked-files=all)" ]]; then
-  fail "Live verification requires a clean checkout bound to committed HEAD."
-fi
+require_clean_checkout
 
 EXPECTED_SHA="${UAC_LIVE_EXPECTED_SHA:-$HEAD_SHA}"
 if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ || "$EXPECTED_SHA" != "$HEAD_SHA" ]]; then
@@ -77,6 +91,13 @@ env \
   -u OPENAI_LIVE_MODEL \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/gradlew" :bridge:jvmTest
+
+POST_DETERMINISTIC_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+  fail "Live verification could not revalidate HEAD after deterministic tests."
+if [[ "$POST_DETERMINISTIC_SHA" != "$HEAD_SHA" ]]; then
+  fail "Live verification HEAD changed during deterministic tests."
+fi
+require_clean_checkout
 
 echo "Running protected OpenAI live smoke tests for exact HEAD."
 OPENAI_API_KEY="$OPENAI_API_KEY" \

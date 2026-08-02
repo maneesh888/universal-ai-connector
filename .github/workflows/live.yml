@@ -74,6 +74,7 @@ jobs:
                 case "$bootstrap_changed_path" in
                   bridge/src/* | \
                     bridge/build.gradle.kts | \
+                    swift-package/* | \
                     build.gradle.kts | \
                     settings.gradle.kts | \
                     gradle.properties | \

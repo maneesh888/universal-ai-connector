@@ -61,11 +61,11 @@ Do not attach raw logs when they can contain sensitive input or provider output.
 
 The `Universal AI Connector Live Verification` workflow classifies whether the exact pull-request
 head can affect live adapter behavior. After the P4-A foundation reaches the default branch, every
-bridge source, bridge build, repository build-infrastructure, or live-gate change is conservatively
-affected; classification never depends on an adapter package name or sentinel file. A
-documentation-only change produces a successful secretless `Required live verification` status.
-The one-time bootstrap used before the trusted classifier exists rejects every bridge source or
-build-behavior change.
+bridge source, bridge build, Swift package, repository build-infrastructure, or live-gate change is
+conservatively affected; classification never depends on an adapter package name or sentinel file.
+A documentation-only change produces a successful secretless `Required live verification` status.
+The one-time bootstrap used before the trusted classifier exists rejects every bridge source,
+Swift package, or build-behavior change.
 
 An affected same-repository head runs through the protected `live-provider` Environment and
 requires approval before the environment releases `OPENAI_API_KEY` and `OPENAI_LIVE_MODEL`.

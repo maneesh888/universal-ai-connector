@@ -42,6 +42,7 @@ while IFS= read -r -d '' changed_path; do
   case "$changed_path" in
     bridge/src/* | \
       bridge/build.gradle.kts | \
+      swift-package/* | \
       build.gradle.kts | \
       settings.gradle.kts | \
       gradle.properties | \

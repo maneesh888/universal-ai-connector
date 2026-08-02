@@ -161,10 +161,10 @@ compatibility corpus.
   protected `live-provider` Environment. It does not use `pull_request_target` or make ordinary CI
   depend on credentials.
 - Once this P4-A foundation reaches the default branch, the trusted classifier conservatively
-  requires protected live verification for every bridge source, bridge build, repository
-  build-infrastructure, or live-gate change. It never infers adapter activation from an internal
-  package path or sentinel file. The one-time bootstrap rejects bridge source and build behavior
-  while the trusted classifier is not yet present.
+  requires protected live verification for every bridge source, bridge build, Swift package,
+  repository build-infrastructure, or live-gate change. It never infers adapter activation from an
+  internal package path or sentinel file. The one-time bootstrap rejects bridge source, Swift
+  package, and build behavior while the trusted classifier is not yet present.
 - The stable status job targets a separate, credential-free `live-policy` Environment. An active
   branch ruleset requires a successful deployment to that Environment before merge, so
   candidate-controlled workflow code cannot self-produce merge readiness without server-enforced

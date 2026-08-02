@@ -31,6 +31,9 @@ if [[ "$*" == *":bridge:jvmTest"* ]]; then
     exit 9
   fi
   echo "deterministic" >> "$UAC_TEST_CALL_LOG"
+  if [[ -n "${UAC_TEST_DIRTY_AFTER_DETERMINISTIC:-}" ]]; then
+    printf '%s\n' "deterministic mutation" > "$UAC_TEST_DIRTY_AFTER_DETERMINISTIC"
+  fi
   exit 0
 fi
 
@@ -110,6 +113,34 @@ expect_failure \
     OPENAI_LIVE_MODEL="$MODEL" \
     "$RUNNER" openai
 rm "$TEST_REPOSITORY/dirty.txt"
+
+cp "$TEST_REPOSITORY/.git/index" "$TEST_DIRECTORY/index.backup"
+printf '%s\n' "invalid index" > "$TEST_REPOSITORY/.git/index"
+expect_failure \
+  "Live verification could not inspect checkout state." \
+  env \
+    OPENAI_API_KEY="$SYNTHETIC_KEY" \
+    OPENAI_LIVE_MODEL="$MODEL" \
+    "$RUNNER" openai
+cp "$TEST_DIRECTORY/index.backup" "$TEST_REPOSITORY/.git/index"
+
+: > "$CALL_LOG"
+POST_DETERMINISTIC_DIRTY_PATH="$TEST_REPOSITORY/post-deterministic-dirty.txt"
+expect_failure \
+  "Live verification requires a clean checkout" \
+  env \
+    OPENAI_API_KEY="$SYNTHETIC_KEY" \
+    OPENAI_LIVE_MODEL="$MODEL" \
+    UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+    UAC_TEST_CALL_LOG="$CALL_LOG" \
+    UAC_TEST_DIRTY_AFTER_DETERMINISTIC="$POST_DETERMINISTIC_DIRTY_PATH" \
+    "$RUNNER" openai
+rm "$POST_DETERMINISTIC_DIRTY_PATH"
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      -n "$(sed -n '2p' "$CALL_LOG")" ]]; then
+  echo "Live runner continued after deterministic tests dirtied the checkout." >&2
+  exit 1
+fi
 
 : > "$CALL_LOG"
 env \

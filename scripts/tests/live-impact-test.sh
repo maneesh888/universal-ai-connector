@@ -51,6 +51,21 @@ if [[ "$("$CLASSIFIER" "$PRE_ADAPTER_DOCS_SHA" "$FOUNDATION_SHA")" != "true" ]];
   exit 1
 fi
 
+SWIFT_SOURCE_DIRECTORY="$TEST_REPOSITORY/swift-package/Sources/UniversalAiConnector"
+mkdir -p "$SWIFT_SOURCE_DIRECTORY"
+printf '%s\n' "internal Swift façade marker" > "$SWIFT_SOURCE_DIRECTORY/UniversalAiConnector.swift"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "change Swift package boundary"
+SWIFT_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$SWIFT_SHA")" != "true" ]]; then
+  echo "Changing the Swift package boundary must require live verification." >&2
+  exit 1
+fi
+
 mkdir -p "$OPENAI_DIRECTORY"
 printf '%s\n' "internal adapter marker" > "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" add .
@@ -60,7 +75,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "add adapter"
 ADAPTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$ADAPTER_SHA")" != "true" ]]; then
+if [[ "$("$CLASSIFIER" "$SWIFT_SHA" "$ADAPTER_SHA")" != "true" ]]; then
   echo "Adding an adapter outside any sentinel package must require live verification." >&2
   exit 1
 fi
