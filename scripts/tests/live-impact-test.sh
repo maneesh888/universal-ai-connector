@@ -91,6 +91,20 @@ if [[ "$("$CLASSIFIER" "$BUILD_SHA" "$RUNTIME_SHA")" != "true" ]]; then
   exit 1
 fi
 
+rm "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
+ln -s "synthetic-adapter-target.kt" "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
+git -C "$TEST_REPOSITORY" add -A
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "change adapter file type"
+TYPE_CHANGE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$RUNTIME_SHA" "$TYPE_CHANGE_SHA")" != "true" ]]; then
+  echo "Changing a protected path file type must require live verification." >&2
+  exit 1
+fi
+
 rm -rf "$OPENAI_DIRECTORY"
 git -C "$TEST_REPOSITORY" add -A
 git -C "$TEST_REPOSITORY" \
@@ -99,7 +113,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "remove adapter"
 REMOVAL_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$RUNTIME_SHA" "$REMOVAL_SHA")" != "true" ]]; then
+if [[ "$("$CLASSIFIER" "$TYPE_CHANGE_SHA" "$REMOVAL_SHA")" != "true" ]]; then
   echo "Removing an active adapter must require live verification." >&2
   exit 1
 fi

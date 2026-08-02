@@ -57,7 +57,7 @@ while IFS= read -r changed_path; do
 done < <(
   git -C "$ROOT" diff \
     --name-only \
-    --diff-filter=ACDMR \
+    --diff-filter=ACDMRT \
     "$BASE_SHA...$HEAD_SHA"
 )
 

@@ -402,7 +402,7 @@ Every exact head that adds or changes live adapter behavior must pass the affect
 before its initial pull request is created and before every later push:
 
 ```bash
-./scripts/check-live.sh
+./scripts/check-live.sh openai
 ```
 
 The live command must run deterministic affected tests first. Missing credentials, unavailable
