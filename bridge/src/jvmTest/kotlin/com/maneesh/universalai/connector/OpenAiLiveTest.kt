@@ -8,9 +8,11 @@ import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -42,9 +44,9 @@ class OpenAiLiveTest {
 
     @Test
     fun cancellingPendingResponseRemainsCallerCancellation(): Unit = runBlocking {
-        var credentialResolved = false
+        val credentialResolved = CompletableDeferred<Unit>()
         configuredConnector {
-            credentialResolved = true
+            credentialResolved.complete(Unit)
             requiredEnvironment("OPENAI_API_KEY")
         }.use { connector ->
             val pending =
@@ -56,7 +58,9 @@ class OpenAiLiveTest {
                     )
                 }
 
-            assertTrue(credentialResolved)
+            withTimeout(5_000) {
+                credentialResolved.await()
+            }
             pending.cancel()
             assertFailsWith<CancellationException> {
                 pending.await()
