@@ -180,7 +180,7 @@ private fun OpenAiResponseWire.toCanonical(
     request: UniversalAiRequest,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiResponse {
-    requireWire(objectType == null || objectType == "response")
+    requireWire(objectType == "response")
     requireWire(status == "completed")
     requireWire(error == null)
     requireWire(incompleteDetails == null)
@@ -193,7 +193,7 @@ private fun OpenAiResponseWire.toCanonical(
         when (item.type) {
             "reasoning" -> Unit
             "message" -> {
-                requireWire(item.status == null || item.status == "completed")
+                requireWire(item.status == "completed")
                 requireWire(item.role == "assistant")
                 val content = requireWireValue(item.content)
                 requireWire(content.isNotEmpty())
@@ -275,24 +275,35 @@ private fun String?.toCanonicalRequestIdOrNull(): RequestId? =
     }
 
 private suspend fun readBoundedBody(reader: ConnectorTransportChunkReader): ByteArray {
-    val chunks = mutableListOf<ByteArray>()
+    var buffer = ByteArray(INITIAL_RESPONSE_BODY_CAPACITY)
     var size = 0
+    var chunkCount = 0
     while (true) {
         val chunk = reader.readChunk() ?: break
+        chunkCount += 1
+        if (chunkCount > MAX_RESPONSE_BODY_CHUNKS) {
+            throw malformedResponse()
+        }
         if (chunk.size > MAX_RESPONSE_BODY_BYTES - size) {
             throw malformedResponse()
         }
-        chunks += chunk
-        size += chunk.size
+        val requiredSize = size + chunk.size
+        if (requiredSize > buffer.size) {
+            var expandedSize = buffer.size
+            while (expandedSize < requiredSize) {
+                expandedSize =
+                    minOf(
+                        MAX_RESPONSE_BODY_BYTES,
+                        expandedSize * 2,
+                    )
+            }
+            buffer = buffer.copyOf(expandedSize)
+        }
+        chunk.copyInto(buffer, destinationOffset = size)
+        size = requiredSize
     }
     requireWire(size > 0)
-    val result = ByteArray(size)
-    var offset = 0
-    chunks.forEach { chunk ->
-        chunk.copyInto(result, destinationOffset = offset)
-        offset += chunk.size
-    }
-    return result
+    return if (size == buffer.size) buffer else buffer.copyOf(size)
 }
 
 private fun providerFailure(response: ConnectorTransportResponse): UniversalAiException {
@@ -432,6 +443,8 @@ internal const val OPENAI_PROVIDER_FAILURE_MESSAGE: String =
 private const val RESPONSES_ENDPOINT: String = "responses"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
 private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
+private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
+private const val MAX_RESPONSE_BODY_CHUNKS: Int = 4 * 1_024
 
 private val WIRE_JSON =
     Json {

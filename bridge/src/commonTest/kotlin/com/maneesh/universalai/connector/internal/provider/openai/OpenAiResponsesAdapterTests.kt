@@ -19,6 +19,10 @@ import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import com.maneesh.universalai.connector.contract.extension.ExtensionNamespace
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.contract.extension.Extensions
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.Headers
@@ -81,6 +85,7 @@ class OpenAiResponsesAdapterTests {
                                 {
                                   "id": "message_1",
                                   "type": "message",
+                                  "status": "completed",
                                   "role": "assistant",
                                   "content": [
                                     {"type": "output_text", "text": "second response"}
@@ -329,6 +334,38 @@ class OpenAiResponsesAdapterTests {
         val malformedPayloads =
             listOf(
                 """{"not_json":""",
+                // Missing the required top-level object discriminator.
+                """
+                {
+                  "id":"resp_0",
+                  "status":"completed",
+                  "model":"model",
+                  "output":[{
+                    "id":"message_0",
+                    "type":"message",
+                    "status":"completed",
+                    "role":"assistant",
+                    "content":[{"type":"output_text","text":"ok"}]
+                  }],
+                  "usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2}
+                }
+                """.trimIndent(),
+                // Missing the required completed status on an output message.
+                """
+                {
+                  "id":"resp_0",
+                  "object":"response",
+                  "status":"completed",
+                  "model":"model",
+                  "output":[{
+                    "id":"message_0",
+                    "type":"message",
+                    "role":"assistant",
+                    "content":[{"type":"output_text","text":"ok"}]
+                  }],
+                  "usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2}
+                }
+                """.trimIndent(),
                 """
                 {
                   "id":"resp_0",
@@ -369,6 +406,7 @@ class OpenAiResponsesAdapterTests {
                   "output":[{
                     "id":"message_0",
                     "type":"message",
+                    "status":"completed",
                     "role":"assistant",
                     "content":[{"type":"refusal","text":"$sensitive"}]
                   }],
@@ -384,6 +422,7 @@ class OpenAiResponsesAdapterTests {
                   "output":[{
                     "id":"message_0",
                     "type":"message",
+                    "status":"completed",
                     "role":"assistant",
                     "content":[{"type":"output_text","text":"ok"}]
                   }],
@@ -412,6 +451,34 @@ class OpenAiResponsesAdapterTests {
     }
 
     @Test
+    fun excessiveResponseFragmentationFailsBeforeReadingMoreChunks() = runTest {
+        var readCalls = 0
+        val reader =
+            ConnectorTransportChunkReader {
+                readCalls += 1
+                if (readCalls > 4_097) {
+                    error("Bounded response assembly must stop before another read.")
+                }
+                byteArrayOf('{'.code.toByte())
+            }
+        val connector = connector(reader)
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(4_097, readCalls)
+            assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+            assertEquals("malformed_provider_response", failure.error.code.rawValue)
+            assertEquals(OPENAI_MALFORMED_RESPONSE_MESSAGE, failure.message)
+        } finally {
+            connector.close()
+        }
+    }
+
+    @Test
     fun invalidUtf8SuccessfulPayloadFailsWithFixedSafeError() = runTest {
         val sensitive = "invalid-utf8-sensitive-fragment"
         val bytes =
@@ -424,6 +491,7 @@ class OpenAiResponsesAdapterTests {
               "output":[{
                 "id":"message_0",
                 "type":"message",
+                "status":"completed",
                 "role":"assistant",
                 "content":[{"type":"output_text","text":"$sensitive
             """.trimIndent().encodeToByteArray() +
@@ -608,6 +676,37 @@ class OpenAiResponsesAdapterTests {
             httpEngine = engine,
         )
 
+    private fun connector(reader: ConnectorTransportChunkReader): UniversalAiConnector {
+        val configuration =
+            UniversalAiProviderConfiguration(
+                providerId = ProviderId.of("openai"),
+                baseUrl = "https://api.example.invalid/v1",
+                credentialSupplier = { "fragmentation-test-credential" },
+            )
+        val transport =
+            object : ConnectorTransport {
+                override suspend fun <Result> execute(
+                    request: ConnectorTransportRequest,
+                    consumeResponse: suspend (ConnectorTransportResponse) -> Result,
+                ): Result =
+                    consumeResponse(
+                        ConnectorTransportResponse(
+                            statusCode = 200,
+                            headers = emptyList(),
+                            body = reader,
+                        ),
+                    )
+
+                override fun close() = Unit
+            }
+        return UniversalAiConnector(
+            OpenAiResponsesAdapter(
+                configuration = configuration,
+                transport = transport,
+            ),
+        )
+    }
+
     private fun request(
         generation: UniversalAiGenerationParameters = UniversalAiGenerationParameters.Default,
         responseFormat: UniversalAiResponseFormat = UniversalAiResponseFormat.PlainText,
@@ -661,6 +760,7 @@ class OpenAiResponsesAdapterTests {
           "output":[{
             "id":"message_0",
             "type":"message",
+            "status":"completed",
             "role":"assistant",
             "content":[{"type":"output_text","text":"ok"}]
           }],
