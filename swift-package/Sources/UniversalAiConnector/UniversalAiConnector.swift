@@ -8,8 +8,6 @@ import UniversalAiConnectorBridge
 /// the connector is no longer needed; close is safe to repeat, cancels active
 /// operations, and is also performed automatically during deinitialization.
 public final class UniversalAiConnector: @unchecked Sendable {
-    private static let cancelledHostValue = "\u{0}"
-
     private let bridge: AppleConnectorBridge
     private let lifecycle = LockedConnectorLifecycle()
     private let testingHooks: UniversalAiConnectorTestingHooks
@@ -36,18 +34,19 @@ public final class UniversalAiConnector: @unchecked Sendable {
             configuredBridge = try AppleConnectorBridge(
                 adapterNames: providers.map(\.providerId.rawValue),
                 adapterBaseUrls: providers.map(\.baseURL),
-                hostValueResolver: { adapterName in
+                hostValueResolver: { adapterName, onValue, onCancelled in
                     guard let provider = providers.first(
                         where: { $0.providerId.rawValue == adapterName }
                     ) else {
-                        return ""
+                        onValue("")
+                        return
                     }
                     do {
-                        return try provider.credentialSupplier()
+                        onValue(try provider.credentialSupplier())
                     } catch is CancellationError {
-                        return Self.cancelledHostValue
+                        onCancelled()
                     } catch {
-                        return ""
+                        onValue("")
                     }
                 }
             )

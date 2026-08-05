@@ -79,7 +79,7 @@ class AppleConnectorBridge internal constructor(
     constructor(
         adapterNames: List<String>,
         adapterBaseUrls: List<String>,
-        hostValueResolver: (String) -> String,
+        hostValueResolver: (String, (String) -> Unit, () -> Unit) -> Unit,
     ) : this(
         connector =
             createConfiguredConnector(
@@ -213,12 +213,10 @@ class AppleConnectorBridge internal constructor(
         (injectedScope ?: CoroutineScope(Dispatchers.Default)).launch(block = block)
 }
 
-private const val APPLE_BRIDGE_CANCELLED_HOST_VALUE = "\u0000"
-
 private fun createConfiguredConnector(
     adapterNames: List<String>,
     adapterBaseUrls: List<String>,
-    hostValueResolver: (String) -> String,
+    hostValueResolver: (String, (String) -> Unit, () -> Unit) -> Unit,
 ): UniversalAiConnector {
     require(adapterNames.size == adapterBaseUrls.size) {
         "Adapter names and base URLs must have matching counts."
@@ -231,8 +229,14 @@ private fun createConfiguredConnector(
                     providerId = ProviderId.of(adapterName),
                     baseUrl = adapterBaseUrls[index],
                     credentialSupplier = {
-                        val value = hostValueResolver(adapterName)
-                        if (value == APPLE_BRIDGE_CANCELLED_HOST_VALUE) {
+                        var value = ""
+                        var cancelled = false
+                        hostValueResolver(
+                            adapterName,
+                            { resolvedValue -> value = resolvedValue },
+                            { cancelled = true },
+                        )
+                        if (cancelled) {
                             throw CancellationException("Host value resolution was cancelled.")
                         }
                         value

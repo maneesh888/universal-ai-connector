@@ -92,6 +92,41 @@ final class UniversalAiConnectorTests: XCTestCase {
         }
     }
 
+    func testControlCharacterCredentialRemainsAuthenticationFailure() async throws {
+        let configuration = UniversalAiConnectorConfiguration(
+            providers: [
+                UniversalAiProviderConfiguration(
+                    providerId: UniversalAiProviderId(rawValue: "openai"),
+                    baseURL: "https://api.example.invalid/v1",
+                    credentialSupplier: { "\u{0}" }
+                )
+            ]
+        )
+        let connector = try UniversalAiConnector(configuration: configuration)
+        defer { connector.close() }
+        let providerRequest = UniversalAiRequest(
+            target: UniversalAiTarget(
+                providerId: UniversalAiProviderId(rawValue: "openai"),
+                modelId: UniversalAiModelId(rawValue: "test-model")
+            ),
+            input: [
+                UniversalAiTextInput(role: .user, content: "invalid credential"),
+            ]
+        )
+
+        do {
+            _ = try await connector.respond(to: providerRequest)
+            XCTFail("Expected an authentication failure.")
+        } catch is CancellationError {
+            XCTFail("A credential value must not be mistaken for cancellation.")
+        } catch let error as UniversalAiConnectorError {
+            XCTAssertEqual(error.category, .authentication)
+            XCTAssertEqual(error.code.rawValue, "missing_credential")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
     func testAsyncResponseReturnsCanonicalValue() async throws {
         let connector = UniversalAiConnector()
         let request = request(" hello ")
