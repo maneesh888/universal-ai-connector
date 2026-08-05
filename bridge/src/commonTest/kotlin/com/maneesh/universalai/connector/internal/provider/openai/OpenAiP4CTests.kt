@@ -152,6 +152,42 @@ class OpenAiP4CTests {
     }
 
     @Test
+    fun acceptsNullForNullableNumberWithNumericBounds() = runTest {
+        val schema =
+            StructuredOutputSchema.parse(
+                """
+                {
+                  "type":"object",
+                  "properties":{
+                    "score":{
+                      "type":["number","null"],
+                      "minimum":0,
+                      "maximum":1
+                    }
+                  },
+                  "required":["score"],
+                  "additionalProperties":false
+                }
+                """.trimIndent(),
+            )
+        val structuredJson = """{"score":null}"""
+        val engine = MockEngine { respond(completedResponse(structuredJson)) }
+        val connector = connector(engine)
+
+        try {
+            val response = connector.respond(request(schema))
+
+            assertEquals(
+                StructuredOutputValue.parse(structuredJson),
+                assertNotNull(response.outputs.single().structuredJson),
+            )
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
     fun rejectsProviderIncompatibleGovernedSchemasBeforeCredentialOrDispatch() = runTest {
         val schemas =
             (

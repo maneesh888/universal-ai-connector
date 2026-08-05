@@ -352,7 +352,7 @@ internal object OpenAiStructuredOutput {
                 }
                 ?.content
                 ?.takeIf(JsonNumberSemantics::isNumber)
-                ?: return schema.keys.none { keyword -> keyword in NUMBER_BOUND_KEYWORDS }
+                ?: return true
 
         fun compare(keyword: String): Int? =
             (schema[keyword] as? JsonPrimitive)
