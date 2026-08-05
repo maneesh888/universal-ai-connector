@@ -58,6 +58,40 @@ final class UniversalAiConnectorTests: XCTestCase {
         }
     }
 
+    func testCredentialSupplierCancellationRemainsSwiftCancellation() async throws {
+        let configuration = UniversalAiConnectorConfiguration(
+            providers: [
+                UniversalAiProviderConfiguration(
+                    providerId: UniversalAiProviderId(rawValue: "openai"),
+                    baseURL: "https://api.example.invalid/v1",
+                    credentialSupplier: {
+                        throw CancellationError()
+                    }
+                )
+            ]
+        )
+        let connector = try UniversalAiConnector(configuration: configuration)
+        defer { connector.close() }
+        let providerRequest = UniversalAiRequest(
+            target: UniversalAiTarget(
+                providerId: UniversalAiProviderId(rawValue: "openai"),
+                modelId: UniversalAiModelId(rawValue: "test-model")
+            ),
+            input: [
+                UniversalAiTextInput(role: .user, content: "cancel"),
+            ]
+        )
+
+        do {
+            _ = try await connector.respond(to: providerRequest)
+            XCTFail("Expected credential supplier cancellation.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
     func testAsyncResponseReturnsCanonicalValue() async throws {
         let connector = UniversalAiConnector()
         let request = request(" hello ")

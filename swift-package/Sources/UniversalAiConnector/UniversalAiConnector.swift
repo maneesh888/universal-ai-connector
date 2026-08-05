@@ -35,9 +35,20 @@ public final class UniversalAiConnector: @unchecked Sendable {
                 baseUrl: provider.baseURL,
                 credentialSupplier: {
                     do {
-                        return try credentialSupplier()
+                        return AppleBridgeCredentialResult(
+                            credential: try credentialSupplier(),
+                            cancelled: false
+                        )
+                    } catch is CancellationError {
+                        return AppleBridgeCredentialResult(
+                            credential: "",
+                            cancelled: true
+                        )
                     } catch {
-                        return ""
+                        return AppleBridgeCredentialResult(
+                            credential: "",
+                            cancelled: false
+                        )
                     }
                 }
             )
@@ -138,6 +149,9 @@ public final class UniversalAiConnector: @unchecked Sendable {
                     },
                     onError: { error in
                         state.fail(Self.map(error))
+                    },
+                    onCancelled: {
+                        state.cancel()
                     }
                 )
                 let handleBox = AppleCancellationHandleBox(handle)

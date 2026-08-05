@@ -117,7 +117,9 @@ boundary. Its stable status job uses the credential-free `live-policy` Environme
 successful deployment is a server-required merge condition. The protected `live-provider`
 Environment is retained with its reviewer protection but is not requested by this local-only
 policy; no GitHub job receives provider credentials. An unrelated documentation head passes
-without local provider inputs, but still requires policy approval.
+without local provider inputs. The `live-policy` deployment is automatic and has no required
+reviewer; it validates retained evidence but cannot independently prove that the local provider
+call ran.
 
 ## Host integration
 

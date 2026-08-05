@@ -261,6 +261,27 @@ class OpenAiResponsesAdapterTests {
     }
 
     @Test
+    fun credentialSupplierCancellationPropagatesBeforeDispatch() = runTest {
+        val cancellation = CancellationException("host credential lookup cancelled")
+        val engine = MockEngine { error("Credential cancellation must prevent dispatch.") }
+        val connector =
+            connector(
+                engine = engine,
+                credentialSupplier = { throw cancellation },
+            )
+
+        try {
+            assertFailsWith<CancellationException> {
+                connector.respond(request())
+            }
+            assertEquals(0, engine.requestHistory.size)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
     fun providerFailureMapsStatusRequestIdAndRetryMetadataWithoutResponseBodyLeakage() = runTest {
         val credential = "adversarial-credential-fragment"
         val providerFragment = "provider-body-sensitive-fragment"
@@ -387,6 +408,51 @@ class OpenAiResponsesAdapterTests {
                 connector.close()
                 engine.close()
             }
+        }
+    }
+
+    @Test
+    fun invalidUtf8SuccessfulPayloadFailsWithFixedSafeError() = runTest {
+        val sensitive = "invalid-utf8-sensitive-fragment"
+        val bytes =
+            """
+            {
+              "id":"resp_0",
+              "object":"response",
+              "status":"completed",
+              "model":"model",
+              "output":[{
+                "id":"message_0",
+                "type":"message",
+                "role":"assistant",
+                "content":[{"type":"output_text","text":"$sensitive
+            """.trimIndent().encodeToByteArray() +
+                byteArrayOf(0xc3.toByte()) +
+                """
+                "}]
+              }],
+              "usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2}
+            }
+            """.trimIndent().encodeToByteArray()
+        val engine =
+            MockEngine {
+                respond(ByteReadChannel(bytes))
+            }
+        val connector = connector(engine) { "invalid-utf8-test-credential" }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+            assertEquals("malformed_provider_response", failure.error.code.rawValue)
+            assertEquals(OPENAI_MALFORMED_RESPONSE_MESSAGE, failure.message)
+            assertFalse(failure.stackTraceToString().contains(sensitive))
+        } finally {
+            connector.close()
+            engine.close()
         }
     }
 

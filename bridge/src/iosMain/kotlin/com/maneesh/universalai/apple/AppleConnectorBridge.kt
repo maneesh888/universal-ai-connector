@@ -60,7 +60,8 @@ import kotlin.native.HiddenFromObjC
  *
  * The default adapter owns its connector transport but no long-lived coroutine scope. Every call
  * launches an independent operation on [Dispatchers.Default], and its returned handle cancels
- * only that call. Cancellation intentionally delivers no success, completion, or error callback.
+ * only that call. Cancellation is delivered only through the dedicated cancellation callback,
+ * never as success or error.
  * [close] releases connector-owned resources and is safe to call repeatedly.
  */
 class AppleConnectorBridge internal constructor(
@@ -83,7 +84,15 @@ class AppleConnectorBridge internal constructor(
                         UniversalAiProviderConfiguration(
                             providerId = ProviderId.of(provider.providerRawValue),
                             baseUrl = provider.baseUrl,
-                            credentialSupplier = provider.credentialSupplier,
+                            credentialSupplier = {
+                                val result = provider.credentialSupplier()
+                                if (result.cancelled) {
+                                    throw CancellationException(
+                                        "Credential resolution was cancelled.",
+                                    )
+                                }
+                                result.credential
+                            },
                         )
                     },
                 ),
@@ -107,6 +116,7 @@ class AppleConnectorBridge internal constructor(
         request: AppleBridgeRequest,
         onSuccess: (AppleBridgeResponse) -> Unit,
         onError: (AppleBridgeError) -> Unit,
+        onCancelled: () -> Unit = {},
     ): AppleCancellationHandle {
         val canonicalRequest =
             try {
@@ -138,6 +148,7 @@ class AppleConnectorBridge internal constructor(
         job.invokeOnCompletion { cause ->
             if (cause is CancellationException) {
                 instrumentation.recordResponseCancellation()
+                onCancelled()
             }
         }
         return AppleCancellationHandle(job)

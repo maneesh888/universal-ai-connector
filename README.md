@@ -328,7 +328,7 @@ set +a
 Set `OPENAI_API_KEY` and `OPENAI_LIVE_MODEL` only in the local editor. Missing inputs, unavailable
 model access, quota/rate limits, provider failures, and assertions are blockers rather than
 skipped tests. GitHub remains credential-free; an affected PR records the passing exact SHA and
-no-retention boundary for protected `live-policy` review. See
+no-retention boundary for the automatic `live-policy` evidence check. See
 [`docs/LIVE_PROVIDER_TESTING.md`](docs/LIVE_PROVIDER_TESTING.md).
 
 The Xcode scripts prefer the newest available `iPhone 17 Pro` simulator. Override the destination when necessary:

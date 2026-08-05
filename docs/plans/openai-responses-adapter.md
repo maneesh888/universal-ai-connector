@@ -77,8 +77,8 @@ The completed milestone must provide:
   revocation guidance, and redaction regressions;
 - a separate `./scripts/check-live.sh` entry point that runs deterministic affected tests first and
   fails closed when required live inputs or assertions are unavailable;
-- a secretless exact-head evidence workflow with protected `live-policy` approval and a stable
-  merge-required status before adapter behavior can leave draft; and
+- a secretless exact-head evidence workflow with an automatic required `live-policy` deployment
+  and a stable merge-required status before adapter behavior can leave draft; and
 - deterministic fixtures plus the smallest targeted live smoke matrix needed for response,
   structured output, streaming, error, and cancellation behavior.
 
@@ -164,10 +164,10 @@ compatibility corpus.
   internal package path or sentinel file. The one-time bootstrap rejects bridge source, Swift
   package, and build behavior while the trusted classifier is not yet present.
 - The stable status job targets the credential-free `live-policy` Environment. An active branch
-  ruleset requires a successful deployment to that Environment before merge, so
-  candidate-controlled workflow code cannot self-produce merge readiness without server-enforced
-  maintainer approval. Affected PR text must contain `Local live verification: passed`, the exact
-  head SHA, and `No credential or provider response body retained.` The protected
+  ruleset requires a successful deployment to that Environment before merge. The deployment has
+  no required reviewer and completes automatically after the secretless evidence assertions pass.
+  Affected PR text must contain `Local live verification: passed`, the exact head SHA, and
+  `No credential or provider response body retained.` The protected
   `live-provider` Environment retains reviewer protection but is not requested by this local-only
   policy.
 - `Required live verification` becomes a required branch-protection status immediately after this
@@ -256,7 +256,7 @@ Completion record:
 - created the protected `live-provider` GitHub Environment without storing a repository
   credential or model value;
 - created the credential-free `live-policy` Environment and required-deployment branch rule that
-  server-enforces approval of the stable policy result;
+  server-enforces completion of the stable policy result;
 - activated P4-B only after recording the provider-neutral credential/configuration decision; and
 - limited proof to secret-safety and gate behavior because the dedicated live Gradle task and all
   provider protocol behavior begin in P4-B.
@@ -268,8 +268,8 @@ P4-B operational refinement:
 - the pre-push hook applies `scripts/live-impact.sh` against `origin/main` and invokes the local
   exact-head live gate only for affected branches;
 - missing local inputs fail with value-free `.env.live` setup guidance rather than skipping; and
-- GitHub verification remains secretless and uses `live-policy` approval to review exact-head
-  local evidence instead of rerunning provider tests.
+- GitHub verification remains secretless and uses the automatic `live-policy` deployment to
+  validate retained exact-head evidence instead of rerunning provider tests.
 
 ### P4-B: Non-streaming request and response translation
 
@@ -373,8 +373,8 @@ Status: `Not started`.
   assertion are failures rather than skipped successes;
 - command output and retained evidence contain only bounded result metadata, never authorization
   headers, full sensitive requests, or unredacted provider responses;
-- secretless pull-request policy requires exact-head local proof text and `live-policy`
-  Environment approval without receiving provider credentials; and
+- secretless pull-request policy requires exact-head local proof text and a successful automatic
+  `live-policy` Environment deployment without receiving provider credentials; and
 - documentation-only or deterministically unrelated changes can satisfy the stable required
   status without obtaining provider credentials while affected live behavior cannot.
 
@@ -474,7 +474,7 @@ Plan authoring does not exercise runtime or provider behavior.
 - Existing JVM, Android, and iOS consumers compile through supported package boundaries without new
   provider-specific host controls or duplicated platform implementations.
 - Deterministic fixtures, full local verification, exact-head ordinary CI, local live proof,
-  secretless policy approval, and independent review pass for the P4 closing head.
+  secretless policy deployment, and independent review pass for the P4 closing head.
 
 ## Proof limits
 

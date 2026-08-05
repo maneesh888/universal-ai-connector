@@ -106,6 +106,8 @@ internal class OpenAiResponsesAdapter(
         val credential =
             try {
                 configuration.credentialSupplier()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
             } catch (_: Throwable) {
                 throw credentialFailure()
             }
@@ -130,12 +132,16 @@ internal class OpenAiResponsesAdapter(
         val bytes = readBoundedBody(response.body)
         val wire =
             try {
-                WIRE_JSON.decodeFromString<OpenAiResponseWire>(bytes.decodeToString())
+                WIRE_JSON.decodeFromString<OpenAiResponseWire>(
+                    bytes.decodeToString(throwOnInvalidSequence = true),
+                )
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (_: SerializationException) {
                 throw malformedResponse()
             } catch (_: IllegalArgumentException) {
+                throw malformedResponse()
+            } catch (_: Throwable) {
                 throw malformedResponse()
             }
 

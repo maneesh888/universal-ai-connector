@@ -3,8 +3,8 @@
 Live verification is separate from the deterministic repository gates. Normal local checks and
 ordinary GitHub Actions remain secretless. Beginning with P4, a change that can affect a delivered
 provider or Gateway path must pass the exact-head local live gate. GitHub validates only bounded
-exact-head evidence under protected `live-policy` approval; it does not run provider tests or
-receive provider credentials.
+exact-head evidence through the credential-free `live-policy` deployment; it does not run
+provider tests or receive provider credentials.
 
 ## OpenAI credential contract
 
@@ -93,8 +93,8 @@ head can affect live adapter behavior. After the P4-A foundation reaches the def
 bridge source, bridge build, Swift package, repository build-infrastructure, or live-gate change is
 conservatively affected; classification never depends on an adapter package name or sentinel file.
 A documentation-only change produces a successful secretless `Required live verification` result
-after policy approval. The one-time bootstrap used before the trusted classifier exists rejects
-every bridge source, Swift package, or build-behavior change.
+automatically. The one-time bootstrap used before the trusted classifier exists rejects every
+bridge source, Swift package, or build-behavior change.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, and records the no-retention boundary. It executes no candidate provider
@@ -102,28 +102,31 @@ test, uses no secret or model variable, and works the same way for same-reposito
 Never use `pull_request_target`.
 
 The stable status job targets the credential-free `live-policy` Environment. A branch ruleset
-requires a successful deployment to that Environment before merge, so candidate workflow changes
-cannot manufacture merge readiness without server-enforced maintainer approval. This policy
-approval is separate from `live-provider` approval and never releases provider credentials.
-The protected `live-provider` Environment and its required reviewer are retained for possible
-future policy changes, but the current workflow does not request it and stores no required local
-test input there.
+requires a successful deployment to that Environment before merge. The deployment has no required
+reviewer and completes automatically after the secretless evidence assertions pass. It never
+releases provider credentials. The protected `live-provider` Environment and its required reviewer
+are retained for possible future policy changes, but the current workflow does not request it and
+stores no required local test input there.
 
-Missing configuration, rejected approval, skipped execution, rate limiting, provider outage, or a
-test failure is a blocker rather than a skipped success.
+Missing configuration, skipped execution, rate limiting, provider outage, or a test failure is a
+blocker rather than a skipped success.
 
 ### Merge-banner runbook
 
 `Missing successful active live-policy deployment` means the latest pull-request head has not yet
-completed the credential-free policy approval. An older pull request or an earlier commit cannot
+completed the credential-free evidence workflow. An older pull request or an earlier commit cannot
 satisfy this exact-head gate. This message does not indicate a merge conflict or provider
 credential failure.
 
 First confirm ordinary required checks are successful. Close an invalid or superseded pull request
-instead of approving its environments. For an affected head, inspect the local-live statements,
-exact SHA, command/result, and proof limits before approving `live-policy`. Do not approve
-`live-provider`; the local-only workflow never requests it. Every head change requires a fresh
-local run and updated PR evidence.
+instead of repeatedly updating it. For an affected head, confirm the local-live statements, exact
+SHA, command/result, and proof limits are current. Do not approve `live-provider`; the local-only
+workflow never requests it. Every head change requires a fresh local run and updated PR evidence.
+
+Because GitHub receives neither credentials nor provider output, this automatic policy proves only
+that the required exact-head statements are retained. It cannot independently prove that the
+developer executed the local command; exact-head local execution remains a contributor and
+Release-review responsibility.
 
 ## Rotation
 
