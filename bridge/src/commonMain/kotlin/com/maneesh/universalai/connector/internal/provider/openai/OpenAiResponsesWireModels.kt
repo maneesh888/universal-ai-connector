@@ -9,6 +9,7 @@ internal data class OpenAiCreateResponseWire(
     val model: String,
     val input: List<OpenAiInputMessageWire>,
     val store: Boolean,
+    val text: OpenAiTextConfigurationWire? = null,
     @SerialName("max_output_tokens")
     val maxOutputTokens: Int? = null,
     val temperature: Double? = null,
@@ -23,6 +24,19 @@ internal data class OpenAiInputMessageWire(
 )
 
 @Serializable
+internal data class OpenAiTextConfigurationWire(
+    val format: OpenAiTextFormatWire,
+)
+
+@Serializable
+internal data class OpenAiTextFormatWire(
+    val type: String,
+    val name: String,
+    val schema: JsonElement,
+    val strict: Boolean,
+)
+
+@Serializable
 internal data class OpenAiResponseWire(
     val id: String? = null,
     @SerialName("object")
@@ -31,9 +45,9 @@ internal data class OpenAiResponseWire(
     val model: String? = null,
     val output: List<OpenAiOutputItemWire>? = null,
     val usage: OpenAiUsageWire? = null,
-    val error: JsonElement? = null,
+    val error: OpenAiErrorWire? = null,
     @SerialName("incomplete_details")
-    val incompleteDetails: JsonElement? = null,
+    val incompleteDetails: OpenAiIncompleteDetailsWire? = null,
 )
 
 @Serializable
@@ -49,6 +63,25 @@ internal data class OpenAiOutputItemWire(
 internal data class OpenAiOutputContentWire(
     val type: String,
     val text: String? = null,
+    val refusal: String? = null,
+)
+
+@Serializable
+internal data class OpenAiIncompleteDetailsWire(
+    val reason: String? = null,
+)
+
+@Serializable
+internal data class OpenAiErrorEnvelopeWire(
+    val error: OpenAiErrorWire? = null,
+)
+
+@Serializable
+internal data class OpenAiErrorWire(
+    val code: String? = null,
+    val type: String? = null,
+    val message: String? = null,
+    val param: JsonElement? = null,
 )
 
 @Serializable

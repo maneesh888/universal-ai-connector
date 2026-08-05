@@ -171,6 +171,7 @@ class OpenAiResponsesAdapterTests {
             val document = JSON.parseToJsonElement(requestBody) as JsonObject
             assertEquals("requested-model", document.string("model"))
             assertFalse(document.boolean("store"))
+            assertFalse("text" in document)
             assertEquals(32, document.int("max_output_tokens"))
             assertEquals(0.25, document.double("temperature"))
             assertEquals(0.8, document.double("top_p"))
@@ -368,13 +369,24 @@ class OpenAiResponsesAdapterTests {
                 """.trimIndent(),
                 """
                 {
-                  "id":"resp_0",
+                  "object":"response",
+                  "status":"failed"
+                }
+                """.trimIndent(),
+                """
+                {
+                  "object":"response",
+                  "status":"failed",
+                  "error":{"code":"server_error"},
+                  "incomplete_details":{"reason":"max_output_tokens"}
+                }
+                """.trimIndent(),
+                """
+                {
                   "object":"response",
                   "status":"incomplete",
-                  "model":"model",
-                  "output":[],
-                  "usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2},
-                  "incomplete_details":{"reason":"$sensitive"}
+                  "error":{"code":"server_error"},
+                  "incomplete_details":{"reason":"max_output_tokens"}
                 }
                 """.trimIndent(),
                 """
@@ -394,22 +406,6 @@ class OpenAiResponsesAdapterTests {
                   "status":"completed",
                   "model":"model",
                   "output":[{"id":"call_0","type":"function_call","arguments":"$sensitive"}],
-                  "usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2}
-                }
-                """.trimIndent(),
-                """
-                {
-                  "id":"resp_0",
-                  "object":"response",
-                  "status":"completed",
-                  "model":"model",
-                  "output":[{
-                    "id":"message_0",
-                    "type":"message",
-                    "status":"completed",
-                    "role":"assistant",
-                    "content":[{"type":"refusal","text":"$sensitive"}]
-                  }],
                   "usage":{"input_tokens":1,"output_tokens":1,"total_tokens":2}
                 }
                 """.trimIndent(),
@@ -576,7 +572,6 @@ class OpenAiResponsesAdapterTests {
     fun unsupportedRequestFeaturesFailBeforeCredentialOrTransportUse() = runTest {
         val requests =
             listOf(
-                request(responseFormat = structuredFormat()),
                 request(
                     generation =
                         UniversalAiGenerationParameters(
@@ -741,13 +736,6 @@ class OpenAiResponsesAdapterTests {
             responseFormat = responseFormat,
             generation = generation,
             extensions = extensions,
-        )
-
-    private fun structuredFormat(): UniversalAiResponseFormat =
-        UniversalAiResponseFormat.jsonSchema(
-            com.maneesh.universalai.connector.contract.StructuredOutputSchema.parse(
-                """{"type":"object","additionalProperties":false}""",
-            ),
         )
 
     private fun successResponse(responseId: String): String =

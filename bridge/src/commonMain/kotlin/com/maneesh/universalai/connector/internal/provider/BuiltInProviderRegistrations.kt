@@ -2,25 +2,69 @@ package com.maneesh.universalai.connector.internal.provider
 
 import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
 import com.maneesh.universalai.connector.contract.ProviderId
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityDeclaration
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityLimitName
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityName
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySupport
 import com.maneesh.universalai.connector.contract.UniversalAiError
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
+import com.maneesh.universalai.connector.contract.UniversalAiProviderCapabilityProfile
+import com.maneesh.universalai.connector.contract.schema.GovernedJsonSchemaSubset
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiResponsesAdapter
+import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
 
 internal val OPENAI_PROVIDER_ID: ProviderId = ProviderId.of("openai")
+
+internal val OPENAI_PROVIDER_CAPABILITY_PROFILE =
+    UniversalAiProviderCapabilityProfile(
+        providerId = OPENAI_PROVIDER_ID,
+        capabilities =
+            UniversalAiCapabilitySet.of(
+                UniversalAiCapabilityName.StructuredOutput to
+                    UniversalAiCapabilityDeclaration(
+                        support = UniversalAiCapabilitySupport.Supported,
+                        limits =
+                            mapOf(
+                                UniversalAiCapabilityLimitName.MaxSchemaBytes to
+                                    GovernedJsonSchemaSubset.MAX_SCHEMA_BYTES.toLong(),
+                                UniversalAiCapabilityLimitName.MaxSchemaDepth to
+                                    OpenAiStructuredOutput.MAX_SCHEMA_DEPTH.toLong(),
+                            ),
+                    ),
+                UniversalAiCapabilityName.Streaming to
+                    UniversalAiCapabilityDeclaration(
+                        support = UniversalAiCapabilitySupport.Unsupported,
+                    ),
+            ),
+    )
+
+private val OPENAI_UNKNOWN_MODEL_CAPABILITIES =
+    UniversalAiCapabilitySet.of(
+        UniversalAiCapabilityName.StructuredOutput to
+            UniversalAiCapabilityDeclaration(
+                support = UniversalAiCapabilitySupport.Unknown,
+            ),
+    )
 
 internal fun builtInProviderRegistration(
     configuration: UniversalAiProviderConfiguration,
 ): ProviderRegistration =
     when (configuration.providerId) {
         OPENAI_PROVIDER_ID ->
-            ProviderRegistration(configuration.providerId) { transport ->
-                OpenAiResponsesAdapter(
-                    configuration = configuration,
-                    transport = transport,
-                )
-            }
+            ProviderRegistration(
+                providerId = configuration.providerId,
+                capabilityProfile = OPENAI_PROVIDER_CAPABILITY_PROFILE,
+                modelCapabilityOverrides = { OPENAI_UNKNOWN_MODEL_CAPABILITIES },
+                adapterFactory = { transport ->
+                    OpenAiResponsesAdapter(
+                        configuration = configuration,
+                        transport = transport,
+                    )
+                },
+            )
 
         else -> throw unsupportedProviderConfiguration()
     }
