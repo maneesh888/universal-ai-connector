@@ -291,7 +291,7 @@ Completion record:
 - added deterministic `MockEngine`, configuration, live-runner, hook, secretless-policy, and
   package-boundary coverage while keeping credentials and provider payloads out of retained
   evidence and normal CI;
-- exact head `ea9bdc9cb3515affcbf52e28703261e46dac90a3` passed the mandatory quick and full hooks,
+- exact head `ea9bdc9cb3515affcbf52e28703261e46dac90a3` passed the mandatory quick hook,
   focused adapter and Swift checks, and `./scripts/check-live.sh openai` response and pending
   cancellation smoke cases on August 5, 2026;
 - pull request [#32](https://github.com/maneesh888/universal-ai-connector/pull/32) passed exact-head
