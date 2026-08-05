@@ -188,6 +188,51 @@ class OpenAiP4CTests {
     }
 
     @Test
+    fun enforcesMathematicalIntegerArrayBounds() = runTest {
+        val cases =
+            listOf(
+                """{"minItems":2.0}""" to """{"tags":["one"]}""",
+                """{"maxItems":1e0}""" to """{"tags":["one","two"]}""",
+            )
+
+        cases.forEach { (bound, structuredJson) ->
+            val schema =
+                StructuredOutputSchema.parse(
+                    """
+                    {
+                      "type":"object",
+                      "properties":{
+                        "tags":{
+                          "type":"array",
+                          "items":{"type":"string"},
+                          ${bound.removePrefix("{").removeSuffix("}")}
+                        }
+                      },
+                      "required":["tags"],
+                      "additionalProperties":false
+                    }
+                    """.trimIndent(),
+                )
+            val engine = MockEngine { respond(completedResponse(structuredJson)) }
+            val connector = connector(engine)
+
+            try {
+                val failure =
+                    assertFailsWith<UniversalAiException> {
+                        connector.respond(request(schema))
+                    }
+
+                assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+                assertEquals("invalid_structured_provider_response", failure.error.code.rawValue)
+                assertEquals(OPENAI_INVALID_STRUCTURED_RESPONSE_MESSAGE, failure.message)
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
     fun rejectsProviderIncompatibleGovernedSchemasBeforeCredentialOrDispatch() = runTest {
         val schemas =
             (
@@ -235,7 +280,12 @@ class OpenAiP4CTests {
                   "additionalProperties":false
                 }
                 """.trimIndent(),
-                ) + nestedObjectSchema(levels = 11)
+                ) +
+                    listOf(
+                        nestedObjectSchema(levels = 11),
+                        nestedArraySchema(levels = 11),
+                        nestedAnyOfSchema(levels = 11),
+                    )
             ).map(StructuredOutputSchema::parse)
 
         schemas.forEach { schema ->
@@ -692,6 +742,32 @@ class OpenAiP4CTests {
         }
         return child
     }
+
+    private fun nestedArraySchema(levels: Int): String {
+        var child = """{"type":"string"}"""
+        repeat(levels) {
+            child = """{"type":"array","items":$child}"""
+        }
+        return rootObjectSchema(child)
+    }
+
+    private fun nestedAnyOfSchema(levels: Int): String {
+        var child = """{"type":"string"}"""
+        repeat(levels) {
+            child = """{"anyOf":[$child,{"type":"null"}]}"""
+        }
+        return rootObjectSchema(child)
+    }
+
+    private fun rootObjectSchema(child: String): String =
+        """
+        {
+          "type":"object",
+          "properties":{"payload":$child},
+          "required":["payload"],
+          "additionalProperties":false
+        }
+        """.trimIndent()
 }
 
 private fun OutgoingContent.p4cBodyBytes(): ByteArray =

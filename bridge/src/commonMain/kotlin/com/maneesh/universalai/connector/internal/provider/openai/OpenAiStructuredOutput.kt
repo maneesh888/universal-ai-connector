@@ -61,23 +61,13 @@ internal object OpenAiStructuredOutput {
 
         val definitions = root["\$defs"] as? JsonObject ?: JsonObject(emptyMap())
         val rootDepth =
-            maxObjectDepth(
+            maxSchemaDepth(
                 schema = root,
                 definitions = definitions,
                 currentDepth = 0,
                 resolving = emptySet(),
             ) ?: return false
-        if (rootDepth > MAX_SCHEMA_DEPTH) {
-            return false
-        }
-        return definitions.values.all { definition ->
-            maxObjectDepth(
-                schema = definition,
-                definitions = definitions,
-                currentDepth = 0,
-                resolving = emptySet(),
-            )?.let { depth -> depth <= MAX_SCHEMA_DEPTH } == true
-        }
+        return rootDepth <= MAX_SCHEMA_DEPTH
     }
 
     fun parseAndValidate(
@@ -204,7 +194,7 @@ internal object OpenAiStructuredOutput {
         return true
     }
 
-    private fun maxObjectDepth(
+    private fun maxSchemaDepth(
         schema: JsonElement,
         definitions: JsonObject,
         currentDepth: Int,
@@ -225,7 +215,7 @@ internal object OpenAiStructuredOutput {
                 maximum =
                     maxOf(
                         maximum,
-                        maxObjectDepth(
+                        maxSchemaDepth(
                             schema = definition,
                             definitions = definitions,
                             currentDepth = currentDepth,
@@ -234,8 +224,8 @@ internal object OpenAiStructuredOutput {
                     )
             }
 
-        val types = objectSchema.typesOrNull() ?: return null
-        val nextDepth = if ("object" in types) currentDepth + 1 else currentDepth
+        objectSchema.typesOrNull() ?: return null
+        val nextDepth = currentDepth + 1
         maximum = maxOf(maximum, nextDepth)
         if (maximum > MAX_SCHEMA_DEPTH) {
             return maximum
@@ -243,6 +233,7 @@ internal object OpenAiStructuredOutput {
 
         val children =
             buildList {
+                (objectSchema["\$defs"] as? JsonObject)?.values?.let(::addAll)
                 (objectSchema["properties"] as? JsonObject)?.values?.let(::addAll)
                 objectSchema["items"]?.let(::add)
                 (objectSchema["anyOf"] as? JsonArray)?.let(::addAll)
@@ -251,7 +242,7 @@ internal object OpenAiStructuredOutput {
             maximum =
                 maxOf(
                     maximum,
-                    maxObjectDepth(
+                    maxSchemaDepth(
                         schema = child,
                         definitions = definitions,
                         currentDepth = nextDepth,
@@ -322,12 +313,7 @@ internal object OpenAiStructuredOutput {
         }
 
         if (value is JsonArray && "array" in types) {
-            val minimum = objectSchema.nonNegativeInt("minItems")
-            val maximum = objectSchema.nonNegativeInt("maxItems")
-            if (
-                minimum?.let { value.size < it } == true ||
-                maximum?.let { value.size > it } == true
-            ) {
+            if (!matchesArrayBounds(objectSchema, value)) {
                 return false
             }
             objectSchema["items"]?.let { itemSchema ->
@@ -337,6 +323,21 @@ internal object OpenAiStructuredOutput {
             }
         }
         return true
+    }
+
+    private fun matchesArrayBounds(
+        schema: JsonObject,
+        value: JsonArray,
+    ): Boolean {
+        fun compare(keyword: String): Int? =
+            (schema[keyword] as? JsonPrimitive)
+                ?.content
+                ?.let { bound ->
+                    JsonNumberSemantics.compare(value.size.toString(), bound)
+                }
+
+        return (compare("minItems")?.let { it >= 0 } ?: true) &&
+            (compare("maxItems")?.let { it <= 0 } ?: true)
     }
 
     private fun matchesNumberBounds(
@@ -417,12 +418,6 @@ internal object OpenAiStructuredOutput {
             "string" -> this is JsonPrimitive && isString
             else -> false
         }
-
-    private fun JsonObject.nonNegativeInt(keyword: String): Int? =
-        (this[keyword] as? JsonPrimitive)
-            ?.content
-            ?.toIntOrNull()
-            ?.takeIf { it >= 0 }
 
     private fun String.definitionNameOrNull(): String? {
         val prefix = "#/\$defs/"
