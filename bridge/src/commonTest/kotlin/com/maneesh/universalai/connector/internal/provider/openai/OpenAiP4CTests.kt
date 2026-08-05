@@ -315,6 +315,24 @@ class OpenAiP4CTests {
     }
 
     @Test
+    fun boundsRepeatedReferenceDagAtTheExactProviderDepthLimit() {
+        assertTrue(
+            OpenAiStructuredOutput.isSupported(
+                StructuredOutputSchema.parse(
+                    repeatedReferenceDagSchema(levels = 8, branches = 32),
+                ),
+            ),
+        )
+        assertFalse(
+            OpenAiStructuredOutput.isSupported(
+                StructuredOutputSchema.parse(
+                    repeatedReferenceDagSchema(levels = 9, branches = 32),
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun invalidStructuredValuesFailWithOneFixedSafeProtocolError() = runTest {
         val schema =
             StructuredOutputSchema.parse(
@@ -768,6 +786,34 @@ class OpenAiP4CTests {
           "additionalProperties":false
         }
         """.trimIndent()
+
+    private fun repeatedReferenceDagSchema(
+        levels: Int,
+        branches: Int,
+    ): String {
+        val definitions = mutableListOf(""""leaf":{"type":"string"}""")
+        var target = "leaf"
+        repeat(levels) { index ->
+            val name = "level_$index"
+            val references =
+                List(branches) {
+                    """{"${'$'}ref":"#/${'$'}defs/$target"}"""
+                }.joinToString(",")
+            definitions += """"$name":{"anyOf":[$references]}"""
+            target = name
+        }
+        return """
+            {
+              "type":"object",
+              "properties":{
+                "payload":{"${'$'}ref":"#/${'$'}defs/$target"}
+              },
+              "required":["payload"],
+              "additionalProperties":false,
+              "${'$'}defs":{${definitions.joinToString(",")}}
+            }
+            """.trimIndent()
+    }
 }
 
 private fun OutgoingContent.p4cBodyBytes(): ByteArray =

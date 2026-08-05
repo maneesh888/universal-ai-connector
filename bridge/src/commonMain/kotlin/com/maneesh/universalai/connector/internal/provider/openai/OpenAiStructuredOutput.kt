@@ -64,8 +64,8 @@ internal object OpenAiStructuredOutput {
             maxSchemaDepth(
                 schema = root,
                 definitions = definitions,
-                currentDepth = 0,
                 resolving = emptySet(),
+                definitionDepths = mutableMapOf(),
             ) ?: return false
         return rootDepth <= MAX_SCHEMA_DEPTH
     }
@@ -197,11 +197,12 @@ internal object OpenAiStructuredOutput {
     private fun maxSchemaDepth(
         schema: JsonElement,
         definitions: JsonObject,
-        currentDepth: Int,
         resolving: Set<String>,
+        definitionDepths: MutableMap<String, Int>,
     ): Int? {
         val objectSchema = schema as? JsonObject ?: return null
-        var maximum = currentDepth
+        objectSchema.typesOrNull() ?: return null
+        var maximum = 1
 
         (objectSchema["\$ref"] as? JsonPrimitive)
             ?.takeIf(JsonPrimitive::isString)
@@ -211,22 +212,27 @@ internal object OpenAiStructuredOutput {
                 if (name in resolving) {
                     return null
                 }
-                val definition = definitions[name] ?: return null
+                val referencedDepth =
+                    definitionDepths[name]
+                        ?: run {
+                            val definition = definitions[name] ?: return null
+                            val calculatedDepth =
+                                maxSchemaDepth(
+                                    schema = definition,
+                                    definitions = definitions,
+                                    resolving = resolving + name,
+                                    definitionDepths = definitionDepths,
+                                ) ?: return null
+                            definitionDepths[name] = calculatedDepth
+                            calculatedDepth
+                        }
                 maximum =
                     maxOf(
                         maximum,
-                        maxSchemaDepth(
-                            schema = definition,
-                            definitions = definitions,
-                            currentDepth = currentDepth,
-                            resolving = resolving + name,
-                        ) ?: return null,
+                        referencedDepth,
                     )
             }
 
-        objectSchema.typesOrNull() ?: return null
-        val nextDepth = currentDepth + 1
-        maximum = maxOf(maximum, nextDepth)
         if (maximum > MAX_SCHEMA_DEPTH) {
             return maximum
         }
@@ -239,16 +245,21 @@ internal object OpenAiStructuredOutput {
                 (objectSchema["anyOf"] as? JsonArray)?.let(::addAll)
             }
         children.forEach { child ->
+            val childDepth =
+                maxSchemaDepth(
+                    schema = child,
+                    definitions = definitions,
+                    resolving = resolving,
+                    definitionDepths = definitionDepths,
+                ) ?: return null
             maximum =
                 maxOf(
                     maximum,
-                    maxSchemaDepth(
-                        schema = child,
-                        definitions = definitions,
-                        currentDepth = nextDepth,
-                        resolving = resolving,
-                    ) ?: return null,
+                    childDepth + 1,
                 )
+            if (maximum > MAX_SCHEMA_DEPTH) {
+                return maximum
+            }
         }
         return maximum
     }
