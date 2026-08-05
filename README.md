@@ -11,12 +11,14 @@ Universal AI Connector is an independent Kotlin Multiplatform project for exposi
 
 The repository has completed its P1 cross-platform baseline and P2 provider-neutral contract foundation. Apple applications use the product-facing `UniversalAiConnector` Swift Package product over one local XCFramework containing iOS ARM64 device and simulator slices. The Swift façade preserves asynchronous response, streaming, stable errors, cancellation, concurrency, and exactly-once terminal handling. Android and JVM share the product-facing Kotlin client through the public Gradle module boundary.
 
-No AI provider behavior or Gateway integration is implemented yet. P4-A established only the
-secret-safe live-verification foundation for the first provider adapter.
+P4-B implements the first bounded provider path: non-streaming OpenAI Responses authentication,
+plain-text request/response translation, usage and request metadata, safe provider failures, and
+caller cancellation. Structured output, complete error/capability mapping, streaming, other
+providers, and Gateway integration remain later work packages.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 is active: P4-A established protocol, configuration, and
-> live-safety readiness, and P4-B non-streaming OpenAI Responses translation is next.
+> live-safety readiness, and P4-B non-streaming OpenAI Responses translation is active.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -143,6 +145,45 @@ P8 will add one installable Compose Multiplatform desktop demonstration for macO
 
 The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes.
 
+Provider configuration is immutable and provider-neutral. Applications supply a synchronous
+credential loader owned by the host; the connector invokes it once per network request and does
+not read environment files or application storage:
+
+```kotlin
+fun openAiConnector(loadCredential: () -> String): UniversalAiConnector =
+    UniversalAiConnector(
+        UniversalAiConnectorConfiguration(
+            providers =
+                listOf(
+                    UniversalAiProviderConfiguration(
+                        providerId = ProviderId.of("openai"),
+                        baseUrl = "https://api.openai.com/v1",
+                        credentialSupplier = loadCredential,
+                    ),
+                ),
+        ),
+    )
+```
+
+The Swift façade exposes the same boundary without provider DTOs:
+
+```swift
+func openAiConnector(
+    loadCredential: @escaping @Sendable () throws -> String
+) throws -> UniversalAiConnector {
+    let provider = UniversalAiProviderConfiguration(
+        providerId: UniversalAiProviderId(rawValue: "openai"),
+        baseURL: "https://api.openai.com/v1",
+        credentialSupplier: loadCredential
+    )
+    return try UniversalAiConnector(
+        configuration: UniversalAiConnectorConfiguration(
+            providers: [provider]
+        )
+    )
+}
+```
+
 ## Quick start
 
 ### Contributor setup
@@ -244,7 +285,10 @@ Enable the mandatory local commit and push gates once per clone:
 ./scripts/install-hooks.sh
 ```
 
-The pre-commit hook runs the quick cross-platform suite. The pre-push hook requires a clean worktree and runs the complete deterministic suite. Do not bypass either hook.
+The pre-commit hook runs the quick cross-platform suite. The pre-push hook requires a clean
+worktree and runs the complete deterministic suite. If `scripts/live-impact.sh` classifies the
+branch as provider-impacting relative to `origin/main`, pre-push also requires exact-head local
+live verification. Do not bypass either hook.
 
 Run individual checks when needed:
 
@@ -265,6 +309,27 @@ Run individual checks when needed:
 ./scripts/secret-scan.sh
 git diff --check
 ```
+
+For provider-impacting development, create the ignored local input manually. The runner never
+opens or sources it automatically:
+
+```bash
+cp .env.live.example .env.live
+chmod 600 .env.live
+${EDITOR:-vi} .env.live
+git check-ignore -q .env.live
+
+set -a
+source .env.live
+set +a
+./scripts/check-live.sh openai
+```
+
+Set `OPENAI_API_KEY` and `OPENAI_LIVE_MODEL` only in the local editor. Missing inputs, unavailable
+model access, quota/rate limits, provider failures, and assertions are blockers rather than
+skipped tests. GitHub remains credential-free; an affected PR records the passing exact SHA and
+no-retention boundary for protected `live-policy` review. See
+[`docs/LIVE_PROVIDER_TESTING.md`](docs/LIVE_PROVIDER_TESTING.md).
 
 The Xcode scripts prefer the newest available `iPhone 17 Pro` simulator. Override the destination when necessary:
 

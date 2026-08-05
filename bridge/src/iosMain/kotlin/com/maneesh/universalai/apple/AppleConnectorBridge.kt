@@ -6,6 +6,8 @@
 package com.maneesh.universalai.apple
 
 import com.maneesh.universalai.connector.UniversalAiConnector
+import com.maneesh.universalai.connector.UniversalAiConnectorConfiguration
+import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
 import com.maneesh.universalai.connector.contract.ContractSemanticException
 import com.maneesh.universalai.connector.contract.ModelId
 import com.maneesh.universalai.connector.contract.ProviderId
@@ -69,6 +71,23 @@ class AppleConnectorBridge internal constructor(
 
     constructor() : this(
         connector = UniversalAiConnector(),
+        injectedScope = null,
+    )
+
+    @Throws(Exception::class)
+    constructor(providerConfigurations: List<AppleBridgeProviderConfiguration>) : this(
+        connector =
+            UniversalAiConnector(
+                UniversalAiConnectorConfiguration(
+                    providerConfigurations.map { provider ->
+                        UniversalAiProviderConfiguration(
+                            providerId = ProviderId.of(provider.providerRawValue),
+                            baseUrl = provider.baseUrl,
+                            credentialSupplier = provider.credentialSupplier,
+                        )
+                    },
+                ),
+            ),
         injectedScope = null,
     )
 

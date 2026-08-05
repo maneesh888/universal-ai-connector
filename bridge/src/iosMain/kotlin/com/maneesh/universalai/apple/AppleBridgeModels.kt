@@ -53,6 +53,17 @@ class AppleBridgeExtensions(
     val entries: List<AppleBridgeExtensionEntry> = entries.toList()
 }
 
+/**
+ * Private provider-neutral construction data used only by the supported Swift façade.
+ *
+ * The callback is retained; a credential returned by it is not stored in this DTO.
+ */
+class AppleBridgeProviderConfiguration(
+    val providerRawValue: String,
+    val baseUrl: String,
+    val credentialSupplier: () -> String,
+)
+
 class AppleBridgeTarget(
     val providerRawValue: String,
     val modelRawValue: String,

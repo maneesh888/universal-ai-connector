@@ -10,7 +10,9 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.CancellationException
@@ -61,10 +63,18 @@ private class KtorConnectorTransport(
                     }
                     headers {
                         request.headers.forEach { header ->
-                            append(header.name, header.value)
+                            if (!header.name.equals("content-type", ignoreCase = true)) {
+                                append(header.name, header.value)
+                            }
                         }
                     }
                     request.body?.let(::setBody)
+                    request.headers
+                        .lastOrNull { header ->
+                            header.name.equals("content-type", ignoreCase = true)
+                        }?.let { header ->
+                            contentType(ContentType.parse(header.value))
+                        }
                 }.execute { response ->
                     val transportResponse =
                         ConnectorTransportResponse(

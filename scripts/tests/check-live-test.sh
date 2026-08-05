@@ -2,6 +2,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+unset \
+  GIT_INDEX_FILE \
+  GIT_OBJECT_DIRECTORY \
+  GIT_ALTERNATE_OBJECT_DIRECTORIES \
+  GIT_WORK_TREE \
+  GIT_DIR
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
 RUNNER="$TEST_REPOSITORY/scripts/check-live.sh"
@@ -45,12 +51,15 @@ if [[ "$*" == *":bridge:openAiLiveTest"* ]]; then
     exit 10
   fi
   if [[ "$*" != *"-PuacLiveExpectedSha=$UAC_TEST_EXPECTED_SHA"* ||
-        "$*" != *"-PuacLiveModel=$UAC_TEST_EXPECTED_MODEL"* ||
-        "$*" != *"--no-daemon"* ]]; then
+        "$*" != *"--no-daemon"* ||
+        "$*" != *"--no-configuration-cache"* ]]; then
     echo "Live task did not receive its exact-head arguments." >&2
     exit 11
   fi
   echo "live" >> "$UAC_TEST_CALL_LOG"
+  if [[ -n "${UAC_TEST_DIRTY_AFTER_LIVE:-}" ]]; then
+    printf '%s\n' "live mutation" > "$UAC_TEST_DIRTY_AFTER_LIVE"
+  fi
   exit 0
 fi
 
@@ -92,10 +101,22 @@ expect_failure \
 expect_failure \
   "OPENAI_API_KEY is required" \
   "$RUNNER" openai
+if ! grep -Fq "cp .env.live.example .env.live" "$OUTPUT" ||
+  ! grep -Fq "chmod 600 .env.live" "$OUTPUT" ||
+  ! grep -Fq "Open .env.live in your local editor" "$OUTPUT" ||
+  ! grep -Fq "never opens, reads, or sources .env.live automatically" "$OUTPUT"; then
+  echo "Missing-key failure omitted safe local configuration guidance." >&2
+  exit 1
+fi
 
 expect_failure \
   "OPENAI_LIVE_MODEL is required" \
   env OPENAI_API_KEY="$SYNTHETIC_KEY" "$RUNNER" openai
+if ! grep -Fq "cp .env.live.example .env.live" "$OUTPUT" ||
+  ! grep -Fq "source .env.live" "$OUTPUT"; then
+  echo "Missing-model failure omitted safe local configuration guidance." >&2
+  exit 1
+fi
 
 expect_failure \
   "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA." \
@@ -139,6 +160,28 @@ rm "$POST_DETERMINISTIC_DIRTY_PATH"
 if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
       -n "$(sed -n '2p' "$CALL_LOG")" ]]; then
   echo "Live runner continued after deterministic tests dirtied the checkout." >&2
+  exit 1
+fi
+
+: > "$CALL_LOG"
+POST_LIVE_DIRTY_PATH="$TEST_REPOSITORY/post-live-dirty.txt"
+expect_failure \
+  "Live verification requires a clean checkout" \
+  env \
+    OPENAI_API_KEY="$SYNTHETIC_KEY" \
+    OPENAI_LIVE_MODEL="$MODEL" \
+    UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+    UAC_TEST_CALL_LOG="$CALL_LOG" \
+    UAC_TEST_DIRTY_AFTER_LIVE="$POST_LIVE_DIRTY_PATH" \
+    UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
+    UAC_TEST_EXPECTED_MODEL="$MODEL" \
+    UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+    "$RUNNER" openai
+rm "$POST_LIVE_DIRTY_PATH"
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "Live runner did not detect a checkout mutation after provider tests." >&2
   exit 1
 fi
 

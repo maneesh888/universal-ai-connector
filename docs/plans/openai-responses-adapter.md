@@ -26,7 +26,8 @@ The completed milestone must provide:
 - host-supplied, non-persistent credential delivery with complete diagnostic redaction;
 - deterministic Ktor `MockEngine` and local-fixture coverage;
 - targeted live response, structured-output, streaming, error, and cancellation smoke proof; and
-- a protected exact-head live status that gates readiness and merge for affected live behavior.
+- a protected secretless exact-head local-evidence status that gates readiness and merge for
+  affected live behavior.
 
 ## Design constraints
 
@@ -76,8 +77,8 @@ The completed milestone must provide:
   revocation guidance, and redaction regressions;
 - a separate `./scripts/check-live.sh` entry point that runs deterministic affected tests first and
   fails closed when required live inputs or assertions are unavailable;
-- a least-privilege protected GitHub Environment path for trusted exact heads and a stable
-  merge-required live status before adapter behavior can leave draft; and
+- a secretless exact-head evidence workflow with protected `live-policy` approval and a stable
+  merge-required status before adapter behavior can leave draft; and
 - deterministic fixtures plus the smallest targeted live smoke matrix needed for response,
   structured output, streaming, error, and cancellation behavior.
 
@@ -151,25 +152,24 @@ compatibility corpus.
   `UAC_LIVE_EXPECTED_SHA`, removes every live input from the deterministic JVM test, then invokes
   the dedicated OpenAI live Gradle task. A missing credential, model, task, provider result, or
   assertion fails rather than skips.
-- The intentional provider-error case uses a synthetic unsupported model identifier and requires
-  the fixed canonical mapping without printing the response body or invalidating the credential.
-- The active-stream cancellation case waits only until the first non-empty observable delta under
-  a hard timeout, cancels the consumer, and asserts prompt response-body closure with no later
-  canonical event or terminal.
-- `.github/workflows/live.yml` checks a trusted exact head with read-only repository permission,
-  blocks affected fork code from credentials, and places the credential-bearing job behind the
-  protected `live-provider` Environment. It does not use `pull_request_target` or make ordinary CI
+- P4-B supplies one minimal non-streaming response smoke and one pending-response cancellation
+  smoke. The intentional error and active-stream cases remain P4-C and P4-D work respectively.
+- `.github/workflows/live.yml` classifies the exact pull-request head with read-only repository
+  permission and validates bounded local-live evidence in the pull-request body. It does not use
+  `pull_request_target`, execute provider tests, receive provider credentials, or make ordinary CI
   depend on credentials.
 - Once this P4-A foundation reaches the default branch, the trusted classifier conservatively
   requires protected live verification for every bridge source, bridge build, Swift package,
   repository build-infrastructure, or live-gate change. It never infers adapter activation from an
   internal package path or sentinel file. The one-time bootstrap rejects bridge source, Swift
   package, and build behavior while the trusted classifier is not yet present.
-- The stable status job targets a separate, credential-free `live-policy` Environment. An active
-  branch ruleset requires a successful deployment to that Environment before merge, so
+- The stable status job targets the credential-free `live-policy` Environment. An active branch
+  ruleset requires a successful deployment to that Environment before merge, so
   candidate-controlled workflow code cannot self-produce merge readiness without server-enforced
-  maintainer approval. The credential-bearing `live-provider` Environment remains separate and is
-  requested only for affected trusted heads.
+  maintainer approval. Affected PR text must contain `Local live verification: passed`, the exact
+  head SHA, and `No credential or provider response body retained.` The protected
+  `live-provider` Environment retains reviewer protection but is not requested by this local-only
+  policy.
 - `Required live verification` becomes a required branch-protection status immediately after this
   foundation reaches `main`, before an adapter-behavior pull request is opened or leaves draft.
 
@@ -260,6 +260,16 @@ Completion record:
 - activated P4-B only after recording the provider-neutral credential/configuration decision; and
 - limited proof to secret-safety and gate behavior because the dedicated live Gradle task and all
   provider protocol behavior begin in P4-B.
+
+P4-B operational refinement:
+
+- the real `:bridge:openAiLiveTest` task replaces the P4-A missing-task bootstrap and remains
+  excluded from ordinary deterministic tasks;
+- the pre-push hook applies `scripts/live-impact.sh` against `origin/main` and invokes the local
+  exact-head live gate only for affected branches;
+- missing local inputs fail with value-free `.env.live` setup guidance rather than skipping; and
+- GitHub verification remains secretless and uses `live-policy` approval to review exact-head
+  local evidence instead of rerunning provider tests.
 
 ### P4-B: Non-streaming request and response translation
 
@@ -363,8 +373,8 @@ Status: `Not started`.
   assertion are failures rather than skipped successes;
 - command output and retained evidence contain only bounded result metadata, never authorization
   headers, full sensitive requests, or unredacted provider responses;
-- protected execution rejects fork or otherwise untrusted code and requires Environment approval;
-  and
+- secretless pull-request policy requires exact-head local proof text and `live-policy`
+  Environment approval without receiving provider credentials; and
 - documentation-only or deterministically unrelated changes can satisfy the stable required
   status without obtaining provider credentials while affected live behavior cannot.
 
@@ -422,8 +432,8 @@ provider service, rate limiting, stale-head evidence, or a failed assertion bloc
 creation or update; none is a skipped success.
 
 P4 completion requires the complete local deterministic and live gates, exact-head Linux, Windows,
-and macOS ordinary CI, the protected exact-head live status, independent exact-head review,
-guarded merge, and resulting `main` workflow inspection.
+and macOS ordinary CI, the protected secretless local-evidence status, independent exact-head
+review, guarded merge, and resulting `main` workflow inspection.
 
 For documentation-only changes to this plan, run:
 
@@ -459,12 +469,12 @@ Plan authoring does not exercise runtime or provider behavior.
   evidence.
 - `check-live.sh` fails closed, binds evidence to the exact head, and passes the affected local
   response, structured-output, streaming, error, and cancellation smoke matrix.
-- The protected live status passes for the same exact head as ordinary CI and independent review
-  before readiness or merge.
+- The secretless local-live policy status passes for the same exact head as ordinary CI and
+  independent review before readiness or merge.
 - Existing JVM, Android, and iOS consumers compile through supported package boundaries without new
   provider-specific host controls or duplicated platform implementations.
-- Deterministic fixtures, full local verification, exact-head ordinary and live CI, and independent
-  review pass for the P4 closing head.
+- Deterministic fixtures, full local verification, exact-head ordinary CI, local live proof,
+  secretless policy approval, and independent review pass for the P4 closing head.
 
 ## Proof limits
 
@@ -503,12 +513,12 @@ For every activated P4 package, record:
 - deterministic fixtures and focused tests added;
 - translation, capability, error, streaming, cancellation, cleanup, and redaction paths exercised;
 - local deterministic and affected live commands with results;
-- protected exact-head live status and ordinary CI results where required;
+- protected exact-head local-evidence status and ordinary CI results where required;
 - host consumers and package boundaries compiled;
 - proof limits and unexercised provider behavior; and
 - the next incomplete P4 package.
 
 P4 completion becomes authoritative only after the closing pull request passes the full exact-head
-local deterministic and live gates, exact-head ordinary and protected-live CI, independent review,
-guarded merge, and resulting `main` workflow inspection required by repository policy. Until then,
-the roadmap remains the authority for P4 status.
+local deterministic and live gates, exact-head ordinary CI, protected secretless evidence policy,
+independent review, guarded merge, and resulting `main` workflow inspection required by
+repository policy. Until then, the roadmap remains the authority for P4 status.

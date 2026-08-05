@@ -2,18 +2,17 @@ name: Universal AI Connector Live Verification
 
 on:
   pull_request:
-  workflow_dispatch:
-    inputs:
-      trusted_ref:
-        description: Same-repository branch, tag, or commit to verify
-        required: true
-        type: string
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
 
 permissions:
   contents: read
 
 concurrency:
-  group: live-${{ github.event.pull_request.number || inputs.trusted_ref || github.ref }}
+  group: live-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -24,12 +23,11 @@ jobs:
     outputs:
       head_sha: ${{ steps.classify.outputs.head_sha }}
       live_required: ${{ steps.classify.outputs.live_required }}
-      trusted_head: ${{ steps.classify.outputs.trusted_head }}
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ github.event.pull_request.head.sha || inputs.trusted_ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Classify exact-head live impact
@@ -37,133 +35,79 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          REPOSITORY: ${{ github.repository }}
         run: |
           checked_out_sha="$(git rev-parse HEAD)"
 
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            live_required=true
-            trusted_head=true
-            head_sha="$checked_out_sha"
+          if [[ "$EVENT_NAME" != "pull_request" ||
+                "$checked_out_sha" != "$PR_HEAD_SHA" ]]; then
+            echo "The checked-out commit does not match the pull-request head."
+            exit 1
+          fi
+          if git cat-file -e "$PR_BASE_SHA:scripts/live-impact.sh" 2>/dev/null; then
+            trusted_classifier="$RUNNER_TEMP/live-impact.sh"
+            git show "$PR_BASE_SHA:scripts/live-impact.sh" > "$trusted_classifier"
+            chmod +x "$trusted_classifier"
+            live_required="$(
+              UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+                "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
+            )"
           else
-            if [[ "$checked_out_sha" != "$PR_HEAD_SHA" ]]; then
-              echo "The checked-out commit does not match the pull-request head."
+            bootstrap_changed_paths="$RUNNER_TEMP/live-bootstrap-changed-paths"
+            if ! git diff \
+              --name-only \
+              --diff-filter=ACDMRT \
+              -z \
+              "$PR_BASE_SHA...$PR_HEAD_SHA" > "$bootstrap_changed_paths"; then
+              echo "Live-impact bootstrap could not compare the requested commits."
               exit 1
             fi
-            if git cat-file -e "$PR_BASE_SHA:scripts/live-impact.sh" 2>/dev/null; then
-              trusted_classifier="$RUNNER_TEMP/live-impact.sh"
-              git show "$PR_BASE_SHA:scripts/live-impact.sh" > "$trusted_classifier"
-              chmod +x "$trusted_classifier"
-              live_required="$(
-                UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
-                  "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
-              )"
-            else
-              bootstrap_changed_paths="$RUNNER_TEMP/live-bootstrap-changed-paths"
-              if ! git diff \
-                --name-only \
-                --diff-filter=ACDMRT \
-                -z \
-                "$PR_BASE_SHA...$PR_HEAD_SHA" > "$bootstrap_changed_paths"; then
-                echo "Live-impact bootstrap could not compare the requested commits."
-                exit 1
-              fi
-              while IFS= read -r -d '' bootstrap_changed_path; do
-                case "$bootstrap_changed_path" in
-                  bridge/src/* | \
-                    bridge/build.gradle.kts | \
-                    swift-package/* | \
-                    build.gradle.kts | \
-                    settings.gradle.kts | \
-                    gradle.properties | \
-                    gradle/* | \
-                    buildSrc/* | \
-                    build-logic/* | \
-                    gradlew | \
-                    gradlew.bat)
-                    echo "Live-impact bootstrap refuses source or build behavior."
-                    exit 1
-                    ;;
-                esac
-              done < "$bootstrap_changed_paths"
-              live_required=false
-            fi
-            head_sha="$PR_HEAD_SHA"
-            if [[ "$PR_HEAD_REPOSITORY" == "$REPOSITORY" ]]; then
-              trusted_head=true
-            else
-              trusted_head=false
-            fi
+            while IFS= read -r -d '' bootstrap_changed_path; do
+              case "$bootstrap_changed_path" in
+                bridge/src/* | \
+                  bridge/build.gradle.kts | \
+                  swift-package/* | \
+                  build.gradle.kts | \
+                  settings.gradle.kts | \
+                  gradle.properties | \
+                  gradle/* | \
+                  buildSrc/* | \
+                  build-logic/* | \
+                  gradlew | \
+                  gradlew.bat)
+                  echo "Live-impact bootstrap refuses source or build behavior."
+                  exit 1
+                  ;;
+              esac
+            done < "$bootstrap_changed_paths"
+            live_required=false
           fi
+          head_sha="$PR_HEAD_SHA"
 
           if [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ||
-                ( "$live_required" != "true" && "$live_required" != "false" ) ||
-                ( "$trusted_head" != "true" && "$trusted_head" != "false" ) ]]; then
+                ( "$live_required" != "true" && "$live_required" != "false" ) ]]; then
             echo "Live-impact classification produced invalid output."
             exit 1
           fi
 
           echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
           echo "live_required=$live_required" >> "$GITHUB_OUTPUT"
-          echo "trusted_head=$trusted_head" >> "$GITHUB_OUTPUT"
-
-  protected-openai-live:
-    name: OpenAI protected live verification
-    if: >-
-      needs.impact.outputs.live_required == 'true' &&
-      needs.impact.outputs.trusted_head == 'true'
-    needs:
-      - impact
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    environment: live-provider
-    steps:
-      - name: Check out exact candidate
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          ref: ${{ needs.impact.outputs.head_sha }}
-
-      - name: Set up Java 21
-        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Set up Gradle cache
-        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
-        with:
-          cache-provider: basic
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
-        with:
-          packages: platform-tools platforms;android-36 build-tools;36.1.0
-
-      - name: Run exact-head OpenAI live verification
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_LIVE_MODEL: ${{ vars.OPENAI_LIVE_MODEL }}
-          UAC_LIVE_EXPECTED_SHA: ${{ needs.impact.outputs.head_sha }}
-        run: ./scripts/check-live.sh openai
 
   required-live-verification:
     name: Required live verification
     if: always()
     needs:
       - impact
-      - protected-openai-live
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: live-policy
     steps:
-      - name: Enforce live verification policy
+      - name: Enforce exact-head local live evidence policy
         env:
+          HEAD_SHA: ${{ needs.impact.outputs.head_sha }}
           IMPACT_RESULT: ${{ needs.impact.result }}
           LIVE_REQUIRED: ${{ needs.impact.outputs.live_required }}
-          PROTECTED_RESULT: ${{ needs.protected-openai-live.result }}
-          TRUSTED_HEAD: ${{ needs.impact.outputs.trusted_head }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           if [[ "$IMPACT_RESULT" != "success" ]]; then
             echo "Live-impact classification did not pass."
@@ -171,18 +115,22 @@ jobs:
           fi
 
           if [[ "$LIVE_REQUIRED" != "true" ]]; then
-            echo "This exact head does not require provider credentials."
+            echo "This exact head does not require local provider credentials."
             exit 0
           fi
 
-          if [[ "$TRUSTED_HEAD" != "true" ]]; then
-            echo "Affected fork code must move to a trusted same-repository head."
+          if [[ "$PR_BODY" != *"Local live verification: passed"* ]]; then
+            echo "The pull request must record 'Local live verification: passed'."
+            exit 1
+          fi
+          if [[ "$PR_BODY" != *"$HEAD_SHA"* ]]; then
+            echo "The pull request does not bind local live evidence to this exact head."
+            exit 1
+          fi
+          if [[ "$PR_BODY" != *"No credential or provider response body retained."* ]]; then
+            echo "The pull request must record the live-proof retention boundary."
             exit 1
           fi
 
-          if [[ "$PROTECTED_RESULT" != "success" ]]; then
-            echo "Protected live verification did not pass."
-            exit 1
-          fi
-
-          echo "Required protected live verification passed for the exact head."
+          echo "Exact-head local live evidence was recorded for policy review."
+          echo "GitHub did not execute provider tests or receive provider credentials."

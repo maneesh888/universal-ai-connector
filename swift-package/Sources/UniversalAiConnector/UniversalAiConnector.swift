@@ -20,6 +20,46 @@ public final class UniversalAiConnector: @unchecked Sendable {
         )
     }
 
+    /// Creates a connector with immutable host-owned provider configuration.
+    ///
+    /// Credential suppliers remain synchronous and are invoked only when a
+    /// provider request is built. A supplier failure becomes the same fixed
+    /// authentication failure as a missing credential.
+    public convenience init(
+        configuration: UniversalAiConnectorConfiguration
+    ) throws {
+        let providerConfigurations = configuration.providers.map { provider in
+            let credentialSupplier = provider.credentialSupplier
+            return AppleBridgeProviderConfiguration(
+                providerRawValue: provider.providerId.rawValue,
+                baseUrl: provider.baseURL,
+                credentialSupplier: {
+                    do {
+                        return try credentialSupplier()
+                    } catch {
+                        return ""
+                    }
+                }
+            )
+        }
+        let configuredBridge: AppleConnectorBridge
+        do {
+            configuredBridge = try AppleConnectorBridge(
+                providerConfigurations: providerConfigurations
+            )
+        } catch {
+            throw UniversalAiContractValidationError(
+                code: "invalid_connector_configuration",
+                path: "/providers",
+                message: "Connector configuration is invalid."
+            )
+        }
+        self.init(
+            bridge: configuredBridge,
+            testingHooks: UniversalAiConnectorTestingHooks()
+        )
+    }
+
     init(
         bridge: AppleConnectorBridge = AppleConnectorBridge(),
         testingHooks: UniversalAiConnectorTestingHooks

@@ -1,10 +1,38 @@
 package com.maneesh.universalai.samples.jvm
 
+import com.maneesh.universalai.connector.UniversalAiConnector
+import com.maneesh.universalai.connector.UniversalAiConnectorConfiguration
+import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
+import com.maneesh.universalai.connector.contract.ProviderId
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class JvmConsoleSampleTests {
+    @Test
+    fun publicProviderConfigurationCompilesWithoutResolvingCredentials() {
+        var credentialCalls = 0
+        val connector =
+            UniversalAiConnector(
+                UniversalAiConnectorConfiguration(
+                    providers =
+                        listOf(
+                            UniversalAiProviderConfiguration(
+                                providerId = ProviderId.of("openai"),
+                                baseUrl = "https://api.example.invalid/v1",
+                                credentialSupplier = {
+                                    credentialCalls += 1
+                                    "unused"
+                                },
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(0, credentialCalls)
+        connector.close()
+    }
+
     @Test
     fun printsTheExpectedConsumerFacingOutput() = runTest {
         val output = mutableListOf<String>()

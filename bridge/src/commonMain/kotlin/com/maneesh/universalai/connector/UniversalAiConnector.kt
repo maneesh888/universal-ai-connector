@@ -18,6 +18,7 @@ import com.maneesh.universalai.connector.internal.DeterministicConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.ProviderRegistration
 import com.maneesh.universalai.connector.internal.provider.ProviderRegistry
 import com.maneesh.universalai.connector.internal.provider.ProviderRoutingConnectorEngine
+import com.maneesh.universalai.connector.internal.provider.builtInProviderRegistration
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.createDefaultKtorTransport
 import com.maneesh.universalai.connector.internal.transport.createKtorTransport
@@ -44,7 +45,7 @@ import kotlinx.coroutines.supervisorScope
 import kotlin.native.HiddenFromObjC
 
 /**
- * Product-facing deterministic client for Kotlin/JVM and Android consumers.
+ * Product-facing client for Kotlin/JVM and Android consumers.
  *
  * A client instance is reusable, thread-safe, and supports concurrent requests and streams. It
  * owns its default HTTP transport, so callers close it when finished. Suspending work and cold
@@ -61,12 +62,32 @@ class UniversalAiConnector private constructor(
     constructor() : this(defaultComponents())
 
     /**
+     * Creates a connector with immutable host-owned provider configuration.
+     *
+     * The connector owns its platform HTTP transport. Credential suppliers are invoked once per
+     * provider request and their returned values are not retained.
+     */
+    constructor(configuration: UniversalAiConnectorConfiguration) :
+        this(defaultComponents(configuration))
+
+    /**
      * Creates a connector around a caller-owned Ktor engine.
      *
      * The connector owns and closes only its dedicated client wrapper. The caller retains
      * ownership of [httpEngine] and may share it with other connectors.
      */
     constructor(httpEngine: HttpClientEngine) : this(injectedEngineComponents(httpEngine))
+
+    /**
+     * Creates a configured connector around a caller-owned Ktor engine.
+     *
+     * The connector owns and closes only its dedicated client wrapper. The caller retains
+     * ownership of [httpEngine].
+     */
+    constructor(
+        configuration: UniversalAiConnectorConfiguration,
+        httpEngine: HttpClientEngine,
+    ) : this(injectedEngineComponents(httpEngine, configuration))
 
     internal constructor(engine: ConnectorEngine) :
         this(
@@ -225,16 +246,27 @@ class UniversalAiConnector private constructor(
                 providerRegistrations = providerRegistrations,
             ).let(::UniversalAiConnector)
 
-        private fun defaultComponents(): ConnectorComponents =
+        private fun defaultComponents(
+            configuration: UniversalAiConnectorConfiguration =
+                UniversalAiConnectorConfiguration.Empty,
+        ): ConnectorComponents =
             connectorComponents(
                 transportFactory = ::createDefaultKtorTransport,
                 transportOwnership = ConnectorResourceOwnership.Owned,
+                providerRegistrations =
+                    configuration.providersForRegistration().map(::builtInProviderRegistration),
             )
 
-        private fun injectedEngineComponents(httpEngine: HttpClientEngine): ConnectorComponents =
+        private fun injectedEngineComponents(
+            httpEngine: HttpClientEngine,
+            configuration: UniversalAiConnectorConfiguration =
+                UniversalAiConnectorConfiguration.Empty,
+        ): ConnectorComponents =
             connectorComponents(
                 transportFactory = { createKtorTransport(httpEngine) },
                 transportOwnership = ConnectorResourceOwnership.Owned,
+                providerRegistrations =
+                    configuration.providersForRegistration().map(::builtInProviderRegistration),
             )
 
         private fun connectorComponents(

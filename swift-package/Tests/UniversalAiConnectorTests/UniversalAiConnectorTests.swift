@@ -10,6 +10,54 @@ final class UniversalAiConnectorTests: XCTestCase {
         XCTAssertEqual(connector.version, "0.1.0-alpha.1")
     }
 
+    func testConfiguredConnectorKeepsCredentialSupplierLazyForDeterministicUse()
+        async throws
+    {
+        let configuration = UniversalAiConnectorConfiguration(
+            providers: [
+                UniversalAiProviderConfiguration(
+                    providerId: UniversalAiProviderId(rawValue: "openai"),
+                    baseURL: "https://api.example.invalid/v1",
+                    credentialSupplier: {
+                        preconditionFailure(
+                            "Deterministic execution must not resolve provider credentials."
+                        )
+                    }
+                )
+            ]
+        )
+        let connector = try UniversalAiConnector(configuration: configuration)
+
+        let response = try await connector.respond(to: request("configured"))
+
+        XCTAssertEqual(response.outputs.first?.text, "Kotlin echo: configured")
+    }
+
+    func testInvalidProviderConfigurationFailsWithFixedSwiftError() {
+        let provider = UniversalAiProviderConfiguration(
+            providerId: UniversalAiProviderId(rawValue: "openai"),
+            baseURL: "https://user:password@example.invalid/v1",
+            credentialSupplier: { "unused" }
+        )
+
+        XCTAssertThrowsError(
+            try UniversalAiConnector(
+                configuration: UniversalAiConnectorConfiguration(
+                    providers: [provider]
+                )
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? UniversalAiContractValidationError,
+                UniversalAiContractValidationError(
+                    code: "invalid_connector_configuration",
+                    path: "/providers",
+                    message: "Connector configuration is invalid."
+                )
+            )
+        }
+    }
+
     func testAsyncResponseReturnsCanonicalValue() async throws {
         let connector = UniversalAiConnector()
         let request = request(" hello ")
