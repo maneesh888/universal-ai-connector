@@ -76,26 +76,16 @@ class AppleConnectorBridge internal constructor(
     )
 
     @Throws(Exception::class)
-    constructor(providerConfigurations: List<AppleBridgeProviderConfiguration>) : this(
+    constructor(
+        adapterNames: List<String>,
+        adapterBaseUrls: List<String>,
+        hostValueResolver: (String) -> String,
+    ) : this(
         connector =
-            UniversalAiConnector(
-                UniversalAiConnectorConfiguration(
-                    providerConfigurations.map { provider ->
-                        UniversalAiProviderConfiguration(
-                            providerId = ProviderId.of(provider.providerRawValue),
-                            baseUrl = provider.baseUrl,
-                            credentialSupplier = {
-                                val result = provider.credentialSupplier()
-                                if (result.cancelled) {
-                                    throw CancellationException(
-                                        "Credential resolution was cancelled.",
-                                    )
-                                }
-                                result.credential
-                            },
-                        )
-                    },
-                ),
+            createConfiguredConnector(
+                adapterNames = adapterNames,
+                adapterBaseUrls = adapterBaseUrls,
+                hostValueResolver = hostValueResolver,
             ),
         injectedScope = null,
     )
@@ -221,6 +211,36 @@ class AppleConnectorBridge internal constructor(
 
     private fun launchOperation(block: suspend CoroutineScope.() -> Unit): Job =
         (injectedScope ?: CoroutineScope(Dispatchers.Default)).launch(block = block)
+}
+
+private const val APPLE_BRIDGE_CANCELLED_HOST_VALUE = "\u0000"
+
+private fun createConfiguredConnector(
+    adapterNames: List<String>,
+    adapterBaseUrls: List<String>,
+    hostValueResolver: (String) -> String,
+): UniversalAiConnector {
+    require(adapterNames.size == adapterBaseUrls.size) {
+        "Adapter names and base URLs must have matching counts."
+    }
+    return UniversalAiConnector(
+        UniversalAiConnectorConfiguration(
+            adapterNames.indices.map { index ->
+                val adapterName = adapterNames[index]
+                UniversalAiProviderConfiguration(
+                    providerId = ProviderId.of(adapterName),
+                    baseUrl = adapterBaseUrls[index],
+                    credentialSupplier = {
+                        val value = hostValueResolver(adapterName)
+                        if (value == APPLE_BRIDGE_CANCELLED_HOST_VALUE) {
+                            throw CancellationException("Host value resolution was cancelled.")
+                        }
+                        value
+                    },
+                )
+            },
+        ),
+    )
 }
 
 private sealed interface ResponseResult {
