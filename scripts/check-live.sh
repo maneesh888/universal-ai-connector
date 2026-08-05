@@ -23,6 +23,25 @@ fail() {
   exit "${2:-1}"
 }
 
+fail_missing_live_input() {
+  local name="$1"
+  cat >&2 <<EOF
+$name is required for OpenAI live verification.
+
+Configure the ignored local file before retrying:
+  cp .env.live.example .env.live
+  chmod 600 .env.live
+  Open .env.live in your local editor and set OPENAI_API_KEY and OPENAI_LIVE_MODEL.
+  set -a
+  source .env.live
+  set +a
+  ./scripts/check-live.sh openai
+
+The runner never opens, reads, or sources .env.live automatically.
+EOF
+  exit 1
+}
+
 CHECKOUT_STATUS_FILE="$(mktemp)"
 trap 'rm -f "$CHECKOUT_STATUS_FILE"' EXIT
 
@@ -63,7 +82,7 @@ if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ || "$EXPECTED_SHA" != "$HEAD_SHA" ]]; 
 fi
 
 if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-  fail "OPENAI_API_KEY is required for OpenAI live verification."
+  fail_missing_live_input "OPENAI_API_KEY"
 fi
 
 if [[ "${#OPENAI_API_KEY}" -gt 8192 ||
@@ -73,7 +92,7 @@ if [[ "${#OPENAI_API_KEY}" -gt 8192 ||
 fi
 
 if [[ -z "${OPENAI_LIVE_MODEL:-}" ]]; then
-  fail "OPENAI_LIVE_MODEL is required for OpenAI live verification."
+  fail_missing_live_input "OPENAI_LIVE_MODEL"
 fi
 
 if [[ "${#OPENAI_LIVE_MODEL}" -gt 128 ||
@@ -99,15 +118,22 @@ if [[ "$POST_DETERMINISTIC_SHA" != "$HEAD_SHA" ]]; then
 fi
 require_clean_checkout
 
-echo "Running protected OpenAI live smoke tests for exact HEAD."
+echo "Running local OpenAI live smoke tests for exact HEAD."
 OPENAI_API_KEY="$OPENAI_API_KEY" \
 OPENAI_LIVE_MODEL="$OPENAI_LIVE_MODEL" \
 UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   "$ROOT/gradlew" \
     :bridge:openAiLiveTest \
     --no-daemon \
-    "-PuacLiveExpectedSha=$HEAD_SHA" \
-    "-PuacLiveModel=$OPENAI_LIVE_MODEL"
+    --no-configuration-cache \
+    "-PuacLiveExpectedSha=$HEAD_SHA"
+
+POST_LIVE_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+  fail "Live verification could not revalidate HEAD after provider tests."
+if [[ "$POST_LIVE_SHA" != "$HEAD_SHA" ]]; then
+  fail "Live verification HEAD changed during provider tests."
+fi
+require_clean_checkout
 
 echo "OpenAI live verification passed."
 echo "provider=openai"

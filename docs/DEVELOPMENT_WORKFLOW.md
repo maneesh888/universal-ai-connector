@@ -61,10 +61,11 @@ The quick gate covers hygiene, deterministic shell-script behavior, canonical co
 When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
 
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
-`--quick` or `--full`: affected adapter or shared-live changes run it after deterministic
-verification and before initial PR creation or every later push. The dedicated protected workflow
-reruns the same command for the exact head and exposes the stable `Required live verification`
-status.
+`--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
+`scripts/live-impact.sh`; affected adapter or shared-live changes run the live gate after full
+deterministic verification, while unrelated changes remain credential-free. The initial PR body
+and every affected update record exact-head local evidence for the secretless `Required live
+verification` policy check. GitHub does not rerun provider tests or receive provider credentials.
 
 ## Dependency updates
 
@@ -92,7 +93,7 @@ git config --local --get core.hooksPath
 The path must be `.githooks`.
 
 - Pre-commit rejects unstaged tracked changes and untracked files, then runs `./scripts/check.sh --quick` against the proposed contents.
-- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`.
+- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`. If the branch is live-impacting relative to `origin/main`, it then runs the exact-head local provider gate and fails closed when the required process environment is absent.
 - Never use `--no-verify`. Missing toolchains and failed checks are blockers.
 
 These hook requirements are safety gates; they do not make every task a Release analysis task.
@@ -110,11 +111,15 @@ These hook requirements are safety gates; they do not make every task a Release 
 Pull-request jobs check out the exact PR head. Third-party actions remain pinned, workflow permissions remain read-only, and ordinary CI remains secretless. CI does not prove emulator/device execution, live providers, gateways, distribution, or release behavior without matching evidence.
 
 `.github/workflows/live.yml` remains separate from ordinary CI. It classifies live impact
-secretlessly, runs affected same-repository heads through the protected `live-provider`
-Environment, blocks affected fork heads from credentials, and reports `Required live
-verification`. Its stable status job uses the credential-free `live-policy` Environment, whose
-successful deployment is a server-required merge condition. A pre-adapter foundation or unrelated
-documentation head passes without requesting provider secrets, but still requires policy approval.
+secretlessly and reports `Required live verification`. For an affected head it requires the PR to
+record `Local live verification: passed`, the exact head SHA, and the no-retained-secret proof
+boundary. Its stable status job uses the credential-free `live-policy` Environment, whose
+successful deployment is a server-required merge condition. The protected `live-provider`
+Environment is retained with its reviewer protection but is not requested by this local-only
+policy; no GitHub job receives provider credentials. An unrelated documentation head passes
+without local provider inputs. The `live-policy` deployment is automatic and has no required
+reviewer; it validates retained evidence but cannot independently prove that the local provider
+call ran.
 
 ## Host integration
 
@@ -156,7 +161,7 @@ Create pull requests as drafts. A Release candidate must have:
 - a concise, current PR brief bound to the exact head SHA;
 - complete milestone-closeout documents when the milestone effect is `completes`;
 - successful full local verification for that head;
-- successful exact-head required CI and any applicable protected live status;
+- successful exact-head required CI and applicable exact-head local-live policy status;
 - an independent exact-head review with no blocking finding;
 - no requested changes or unresolved threads;
 - verified branch protection and mergeability; and

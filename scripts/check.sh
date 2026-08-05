@@ -61,6 +61,8 @@ run_hygiene() {
 run_script_tests() {
   "$ROOT/scripts/tests/check-live-test.sh"
   "$ROOT/scripts/tests/live-impact-test.sh"
+  "$ROOT/scripts/tests/pre-push-live-test.sh"
+  "$ROOT/scripts/tests/live-workflow-policy-test.sh"
   "$ROOT/scripts/tests/run-android-sample-test.sh"
   "$ROOT/scripts/tests/xcframework-header-audit-test.sh"
 }

@@ -2,6 +2,9 @@
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
+PUSH_REFS_FILE="$(mktemp)"
+trap 'rm -f "$PUSH_REFS_FILE"' EXIT
+cat > "$PUSH_REFS_FILE"
 
 require_clean_tree() {
   if [[ -n "$(git -C "$ROOT" status --porcelain --untracked-files=all)" ]]; then
@@ -37,7 +40,28 @@ require_pushed_refs_match_head() {
 }
 
 require_clean_tree
-require_pushed_refs_match_head
+require_pushed_refs_match_head < "$PUSH_REFS_FILE"
 echo "Running Universal AI Connector pre-push checks..."
-"$ROOT/scripts/check.sh" --full
+env \
+  -u OPENAI_API_KEY \
+  -u OPENAI_LIVE_MODEL \
+  -u UAC_LIVE_EXPECTED_SHA \
+  "$ROOT/scripts/check.sh" --full
+require_clean_tree
+
+LIVE_BASE_REF="${UAC_LIVE_BASE_REF:-origin/main}"
+LIVE_BASE_SHA="$(git -C "$ROOT" rev-parse --verify "$LIVE_BASE_REF^{commit}" 2>/dev/null)" || {
+  echo "Provider-impact classification could not resolve $LIVE_BASE_REF." >&2
+  echo "Fetch the base branch or set UAC_LIVE_BASE_REF to the intended local base." >&2
+  exit 1
+}
+HEAD_SHA="$(git -C "$ROOT" rev-parse --verify HEAD)"
+LIVE_REQUIRED="$("$ROOT/scripts/live-impact.sh" "$LIVE_BASE_SHA" "$HEAD_SHA")"
+if [[ "$LIVE_REQUIRED" == "true" ]]; then
+  echo "Provider-impacting changes require exact-head local live verification."
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" "$ROOT/scripts/check-live.sh" openai
+elif [[ "$LIVE_REQUIRED" != "false" ]]; then
+  echo "Provider-impact classification returned an invalid result." >&2
+  exit 1
+fi
 require_clean_tree

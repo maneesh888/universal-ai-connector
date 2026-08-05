@@ -2,6 +2,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+unset \
+  GIT_INDEX_FILE \
+  GIT_OBJECT_DIRECTORY \
+  GIT_ALTERNATE_OBJECT_DIRECTORIES \
+  GIT_WORK_TREE \
+  GIT_DIR
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
 CLASSIFIER="$TEST_REPOSITORY/scripts/live-impact.sh"

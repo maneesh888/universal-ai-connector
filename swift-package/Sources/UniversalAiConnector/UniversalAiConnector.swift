@@ -20,6 +20,49 @@ public final class UniversalAiConnector: @unchecked Sendable {
         )
     }
 
+    /// Creates a connector with immutable host-owned provider configuration.
+    ///
+    /// Credential suppliers remain synchronous and are invoked only when a
+    /// provider request is built. A supplier failure becomes the same fixed
+    /// authentication failure as a missing credential.
+    public convenience init(
+        configuration: UniversalAiConnectorConfiguration
+    ) throws {
+        let providers = configuration.providers
+        let configuredBridge: AppleConnectorBridge
+        do {
+            configuredBridge = try AppleConnectorBridge(
+                adapterNames: providers.map(\.providerId.rawValue),
+                adapterBaseUrls: providers.map(\.baseURL),
+                hostValueResolver: { adapterName, onValue, onCancelled in
+                    guard let provider = providers.first(
+                        where: { $0.providerId.rawValue == adapterName }
+                    ) else {
+                        onValue("")
+                        return
+                    }
+                    do {
+                        onValue(try provider.credentialSupplier())
+                    } catch is CancellationError {
+                        onCancelled()
+                    } catch {
+                        onValue("")
+                    }
+                }
+            )
+        } catch {
+            throw UniversalAiContractValidationError(
+                code: "invalid_connector_configuration",
+                path: "/providers",
+                message: "Connector configuration is invalid."
+            )
+        }
+        self.init(
+            bridge: configuredBridge,
+            testingHooks: UniversalAiConnectorTestingHooks()
+        )
+    }
+
     init(
         bridge: AppleConnectorBridge = AppleConnectorBridge(),
         testingHooks: UniversalAiConnectorTestingHooks
@@ -98,6 +141,9 @@ public final class UniversalAiConnector: @unchecked Sendable {
                     },
                     onError: { error in
                         state.fail(Self.map(error))
+                    },
+                    onCancelled: {
+                        state.cancel()
                     }
                 )
                 let handleBox = AppleCancellationHandleBox(handle)

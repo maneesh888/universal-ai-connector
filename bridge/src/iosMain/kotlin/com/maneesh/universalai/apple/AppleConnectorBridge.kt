@@ -6,6 +6,8 @@
 package com.maneesh.universalai.apple
 
 import com.maneesh.universalai.connector.UniversalAiConnector
+import com.maneesh.universalai.connector.UniversalAiConnectorConfiguration
+import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
 import com.maneesh.universalai.connector.contract.ContractSemanticException
 import com.maneesh.universalai.connector.contract.ModelId
 import com.maneesh.universalai.connector.contract.ProviderId
@@ -58,7 +60,8 @@ import kotlin.native.HiddenFromObjC
  *
  * The default adapter owns its connector transport but no long-lived coroutine scope. Every call
  * launches an independent operation on [Dispatchers.Default], and its returned handle cancels
- * only that call. Cancellation intentionally delivers no success, completion, or error callback.
+ * only that call. Cancellation is delivered only through the dedicated cancellation callback,
+ * never as success or error.
  * [close] releases connector-owned resources and is safe to call repeatedly.
  */
 class AppleConnectorBridge internal constructor(
@@ -69,6 +72,21 @@ class AppleConnectorBridge internal constructor(
 
     constructor() : this(
         connector = UniversalAiConnector(),
+        injectedScope = null,
+    )
+
+    @Throws(Exception::class)
+    constructor(
+        adapterNames: List<String>,
+        adapterBaseUrls: List<String>,
+        hostValueResolver: (String, (String) -> Unit, () -> Unit) -> Unit,
+    ) : this(
+        connector =
+            createConfiguredConnector(
+                adapterNames = adapterNames,
+                adapterBaseUrls = adapterBaseUrls,
+                hostValueResolver = hostValueResolver,
+            ),
         injectedScope = null,
     )
 
@@ -88,6 +106,7 @@ class AppleConnectorBridge internal constructor(
         request: AppleBridgeRequest,
         onSuccess: (AppleBridgeResponse) -> Unit,
         onError: (AppleBridgeError) -> Unit,
+        onCancelled: () -> Unit = {},
     ): AppleCancellationHandle {
         val canonicalRequest =
             try {
@@ -119,6 +138,7 @@ class AppleConnectorBridge internal constructor(
         job.invokeOnCompletion { cause ->
             if (cause is CancellationException) {
                 instrumentation.recordResponseCancellation()
+                onCancelled()
             }
         }
         return AppleCancellationHandle(job)
@@ -191,6 +211,40 @@ class AppleConnectorBridge internal constructor(
 
     private fun launchOperation(block: suspend CoroutineScope.() -> Unit): Job =
         (injectedScope ?: CoroutineScope(Dispatchers.Default)).launch(block = block)
+}
+
+private fun createConfiguredConnector(
+    adapterNames: List<String>,
+    adapterBaseUrls: List<String>,
+    hostValueResolver: (String, (String) -> Unit, () -> Unit) -> Unit,
+): UniversalAiConnector {
+    require(adapterNames.size == adapterBaseUrls.size) {
+        "Adapter names and base URLs must have matching counts."
+    }
+    return UniversalAiConnector(
+        UniversalAiConnectorConfiguration(
+            adapterNames.indices.map { index ->
+                val adapterName = adapterNames[index]
+                UniversalAiProviderConfiguration(
+                    providerId = ProviderId.of(adapterName),
+                    baseUrl = adapterBaseUrls[index],
+                    credentialSupplier = {
+                        var value = ""
+                        var cancelled = false
+                        hostValueResolver(
+                            adapterName,
+                            { resolvedValue -> value = resolvedValue },
+                            { cancelled = true },
+                        )
+                        if (cancelled) {
+                            throw CancellationException("Host value resolution was cancelled.")
+                        }
+                        value
+                    },
+                )
+            },
+        ),
+    )
 }
 
 private sealed interface ResponseResult {

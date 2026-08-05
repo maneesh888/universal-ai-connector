@@ -56,7 +56,13 @@ expected = {
 }
 
 begin
-  document = YAML.safe_load_file(policy_file, aliases: false)
+  document = YAML.safe_load(
+    File.read(policy_file),
+    permitted_classes: [],
+    permitted_symbols: [],
+    aliases: false,
+    filename: policy_file,
+  )
   updates = document.fetch("updates")
   gradle_updates = updates.select do |entry|
     entry.is_a?(Hash) && entry["package-ecosystem"] == "gradle"

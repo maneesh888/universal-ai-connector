@@ -10,6 +10,123 @@ final class UniversalAiConnectorTests: XCTestCase {
         XCTAssertEqual(connector.version, "0.1.0-alpha.1")
     }
 
+    func testConfiguredConnectorKeepsCredentialSupplierLazyForDeterministicUse()
+        async throws
+    {
+        let configuration = UniversalAiConnectorConfiguration(
+            providers: [
+                UniversalAiProviderConfiguration(
+                    providerId: UniversalAiProviderId(rawValue: "openai"),
+                    baseURL: "https://api.example.invalid/v1",
+                    credentialSupplier: {
+                        preconditionFailure(
+                            "Deterministic execution must not resolve provider credentials."
+                        )
+                    }
+                )
+            ]
+        )
+        let connector = try UniversalAiConnector(configuration: configuration)
+
+        let response = try await connector.respond(to: request("configured"))
+
+        XCTAssertEqual(response.outputs.first?.text, "Kotlin echo: configured")
+    }
+
+    func testInvalidProviderConfigurationFailsWithFixedSwiftError() {
+        let provider = UniversalAiProviderConfiguration(
+            providerId: UniversalAiProviderId(rawValue: "openai"),
+            baseURL: "https://user:password@example.invalid/v1",
+            credentialSupplier: { "unused" }
+        )
+
+        XCTAssertThrowsError(
+            try UniversalAiConnector(
+                configuration: UniversalAiConnectorConfiguration(
+                    providers: [provider]
+                )
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? UniversalAiContractValidationError,
+                UniversalAiContractValidationError(
+                    code: "invalid_connector_configuration",
+                    path: "/providers",
+                    message: "Connector configuration is invalid."
+                )
+            )
+        }
+    }
+
+    func testCredentialSupplierCancellationRemainsSwiftCancellation() async throws {
+        let configuration = UniversalAiConnectorConfiguration(
+            providers: [
+                UniversalAiProviderConfiguration(
+                    providerId: UniversalAiProviderId(rawValue: "openai"),
+                    baseURL: "https://api.example.invalid/v1",
+                    credentialSupplier: {
+                        throw CancellationError()
+                    }
+                )
+            ]
+        )
+        let connector = try UniversalAiConnector(configuration: configuration)
+        defer { connector.close() }
+        let providerRequest = UniversalAiRequest(
+            target: UniversalAiTarget(
+                providerId: UniversalAiProviderId(rawValue: "openai"),
+                modelId: UniversalAiModelId(rawValue: "test-model")
+            ),
+            input: [
+                UniversalAiTextInput(role: .user, content: "cancel"),
+            ]
+        )
+
+        do {
+            _ = try await connector.respond(to: providerRequest)
+            XCTFail("Expected credential supplier cancellation.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testControlCharacterCredentialRemainsAuthenticationFailure() async throws {
+        let configuration = UniversalAiConnectorConfiguration(
+            providers: [
+                UniversalAiProviderConfiguration(
+                    providerId: UniversalAiProviderId(rawValue: "openai"),
+                    baseURL: "https://api.example.invalid/v1",
+                    credentialSupplier: { "\u{0}" }
+                )
+            ]
+        )
+        let connector = try UniversalAiConnector(configuration: configuration)
+        defer { connector.close() }
+        let providerRequest = UniversalAiRequest(
+            target: UniversalAiTarget(
+                providerId: UniversalAiProviderId(rawValue: "openai"),
+                modelId: UniversalAiModelId(rawValue: "test-model")
+            ),
+            input: [
+                UniversalAiTextInput(role: .user, content: "invalid credential"),
+            ]
+        )
+
+        do {
+            _ = try await connector.respond(to: providerRequest)
+            XCTFail("Expected an authentication failure.")
+        } catch is CancellationError {
+            XCTFail("A credential value must not be mistaken for cancellation.")
+        } catch let error as UniversalAiConnectorError {
+            XCTAssertEqual(error.category, .authentication)
+            XCTAssertEqual(error.code.rawValue, "missing_credential")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
     func testAsyncResponseReturnsCanonicalValue() async throws {
         let connector = UniversalAiConnector()
         let request = request(" hello ")

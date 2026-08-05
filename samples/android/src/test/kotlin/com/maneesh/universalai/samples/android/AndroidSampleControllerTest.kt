@@ -1,5 +1,9 @@
 package com.maneesh.universalai.samples.android
 
+import com.maneesh.universalai.connector.UniversalAiConnector
+import com.maneesh.universalai.connector.UniversalAiConnectorConfiguration
+import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
+import com.maneesh.universalai.connector.contract.ProviderId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -13,6 +17,30 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AndroidSampleControllerTest {
+    @Test
+    fun publicProviderConfigurationCompilesWithoutResolvingCredentials() {
+        var credentialCalls = 0
+        val connector =
+            UniversalAiConnector(
+                UniversalAiConnectorConfiguration(
+                    providers =
+                        listOf(
+                            UniversalAiProviderConfiguration(
+                                providerId = ProviderId.of("openai"),
+                                baseUrl = "https://api.example.invalid/v1",
+                                credentialSupplier = {
+                                    credentialCalls += 1
+                                    "unused"
+                                },
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(0, credentialCalls)
+        connector.close()
+    }
+
     @Test
     fun completeDemoPublishesEveryDeterministicResult() =
         runTest {
