@@ -15,6 +15,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
 import com.maneesh.universalai.connector.contract.UniversalAiResponseFormat
+import com.maneesh.universalai.connector.contract.UniversalAiResponseFormatKind
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiUsage
@@ -88,8 +89,18 @@ internal class OpenAiResponsesAdapter(
         if (request.target.providerId != OPENAI_PROVIDER_ID) {
             throw unsupportedRequest(OPENAI_TARGET_MESSAGE)
         }
-        if (request.responseFormat != UniversalAiResponseFormat.PlainText) {
-            throw unsupportedRequest(OPENAI_RESPONSE_FORMAT_MESSAGE)
+        when (request.responseFormat.kind) {
+            UniversalAiResponseFormatKind.PlainText -> Unit
+            UniversalAiResponseFormatKind.JsonSchema -> {
+                val schema =
+                    request.responseFormat.schema
+                        ?: throw unsupportedRequest(OPENAI_RESPONSE_FORMAT_MESSAGE)
+                if (!OpenAiStructuredOutput.isSupported(schema)) {
+                    throw unsupportedRequest(OPENAI_STRUCTURED_SCHEMA_MESSAGE)
+                }
+            }
+
+            else -> throw unsupportedRequest(OPENAI_RESPONSE_FORMAT_MESSAGE)
         }
         if (request.generation.stopSequences.isNotEmpty()) {
             throw unsupportedRequest(OPENAI_STOP_SEQUENCES_MESSAGE)
@@ -171,6 +182,18 @@ private fun UniversalAiRequest.toOpenAiWire(): OpenAiCreateResponseWire =
                 )
             },
         store = false,
+        text =
+            responseFormat.schema?.let { schema ->
+                OpenAiTextConfigurationWire(
+                    format =
+                        OpenAiTextFormatWire(
+                            type = "json_schema",
+                            name = OPENAI_STRUCTURED_OUTPUT_NAME,
+                            schema = schema.elementForSerialization(),
+                            strict = true,
+                        ),
+                )
+            },
         maxOutputTokens = generation.maxOutputTokens,
         temperature = generation.temperature,
         topP = generation.topP,
@@ -181,9 +204,30 @@ private fun OpenAiResponseWire.toCanonical(
     metadata: ConnectorResponseMetadata,
 ): UniversalAiResponse {
     requireWire(objectType == "response")
-    requireWire(status == "completed")
-    requireWire(error == null)
-    requireWire(incompleteDetails == null)
+    when (status) {
+        "failed" -> {
+            requireWire(incompleteDetails == null)
+            throw providerResponseFailure(
+                error = requireWireValue(error),
+                metadata = metadata,
+            )
+        }
+
+        "incomplete" -> {
+            requireWire(error == null)
+            throw incompleteResponseFailure(
+                details = requireWireValue(incompleteDetails),
+                metadata = metadata,
+            )
+        }
+
+        "completed" -> {
+            requireWire(error == null)
+            requireWire(incompleteDetails == null)
+        }
+
+        else -> throw malformedResponse()
+    }
 
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
@@ -200,15 +244,31 @@ private fun OpenAiResponseWire.toCanonical(
                 val text =
                     buildString {
                         content.forEach { part ->
-                            requireWire(part.type == "output_text")
-                            append(requireWireValue(part.text))
+                            when (part.type) {
+                                "output_text" -> append(requireWireValue(part.text))
+                                "refusal" -> throw refusalFailure(metadata)
+                                else -> throw malformedResponse()
+                            }
                         }
                     }
                 requireWire(text.isNotEmpty())
+                val outputId = OutputId.of(requireWireValue(item.id))
+                val outputIndex = canonicalOutputs.size
                 canonicalOutputs +=
-                    UniversalAiOutput.text(
-                        id = OutputId.of(requireWireValue(item.id)),
-                        index = canonicalOutputs.size,
+                    request.responseFormat.schema?.let { schema ->
+                        val value =
+                            OpenAiStructuredOutput.parseAndValidate(
+                                json = text,
+                                schema = schema,
+                            ) ?: throw malformedStructuredResponse()
+                        UniversalAiOutput.structuredJson(
+                            id = outputId,
+                            index = outputIndex,
+                            value = value,
+                        )
+                    } ?: UniversalAiOutput.text(
+                        id = outputId,
+                        index = outputIndex,
                         text = text,
                     )
             }
@@ -306,71 +366,291 @@ private suspend fun readBoundedBody(reader: ConnectorTransportChunkReader): Byte
     return if (size == buffer.size) buffer else buffer.copyOf(size)
 }
 
-private fun providerFailure(response: ConnectorTransportResponse): UniversalAiException {
-    val (category, code, message) =
-        when (response.statusCode) {
-            400, 409, 422 ->
-                Triple(
-                    UniversalAiErrorCategory.Validation,
-                    "provider_invalid_request",
-                    OPENAI_INVALID_REQUEST_MESSAGE,
-                )
-
-            401 ->
-                Triple(
-                    UniversalAiErrorCategory.Authentication,
-                    "provider_authentication_failed",
-                    OPENAI_AUTHENTICATION_MESSAGE,
-                )
-
-            403 ->
-                Triple(
-                    UniversalAiErrorCategory.Authorization,
-                    "provider_permission_denied",
-                    OPENAI_PERMISSION_MESSAGE,
-                )
-
-            404 ->
-                Triple(
-                    UniversalAiErrorCategory.NotFound,
-                    "provider_resource_not_found",
-                    OPENAI_NOT_FOUND_MESSAGE,
-                )
-
-            429 ->
-                Triple(
-                    UniversalAiErrorCategory.RateLimit,
-                    "provider_rate_limited",
-                    OPENAI_RATE_LIMIT_MESSAGE,
-                )
-
-            else ->
-                Triple(
-                    UniversalAiErrorCategory.Provider,
-                    "provider_request_failed",
-                    OPENAI_PROVIDER_FAILURE_MESSAGE,
-                )
-        }
-    return UniversalAiException(
-        UniversalAiError(
-            category = category,
-            code = UniversalAiErrorCode.of(code),
-            message = message,
-            metadata = response.safeErrorMetadata(),
-        ),
+private suspend fun providerFailure(
+    response: ConnectorTransportResponse,
+): UniversalAiException {
+    val providerError = readErrorEnvelopeOrNull(response.body)
+    val mapping =
+        statusErrorMapping(response.statusCode)
+            ?: providerError?.let(::providerErrorMapping)
+            ?: PROVIDER_FAILURE_MAPPING
+    return mapping.toException(
+        metadata = response.metadata.safeErrorMetadata(response.statusCode),
     )
 }
 
-private fun ConnectorTransportResponse.safeErrorMetadata(): ExtensionValue.ObjectValue {
+private fun providerResponseFailure(
+    error: OpenAiErrorWire,
+    metadata: ConnectorResponseMetadata,
+): UniversalAiException =
+    providerErrorMapping(error)
+        .toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
+
+private fun incompleteResponseFailure(
+    details: OpenAiIncompleteDetailsWire,
+    metadata: ConnectorResponseMetadata,
+): UniversalAiException {
+    val mapping =
+        when (details.reason) {
+            "max_output_tokens" ->
+                ProviderErrorMapping(
+                    category = UniversalAiErrorCategory.Provider,
+                    code = "provider_output_limit_reached",
+                    message = OPENAI_OUTPUT_LIMIT_MESSAGE,
+                )
+
+            "content_filter" ->
+                ProviderErrorMapping(
+                    category = UniversalAiErrorCategory.Provider,
+                    code = "provider_response_filtered",
+                    message = OPENAI_FILTERED_RESPONSE_MESSAGE,
+                )
+
+            else ->
+                ProviderErrorMapping(
+                    category = UniversalAiErrorCategory.Provider,
+                    code = "provider_incomplete_response",
+                    message = OPENAI_INCOMPLETE_RESPONSE_MESSAGE,
+                )
+        }
+    return mapping.toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
+}
+
+private fun refusalFailure(
+    metadata: ConnectorResponseMetadata,
+): UniversalAiException =
+    ProviderErrorMapping(
+        category = UniversalAiErrorCategory.Provider,
+        code = "provider_refused_response",
+        message = OPENAI_REFUSAL_MESSAGE,
+    ).toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
+
+private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping? =
+    when (statusCode) {
+        400, 409, 422 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Validation,
+                code = "provider_invalid_request",
+                message = OPENAI_INVALID_REQUEST_MESSAGE,
+            )
+
+        401 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authentication,
+                code = "provider_authentication_failed",
+                message = OPENAI_AUTHENTICATION_MESSAGE,
+            )
+
+        403 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authorization,
+                code = "provider_permission_denied",
+                message = OPENAI_PERMISSION_MESSAGE,
+            )
+
+        404 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.NotFound,
+                code = "provider_resource_not_found",
+                message = OPENAI_NOT_FOUND_MESSAGE,
+            )
+
+        408 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_request_timeout",
+                message = OPENAI_TIMEOUT_MESSAGE,
+            )
+
+        429 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.RateLimit,
+                code = "provider_rate_limited",
+                message = OPENAI_RATE_LIMIT_MESSAGE,
+            )
+
+        500 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_server_error",
+                message = OPENAI_SERVER_ERROR_MESSAGE,
+            )
+
+        502, 503, 504 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_unavailable",
+                message = OPENAI_UNAVAILABLE_MESSAGE,
+            )
+
+        else -> null
+    }
+
+private fun providerErrorMapping(error: OpenAiErrorWire): ProviderErrorMapping {
+    val discriminators = setOfNotNull(error.code, error.type)
+    return when {
+        discriminators.any { value ->
+            value in
+                setOf(
+                    "invalid_request_error",
+                    "invalid_prompt",
+                    "context_length_exceeded",
+                )
+        } ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Validation,
+                code = "provider_invalid_request",
+                message = OPENAI_INVALID_REQUEST_MESSAGE,
+            )
+
+        "invalid_api_key" in discriminators ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authentication,
+                code = "provider_authentication_failed",
+                message = OPENAI_AUTHENTICATION_MESSAGE,
+            )
+
+        "insufficient_permissions" in discriminators ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authorization,
+                code = "provider_permission_denied",
+                message = OPENAI_PERMISSION_MESSAGE,
+            )
+
+        "not_found" in discriminators ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.NotFound,
+                code = "provider_resource_not_found",
+                message = OPENAI_NOT_FOUND_MESSAGE,
+            )
+
+        discriminators.any { value ->
+            value == "rate_limit_exceeded" || value == "insufficient_quota"
+        } ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.RateLimit,
+                code = "provider_rate_limited",
+                message = OPENAI_RATE_LIMIT_MESSAGE,
+            )
+
+        discriminators.any { value ->
+            value == "request_timeout" || value == "timeout"
+        } ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_request_timeout",
+                message = OPENAI_TIMEOUT_MESSAGE,
+            )
+
+        discriminators.any { value ->
+            value == "server_error" || value == "internal_server_error"
+        } ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_server_error",
+                message = OPENAI_SERVER_ERROR_MESSAGE,
+            )
+
+        discriminators.any { value ->
+            value == "overloaded_error" || value == "service_unavailable"
+        } ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_unavailable",
+                message = OPENAI_UNAVAILABLE_MESSAGE,
+            )
+
+        else -> PROVIDER_FAILURE_MAPPING
+    }
+}
+
+private suspend fun readErrorEnvelopeOrNull(
+    reader: ConnectorTransportChunkReader,
+): OpenAiErrorWire? {
+    val bytes = readOptionalBoundedBody(reader) ?: return null
+    if (bytes.isEmpty()) {
+        return null
+    }
+    return try {
+        WIRE_JSON
+            .decodeFromString<OpenAiErrorEnvelopeWire>(
+                bytes.decodeToString(throwOnInvalidSequence = true),
+            )
+            .error
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Throwable) {
+        null
+    }
+}
+
+private suspend fun readOptionalBoundedBody(
+    reader: ConnectorTransportChunkReader,
+): ByteArray? {
+    var buffer = ByteArray(INITIAL_ERROR_BODY_CAPACITY)
+    var size = 0
+    var chunkCount = 0
+    return try {
+        while (true) {
+            val chunk = reader.readChunk() ?: break
+            chunkCount += 1
+            if (
+                chunkCount > MAX_ERROR_BODY_CHUNKS ||
+                chunk.size > MAX_ERROR_BODY_BYTES - size
+            ) {
+                return null
+            }
+            val requiredSize = size + chunk.size
+            if (requiredSize > buffer.size) {
+                var expandedSize = buffer.size
+                while (expandedSize < requiredSize) {
+                    expandedSize =
+                        minOf(
+                            MAX_ERROR_BODY_BYTES,
+                            expandedSize * 2,
+                        )
+                }
+                buffer = buffer.copyOf(expandedSize)
+            }
+            chunk.copyInto(buffer, destinationOffset = size)
+            size = requiredSize
+        }
+        if (size == buffer.size) buffer else buffer.copyOf(size)
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Throwable) {
+        null
+    }
+}
+
+private fun ConnectorResponseMetadata.safeErrorMetadata(
+    statusCode: Int,
+): ExtensionValue.ObjectValue {
     val members = linkedMapOf<String, ExtensionValue>()
     members["statusCode"] = ExtensionValue.number(statusCode.toString())
-    metadata.requestId?.let { value ->
+    requestId?.let { value ->
         members["requestId"] = ExtensionValue.string(value)
     }
-    metadata.retryAfterMillis?.let { value ->
+    retryAfterMillis?.let { value ->
         members["retryAfterMillis"] = ExtensionValue.number(value.toString())
     }
     return ExtensionValue.objectValue(members)
+}
+
+private data class ProviderErrorMapping(
+    val category: UniversalAiErrorCategory,
+    val code: String,
+    val message: String,
+) {
+    fun toException(metadata: ExtensionValue.ObjectValue): UniversalAiException =
+        UniversalAiException(
+            UniversalAiError(
+                category = category,
+                code = UniversalAiErrorCode.of(code),
+                message = message,
+                metadata = metadata,
+            ),
+        )
 }
 
 private fun credentialFailure(): UniversalAiException =
@@ -400,6 +680,15 @@ private fun malformedResponse(): UniversalAiException =
         ),
     )
 
+private fun malformedStructuredResponse(): UniversalAiException =
+    UniversalAiException(
+        UniversalAiError(
+            category = UniversalAiErrorCategory.Protocol,
+            code = UniversalAiErrorCode.of("invalid_structured_provider_response"),
+            message = OPENAI_INVALID_STRUCTURED_RESPONSE_MESSAGE,
+        ),
+    )
+
 private fun requireWire(condition: Boolean) {
     if (!condition) {
         throw malformedResponse()
@@ -418,7 +707,9 @@ internal const val OPENAI_MALFORMED_RESPONSE_MESSAGE: String =
 internal const val OPENAI_TARGET_MESSAGE: String =
     "The OpenAI adapter accepts only the canonical openai provider."
 internal const val OPENAI_RESPONSE_FORMAT_MESSAGE: String =
-    "The active OpenAI adapter package supports only plain-text responses."
+    "The OpenAI adapter does not support the requested response format."
+internal const val OPENAI_STRUCTURED_SCHEMA_MESSAGE: String =
+    "The governed schema is not supported by OpenAI strict structured output."
 internal const val OPENAI_STOP_SEQUENCES_MESSAGE: String =
     "The OpenAI Responses adapter does not support stop sequences."
 internal const val OPENAI_EXTENSIONS_MESSAGE: String =
@@ -439,12 +730,40 @@ internal const val OPENAI_RATE_LIMIT_MESSAGE: String =
     "OpenAI rate-limited or quota-limited the request."
 internal const val OPENAI_PROVIDER_FAILURE_MESSAGE: String =
     "OpenAI could not complete the request."
+internal const val OPENAI_TIMEOUT_MESSAGE: String =
+    "OpenAI timed out while processing the request."
+internal const val OPENAI_SERVER_ERROR_MESSAGE: String =
+    "OpenAI encountered a server error."
+internal const val OPENAI_UNAVAILABLE_MESSAGE: String =
+    "OpenAI is temporarily unavailable."
+internal const val OPENAI_OUTPUT_LIMIT_MESSAGE: String =
+    "OpenAI stopped before completing the response because the output limit was reached."
+internal const val OPENAI_FILTERED_RESPONSE_MESSAGE: String =
+    "OpenAI did not complete the response because it was filtered."
+internal const val OPENAI_INCOMPLETE_RESPONSE_MESSAGE: String =
+    "OpenAI returned an incomplete response."
+internal const val OPENAI_REFUSAL_MESSAGE: String =
+    "OpenAI refused to produce the requested response."
+internal const val OPENAI_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
+    "The OpenAI structured response did not match the requested governed schema."
 
 private const val RESPONSES_ENDPOINT: String = "responses"
+private const val OPENAI_STRUCTURED_OUTPUT_NAME: String = "universal_ai_response"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
 private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
 private const val MAX_RESPONSE_BODY_CHUNKS: Int = 4 * 1_024
+private const val MAX_ERROR_BODY_BYTES: Int = 256 * 1_024
+private const val INITIAL_ERROR_BODY_CAPACITY: Int = 4 * 1_024
+private const val MAX_ERROR_BODY_CHUNKS: Int = 1_024
+private const val SUCCESS_STATUS_CODE: Int = 200
+
+private val PROVIDER_FAILURE_MAPPING =
+    ProviderErrorMapping(
+        category = UniversalAiErrorCategory.Provider,
+        code = "provider_request_failed",
+        message = OPENAI_PROVIDER_FAILURE_MESSAGE,
+    )
 
 private val WIRE_JSON =
     Json {
