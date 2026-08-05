@@ -6,9 +6,10 @@ P0-P3 are `Completed`. P4 was activated on August 2, 2026 as the only `In progre
 milestone, and P5-P9 remain `Not started`.
 
 P4-A completed the protocol, configuration, and live-safety readiness foundation without adding
-provider request or response behavior. P4-B is the sole active work package. It preserves the P3
-public-host and lifecycle baseline while implementing the approved provider-neutral configuration
-boundary and the first internal OpenAI adapter behavior.
+provider request or response behavior. P4-B completed the provider-neutral configuration boundary
+and non-streaming request and response translation. P4-C is the sole active work package. It adds
+governed structured output, bounded canonical error and incomplete-response mapping, and
+conservative capability reporting without changing the accepted host surface.
 
 ## Objective
 
@@ -273,7 +274,7 @@ P4-B operational refinement:
 
 ### P4-B: Non-streaming request and response translation
 
-Status: `In progress`.
+Status: `Completed` on August 5, 2026.
 
 - Add internal provider registration and wire DTOs for the accepted non-streaming subset.
 - Implement authentication, request translation, response translation, usage, and metadata.
@@ -282,9 +283,30 @@ Status: `In progress`.
 - Run the affected local live response and cancellation smoke tests before creating or updating
   the package pull request.
 
+Completion record:
+
+- added immutable provider-neutral configuration, host-owned credential supply, internal OpenAI
+  registration and wire DTOs, non-streaming request/response translation, usage and metadata
+  mapping, cancellation, bounded parsing, fixed safe failures, and Kotlin/Swift host parity;
+- added deterministic `MockEngine`, configuration, live-runner, hook, secretless-policy, and
+  package-boundary coverage while keeping credentials and provider payloads out of retained
+  evidence and normal CI;
+- exact head `ea9bdc9cb3515affcbf52e28703261e46dac90a3` passed the mandatory quick hook,
+  focused adapter and Swift checks, and `./scripts/check-live.sh openai` response and pending
+  cancellation smoke cases on August 5, 2026;
+- pull request [#32](https://github.com/maneesh888/universal-ai-connector/pull/32) passed exact-head
+  ordinary CI and the required secretless live-evidence status, merged as
+  `074ec3cca2e045793d22c1189280ff088f5c9353`, and resulting `main` run
+  [31015641479](https://github.com/maneesh888/universal-ai-connector/actions/runs/31015641479)
+  passed; and
+- proof remains limited to the accepted non-streaming request, response, usage, metadata, safe
+  failure, pending cancellation, and host-configuration paths. P4-C structured output, complete
+  error/incomplete mapping, and capabilities; P4-D streaming; and P4-E acceptance remain
+  unproven.
+
 ### P4-C: Structured output, errors, and capabilities
 
-Status: `Not started`.
+Status: `In progress`.
 
 - Implement governed structured-output request and response translation.
 - Complete canonical provider-error and incomplete-response mapping.
