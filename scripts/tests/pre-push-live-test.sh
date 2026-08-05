@@ -35,6 +35,12 @@ if [[ "$*" != "--full" ]]; then
   echo "Pre-push did not request the full deterministic gate." >&2
   exit 10
 fi
+if [[ -n "${OPENAI_API_KEY:-}" ||
+      -n "${OPENAI_LIVE_MODEL:-}" ||
+      -n "${UAC_LIVE_EXPECTED_SHA:-}" ]]; then
+  echo "Pre-push exposed live inputs to the deterministic gate." >&2
+  exit 12
+fi
 echo "full" >> "$UAC_TEST_CALL_LOG"
 EOF
 
@@ -42,7 +48,9 @@ cat > "$TEST_REPOSITORY/scripts/check-live.sh" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 if [[ "$*" != "openai" ||
-      "${UAC_LIVE_EXPECTED_SHA:-}" != "$(git rev-parse HEAD)" ]]; then
+      "${UAC_LIVE_EXPECTED_SHA:-}" != "$(git rev-parse HEAD)" ||
+      "${OPENAI_API_KEY:-}" != "synthetic-key" ||
+      "${OPENAI_LIVE_MODEL:-}" != "synthetic-model" ]]; then
   echo "Pre-push did not exact-head bind the OpenAI live gate." >&2
   exit 11
 fi
@@ -68,7 +76,10 @@ run_hook() {
       "$head_sha" \
       refs/heads/test \
       0000000000000000000000000000000000000000 |
-      UAC_TEST_CALL_LOG="$CALL_LOG" ./.githooks/pre-push
+      OPENAI_API_KEY="synthetic-key" \
+      OPENAI_LIVE_MODEL="synthetic-model" \
+      UAC_TEST_CALL_LOG="$CALL_LOG" \
+      ./.githooks/pre-push
   ) > "$OUTPUT" 2>&1
 }
 

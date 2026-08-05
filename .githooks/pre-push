@@ -42,7 +42,11 @@ require_pushed_refs_match_head() {
 require_clean_tree
 require_pushed_refs_match_head < "$PUSH_REFS_FILE"
 echo "Running Universal AI Connector pre-push checks..."
-"$ROOT/scripts/check.sh" --full
+env \
+  -u OPENAI_API_KEY \
+  -u OPENAI_LIVE_MODEL \
+  -u UAC_LIVE_EXPECTED_SHA \
+  "$ROOT/scripts/check.sh" --full
 require_clean_tree
 
 LIVE_BASE_REF="${UAC_LIVE_BASE_REF:-origin/main}"
