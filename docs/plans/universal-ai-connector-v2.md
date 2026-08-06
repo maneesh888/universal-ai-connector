@@ -3,8 +3,8 @@
 ## Status
 
 - Repository stage: P3 HTTP transport and provider registry completed; P4 OpenAI Responses adapter in progress
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, P4-A secret-safety and live-verification foundation, and P4-B non-streaming OpenAI Responses adapter
-- Active work package: P4-C structured output, errors, and capabilities
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, P4-A secret-safety and live-verification foundation, P4-B non-streaming OpenAI Responses adapter, and P4-C structured output, errors, and capabilities
+- Active work package: P4-D streaming translation and cancellation
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
@@ -110,7 +110,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P1 | Cross-platform package and client-sample baseline | Completed | Product Kotlin API, JVM console, Android app, and Apple façade/sample accepted; closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed local verification, independent review, exact-head run 29991895652, PR #12 merge, and resulting `main` run 29993494307 |
 | P2 | Canonical core and JSON contracts | Completed | Provider-neutral Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic compatibility checks, and host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P3 | HTTP transport and provider registry | Completed | Provider-neutral transport, policy, SSE/metadata, registry, and integrated lifecycle behavior accepted through deterministic tests and existing host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P4 | OpenAI Responses adapter | In progress | P4-A protocol, configuration, and live-safety readiness and P4-B non-streaming translation completed; P4-C structured output, errors, and capabilities active |
+| P4 | OpenAI Responses adapter | In progress | P4-A through P4-C completed; P4-D streaming translation and cancellation active |
 | P5 | Anthropic adapter | Not started | |
 | P6 | OpenRouter and OpenAI-compatible adapters | Not started | |
 | P7 | Universal Gateway V2 adapter | Not started | |
@@ -196,7 +196,8 @@ P4 also establishes the secret-safety baseline required by live testing: ignored
 P4 is active through `openai-responses-adapter.md`. P4-A established the protocol,
 provider-neutral configuration decision, secret-safety convention, and protected
 local-live evidence foundation; P4-B added non-streaming request and response translation, and
-P4-C structured output, errors, and capabilities is active.
+P4-C added structured output, errors, and capabilities. P4-D streaming translation and
+cancellation is active.
 
 ## P8: Production distribution and host integration
 

@@ -7,9 +7,10 @@ milestone, and P5-P9 remain `Not started`.
 
 P4-A completed the protocol, configuration, and live-safety readiness foundation without adding
 provider request or response behavior. P4-B completed the provider-neutral configuration boundary
-and non-streaming request and response translation. P4-C is the sole active work package. It adds
-governed structured output, bounded canonical error and incomplete-response mapping, and
-conservative capability reporting without changing the accepted host surface.
+and non-streaming request and response translation. P4-C completed governed structured output,
+bounded canonical error and incomplete-response mapping, and conservative capability reporting.
+P4-D is the sole active work package. It adds provider streaming translation and active
+cancellation without changing the accepted host surface.
 
 ## Objective
 
@@ -306,7 +307,7 @@ Completion record:
 
 ### P4-C: Structured output, errors, and capabilities
 
-Status: `In progress`.
+Status: `Completed` on August 5, 2026.
 
 - Implement governed structured-output request and response translation.
 - Complete canonical provider-error and incomplete-response mapping.
@@ -316,9 +317,29 @@ Status: `In progress`.
 - Run the affected local live structured-output and intentional-error smoke tests before creating
   or updating the package pull request.
 
+Completion record:
+
+- added governed structured-output request and response translation, bounded schema and value
+  validation, incomplete-response handling, canonical provider-error mapping, and conservative
+  provider/model capabilities without changing the supported host API;
+- added deterministic structured schema, output, refusal, incomplete response, error envelope,
+  numeric-boundary, depth-boundary, metadata, and credential-redaction coverage across JVM,
+  Android host, and iOS Simulator;
+- exact head `4791654b547e8e3368169019319d92aee29ffe2d` passed focused adapter tests, the
+  mandatory quick and full hooks, and `./scripts/check-live.sh openai` response, pending
+  cancellation, structured-output, and intentional-error smoke cases on August 5, 2026;
+- pull request [#34](https://github.com/maneesh888/universal-ai-connector/pull/34) passed exact-head
+  ordinary CI and the required secretless live-evidence status, merged as
+  `6d7021c6ce6c49d4e4daf8e86e5cc6c510f8788e`, and resulting `main` run
+  [31037674563](https://github.com/maneesh888/universal-ai-connector/actions/runs/31037674563)
+  passed; and
+- proof remains limited to the accepted non-streaming, structured-output, error, incomplete
+  response, capability, and pending-cancellation paths. P4-D streaming and active cancellation
+  and P4-E lifecycle acceptance remain unproven.
+
 ### P4-D: Streaming translation and cancellation
 
-Status: `Not started`.
+Status: `In progress`.
 
 - Implement provider SSE event translation through the P3 parser.
 - Enforce ordering, backpressure, one authoritative terminal, and missing-terminal failure.
