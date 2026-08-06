@@ -225,6 +225,71 @@ class OpenAiP4DTests {
     }
 
     @Test
+    fun rejectsCumulativeStructuredOutputOverByteLimitAcrossParts() = runTest {
+        val schema =
+            StructuredOutputSchema.parse(
+                """
+                {
+                  "type":"object",
+                  "properties":{"answer":{"type":"string"}},
+                  "required":["answer"],
+                  "additionalProperties":false
+                }
+                """.trimIndent(),
+            )
+        val firstPart = "a".repeat(524_288)
+        val secondPart = "b".repeat(524_289)
+        var sequence = 1
+        val stream =
+            buildString {
+                append(createdEvent(sequence++))
+                append(reasoningItemAddedEvent(sequence++, lineEnding = "\n"))
+                append(reasoningItemDoneEvent(sequence++, lineEnding = "\n"))
+                append(outputItemAddedEvent(sequence++))
+                append(contentPartAddedEvent(sequence++))
+                append(outputTextDeltaEvent(sequence++, firstPart))
+                append(outputTextDoneEvent(sequence++, firstPart, lineEnding = "\n"))
+                append(contentPartDoneEvent(sequence++, firstPart, lineEnding = "\n"))
+                append(contentPartAddedEvent(sequence++, contentIndex = 1))
+                append(outputTextDeltaEvent(sequence, secondPart, contentIndex = 1))
+            }
+        val engine =
+            MockEngine {
+                respond(
+                    content = ByteReadChannel(stream),
+                    status = HttpStatusCode.OK,
+                    headers = eventStreamHeaders(),
+                )
+            }
+        val connector = connector(engine)
+        val events = mutableListOf<UniversalAiStreamEvent>()
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector
+                        .stream(request(UniversalAiResponseFormat.jsonSchema(schema)))
+                        .collect(events::add)
+                }
+
+            assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+            assertEquals("malformed_provider_stream", failure.error.code.rawValue)
+            assertEquals(OPENAI_MALFORMED_STREAM_MESSAGE, failure.message)
+            assertEquals(
+                listOf(
+                    UniversalAiStreamEventType.ResponseStarted,
+                    UniversalAiStreamEventType.OutputStarted,
+                ),
+                events.map(UniversalAiStreamEvent::type),
+            )
+            assertFalse(events.any(UniversalAiStreamEvent::terminal))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
     fun preservesMultipleProviderMessageOrderWhileOmittingReasoningItems() = runTest {
         val engine =
             MockEngine {
@@ -1109,6 +1174,7 @@ private fun contentPartAddedEvent(
     lineEnding: String = "\n",
     providerIndex: Int = 1,
     itemId: String = "message_0",
+    contentIndex: Int = 0,
 ): String =
     sseEvent(
         """
@@ -1117,7 +1183,7 @@ private fun contentPartAddedEvent(
           "sequence_number":$sequence,
           "output_index":$providerIndex,
           "item_id":${Json.encodeToString(itemId)},
-          "content_index":0,
+          "content_index":$contentIndex,
           "part":{"type":"output_text","text":""}
         }
         """,
@@ -1130,6 +1196,7 @@ private fun outputTextDeltaEvent(
     lineEnding: String = "\n",
     providerIndex: Int = 1,
     itemId: String = "message_0",
+    contentIndex: Int = 0,
 ): String =
     sseEvent(
         """
@@ -1138,7 +1205,7 @@ private fun outputTextDeltaEvent(
           "sequence_number":$sequence,
           "output_index":$providerIndex,
           "item_id":${Json.encodeToString(itemId)},
-          "content_index":0,
+          "content_index":$contentIndex,
           "delta":${Json.encodeToString(delta)}
         }
         """,

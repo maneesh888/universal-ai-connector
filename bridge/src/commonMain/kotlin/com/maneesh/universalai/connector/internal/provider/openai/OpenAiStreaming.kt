@@ -218,7 +218,10 @@ internal class OpenAiStreamTranslator(
         val part = requireOpenTextPart(state, wire)
         val delta = streamValue(wire.delta)
         streamRequire(delta.isNotEmpty())
+        val deltaBytes = delta.encodeToByteArray().size
+        streamRequire(deltaBytes <= MAX_STREAM_OUTPUT_BYTES - state.textBytes)
         part.append(delta)
+        state.textBytes += deltaBytes
 
         return if (request.responseFormat.schema == null) {
             listOf(
@@ -475,21 +478,18 @@ internal class OpenAiStreamTranslator(
         val outputId: OutputId? = null,
         val canonicalIndex: Int? = null,
         val parts: MutableMap<Int, TextPartState> = linkedMapOf(),
+        var textBytes: Int = 0,
         var completed: Boolean = false,
     )
 
     private data class TextPartState(
         val text: StringBuilder = StringBuilder(),
-        var textBytes: Int = 0,
         var textDone: Boolean = false,
         var contentDone: Boolean = false,
     ) {
         fun append(delta: String) {
             streamRequire(!textDone && !contentDone)
-            val deltaBytes = delta.encodeToByteArray().size
-            streamRequire(deltaBytes <= MAX_STREAM_OUTPUT_BYTES - textBytes)
             text.append(delta)
-            textBytes += deltaBytes
         }
     }
 
