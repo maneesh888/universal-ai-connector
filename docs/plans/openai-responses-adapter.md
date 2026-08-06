@@ -9,8 +9,13 @@ P4-A completed the protocol, configuration, and live-safety readiness foundation
 provider request or response behavior. P4-B completed the provider-neutral configuration boundary
 and non-streaming request and response translation. P4-C completed governed structured output,
 bounded canonical error and incomplete-response mapping, and conservative capability reporting.
-P4-D is the sole active work package. It adds provider streaming translation and active
-cancellation without changing the accepted host surface.
+P4-D completed provider streaming translation and active cancellation. P4-E reconciles the
+integrated lifecycle, host and package boundaries, complete deterministic and live matrices, and
+milestone closeout without changing the accepted host surface.
+
+This milestone-closing candidate records P4 as complete and leaves P5 unactivated. The transition
+becomes authoritative only after the exact-head deterministic, live, ordinary-CI, secretless
+live-policy, independent-review, guarded-merge, and resulting-`main` gates in this plan pass.
 
 ## Objective
 
@@ -339,7 +344,7 @@ Completion record:
 
 ### P4-D: Streaming translation and cancellation
 
-Status: `In progress`.
+Status: `Completed` on August 6, 2026.
 
 - Implement provider SSE event translation through the P3 parser.
 - Enforce ordering, backpressure, one authoritative terminal, and missing-terminal failure.
@@ -349,9 +354,31 @@ Status: `In progress`.
 - Run the affected local live streaming and active-cancellation smoke tests before creating or
   updating the package pull request.
 
+Completion record:
+
+- added incremental OpenAI Responses SSE translation through the P3 parser with ordered canonical
+  text, structured output, usage, metadata, and one authoritative terminal;
+- enforced provider sequence and state correlation, rendezvous backpressure, bounded event and
+  output accumulation, missing-terminal rejection, and fixed safe failures for malformed,
+  unknown-required, duplicate, late, truncated, and oversized records;
+- covered cancellation before headers, during partial and complete content, between records, and
+  after provider terminal while suppressing later canonical delivery and releasing the response
+  body;
+- exact head `f03c66c3cd325ae4583dc3c5bffb282edc63cb1a` passed focused JVM, Android host,
+  and iOS Simulator adapter tests, the mandatory quick and full hooks, and
+  `./scripts/check-live.sh openai` with non-streaming, structured-output, intentional-error,
+  streaming, pending-cancellation, and active-cancellation smoke cases on August 6, 2026;
+- pull request [#36](https://github.com/maneesh888/universal-ai-connector/pull/36) passed exact-head
+  ordinary CI and the required secretless live-evidence status, merged as
+  `49f4a211304248af4f458b277000b1c0882d7706`, and resulting `main` run
+  [31091228176](https://github.com/maneesh888/universal-ai-connector/actions/runs/31091228176)
+  passed; and
+- proof remains limited to the accepted OpenAI Responses subset and the targeted live model and
+  paths. P4-E owns integrated lifecycle, boundary audits, and milestone acceptance.
+
 ### P4-E: Lifecycle integration and acceptance
 
-Status: `Not started`.
+Status: `Completed` in the August 6, 2026 milestone-closing candidate.
 
 - Reconcile configuration, credential, adapter, registry, transport, stream, error, and cleanup
   behavior across concurrent requests and close races.
@@ -363,6 +390,23 @@ Status: `Not started`.
   evidence.
 - Mark P4 complete only in a separate milestone-closing change after every acceptance criterion
   has durable evidence.
+
+Completion record:
+
+- added integrated OpenAI lifecycle coverage for concurrent responses and streams, per-request
+  credential resolution, immutable registry reuse, isolated translation state, concurrent close,
+  pending-response and active-stream cancellation, response-body cleanup, use after close, and
+  both sides of terminal-versus-close arbitration;
+- retained the supported Kotlin client, Swift façade, and deterministic JVM, Android, and iOS
+  sample paths without provider-specific host methods, persisted credentials, or live calls;
+- added fail-closed audits for internal OpenAI DTO declarations, supported host sources, JVM and
+  Android public artifact signatures, exported XCFramework headers, and read-only secretless
+  ordinary CI while retaining the existing credential-redaction and repository secret scans;
+- reconciled P4-A through P4-D package evidence and the complete P4 test, host, secret-safety, and
+  live smoke matrices; and
+- bound the closing exact-head deterministic, live-provider, secretless-policy, ordinary-CI,
+  independent-review, merge, and resulting-`main` evidence to the milestone-closing pull-request
+  brief because those identifiers are self-referential or exist only after this document changes.
 
 ## Test matrix
 

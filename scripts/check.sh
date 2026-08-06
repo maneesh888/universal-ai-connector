@@ -63,6 +63,8 @@ run_script_tests() {
   "$ROOT/scripts/tests/live-impact-test.sh"
   "$ROOT/scripts/tests/pre-push-live-test.sh"
   "$ROOT/scripts/tests/live-workflow-policy-test.sh"
+  "$ROOT/scripts/tests/ordinary-ci-secretless-test.sh"
+  "$ROOT/scripts/tests/provider-boundary-test.sh"
   "$ROOT/scripts/tests/run-android-sample-test.sh"
   "$ROOT/scripts/tests/xcframework-header-audit-test.sh"
 }
@@ -86,9 +88,11 @@ verify_platform_packaging_boundaries() {
   local android_listing
   local android_classes_jar
   local jar_command
+  local javap_command
   local scan_status
 
   jar_command="$("$ROOT/scripts/resolve-jdk-tool.sh" jar)" || return 1
+  javap_command="$("$ROOT/scripts/resolve-jdk-tool.sh" javap)" || return 1
   if ! command -v unzip >/dev/null 2>&1; then
     echo "Apple packaging boundary check requires unzip." >&2
     return 1
@@ -177,8 +181,64 @@ verify_platform_packaging_boundaries() {
     fi
   fi
 
+  verify_public_artifact_signatures \
+    "$jvm_listing" \
+    "$jvm_jar" \
+    "$temp_artifact_directory/jvm-public-signatures.txt" \
+    "JVM" \
+    "$javap_command"
+  verify_public_artifact_signatures \
+    "$android_listing" \
+    "$android_classes_jar" \
+    "$temp_artifact_directory/android-public-signatures.txt" \
+    "Android" \
+    "$javap_command"
+
   rm -rf -- "$temp_artifact_directory"
-  echo "Apple bridge classes remain platform-scoped and retired POC classes are absent."
+  echo "Platform classes, public signatures, and provider DTO boundaries passed."
+}
+
+verify_public_artifact_signatures() {
+  local listing="$1"
+  local artifact="$2"
+  local signatures="$3"
+  local label="$4"
+  local javap_command="$5"
+  local class_entry
+  local class_name
+  local scan_status
+
+  : > "$signatures"
+  while IFS= read -r class_entry; do
+    case "$class_entry" in
+      com/maneesh/universalai/connector/internal/* | *'$'* | module-info.class)
+        continue
+        ;;
+      com/maneesh/universalai/connector/*.class | \
+        com/maneesh/universalai/connector/contract/*.class | \
+        com/maneesh/universalai/connector/contract/*/*.class)
+        class_name="${class_entry%.class}"
+        class_name="${class_name//\//.}"
+        if ! "$javap_command" -public -classpath "$artifact" "$class_name" >> "$signatures"; then
+          echo "Could not inspect $label public artifact signature: $class_name" >&2
+          return 1
+        fi
+        ;;
+    esac
+  done < "$listing"
+
+  if grep -Eq \
+    'com\.maneesh\.universalai\.connector\.internal\.provider\.openai\.|OpenAi[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
+    "$signatures"; then
+    echo "$label public artifact signatures expose an OpenAI provider implementation or wire DTO." >&2
+    return 1
+  else
+    scan_status=$?
+    if (( scan_status != 1 )); then
+      echo "Could not scan $label public artifact signatures." >&2
+      return 1
+    fi
+  fi
 }
 
 run_quick() {

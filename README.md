@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P4%20in%20progress-2563eb)
+![Project stage](https://img.shields.io/badge/stage-P4%20complete-16a34a)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -11,16 +11,16 @@ Universal AI Connector is an independent Kotlin Multiplatform project for exposi
 
 The repository has completed its P1 cross-platform baseline and P2 provider-neutral contract foundation. Apple applications use the product-facing `UniversalAiConnector` Swift Package product over one local XCFramework containing iOS ARM64 device and simulator slices. The Swift façade preserves asynchronous response, streaming, stable errors, cancellation, concurrency, and exactly-once terminal handling. Android and JVM share the product-facing Kotlin client through the public Gradle module boundary.
 
-P4-B implemented the first bounded provider path: non-streaming OpenAI Responses authentication,
-plain-text request/response translation, usage and request metadata, safe provider failures, and
-caller cancellation. P4-C added governed structured output, complete error mapping, incomplete
-response handling, and conservative capabilities. P4-D is active for streaming translation and
-cancellation. Other providers and Gateway integration remain later work packages.
+P4 completed the first bounded provider path: OpenAI Responses authentication, plain-text and
+governed structured request/response translation, usage and request metadata, safe provider
+failures, conservative capabilities, incremental streaming, cancellation, lifecycle cleanup,
+secret-safe live verification, and package-boundary audits. Other providers and Gateway
+integration remain later work packages.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
-> and registry are completed. P4 is active: P4-A established protocol, configuration, and
-> live-safety readiness, P4-B completed non-streaming OpenAI Responses translation, P4-C completed
-> structured output, errors, and capabilities, and P4-D streaming and cancellation is active.
+> and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
+> output, errors, capabilities, streaming, cancellation, concurrent lifecycle, secret-safety,
+> live evidence, and boundary acceptance. P5 remains unactivated.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -28,6 +28,8 @@ cancellation. Other providers and Gateway integration remain later work packages
 > **P2 completion boundary:** P2 adds 21 authoritative schemas, 173 fixture documents, common Kotlin semantic validation and serialization, Swift-native canonical mappings, and deterministic JVM, Android, and Apple consumption. The milestone-closing pull-request brief is the authoritative record for exact closing-head checks, independent review, merge, and resulting `main` evidence so repository status does not require self-referential commits.
 >
 > **P3 completion boundary:** P3 adds injectable Ktor transport, URL/header/timeout policy, bounded SSE and response metadata, immutable per-client provider registration, integrated transport cancellation and cleanup, and exactly-once terminal arbitration. Its milestone-closing pull-request brief owns the exact-head local, CI, review, merge, and resulting-`main` evidence.
+>
+> **P4 completion boundary:** P4 adds the internal OpenAI Responses adapter, provider-neutral credential supply, deterministic and targeted live behavior proof, concurrent lifecycle and close-race coverage, and automated secretless CI and provider-boundary audits. Its milestone-closing pull-request brief owns the exact-head deterministic, live, CI, review, merge, and resulting-`main` evidence.
 >
 > **Accepted bounded proof:** The P2 Apple path covers 36 Swift integration tests, the two-slice XCFramework, simulator sample compilation, and generic iOS-device linking. The Android application passed installation, launch, rerun, and deterministic UI inspection on a local API 36 emulator. Physical iOS-device execution has not been performed.
 >
@@ -41,14 +43,14 @@ P1 established this package boundary through compiling iOS, Android, and JVM con
 
 ## Project status and progress
 
-### Overall roadmap completion: 40% — 4 of 10 milestones completed
+### Overall roadmap completion: 50% — 5 of 10 milestones completed
 
 ```text
 Interoperability POC       ████████████████████ 100%  ✅ Complete
 Cross-platform baseline   ████████████████████ 100%  ✅ Complete
 Canonical AI contracts    ████████████████████ 100%  ✅ Complete
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
-Provider adapters         ░░░░░░░░░░░░░░░░░░░░   0%  🚧 In progress
+Provider adapters         ███████░░░░░░░░░░░░░░  33%  🚧 In progress
 Gateway integration       ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
@@ -81,7 +83,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
-| OpenAI Responses adapter | 🚧 P4-C structured output, errors, and capabilities completed; P4-D streaming active |
+| OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
@@ -94,7 +96,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P1 | Cross-platform package and client samples | ✅ Completed |
 | P2 | Canonical core and JSON contracts | ✅ Completed |
 | P3 | HTTP transport and provider registry | ✅ Completed |
-| P4 | OpenAI Responses adapter | 🚧 In progress |
+| P4 | OpenAI Responses adapter | ✅ Completed |
 | P5 | Anthropic adapter | ⏳ Planned |
 | P6 | OpenRouter and compatible adapters | ⏳ Planned |
 | P7 | Universal Gateway V2 adapter | ⏳ Planned |
@@ -107,9 +109,9 @@ The product-facing Apple package and closing legacy-surface cleanup are accepted
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
-### P2 and P3 completion
+### P2 through P4 completion
 
-P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, P3-B added URL, header, timeout, canonical error, and redaction policy, P3-C added bounded incremental SSE framing, response metadata, and the first-body-byte content-start boundary, P3-D added deterministic internal provider registration and primary-client lookup, and P3-E bound adapter construction to transport lifecycle while completing cancellation, cleanup, authoritative-terminal, host-boundary, and acceptance proof. P4 was activated on August 2, 2026. P4-A established its protocol, provider-neutral configuration decision, secret-safety convention, and protected live-verification foundation without implementing provider behavior; P4-B completed non-streaming Responses translation, P4-C completed structured output, errors, and capabilities, and P4-D streaming and cancellation is active.
+P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, P3-B added URL, header, timeout, canonical error, and redaction policy, P3-C added bounded incremental SSE framing, response metadata, and the first-body-byte content-start boundary, P3-D added deterministic internal provider registration and primary-client lookup, and P3-E bound adapter construction to transport lifecycle while completing cancellation, cleanup, authoritative-terminal, host-boundary, and acceptance proof. P4 was activated on August 2, 2026. P4-A established its protocol, provider-neutral configuration decision, secret-safety convention, and protected live-verification foundation without implementing provider behavior; P4-B completed non-streaming Responses translation; P4-C completed structured output, errors, and capabilities; P4-D completed streaming and active cancellation; and P4-E reconciled concurrent lifecycle, cleanup, secretless CI, host consumption, and package boundaries before milestone closeout.
 
 ## Architecture direction
 

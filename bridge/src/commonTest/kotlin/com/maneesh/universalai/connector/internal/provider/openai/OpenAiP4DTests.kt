@@ -949,7 +949,7 @@ class OpenAiP4DTests {
     }
 }
 
-private fun successfulTextStream(
+internal fun successfulTextStream(
     text: String = "hello",
     deltas: List<String> =
         listOf(
