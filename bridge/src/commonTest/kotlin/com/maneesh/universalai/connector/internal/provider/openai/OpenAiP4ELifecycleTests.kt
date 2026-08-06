@@ -38,10 +38,13 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
@@ -54,25 +57,11 @@ class OpenAiP4ELifecycleTests {
     @Test
     fun concurrentResponsesAndStreamsKeepRegistryCredentialsAndTranslationStateIsolated() = runTest {
         var credentialCalls = 0
-        val engine =
-            MockEngine { request ->
-                if (request.body.isStreamingRequest()) {
-                    respond(
-                        content = ByteReadChannel(successfulTextStream(text = "stream-result")),
-                        status = HttpStatusCode.OK,
-                        headers = eventStreamHeaders(),
-                    )
-                } else {
-                    respond(
-                        content = ByteReadChannel(successfulResponse("response-result")),
-                        status = HttpStatusCode.OK,
-                    )
-                }
-            }
+        val transport = ConcurrentIsolationTransport(expectedRequestCount = 4)
         val connector =
-            connector(engine) {
+            connector(transport) {
                 credentialCalls += 1
-                TEST_CREDENTIAL
+                "$TEST_CREDENTIAL-$credentialCalls"
             }
 
         try {
@@ -82,21 +71,42 @@ class OpenAiP4ELifecycleTests {
             val secondStream = async { connector.stream(request("stream-two")).toList() }
 
             assertEquals(
-                listOf("response-result", "response-result"),
-                listOf(firstResponse.await(), secondResponse.await()).map { response ->
-                    response.outputs.single().text
-                },
+                "response-one-result",
+                firstResponse.await().outputs.single().text,
             )
-            listOf(firstStream.await(), secondStream.await()).forEach { events ->
+            assertEquals(
+                "response-two-result",
+                secondResponse.await().outputs.single().text,
+            )
+            listOf(
+                "stream-one-result" to firstStream.await(),
+                "stream-two-result" to secondStream.await(),
+            ).forEach { (expectedText, events) ->
                 assertEquals((1L..7L).toList(), events.map(UniversalAiStreamEvent::sequence))
-                assertEquals("stream-result", events.last().response?.outputs?.single()?.text)
+                assertEquals(expectedText, events.last().response?.outputs?.single()?.text)
                 assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
             }
             assertEquals(4, credentialCalls)
-            assertEquals(4, engine.requestHistory.size)
+            assertEquals(4, transport.maxConcurrentRequests)
+            assertEquals(
+                setOf(
+                    "response-one" to false,
+                    "response-two" to false,
+                    "stream-one" to true,
+                    "stream-two" to true,
+                ),
+                transport.observations.map { observation ->
+                    observation.input to observation.streaming
+                }.toSet(),
+            )
+            assertEquals(
+                (1..4).mapTo(mutableSetOf()) { index ->
+                    "Bearer $TEST_CREDENTIAL-$index"
+                },
+                transport.observations.mapTo(mutableSetOf(), RequestObservation::authorization),
+            )
         } finally {
             connector.close()
-            engine.close()
         }
     }
 
@@ -310,6 +320,97 @@ class OpenAiP4ELifecycleTests {
     private companion object {
         val OPENAI_PROVIDER_ID: ProviderId = ProviderId.of("openai")
         const val TEST_CREDENTIAL: String = "p4e-test-credential"
+    }
+
+    private data class RequestObservation(
+        val input: String,
+        val streaming: Boolean,
+        val authorization: String,
+    )
+
+    private class ConcurrentIsolationTransport(
+        private val expectedRequestCount: Int,
+    ) : ConnectorTransport {
+        private val observationLock = Mutex()
+        private val allRequestsStarted = CompletableDeferred<Unit>()
+        private val mutableObservations = mutableListOf<RequestObservation>()
+
+        val observations: List<RequestObservation>
+            get() = mutableObservations.toList()
+
+        var maxConcurrentRequests: Int = 0
+            private set
+
+        override suspend fun <Result> execute(
+            request: ConnectorTransportRequest,
+            consumeResponse: suspend (ConnectorTransportResponse) -> Result,
+        ): Result {
+            val requestBody =
+                Json
+                    .parseToJsonElement(checkNotNull(request.body).decodeToString())
+                    .jsonObject
+            val observation =
+                RequestObservation(
+                    input =
+                        requestBody
+                            .getValue("input")
+                            .jsonArray
+                            .single()
+                            .jsonObject
+                            .getValue("content")
+                            .jsonPrimitive
+                            .content,
+                    streaming = requestBody["stream"]?.jsonPrimitive?.boolean == true,
+                    authorization =
+                        request.headers
+                            .single { header ->
+                                header.name.equals("authorization", ignoreCase = true)
+                            }.value,
+                )
+            observationLock.withLock {
+                mutableObservations += observation
+                maxConcurrentRequests = maxOf(maxConcurrentRequests, mutableObservations.size)
+                if (mutableObservations.size == expectedRequestCount) {
+                    allRequestsStarted.complete(Unit)
+                }
+            }
+            allRequestsStarted.await()
+
+            val responseBody =
+                if (observation.streaming) {
+                    successfulTextStream(text = "${observation.input}-result")
+                } else {
+                    successfulResponse(text = "${observation.input}-result")
+                }
+            var responseDelivered = false
+            return consumeResponse(
+                ConnectorTransportResponse(
+                    statusCode = 200,
+                    headers =
+                        if (observation.streaming) {
+                            listOf(
+                                ConnectorTransportHeader(
+                                    name = "content-type",
+                                    value = "text/event-stream; charset=utf-8",
+                                ),
+                            )
+                        } else {
+                            emptyList()
+                        },
+                    body =
+                        ConnectorTransportChunkReader {
+                            if (responseDelivered) {
+                                null
+                            } else {
+                                responseDelivered = true
+                                responseBody.encodeToByteArray()
+                            }
+                        },
+                ),
+            )
+        }
+
+        override fun close() = Unit
     }
 
     private class ConcurrentLifecycleTransport(

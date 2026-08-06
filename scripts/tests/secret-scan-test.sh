@@ -141,4 +141,27 @@ if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
   exit 1
 fi
 
+git -C "$TEST_REPOSITORY" rm --cached --quiet .env.live
+NESTED_LIVE_FILE="$TEST_REPOSITORY/nested/.env.live.example"
+mkdir -p "$(dirname "$NESTED_LIVE_FILE")"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$NESTED_LIVE_FILE"
+git -C "$TEST_REPOSITORY" add --force nested/.env.live.example
+
+nested_live_status=0
+"$SCANNER_UNDER_TEST" > "$LOCAL_LIVE_OUTPUT" 2>&1 || nested_live_status=$?
+if [[ "$nested_live_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject a nested tracked live-input file." >&2
+  exit 1
+fi
+if ! grep -Fq \
+  "A local live-input file is tracked and must be removed from the Git index." \
+  "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan did not report the nested tracked live-input file." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan exposed nested tracked live-input material." >&2
+  exit 1
+fi
+
 echo "Secret scan regression tests passed."

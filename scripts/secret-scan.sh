@@ -15,7 +15,11 @@ if command -v git >/dev/null 2>&1 &&
       echo "A local live-input file is tracked and must be removed from the Git index." >&2
       exit 1
     fi
-  done < <(git -C "$ROOT" ls-files -z -- '.env.live' '.env.live.*')
+  done < <(
+    git -C "$ROOT" ls-files -z -- \
+      ':(glob)**/.env.live' \
+      ':(glob)**/.env.live.*'
+  )
 fi
 
 SECRET_PATTERNS=(
