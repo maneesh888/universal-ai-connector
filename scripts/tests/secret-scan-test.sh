@@ -57,6 +57,17 @@ if grep -Fq "$SYNTHETIC_SECRET" "$IGNORED_DETECTION_OUTPUT"; then
 fi
 rm -f "$IGNORED_PROBE_FILE" "$TEST_REPOSITORY/.ignore"
 
+LOCAL_LIVE_OUTPUT="$TEST_DIRECTORY/local-live.log"
+LOCAL_LIVE_FILE="$TEST_REPOSITORY/.env.live"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$LOCAL_LIVE_FILE"
+
+"$SCANNER_UNDER_TEST" > "$LOCAL_LIVE_OUTPUT" 2>&1
+if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan exposed approved local live-input material." >&2
+  exit 1
+fi
+
+git -C "$TEST_REPOSITORY" init --quiet
 CONFIG_DETECTION_OUTPUT="$TEST_DIRECTORY/config-detection.log"
 CONFIG_PROBE_FILE="$TEST_REPOSITORY/config-secret.txt"
 RIPGREP_CONFIG="$TEST_DIRECTORY/ripgrep.conf"
@@ -109,6 +120,47 @@ if [[ "$operational_error_status" -ne 7 ]]; then
 fi
 if ! grep -Fq "Repository secret scan could not complete (rg exit 7)." "$OPERATIONAL_ERROR_OUTPUT"; then
   echo "Secret scan did not report the operational ripgrep error." >&2
+  exit 1
+fi
+
+git -C "$TEST_REPOSITORY" add --force .env.live
+tracked_live_status=0
+"$SCANNER_UNDER_TEST" > "$LOCAL_LIVE_OUTPUT" 2>&1 || tracked_live_status=$?
+if [[ "$tracked_live_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject a tracked local live-input file." >&2
+  exit 1
+fi
+if ! grep -Fq \
+  "A local live-input file is tracked and must be removed from the Git index." \
+  "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan did not report the tracked local live-input file." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan exposed tracked local live-input material." >&2
+  exit 1
+fi
+
+git -C "$TEST_REPOSITORY" rm --cached --quiet .env.live
+NESTED_LIVE_FILE="$TEST_REPOSITORY/nested/.env.live.example"
+mkdir -p "$(dirname "$NESTED_LIVE_FILE")"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$NESTED_LIVE_FILE"
+git -C "$TEST_REPOSITORY" add --force nested/.env.live.example
+
+nested_live_status=0
+"$SCANNER_UNDER_TEST" > "$LOCAL_LIVE_OUTPUT" 2>&1 || nested_live_status=$?
+if [[ "$nested_live_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject a nested tracked live-input file." >&2
+  exit 1
+fi
+if ! grep -Fq \
+  "A local live-input file is tracked and must be removed from the Git index." \
+  "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan did not report the nested tracked live-input file." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan exposed nested tracked live-input material." >&2
   exit 1
 fi
 

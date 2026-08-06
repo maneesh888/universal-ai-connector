@@ -80,6 +80,7 @@ require_java_21() {
 
   java_path="$("$ROOT/scripts/resolve-jdk-tool.sh" java)" || return 1
   "$ROOT/scripts/resolve-jdk-tool.sh" jar >/dev/null || return 1
+  "$ROOT/scripts/resolve-jdk-tool.sh" javap >/dev/null || return 1
 
   java_status=0
   java_settings="$("$java_path" -XshowSettings:properties -version 2>&1)" || java_status=$?

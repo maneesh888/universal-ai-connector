@@ -4,7 +4,7 @@ set -euo pipefail
 TOOL="${1:-}"
 
 usage() {
-  echo "Usage: ./scripts/resolve-jdk-tool.sh <java|jar>" >&2
+  echo "Usage: ./scripts/resolve-jdk-tool.sh <java|jar|javap>" >&2
 }
 
 resolve_gradle_java() {
@@ -33,12 +33,13 @@ resolve_gradle_java() {
   printf '%s' "$java_path"
 }
 
-resolve_selected_jdk_jar() {
-  local jar_path
+resolve_selected_jdk_tool() {
+  local requested_tool="$1"
   local java_home
   local java_path
   local java_settings
   local java_status
+  local tool_path
 
   java_path="$(resolve_gradle_java)" || return 1
 
@@ -73,25 +74,25 @@ resolve_selected_jdk_jar() {
     esac
   fi
 
-  jar_path="$java_home/bin/jar"
-  if [[ ! -x "$jar_path" && -x "$jar_path.exe" ]]; then
-    jar_path="$jar_path.exe"
+  tool_path="$java_home/bin/$requested_tool"
+  if [[ ! -x "$tool_path" && -x "$tool_path.exe" ]]; then
+    tool_path="$tool_path.exe"
   fi
-  if [[ ! -x "$jar_path" ]]; then
+  if [[ ! -x "$tool_path" ]]; then
     echo "Contributor environment requires a complete selected JDK." >&2
-    echo "Could not execute the selected JDK packaging tool: $jar_path" >&2
+    echo "Could not execute the selected JDK '$requested_tool' tool: $tool_path" >&2
     return 1
   fi
 
-  printf '%s' "$jar_path"
+  printf '%s' "$tool_path"
 }
 
 case "$TOOL" in
   java)
     resolve_gradle_java
     ;;
-  jar)
-    resolve_selected_jdk_jar
+  jar|javap)
+    resolve_selected_jdk_tool "$TOOL"
     ;;
   *)
     usage

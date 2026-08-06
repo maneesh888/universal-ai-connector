@@ -184,6 +184,10 @@ validate_framework_slice() {
     "A credential carrier or provider configuration leaked into the $identifier callback-bridge header."
   uac_reject_xcframework_header_pattern \
     "$framework_header" \
+    "$UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN" \
+    "An OpenAI provider implementation or wire DTO leaked into the $identifier callback-bridge header."
+  uac_reject_xcframework_header_pattern \
+    "$framework_header" \
     "$unsupported_contract_pattern" \
     "A canonical Kotlin or serialization implementation type leaked into the $identifier callback-bridge header."
   uac_reject_xcframework_header_pattern \

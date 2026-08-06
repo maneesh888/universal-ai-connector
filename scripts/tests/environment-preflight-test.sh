@@ -69,11 +69,15 @@ ln -s "$(command -v unzip)" "$FAKE_PATH/unzip"
 
 write_java "$FAKE_JAVA_17_HOME/bin/java" 17 "$FAKE_JAVA_17_HOME"
 write_executable "$FAKE_JAVA_17_HOME/bin/jar" '#!/bin/sh' 'exit 0'
+write_executable "$FAKE_JAVA_17_HOME/bin/javap" '#!/bin/sh' 'exit 0'
 write_java "$FAKE_JAVA_21_HOME/bin/java" 21 "$FAKE_JAVA_21_HOME"
 write_executable "$FAKE_JAVA_21_HOME/bin/jar" '#!/bin/sh' 'exit 0'
+write_executable "$FAKE_JAVA_21_HOME/bin/javap" '#!/bin/sh' 'exit 0'
 write_windows_java "$FAKE_PATH/java" 21 "$FAKE_PATH_JAVA_HOME"
 write_executable "$FAKE_PATH_JAVA_HOME/bin/jar" '#!/bin/sh' 'exit 0'
+write_executable "$FAKE_PATH_JAVA_HOME/bin/javap" '#!/bin/sh' 'exit 0'
 write_executable "$FAKE_PATH/jar" '#!/bin/sh' 'exit 69'
+write_executable "$FAKE_PATH/javap" '#!/bin/sh' 'exit 69'
 
 PATH="$FAKE_PATH" /bin/bash "$ROOT/scripts/check-environment.sh" --hygiene \
   > "$PREFLIGHT_OUTPUT" 2>&1
@@ -128,6 +132,13 @@ resolved_jar="$(
 )"
 if [[ "$resolved_jar" != "$FAKE_PATH_JAVA_HOME/bin/jar" ]]; then
   record_failure "Contributor environment did not resolve jar from the PATH-selected Java 21 JDK."
+fi
+resolved_javap="$(
+  JAVA_HOME="" PATH="$FAKE_PATH" \
+    /bin/bash "$ROOT/scripts/resolve-jdk-tool.sh" javap
+)"
+if [[ "$resolved_javap" != "$FAKE_PATH_JAVA_HOME/bin/javap" ]]; then
+  record_failure "Contributor environment did not resolve javap from the PATH-selected Java 21 JDK."
 fi
 
 java_status=0

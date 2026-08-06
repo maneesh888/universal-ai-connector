@@ -2,15 +2,17 @@
 
 ## Status
 
-- Repository stage: P3 HTTP transport and provider registry completed; P4 OpenAI Responses adapter in progress
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, P4-A secret-safety and live-verification foundation, P4-B non-streaming OpenAI Responses adapter, and P4-C structured output, errors, and capabilities
-- Active work package: P4-D streaming translation and cancellation
+- Repository stage: P4 OpenAI Responses adapter completed; P5 Anthropic adapter not activated
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, and completed P4 OpenAI Responses adapter with secret-safe live verification, non-streaming and structured responses, canonical errors and capabilities, streaming, cancellation, concurrent lifecycle integration, and package-boundary audits
+- Active work package: none; P5 remains `Not started`
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
 - P2 closeout authority: the transition in this milestone-closing candidate is accepted only after exact-head review and required checks pass, the pull request merges, and the resulting `main` workflow is inspected; those self-referential identifiers belong in the pull-request brief
 - P3 completion: P3-A through P3-E delivered injectable Ktor transport, URL/header/timeout policy, bounded SSE and response metadata, immutable per-client provider registration, transport-bound adapter construction, cancellation/cleanup integration, and authoritative terminal arbitration through deterministic tests and existing host consumers
 - P3 closeout authority: the transition in this milestone-closing candidate is accepted only after the full local gate, exact-head review and required checks, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
+- P4 completion: P4-A through P4-E delivered the internal OpenAI Responses adapter, provider-neutral host configuration and credential supply, bounded non-streaming and structured translation, canonical errors and capabilities, incremental streaming, active cancellation, concurrent lifecycle and close-race coverage, fail-closed local live proof, and automated secret and package-boundary audits
+- P4 closeout authority: the transition in this milestone-closing candidate is accepted only after the complete deterministic and live exact-head gates, exact-head ordinary CI and secretless live-policy status, independent review, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -110,7 +112,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P1 | Cross-platform package and client-sample baseline | Completed | Product Kotlin API, JVM console, Android app, and Apple façade/sample accepted; closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed local verification, independent review, exact-head run 29991895652, PR #12 merge, and resulting `main` run 29993494307 |
 | P2 | Canonical core and JSON contracts | Completed | Provider-neutral Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic compatibility checks, and host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P3 | HTTP transport and provider registry | Completed | Provider-neutral transport, policy, SSE/metadata, registry, and integrated lifecycle behavior accepted through deterministic tests and existing host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P4 | OpenAI Responses adapter | In progress | P4-A through P4-C completed; P4-D streaming translation and cancellation active |
+| P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Not started | |
 | P6 | OpenRouter and OpenAI-compatible adapters | Not started | |
 | P7 | Universal Gateway V2 adapter | Not started | |
@@ -193,11 +195,12 @@ Each adapter owns its provider DTOs, request translation, response translation, 
 
 P4 also establishes the secret-safety baseline required by live testing: ignored local secret files, a value-free environment example, documented credential names and rotation procedure, log-redaction assertions, and the separate `./scripts/check-live.sh` command. Provider credentials are host-supplied test inputs; they must never be embedded in mobile or desktop artifacts, committed configuration, normal CI, samples, or logs.
 
-P4 is active through `openai-responses-adapter.md`. P4-A established the protocol,
-provider-neutral configuration decision, secret-safety convention, and protected
-local-live evidence foundation; P4-B added non-streaming request and response translation, and
-P4-C added structured output, errors, and capabilities. P4-D streaming translation and
-cancellation is active.
+P4 completed through `openai-responses-adapter.md`. P4-A established the protocol,
+provider-neutral configuration decision, secret-safety convention, and protected local-live
+evidence foundation; P4-B added non-streaming request and response translation; P4-C added
+structured output, errors, and capabilities; P4-D added streaming translation and active
+cancellation; and P4-E reconciled concurrent lifecycle, cleanup, host consumption, secretless CI,
+and package boundaries. P5 remains unactivated.
 
 ## P8: Production distribution and host integration
 

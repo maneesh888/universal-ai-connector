@@ -57,9 +57,11 @@ OpenAI live task without a reusable Gradle daemon. It never prints the credentia
 request/response content, and disables Gradle configuration caching for the credential-bearing
 process.
 
-P4-B provides the real `:bridge:openAiLiveTest` task for one minimal non-streaming response and one
-pending-response cancellation smoke. It is excluded from `jvmTest`, `check.sh`, samples, and
-ordinary CI, and fails closed without valid inputs or provider access.
+The completed P4 `:bridge:openAiLiveTest` task covers one minimal non-streaming response, one
+governed structured response, one safe intentional provider error, one ordered streaming
+response, one pending-response cancellation, and one active-stream cancellation. It is excluded
+from `jvmTest`, `check.sh`, samples, and ordinary CI, and fails closed without valid inputs or
+provider access.
 
 The pre-push hook runs `scripts/live-impact.sh` between `origin/main` and exact `HEAD`. Unrelated
 changes run only the full deterministic gate. Affected bridge, Swift façade, build, transport, or
@@ -74,7 +76,8 @@ Every head change invalidates earlier evidence. For an affected pull request, re
 - provider and model identifier;
 - execution date;
 - pass or fail result; and
-- limits of the exercised response and cancellation paths.
+- limits of the exercised response, structured-output, intentional-error, streaming, and
+  cancellation paths.
 
 Do not attach raw logs when they can contain sensitive input or provider output.
 

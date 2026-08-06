@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN='OpenAi[A-Za-z0-9_]*(Wire|Adapter|Translator)'
+
 uac_reject_xcframework_header_pattern() {
   local header="$1"
   local pattern="$2"
