@@ -9,6 +9,7 @@ internal data class OpenAiCreateResponseWire(
     val model: String,
     val input: List<OpenAiInputMessageWire>,
     val store: Boolean,
+    val stream: Boolean = false,
     val text: OpenAiTextConfigurationWire? = null,
     @SerialName("max_output_tokens")
     val maxOutputTokens: Int? = null,
@@ -110,4 +111,25 @@ internal data class OpenAiInputTokenDetailsWire(
 internal data class OpenAiOutputTokenDetailsWire(
     @SerialName("reasoning_tokens")
     val reasoningTokens: Long? = null,
+)
+
+@Serializable
+internal data class OpenAiStreamEventWire(
+    val type: String? = null,
+    @SerialName("sequence_number")
+    val sequenceNumber: Long? = null,
+    val response: OpenAiResponseWire? = null,
+    @SerialName("output_index")
+    val outputIndex: Int? = null,
+    @SerialName("item_id")
+    val itemId: String? = null,
+    @SerialName("content_index")
+    val contentIndex: Int? = null,
+    val item: OpenAiOutputItemWire? = null,
+    val part: OpenAiOutputContentWire? = null,
+    val delta: String? = null,
+    val text: String? = null,
+    val code: String? = null,
+    val message: String? = null,
+    val param: JsonElement? = null,
 )

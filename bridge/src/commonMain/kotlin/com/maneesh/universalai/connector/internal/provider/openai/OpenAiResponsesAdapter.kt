@@ -23,14 +23,18 @@ import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENAI_PROVIDER_ID
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
+import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEventReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportHeader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -41,33 +45,7 @@ internal class OpenAiResponsesAdapter(
 ) : ConnectorEngine {
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
-        val credential = resolveCredential()
-        val body =
-            WIRE_JSON
-                .encodeToString(request.toOpenAiWire())
-                .encodeToByteArray()
-        val transportRequest =
-            ConnectorTransportRequest(
-                method = "POST",
-                baseUrl = configuration.validatedBaseUrl,
-                endpoint = RESPONSES_ENDPOINT,
-                adapterHeaders =
-                    listOf(
-                        ConnectorTransportHeader(
-                            name = "authorization",
-                            value = "Bearer $credential",
-                        ),
-                        ConnectorTransportHeader(
-                            name = "content-type",
-                            value = "application/json",
-                        ),
-                        ConnectorTransportHeader(
-                            name = "accept",
-                            value = "application/json",
-                        ),
-                    ),
-                body = body,
-            )
+        val transportRequest = transportRequest(request, stream = false)
 
         return transport.execute(transportRequest) { response ->
             if (response.statusCode !in 200..299) {
@@ -81,9 +59,79 @@ internal class OpenAiResponsesAdapter(
     }
 
     override fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
-        flow {
-            throw unsupportedRequest(OPENAI_STREAMING_UNAVAILABLE_MESSAGE)
+        channelFlow<OpenAiStreamSignal> {
+            try {
+                validateRequest(request)
+                val transportRequest = transportRequest(request, stream = true)
+                transport.execute(transportRequest) { response ->
+                    if (response.statusCode !in 200..299) {
+                        throw providerFailure(response)
+                    }
+                    if (!response.hasEventStreamContentType()) {
+                        throw malformedStream()
+                    }
+                    val reader = ConnectorServerSentEventReader(response.body)
+                    val translator =
+                        OpenAiStreamTranslator(
+                            request = request,
+                            metadata = response.metadata,
+                        )
+                    while (true) {
+                        val event = reader.readEvent() ?: break
+                        translator.translate(event).forEach { translated ->
+                            send(OpenAiStreamSignal.Event(translated))
+                        }
+                        if (translator.isTerminal) {
+                            return@execute
+                        }
+                    }
+                    translator.finish()
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (failure: Throwable) {
+                send(OpenAiStreamSignal.Failure(failure))
+            }
         }
+            .buffer(Channel.RENDEZVOUS)
+            .transform { signal ->
+                when (signal) {
+                    is OpenAiStreamSignal.Event -> emit(signal.event)
+                    is OpenAiStreamSignal.Failure -> throw signal.failure
+                }
+            }
+
+    private fun transportRequest(
+        request: UniversalAiRequest,
+        stream: Boolean,
+    ): ConnectorTransportRequest {
+        val credential = resolveCredential()
+        val body =
+            OPENAI_WIRE_JSON
+                .encodeToString(request.toOpenAiWire(stream))
+                .encodeToByteArray()
+        return ConnectorTransportRequest(
+            method = "POST",
+            baseUrl = configuration.validatedBaseUrl,
+            endpoint = RESPONSES_ENDPOINT,
+            adapterHeaders =
+                listOf(
+                    ConnectorTransportHeader(
+                        name = "authorization",
+                        value = "Bearer $credential",
+                    ),
+                    ConnectorTransportHeader(
+                        name = "content-type",
+                        value = "application/json",
+                    ),
+                    ConnectorTransportHeader(
+                        name = "accept",
+                        value = if (stream) EVENT_STREAM_CONTENT_TYPE else JSON_CONTENT_TYPE,
+                    ),
+                ),
+            body = body,
+        )
+    }
 
     private fun validateRequest(request: UniversalAiRequest) {
         if (request.target.providerId != OPENAI_PROVIDER_ID) {
@@ -143,7 +191,7 @@ internal class OpenAiResponsesAdapter(
         val bytes = readBoundedBody(response.body)
         val wire =
             try {
-                WIRE_JSON.decodeFromString<OpenAiResponseWire>(
+                OPENAI_WIRE_JSON.decodeFromString<OpenAiResponseWire>(
                     bytes.decodeToString(throwOnInvalidSequence = true),
                 )
             } catch (cancellation: CancellationException) {
@@ -171,7 +219,25 @@ internal class OpenAiResponsesAdapter(
     }
 }
 
-private fun UniversalAiRequest.toOpenAiWire(): OpenAiCreateResponseWire =
+private sealed interface OpenAiStreamSignal {
+    data class Event(
+        val event: UniversalAiStreamEvent,
+    ) : OpenAiStreamSignal
+
+    data class Failure(
+        val failure: Throwable,
+    ) : OpenAiStreamSignal
+}
+
+private fun ConnectorTransportResponse.hasEventStreamContentType(): Boolean =
+    headers
+        .lastOrNull { header -> header.name.equals("content-type", ignoreCase = true) }
+        ?.value
+        ?.substringBefore(';')
+        ?.trim()
+        ?.equals(EVENT_STREAM_CONTENT_TYPE, ignoreCase = true) == true
+
+private fun UniversalAiRequest.toOpenAiWire(stream: Boolean): OpenAiCreateResponseWire =
     OpenAiCreateResponseWire(
         model = target.modelId.rawValue,
         input =
@@ -182,6 +248,7 @@ private fun UniversalAiRequest.toOpenAiWire(): OpenAiCreateResponseWire =
                 )
             },
         store = false,
+        stream = stream,
         text =
             responseFormat.schema?.let { schema ->
                 OpenAiTextConfigurationWire(
@@ -199,7 +266,7 @@ private fun UniversalAiRequest.toOpenAiWire(): OpenAiCreateResponseWire =
         topP = generation.topP,
     )
 
-private fun OpenAiResponseWire.toCanonical(
+internal fun OpenAiResponseWire.toCanonical(
     request: UniversalAiRequest,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiResponse {
@@ -234,47 +301,12 @@ private fun OpenAiResponseWire.toCanonical(
     val providerOutput = requireWireValue(output)
     val canonicalOutputs = mutableListOf<UniversalAiOutput>()
     providerOutput.forEach { item ->
-        when (item.type) {
-            "reasoning" -> Unit
-            "message" -> {
-                requireWire(item.status == "completed")
-                requireWire(item.role == "assistant")
-                val content = requireWireValue(item.content)
-                requireWire(content.isNotEmpty())
-                val text =
-                    buildString {
-                        content.forEach { part ->
-                            when (part.type) {
-                                "output_text" -> append(requireWireValue(part.text))
-                                "refusal" -> throw refusalFailure(metadata)
-                                else -> throw malformedResponse()
-                            }
-                        }
-                    }
-                requireWire(text.isNotEmpty())
-                val outputId = OutputId.of(requireWireValue(item.id))
-                val outputIndex = canonicalOutputs.size
-                canonicalOutputs +=
-                    request.responseFormat.schema?.let { schema ->
-                        val value =
-                            OpenAiStructuredOutput.parseAndValidate(
-                                json = text,
-                                schema = schema,
-                            ) ?: throw malformedStructuredResponse()
-                        UniversalAiOutput.structuredJson(
-                            id = outputId,
-                            index = outputIndex,
-                            value = value,
-                        )
-                    } ?: UniversalAiOutput.text(
-                        id = outputId,
-                        index = outputIndex,
-                        text = text,
-                    )
-            }
-
-            else -> throw malformedResponse()
-        }
+        item
+            .toCanonicalOutputOrNull(
+                request = request,
+                outputIndex = canonicalOutputs.size,
+                metadata = metadata,
+            )?.let(canonicalOutputs::add)
     }
     requireWire(canonicalOutputs.isNotEmpty())
 
@@ -291,6 +323,51 @@ private fun OpenAiResponseWire.toCanonical(
         completionReason = UniversalAiCompletionReason.Stop,
     )
 }
+
+internal fun OpenAiOutputItemWire.toCanonicalOutputOrNull(
+    request: UniversalAiRequest,
+    outputIndex: Int,
+    metadata: ConnectorResponseMetadata,
+): UniversalAiOutput? =
+    when (type) {
+        "reasoning" -> null
+        "message" -> {
+            requireWire(status == "completed")
+            requireWire(role == "assistant")
+            val providerContent = requireWireValue(content)
+            requireWire(providerContent.isNotEmpty())
+            val text =
+                buildString {
+                    providerContent.forEach { part ->
+                        when (part.type) {
+                            "output_text" -> append(requireWireValue(part.text))
+                            "refusal" -> throw refusalFailure(metadata)
+                            else -> throw malformedResponse()
+                        }
+                    }
+                }
+            requireWire(text.isNotEmpty())
+            val outputId = OutputId.of(requireWireValue(id))
+            request.responseFormat.schema?.let { schema ->
+                val value =
+                    OpenAiStructuredOutput.parseAndValidate(
+                        json = text,
+                        schema = schema,
+                    ) ?: throw malformedStructuredResponse()
+                UniversalAiOutput.structuredJson(
+                    id = outputId,
+                    index = outputIndex,
+                    value = value,
+                )
+            } ?: UniversalAiOutput.text(
+                id = outputId,
+                index = outputIndex,
+                text = text,
+            )
+        }
+
+        else -> throw malformedResponse()
+    }
 
 private fun OpenAiUsageWire.toCanonical(): UniversalAiUsage {
     val input = requireWireValue(inputTokens)
@@ -325,7 +402,7 @@ private fun OpenAiUsageWire.toCanonical(): UniversalAiUsage {
     )
 }
 
-private fun String?.toCanonicalRequestIdOrNull(): RequestId? =
+internal fun String?.toCanonicalRequestIdOrNull(): RequestId? =
     this?.let { value ->
         try {
             RequestId.of(value)
@@ -379,14 +456,14 @@ private suspend fun providerFailure(
     )
 }
 
-private fun providerResponseFailure(
+internal fun providerResponseFailure(
     error: OpenAiErrorWire,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiException =
     providerErrorMapping(error)
         .toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
 
-private fun incompleteResponseFailure(
+internal fun incompleteResponseFailure(
     details: OpenAiIncompleteDetailsWire,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiException {
@@ -416,7 +493,7 @@ private fun incompleteResponseFailure(
     return mapping.toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
 }
 
-private fun refusalFailure(
+internal fun refusalFailure(
     metadata: ConnectorResponseMetadata,
 ): UniversalAiException =
     ProviderErrorMapping(
@@ -572,7 +649,7 @@ private suspend fun readErrorEnvelopeOrNull(
         return null
     }
     return try {
-        WIRE_JSON
+        OPENAI_WIRE_JSON
             .decodeFromString<OpenAiErrorEnvelopeWire>(
                 bytes.decodeToString(throwOnInvalidSequence = true),
             )
@@ -716,8 +793,6 @@ internal const val OPENAI_EXTENSIONS_MESSAGE: String =
     "The active OpenAI adapter package does not support request extensions."
 internal const val OPENAI_INPUT_ROLE_MESSAGE: String =
     "The OpenAI adapter does not support the requested input role."
-internal const val OPENAI_STREAMING_UNAVAILABLE_MESSAGE: String =
-    "OpenAI streaming is not available in the active adapter package."
 internal const val OPENAI_INVALID_REQUEST_MESSAGE: String =
     "OpenAI rejected the request."
 internal const val OPENAI_AUTHENTICATION_MESSAGE: String =
@@ -748,6 +823,8 @@ internal const val OPENAI_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
     "The OpenAI structured response did not match the requested governed schema."
 
 private const val RESPONSES_ENDPOINT: String = "responses"
+private const val JSON_CONTENT_TYPE: String = "application/json"
+private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val OPENAI_STRUCTURED_OUTPUT_NAME: String = "universal_ai_response"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
 private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
@@ -765,7 +842,7 @@ private val PROVIDER_FAILURE_MAPPING =
         message = OPENAI_PROVIDER_FAILURE_MESSAGE,
     )
 
-private val WIRE_JSON =
+internal val OPENAI_WIRE_JSON =
     Json {
         ignoreUnknownKeys = true
         explicitNulls = false

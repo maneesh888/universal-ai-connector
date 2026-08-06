@@ -88,7 +88,7 @@ jvmTestTask.configure {
 
 tasks.register<Test>("openAiLiveTest") {
     group = "verification"
-    description = "Runs the explicit exact-head OpenAI P4-C live smoke tests."
+    description = "Runs the explicit exact-head OpenAI live smoke tests."
     dependsOn("jvmTestClasses")
     testClassesDirs = jvmTestTask.get().testClassesDirs
     classpath = jvmTestTask.get().classpath
