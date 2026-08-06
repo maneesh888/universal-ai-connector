@@ -632,7 +632,7 @@ class OpenAiP4CTests {
             structured.limits[UniversalAiCapabilityLimitName.MaxSchemaDepth],
         )
         assertEquals(
-            UniversalAiCapabilitySupport.Unsupported,
+            UniversalAiCapabilitySupport.Supported,
             assertNotNull(
                 registration.capabilityProfile.capabilities[
                     UniversalAiCapabilityName.Streaming
@@ -666,7 +666,7 @@ class OpenAiP4CTests {
             ).limits.isEmpty(),
         )
         assertEquals(
-            UniversalAiCapabilitySupport.Unsupported,
+            UniversalAiCapabilitySupport.Supported,
             assertNotNull(modelCapabilities[UniversalAiCapabilityName.Streaming]).support,
         )
         assertEquals(

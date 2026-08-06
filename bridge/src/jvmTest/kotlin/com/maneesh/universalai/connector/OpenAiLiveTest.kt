@@ -10,6 +10,8 @@ import com.maneesh.universalai.connector.contract.UniversalAiInputRole
 import com.maneesh.universalai.connector.contract.UniversalAiOutputKind
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponseFormat
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
+import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import com.maneesh.universalai.connector.internal.provider.openai.OPENAI_INVALID_REQUEST_MESSAGE
@@ -17,16 +19,22 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Explicit P4-C provider smoke tests.
+ * Explicit P4-D provider smoke tests.
  *
  * The ordinary jvmTest task excludes this class. scripts/check-live.sh supplies and exact-head
  * binds the required process environment without retaining any credential in test state or output.
@@ -80,6 +88,40 @@ class OpenAiLiveTest {
     }
 
     @Test
+    fun minimalStreamingResponseEmitsOrderedContentAndOneValidTerminal(): Unit = runBlocking {
+        connector().use { connector ->
+            val events =
+                connector
+                    .stream(liveRequest("Reply with one short word: ready."))
+                    .toList()
+
+            assertTrue(events.isNotEmpty())
+            assertEquals(UniversalAiStreamEventType.ResponseStarted, events.first().type)
+            assertEquals(
+                (1L..events.size.toLong()).toList(),
+                events.map(UniversalAiStreamEvent::sequence),
+            )
+            val deltas =
+                events
+                    .filter { event -> event.type == UniversalAiStreamEventType.OutputDelta }
+                    .mapNotNull(UniversalAiStreamEvent::delta)
+            assertTrue(deltas.isNotEmpty())
+            val completedOutput =
+                assertNotNull(
+                    events
+                        .single { event ->
+                            event.type == UniversalAiStreamEventType.OutputCompleted
+                        }.output,
+                )
+            assertEquals(deltas.joinToString(""), completedOutput.text)
+            assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
+            assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
+            assertTrue(events.last().terminal)
+            assertEquals(completedOutput, events.last().response?.outputs?.single())
+        }
+    }
+
+    @Test
     fun intentionalUnknownModelErrorMapsToSafeCanonicalValidationFailure(): Unit = runBlocking {
         connector().use { connector ->
             val failure =
@@ -121,6 +163,41 @@ class OpenAiLiveTest {
             assertFailsWith<CancellationException> {
                 pending.await()
             }
+        }
+    }
+
+    @Test
+    fun cancellingActiveStreamAfterContentEmitsNoLaterConsumerEvent(): Unit = runBlocking {
+        connector().use { connector ->
+            val events = mutableListOf<UniversalAiStreamEvent>()
+            val deltaSeen = CompletableDeferred<Unit>()
+            val pending =
+                async(start = CoroutineStart.UNDISPATCHED) {
+                    connector
+                        .stream(
+                            liveRequest(
+                                "Write several short sentences about cancellation propagation.",
+                            ),
+                        ).onEach { event ->
+                            events += event
+                            if (event.type == UniversalAiStreamEventType.OutputDelta) {
+                                deltaSeen.complete(Unit)
+                                awaitCancellation()
+                            }
+                        }.collect()
+                }
+
+            withTimeout(15_000) {
+                deltaSeen.await()
+            }
+            val eventCountAtCancellation = events.size
+            pending.cancel()
+            assertFailsWith<CancellationException> {
+                pending.await()
+            }
+            delay(250)
+            assertEquals(eventCountAtCancellation, events.size)
+            assertFalse(events.any(UniversalAiStreamEvent::terminal))
         }
     }
 
