@@ -228,7 +228,7 @@ verify_public_artifact_signatures() {
   done < "$listing"
 
   if grep -Eq \
-    'com\.maneesh\.universalai\.connector\.internal\.provider\.openai\.|OpenAi[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
+    'com\.maneesh\.universalai\.connector\.internal\.provider\.(openai|openrouter)\.|Open(Ai|Router)[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
     "$signatures"; then
     echo "$label public artifact signatures expose an OpenAI provider implementation or wire DTO." >&2
     return 1

@@ -15,8 +15,10 @@ import com.maneesh.universalai.connector.contract.UniversalAiProviderCapabilityP
 import com.maneesh.universalai.connector.contract.schema.GovernedJsonSchemaSubset
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiResponsesAdapter
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
+import com.maneesh.universalai.connector.internal.provider.openrouter.OpenRouterChatCompletionsAdapter
 
 internal val OPENAI_PROVIDER_ID: ProviderId = ProviderId.of("openai")
+internal val OPENROUTER_PROVIDER_ID: ProviderId = ProviderId.of("openrouter")
 
 internal val OPENAI_PROVIDER_CAPABILITY_PROFILE =
     UniversalAiProviderCapabilityProfile(
@@ -60,6 +62,17 @@ internal fun builtInProviderRegistration(
                 modelCapabilityOverrides = { OPENAI_UNKNOWN_MODEL_CAPABILITIES },
                 adapterFactory = { transport ->
                     OpenAiResponsesAdapter(
+                        configuration = configuration,
+                        transport = transport,
+                    )
+                },
+            )
+
+        OPENROUTER_PROVIDER_ID ->
+            ProviderRegistration(
+                providerId = configuration.providerId,
+                adapterFactory = { transport ->
+                    OpenRouterChatCompletionsAdapter(
                         configuration = configuration,
                         transport = transport,
                     )
