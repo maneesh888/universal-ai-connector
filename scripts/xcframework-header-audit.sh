@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN='Open(Ai|Router)[A-Za-z0-9_]*(Wire|Adapter|Translator)'
+UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN='(OpenAi|Anthropic|OpenRouter)[A-Za-z0-9_]*(Wire|Adapter|Translator)'
 
 uac_reject_xcframework_header_pattern() {
   local header="$1"

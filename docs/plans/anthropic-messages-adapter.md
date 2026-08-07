@@ -4,13 +4,14 @@
 
 P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed the protocol and
 live-test authentication-readiness package through PR
-[#39](https://github.com/maneesh888/universal-ai-connector/pull/39). P5 is now `Deferred`, P6 is
-the only `In progress` milestone, and P7-P9 remain `Not started`.
+[#39](https://github.com/maneesh888/universal-ai-connector/pull/39). The dedicated Anthropic
+credential and enabled bounded-cost model are now available, so P5 has resumed at P5-B as the only
+`In progress` milestone. P6 is `Deferred` after P6-B, and P7-P9 remain `Not started`.
 
-No P5 work package is active. P5-B through P5-E remain unimplemented and deferred because the
-repository does not have the dedicated Anthropic test credential and enabled bounded-cost model
-required for the first provider-behavior pull request. P5-A adds no Anthropic request/response
-implementation, runner route, Gradle live task, or claim of live provider proof.
+P5-B is completed in this candidate. It adds the internal non-streaming Messages registration and
+wire translation, deterministic authentication/request/response/cancellation/redaction coverage,
+the real `check-live.sh anthropic` route and dedicated Gradle task, and Anthropic to the delivered
+provider set. P5-C through P5-E remain deferred and unimplemented.
 
 P5-A became authoritative after exact head
 `a7d6fb2833140cbcd26b6a30f603c5c226e7a800` passed its deterministic and affected OpenAI live
@@ -19,9 +20,8 @@ gates, ordinary CI, secretless live-policy status, and independent review; PR #3
 [31170045356](https://github.com/maneesh888/universal-ai-connector/actions/runs/31170045356)
 passed.
 
-Deferral is not Anthropic completion or approval. P5 must resume at P5-B when a dedicated
-credential/model is available, and every remaining acceptance and live-proof requirement still
-blocks P9 release.
+P5-B resumption is not Anthropic milestone completion or approval. Every P5-C through P5-E
+acceptance and live-proof requirement still blocks P9 release.
 
 ## Objective
 
@@ -232,17 +232,16 @@ Anthropic configuration, credential, request, or host-storage type is approved.
   delivered set and prove OpenAI-only, Anthropic-only, shared-both, unaffected, invalid-revision,
   and ambiguous-path behavior without making an actual P5-A push require a nonexistent Anthropic
   task.
-- P5-B must atomically add the `check-live.sh anthropic` route, the dedicated Anthropic Gradle live
-  task, and `anthropic` to the classifier's embedded delivered-provider set. Merely changing that
-  set causes pre-push to call the missing route and fail, so the same head must deliver and run the
-  Anthropic gate, plus the OpenAI gate when shared changes can affect OpenAI behavior.
+- P5-B atomically adds the `check-live.sh anthropic` route, the dedicated Anthropic Gradle live
+  task, and `anthropic` to the classifier's embedded delivered-provider set. The same head must run
+  the Anthropic gate, plus the OpenAI gate when shared changes can affect OpenAI behavior.
 - Require a clean committed checkout, bind the run to exact `HEAD`, and reject a mismatched
   `UAC_LIVE_EXPECTED_SHA`.
 - The pre-push full deterministic gate and every delivered runner prerequisite remove all
   documented provider key and live-model inputs from their deterministic process environments.
 - Each selected provider gate removes every non-selected provider input before invoking its
   runner; the OpenAI Gradle task is now proven to receive no Anthropic input.
-- P5-B must run the deterministic Anthropic adapter prerequisites with every Anthropic live input
+- P5-B runs the deterministic Anthropic adapter prerequisites with every Anthropic live input
   removed from their process environment before starting the provider task.
 - Pass `ANTHROPIC_API_KEY`, `ANTHROPIC_LIVE_MODEL`, and the exact-head binding only to the dedicated
   non-cacheable, no-daemon Anthropic live task. Do not pass the credential through Gradle
@@ -361,13 +360,14 @@ Completion record:
   failure regressions while leaving OpenAI as the only real delivered gate; and
 - added no Anthropic runner route, Gradle live task, provider DTO, network behavior, or live proof.
 
-P5-B is deliberately not activated. It requires a dedicated revocable Anthropic test key and
-enabled bounded-cost model because its atomic runner/task/adapter head must pass
-`./scripts/check-live.sh anthropic` before the first push or pull-request update.
+P5-B was activated after the dedicated revocable Anthropic test key and enabled bounded-cost model
+became available. Its atomic runner/task/adapter head must pass `./scripts/check-live.sh anthropic`
+before the first push or pull-request update.
 
 ### P5-B: Non-streaming request and response translation
 
-Status: `Deferred`; resume here when the credential/model gate is satisfied.
+Status: `Completed` in this candidate; authoritative only after its required deterministic,
+exact-head live, CI, secretless-policy, independent-review, and guarded-merge gates pass.
 
 - Add internal provider registration and wire DTOs for the accepted non-streaming subset.
 - Implement authentication-header construction, request translation, response translation, usage,
@@ -379,9 +379,24 @@ Status: `Deferred`; resume here when the credential/model gate is satisfied.
 - Run every provider gate selected for the exact head, including the Anthropic response and
   pending-cancellation smoke tests, before creating or updating the package pull request.
 
+Candidate completion record:
+
+- resumed P5 as the only `In progress` milestone and deferred P6 after its accepted P6-B work;
+- added the internal direct Messages registration and bounded request/response wire models without
+  adding a provider-specific public or host-storage API;
+- translated the accepted leading-system and alternating user/assistant text subset, required
+  output limit, stop sequences, text response, model, usage, and request metadata;
+- added deterministic synthetic-credential coverage for header construction, request/response
+  translation, unsupported pre-dispatch validation, malformed payloads, safe error metadata,
+  redaction, and pending-response cancellation;
+- atomically added the Anthropic live route, non-cacheable no-daemon Gradle task, exact-head
+  binding, cross-provider environment isolation, and real delivered-provider selection; and
+- retained structured output, complete provider-error/incomplete mapping, capabilities, streaming,
+  and lifecycle closeout for P5-C through P5-E.
+
 ### P5-C: Structured output, errors, and capabilities
 
-Status: `Deferred`; P5-B must complete first.
+Status: `Deferred`; P5-B must become authoritative first.
 
 - Implement governed structured-output translation only if P5-A accepts a compatible provider
   mechanism; otherwise declare the capability unsupported.
@@ -474,8 +489,8 @@ Status: `Deferred`; P5-D must complete first.
   receives only its provider-specific key, model, and exact-head inputs;
 - provider-aware classifier and pre-push regressions cover OpenAI-only, Anthropic-only,
   shared-both, unaffected, invalid, and ambiguous path results without omitting a required gate;
-- the P5-A policy head requires only delivered OpenAI proof, while the atomic P5-B transition
-  cannot select Anthropic until its real route and Gradle task exist on the same head;
+- the P5-A policy head required only delivered OpenAI proof, while the atomic P5-B transition adds
+  Anthropic selection only on the same head as its real route and Gradle task;
 - secret-scan regression recognizes every documented Anthropic input without printing its value;
 - the deterministic prerequisite runs with Anthropic live inputs removed;
 - missing credential, missing model input, malformed input, unavailable provider, rate limit,

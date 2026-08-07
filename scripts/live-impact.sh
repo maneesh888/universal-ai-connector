@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="${UAC_REPOSITORY_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 BASE_SHA="${1:-}"
 HEAD_SHA="${2:-}"
-DELIVERED_PROVIDERS=("openai" "openrouter")
+DELIVERED_PROVIDERS=("openai" "anthropic" "openrouter")
 
 usage() {
   echo "Usage: ./scripts/live-impact.sh <base-sha> <head-sha>" >&2

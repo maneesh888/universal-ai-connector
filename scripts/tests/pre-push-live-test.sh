@@ -24,7 +24,7 @@ mkdir -p \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin"
 cp "$ROOT/.githooks/pre-push" "$TEST_REPOSITORY/.githooks/pre-push"
 awk '
-  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"openrouter\")" {
+  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")" {
     print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")"
     next
   }

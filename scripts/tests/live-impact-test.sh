@@ -26,15 +26,15 @@ trap cleanup EXIT
 mkdir -p "$TEST_REPOSITORY/scripts"
 cp "$ROOT/scripts/live-impact.sh" "$CLASSIFIER"
 awk '
-  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"openrouter\")" {
+  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")" {
     print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")"
     next
   }
   { print }
 ' "$CLASSIFIER" > "$MULTI_PROVIDER_CLASSIFIER"
 awk '
-  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"openrouter\")" {
-    print "DELIVERED_PROVIDERS=(\"openai\" \"openai\" \"openrouter\")"
+  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")" {
+    print "DELIVERED_PROVIDERS=(\"openai\" \"openai\" \"anthropic\" \"openrouter\")"
     next
   }
   { print }
@@ -80,7 +80,7 @@ git -C "$TEST_REPOSITORY" \
 FOUNDATION_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$PRE_ADAPTER_DOCS_SHA" "$FOUNDATION_SHA")" != \
-  "openai,openrouter" ]]; then
+  "openai,anthropic,openrouter" ]]; then
   echo "Changing the installed live gate must require live verification." >&2
   exit 1
 fi
@@ -95,7 +95,8 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change Swift package boundary"
 SWIFT_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$SWIFT_SHA")" != "openai,openrouter" ]]; then
+if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$SWIFT_SHA")" != \
+  "openai,anthropic,openrouter" ]]; then
   echo "Changing the Swift package boundary must require live verification." >&2
   exit 1
 fi
@@ -138,7 +139,7 @@ git -C "$TEST_REPOSITORY" \
 CONTROL_CHARACTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$DOCS_SHA" "$CONTROL_CHARACTER_SHA")" != \
-  "openai,openrouter" ]]; then
+  "openai,anthropic,openrouter" ]]; then
   echo "Protected control-character paths must require live verification." >&2
   exit 1
 fi
@@ -152,7 +153,7 @@ git -C "$TEST_REPOSITORY" \
 BUILD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$CONTROL_CHARACTER_SHA" "$BUILD_SHA")" != \
-  "openai,openrouter" ]]; then
+  "openai,anthropic,openrouter" ]]; then
   echo "Changing build infrastructure with an active adapter must require live verification." >&2
   exit 1
 fi
@@ -180,8 +181,8 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "add Anthropic adapter marker"
 ANTHROPIC_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$RUNTIME_SHA" "$ANTHROPIC_SHA")" != "openai,openrouter" ]]; then
-  echo "An undelivered provider change must fail closed to every delivered provider." >&2
+if [[ "$("$CLASSIFIER" "$RUNTIME_SHA" "$ANTHROPIC_SHA")" != "anthropic" ]]; then
+  echo "An Anthropic-only change must select only the delivered Anthropic gate." >&2
   exit 1
 fi
 if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$RUNTIME_SHA" "$ANTHROPIC_SHA")" != "anthropic" ]]; then
@@ -218,7 +219,8 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change shared behavior"
 SHARED_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$OPENROUTER_SHA" "$SHARED_SHA")" != "openai,openrouter" ]]; then
+if [[ "$("$CLASSIFIER" "$OPENROUTER_SHA" "$SHARED_SHA")" != \
+  "openai,anthropic,openrouter" ]]; then
   echo "A shared change must select the current delivered provider gates." >&2
   exit 1
 fi
@@ -238,7 +240,8 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change ambiguous provider behavior"
 AMBIGUOUS_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != "openai,openrouter" ]]; then
+if [[ "$("$CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != \
+  "openai,anthropic,openrouter" ]]; then
   echo "An ambiguous provider change must select the current delivered provider gates." >&2
   exit 1
 fi

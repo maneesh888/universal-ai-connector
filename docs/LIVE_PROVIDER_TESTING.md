@@ -17,9 +17,9 @@ The single ignored `.env.live` file may contain distinct inputs for each provide
 - `OPENROUTER_API_KEY`: a dedicated, revocable, conservatively spend-limited OpenRouter test key.
 - `OPENROUTER_LIVE_MODEL`: an explicit bounded-cost model slug enabled for that key.
 
-OpenAI and OpenRouter are delivered local-live gates after P6-B. Anthropic remains a value-free
-readiness input only: no runner route, Gradle live task, or provider network behavior receives it
-while P5 is deferred.
+OpenAI, Anthropic, and OpenRouter are delivered local-live gates after P5-B adds the Anthropic
+route to the OpenAI and P6-B OpenRouter routes. Each provider-specific change selects only its
+delivered gate; shared or ambiguous live-impacting changes select all three.
 
 Do not use production keys. Restrict access to the test project or workspace, set conservative
 spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
@@ -31,7 +31,7 @@ the official [production key-safety guidance](https://developers.openai.com/api/
 An API project needs its own billing/credits and limits; a ChatGPT subscription is not an API
 credential.
 
-Create an Anthropic key only when P5-B is ready through the official
+Create and manage the P5-B Anthropic test key through the official
 [Claude API authentication settings and guidance](https://platform.claude.com/docs/en/manage-claude/authentication).
 Use an expiring workspace-scoped test key when available. Do not send a credential through issue,
 pull-request, chat, or review text.
@@ -54,8 +54,8 @@ source .env.live
 set +a
 ```
 
-Set only the provider values needed locally. Leave Anthropic values empty until a dedicated test
-key and model are available. Never print the file to diagnose it. The live script and hook do not
+Set only the provider values needed locally. Never print the file to diagnose it. The live script
+and hook do not
 open, read, or source files automatically; they accept values only from their process environment,
 which keeps file choice and permissions under host control. If a selected delivered provider
 input is absent, the failure repeats value-free setup directions instead of skipping.
@@ -67,6 +67,7 @@ shown above, and run:
 
 ```bash
 ./scripts/check-live.sh openai
+./scripts/check-live.sh anthropic
 ./scripts/check-live.sh openrouter
 ```
 
@@ -81,6 +82,11 @@ governed structured response, one safe intentional provider error, one ordered s
 response, one pending-response cancellation, and one active-stream cancellation. It is excluded
 from `jvmTest`, `check.sh`, samples, and ordinary CI, and fails closed without valid inputs or
 provider access.
+
+The P5-B `:bridge:anthropicLiveTest` task covers one minimal non-streaming text response and one
+pending-response cancellation after credential resolution. It has the same deterministic/CI
+exclusions and fail-closed exact-head behavior. Structured output, intentional provider-error,
+streaming, and active-stream cancellation proof remain P5-C/P5-D work.
 
 The P6-B `:bridge:openRouterLiveTest` task covers one minimal non-streaming response and one
 pending-response cancellation. It has the same exclusion, exact-head, credential-isolation, and
@@ -124,7 +130,7 @@ An undelivered or ambiguous affected provider path fails closed to every deliver
 documentation-only change produces a successful secretless `Required live verification` result
 automatically. The workflow retains trusted-base compatibility with the legacy P4 boolean
 classifier and accepts stable ordered provider sets through
-`openai,anthropic,openrouter`; the currently delivered ordered set is `openai,openrouter`.
+`openai,anthropic,openrouter`; that is also the currently delivered ordered set.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, and records the no-retention boundary. It executes no candidate provider
@@ -178,8 +184,10 @@ rewrites are separate destructive operations and require explicit scope.
 ## Proof limits
 
 A passing live gate proves only the provider, model, account, network, exact commit, and paths
-recorded for that execution. P5-A proves no Anthropic credential validity, model access,
-authentication success, or provider behavior. P6-B proves only the selected OpenRouter
+recorded for that execution. P5-B adds bounded Anthropic authentication, non-streaming response,
+and pending-cancellation proof for the selected exact head; it does not prove structured output,
+complete provider errors, capabilities, streaming, or active-stream cancellation. P6-B proves
+only the selected OpenRouter
 non-streaming response and pending-cancellation paths; it does not prove structured output, typed
 provider errors, streaming, generic endpoint compatibility, every model or upstream route,
 physical-device behavior, Gateway behavior, released-artifact distribution, or production

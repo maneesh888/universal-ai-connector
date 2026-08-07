@@ -13,6 +13,10 @@ Supported providers and required process environment:
   OPENAI_API_KEY       Dedicated revocable test-project credential.
   OPENAI_LIVE_MODEL    Explicit model identifier enabled for the test project.
 
+  anthropic
+  ANTHROPIC_API_KEY       Dedicated revocable test-workspace credential.
+  ANTHROPIC_LIVE_MODEL    Explicit model identifier enabled for the test workspace.
+
   openrouter
   OPENROUTER_API_KEY    Dedicated revocable spend-limited test credential.
   OPENROUTER_LIVE_MODEL Explicit bounded-cost model slug enabled for the credential.
@@ -77,6 +81,12 @@ case "$PROVIDER" in
     MODEL_NAME="OPENAI_LIVE_MODEL"
     LIVE_TASK=":bridge:openAiLiveTest"
     ;;
+  anthropic)
+    PROVIDER_LABEL="Anthropic"
+    KEY_NAME="ANTHROPIC_API_KEY"
+    MODEL_NAME="ANTHROPIC_LIVE_MODEL"
+    LIVE_TASK=":bridge:anthropicLiveTest"
+    ;;
   openrouter)
     PROVIDER_LABEL="OpenRouter"
     KEY_NAME="OPENROUTER_API_KEY"
@@ -128,6 +138,12 @@ case "$PROVIDER" in
     if [[ "${#OPENAI_LIVE_MODEL}" -gt 128 ||
           ! "$OPENAI_LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
       fail "OPENAI_LIVE_MODEL must be a bounded OpenAI model identifier."
+    fi
+    ;;
+  anthropic)
+    if [[ "${#ANTHROPIC_LIVE_MODEL}" -gt 128 ||
+          ! "$ANTHROPIC_LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+      fail "ANTHROPIC_LIVE_MODEL must be a bounded Anthropic model identifier."
     fi
     ;;
   openrouter)
