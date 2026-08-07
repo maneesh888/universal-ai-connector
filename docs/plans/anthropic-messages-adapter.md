@@ -2,18 +2,26 @@
 
 ## Status and activation gate
 
-P0-P4 are `Completed`. P5 was activated on August 7, 2026 as the only `In progress` milestone,
-P5-A completed the protocol and live-test authentication-readiness package in this candidate, and
-P6-P9 remain `Not started`.
+P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed the protocol and
+live-test authentication-readiness package through PR
+[#39](https://github.com/maneesh888/universal-ai-connector/pull/39). P5 is now `Deferred`, P6 is
+the only `In progress` milestone, and P7-P9 remain `Not started`.
 
-No work package is currently active. P5-B remains `Not started` because the repository does not
-yet have the dedicated Anthropic test credential and enabled bounded-cost model required for its
-first provider-behavior pull request. P5-A adds no Anthropic request/response implementation,
-runner route, Gradle live task, or claim of live provider proof.
+No P5 work package is active. P5-B through P5-E remain unimplemented and deferred because the
+repository does not have the dedicated Anthropic test credential and enabled bounded-cost model
+required for the first provider-behavior pull request. P5-A adds no Anthropic request/response
+implementation, runner route, Gradle live task, or claim of live provider proof.
 
-The P5-A completion transition becomes authoritative only after this candidate passes its
-exact-head deterministic and affected OpenAI live gates, ordinary CI, secretless live-policy
-status, independent review, and guarded merge.
+P5-A became authoritative after exact head
+`a7d6fb2833140cbcd26b6a30f603c5c226e7a800` passed its deterministic and affected OpenAI live
+gates, ordinary CI, secretless live-policy status, and independent review; PR #39 then merged as
+`5635ec01d72e7f627a9ad62ca0f97be039fe6b96`, and resulting `main` run
+[31170045356](https://github.com/maneesh888/universal-ai-connector/actions/runs/31170045356)
+passed.
+
+Deferral is not Anthropic completion or approval. P5 must resume at P5-B when a dedicated
+credential/model is available, and every remaining acceptance and live-proof requirement still
+blocks P9 release.
 
 ## Objective
 
@@ -230,8 +238,8 @@ Anthropic configuration, credential, request, or host-storage type is approved.
   Anthropic gate, plus the OpenAI gate when shared changes can affect OpenAI behavior.
 - Require a clean committed checkout, bind the run to exact `HEAD`, and reject a mismatched
   `UAC_LIVE_EXPECTED_SHA`.
-- The pre-push full deterministic gate and the existing OpenAI runner prerequisite remove every
-  documented OpenAI and Anthropic key and live-model input from their process environments.
+- The pre-push full deterministic gate and every delivered runner prerequisite remove all
+  documented provider key and live-model inputs from their deterministic process environments.
 - Each selected provider gate removes every non-selected provider input before invoking its
   runner; the OpenAI Gradle task is now proven to receive no Anthropic input.
 - P5-B must run the deterministic Anthropic adapter prerequisites with every Anthropic live input
@@ -323,8 +331,7 @@ time.
 
 ### P5-A: Protocol and live-test authentication readiness
 
-Status: `Completed` in the August 7, 2026 candidate; authoritative after its required gates and
-guarded merge.
+Status: `Completed` and accepted August 7, 2026 through PR #39.
 
 - Bind the supported protocol subset to current official sources.
 - Confirm reuse of the provider-neutral configuration and credential-supplier boundary.
@@ -360,7 +367,7 @@ enabled bounded-cost model because its atomic runner/task/adapter head must pass
 
 ### P5-B: Non-streaming request and response translation
 
-Status: `Not started`.
+Status: `Deferred`; resume here when the credential/model gate is satisfied.
 
 - Add internal provider registration and wire DTOs for the accepted non-streaming subset.
 - Implement authentication-header construction, request translation, response translation, usage,
@@ -374,7 +381,7 @@ Status: `Not started`.
 
 ### P5-C: Structured output, errors, and capabilities
 
-Status: `Not started`.
+Status: `Deferred`; P5-B must complete first.
 
 - Implement governed structured-output translation only if P5-A accepts a compatible provider
   mechanism; otherwise declare the capability unsupported.
@@ -387,7 +394,7 @@ Status: `Not started`.
 
 ### P5-D: Streaming translation and cancellation
 
-Status: `Not started`.
+Status: `Deferred`; P5-C must complete first.
 
 - Implement provider SSE event translation through the P3 parser.
 - Enforce ordering, backpressure, one authoritative terminal, and missing-terminal failure.
@@ -399,7 +406,7 @@ Status: `Not started`.
 
 ### P5-E: Lifecycle integration and acceptance
 
-Status: `Not started`.
+Status: `Deferred`; P5-D must complete first.
 
 - Reconcile configuration, credential, adapter, registry, transport, stream, error, and cleanup
   behavior across concurrent requests and close races.
@@ -463,8 +470,8 @@ Status: `Not started`.
 
 - `.env.live.example` contains only empty documented variables and `.env.live` remains ignored;
 - the live runner never opens, reads, or sources `.env.live`;
-- the single local file may supply both providers while the selected live route receives only its
-  provider-specific key, model, and exact-head inputs;
+- the single local file may supply every documented provider while the selected live route
+  receives only its provider-specific key, model, and exact-head inputs;
 - provider-aware classifier and pre-push regressions cover OpenAI-only, Anthropic-only,
   shared-both, unaffected, invalid, and ambiguous path results without omitting a required gate;
 - the P5-A policy head requires only delivered OpenAI proof, while the atomic P5-B transition
@@ -538,8 +545,9 @@ blocks pull-request creation or update; none is a skipped success.
 
 The pre-push hook must run the complete provider set selected for the exact diff. After P5-B
 delivers Anthropic, a shared transport, build, authentication, streaming, error-mapping, redaction,
-runner, classifier, or live-policy change requires both OpenAI and Anthropic live gates; a
-provider-specific adapter change requires only its affected provider gate.
+runner, classifier, or live-policy change requires every delivered provider gate, including
+OpenAI, Anthropic, and OpenRouter when each is delivered; a provider-specific adapter change
+requires only its affected provider gate.
 
 P5 completion requires the complete local deterministic and live gates, exact-head Linux,
 Windows, and macOS ordinary CI, the protected secretless local-evidence status, independent
@@ -561,8 +569,8 @@ Plan authoring does not exercise runtime, provider, authentication, or live beha
   accepted after activation.
 - Hosts provide credentials through the accepted provider-neutral boundary without runtime-library
   storage, implicit process-global loading, or provider-specific request types.
-- One ignored `.env.live` file holds manual local live inputs, while OpenAI and Anthropic use
-  distinct provider-specific key and model variables.
+- One ignored `.env.live` file holds manual local live inputs, while every provider uses distinct
+  provider-specific key and model variables.
 - Deterministic tests use synthetic credentials and `MockEngine`; only the dedicated local live
   task receives a real credential from its process environment.
 - Provider-aware live-impact classification and pre-push routing cannot substitute OpenAI proof

@@ -16,6 +16,7 @@ DUPLICATE_PROVIDER_CLASSIFIER="$TEST_REPOSITORY/scripts/live-impact-duplicate-pr
 PROVIDER_DIRECTORY="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider"
 OPENAI_DIRECTORY="$PROVIDER_DIRECTORY/openai"
 ANTHROPIC_DIRECTORY="$PROVIDER_DIRECTORY/anthropic"
+OPENROUTER_DIRECTORY="$PROVIDER_DIRECTORY/openrouter"
 
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
@@ -26,7 +27,7 @@ mkdir -p "$TEST_REPOSITORY/scripts"
 cp "$ROOT/scripts/live-impact.sh" "$CLASSIFIER"
 awk '
   $0 == "DELIVERED_PROVIDERS=(\"openai\")" {
-    print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\")"
+    print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")"
     next
   }
   { print }
@@ -185,6 +186,26 @@ if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$RUNTIME_SHA" "$ANTHROPIC_SHA")" != "anth
   exit 1
 fi
 
+mkdir -p "$OPENROUTER_DIRECTORY"
+printf '%s\n' "internal OpenRouter adapter marker" > \
+  "$OPENROUTER_DIRECTORY/OpenRouterChatCompletionsAdapter.kt"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "add OpenRouter adapter marker"
+OPENROUTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$ANTHROPIC_SHA" "$OPENROUTER_SHA")" != "openai" ]]; then
+  echo "An undelivered OpenRouter change must fail closed to every delivered provider." >&2
+  exit 1
+fi
+if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$ANTHROPIC_SHA" "$OPENROUTER_SHA")" != \
+  "openrouter" ]]; then
+  echo "An OpenRouter-only change must select only the delivered OpenRouter gate." >&2
+  exit 1
+fi
+
 printf '%s\n' "shared behavior marker" > \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin/SharedBehavior.kt"
 git -C "$TEST_REPOSITORY" add .
@@ -194,8 +215,8 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change shared behavior"
 SHARED_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$ANTHROPIC_SHA" "$SHARED_SHA")" != \
-  "openai,anthropic" ]]; then
+if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$OPENROUTER_SHA" "$SHARED_SHA")" != \
+  "openai,anthropic,openrouter" ]]; then
   echo "A shared change must select every delivered provider gate." >&2
   exit 1
 fi
@@ -211,7 +232,7 @@ git -C "$TEST_REPOSITORY" \
 AMBIGUOUS_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != \
-  "openai,anthropic" ]]; then
+  "openai,anthropic,openrouter" ]]; then
   echo "An ambiguous provider change must fail closed to every delivered provider." >&2
   exit 1
 fi
