@@ -17,11 +17,9 @@ The single ignored `.env.live` file may contain distinct inputs for each provide
 - `OPENROUTER_API_KEY`: a dedicated, revocable, conservatively spend-limited OpenRouter test key.
 - `OPENROUTER_LIVE_MODEL`: an explicit bounded-cost model slug enabled for that key.
 
-OpenAI remains the only delivered local-live gate during P6-A. The Anthropic and OpenRouter names
-are value-free readiness inputs only: no runner route, Gradle live task, or provider network
-behavior receives them. Anthropic remains deferred. P6-B must atomically deliver the OpenRouter
-paths and add OpenRouter to real provider selection, then pass the exact-head OpenRouter gate
-before its first push or pull-request update.
+OpenAI and OpenRouter are delivered local-live gates after P6-B. Anthropic remains a value-free
+readiness input only: no runner route, Gradle live task, or provider network behavior receives it
+while P5 is deferred.
 
 Do not use production keys. Restrict access to the test project or workspace, set conservative
 spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
@@ -57,11 +55,10 @@ set +a
 ```
 
 Set only the provider values needed locally. Leave Anthropic values empty until a dedicated test
-key and model are available. OpenRouter values are not consumed until P6-B delivers its real live
-route. Never print the file to diagnose it. The live script and hook do not open, read, or source
-files automatically; they accept values only from their process environment, which keeps file
-choice and permissions under host control. If a selected delivered provider input is absent, the
-failure repeats value-free setup directions instead of skipping.
+key and model are available. Never print the file to diagnose it. The live script and hook do not
+open, read, or source files automatically; they accept values only from their process environment,
+which keeps file choice and permissions under host control. If a selected delivered provider
+input is absent, the failure repeats value-free setup directions instead of skipping.
 
 ## Local exact-head gate
 
@@ -70,11 +67,12 @@ shown above, and run:
 
 ```bash
 ./scripts/check-live.sh openai
+./scripts/check-live.sh openrouter
 ```
 
-The command refuses a dirty checkout, validates the expected SHA when
-`UAC_LIVE_EXPECTED_SHA` is present, runs deterministic tests first, and then runs the dedicated
-OpenAI live task without a reusable Gradle daemon. It never prints the credential or full provider
+Each command refuses a dirty checkout, validates the expected SHA when
+`UAC_LIVE_EXPECTED_SHA` is present, runs deterministic tests first, and then runs the selected
+provider task without a reusable Gradle daemon. It never prints the credential or full provider
 request/response content, and disables Gradle configuration caching for the credential-bearing
 process.
 
@@ -83,6 +81,11 @@ governed structured response, one safe intentional provider error, one ordered s
 response, one pending-response cancellation, and one active-stream cancellation. It is excluded
 from `jvmTest`, `check.sh`, samples, and ordinary CI, and fails closed without valid inputs or
 provider access.
+
+The P6-B `:bridge:openRouterLiveTest` task covers one minimal non-streaming response and one
+pending-response cancellation. It has the same exclusion, exact-head, credential-isolation, and
+fail-closed boundaries. Structured output, typed provider errors, streaming, and generic
+OpenAI-compatible behavior remain later P6 packages.
 
 The pre-push hook runs `scripts/live-impact.sh` between `origin/main` and exact `HEAD`. The
 classifier returns `none` or an ordered comma-separated delivered-provider set. Unrelated changes
@@ -96,12 +99,11 @@ different and locally resolvable.
 Every head change invalidates earlier evidence. For an affected pull request, record:
 
 - exact 40-character head SHA;
-- `./scripts/check-live.sh openai`;
+- every selected `./scripts/check-live.sh <provider>` command;
 - provider and model identifier;
 - execution date;
 - pass or fail result; and
-- limits of the exercised response, structured-output, intentional-error, streaming, and
-  cancellation paths.
+- limits of the exercised provider-specific paths.
 
 Do not attach raw logs when they can contain sensitive input or provider output.
 
@@ -122,7 +124,7 @@ An undelivered or ambiguous affected provider path fails closed to every deliver
 documentation-only change produces a successful secretless `Required live verification` result
 automatically. The workflow retains trusted-base compatibility with the legacy P4 boolean
 classifier and accepts stable ordered provider sets through
-`openai,anthropic,openrouter`.
+`openai,anthropic,openrouter`; the currently delivered ordered set is `openai,openrouter`.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, and records the no-retention boundary. It executes no candidate provider
@@ -177,7 +179,8 @@ rewrites are separate destructive operations and require explicit scope.
 
 A passing live gate proves only the provider, model, account, network, exact commit, and paths
 recorded for that execution. P5-A proves no Anthropic credential validity, model access,
-authentication success, or provider behavior. P6-A likewise proves no OpenRouter credential,
-credit, model access, authentication, compatibility, or provider behavior. A provider gate does
-not prove every model or feature, physical-device behavior, Gateway behavior, provider failover,
-released-artifact distribution, or production credential management.
+authentication success, or provider behavior. P6-B proves only the selected OpenRouter
+non-streaming response and pending-cancellation paths; it does not prove structured output, typed
+provider errors, streaming, generic endpoint compatibility, every model or upstream route,
+physical-device behavior, Gateway behavior, released-artifact distribution, or production
+credential management.

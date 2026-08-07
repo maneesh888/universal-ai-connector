@@ -83,6 +83,30 @@ if [[ "$*" == *":bridge:openAiLiveTest"* ]]; then
   exit 0
 fi
 
+if [[ "$*" == *":bridge:openRouterLiveTest"* ]]; then
+  if [[ "${OPENROUTER_API_KEY:-}" != "$UAC_TEST_EXPECTED_KEY" ||
+        "${OPENROUTER_LIVE_MODEL:-}" != "$UAC_TEST_EXPECTED_MODEL" ||
+        -n "${OPENAI_API_KEY:-}" ||
+        -n "${OPENAI_LIVE_MODEL:-}" ||
+        -n "${ANTHROPIC_API_KEY:-}" ||
+        -n "${ANTHROPIC_LIVE_MODEL:-}" ||
+        "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
+    echo "Live task did not receive its exact expected environment." >&2
+    exit 10
+  fi
+  if [[ "$*" != *"-PuacLiveExpectedSha=$UAC_TEST_EXPECTED_SHA"* ||
+        "$*" != *"--no-daemon"* ||
+        "$*" != *"--no-configuration-cache"* ]]; then
+    echo "Live task did not receive its exact-head arguments." >&2
+    exit 11
+  fi
+  echo "live" >> "$UAC_TEST_CALL_LOG"
+  if [[ -n "${UAC_TEST_DIRTY_AFTER_LIVE:-}" ]]; then
+    printf '%s\n' "live mutation" > "$UAC_TEST_DIRTY_AFTER_LIVE"
+  fi
+  exit 0
+fi
+
 echo "Unexpected Gradle invocation." >&2
 exit 12
 EOF
@@ -108,14 +132,16 @@ expect_failure() {
     echo "Live runner did not report: $expected_message" >&2
     exit 1
   fi
-  if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT"; then
+  if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
+    grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
+    grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
     echo "Live runner exposed credential material." >&2
     exit 1
   fi
 }
 
 expect_failure \
-  "Usage: ./scripts/check-live.sh openai" \
+  "Usage: ./scripts/check-live.sh <provider>" \
   "$RUNNER" unsupported
 
 expect_failure \
@@ -137,6 +163,26 @@ if ! grep -Fq "cp .env.live.example .env.live" "$OUTPUT" ||
   echo "Missing-model failure omitted safe local configuration guidance." >&2
   exit 1
 fi
+
+expect_failure \
+  "OPENROUTER_API_KEY is required" \
+  "$RUNNER" openrouter
+if ! grep -Fq "OPENROUTER_API_KEY and OPENROUTER_LIVE_MODEL" "$OUTPUT" ||
+  ! grep -Fq "./scripts/check-live.sh openrouter" "$OUTPUT"; then
+  echo "Missing OpenRouter key failure omitted provider-specific guidance." >&2
+  exit 1
+fi
+
+expect_failure \
+  "OPENROUTER_LIVE_MODEL is required" \
+  env OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" "$RUNNER" openrouter
+
+expect_failure \
+  "OPENROUTER_LIVE_MODEL must be a bounded OpenRouter model slug." \
+  env \
+    OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+    OPENROUTER_LIVE_MODEL="invalid model" \
+    "$RUNNER" openrouter
 
 expect_failure \
   "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA." \
@@ -249,6 +295,40 @@ fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
   ! grep -Fq "model=$MODEL" "$OUTPUT"; then
   echo "Successful live runner output omitted bounded evidence metadata." >&2
+  exit 1
+fi
+
+: > "$CALL_LOG"
+env \
+  OPENAI_API_KEY="$SYNTHETIC_KEY" \
+  OPENAI_LIVE_MODEL="$MODEL" \
+  ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
+  OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+  OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$OPENROUTER_MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" openrouter > "$OUTPUT" 2>&1
+
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "OpenRouter live runner did not execute deterministic then live tasks exactly once." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
+  echo "Successful OpenRouter runner output exposed credential material." >&2
+  exit 1
+fi
+if ! grep -Fq "provider=openrouter" "$OUTPUT" ||
+  ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
+  ! grep -Fq "model=$OPENROUTER_MODEL" "$OUTPUT"; then
+  echo "Successful OpenRouter runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
 
