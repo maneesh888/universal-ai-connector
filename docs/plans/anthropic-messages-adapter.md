@@ -164,20 +164,31 @@ is implemented.
 
 ### Live verification and merge protection
 
-- Extend `check-live.sh` with an explicit `anthropic` provider route while retaining the existing
-  `openai` route.
+- P5-A must replace the current boolean live-impact result with provider-aware selection and update
+  the pre-push hook to run every selected provider gate. Provider-specific paths select their
+  provider, shared transport/build/live-policy paths select every delivered provider, unrelated
+  paths select none, and ambiguous affected paths fail closed to every delivered provider.
+- During P5-A, OpenAI remains the only delivered provider gate. The provider-aware classifier and
+  pre-push regressions must exercise stubbed OpenAI-only, Anthropic-only, shared-both, and
+  unaffected routes, but an actual P5-A push must not require a nonexistent Anthropic task.
+- P5-B must atomically add the `check-live.sh anthropic` route, the dedicated Anthropic Gradle live
+  task, and Anthropic to the classifier's delivered-provider set. That same head must run the
+  Anthropic gate, plus the OpenAI gate when its shared changes can affect OpenAI behavior.
 - Require a clean committed checkout, bind the run to exact `HEAD`, and reject a mismatched
   `UAC_LIVE_EXPECTED_SHA`.
+- Run the pre-push full deterministic gate with every documented provider key and live-model input
+  removed from its process environment.
 - Run the deterministic Anthropic adapter prerequisites with every Anthropic live input removed
   from their process environment before starting the provider task.
 - Pass `ANTHROPIC_API_KEY`, `ANTHROPIC_LIVE_MODEL`, and the exact-head binding only to the dedicated
   non-cacheable, no-daemon Anthropic live task. Do not pass the credential through Gradle
   properties, command-line arguments, reusable daemon state, configuration cache, or retained
-  test output.
+  test output, and remove every non-selected provider input from that task's process environment.
 - Keep the live task excluded from ordinary `jvmTest`, `check.sh`, samples, and CI. Missing inputs,
   provider access, quota, selected-model access, task wiring, or assertions fail rather than skip.
-- Extend runner, pre-push, secret-scan, and secretless-policy regressions so every documented
-  Anthropic input is recognized without embedding or printing a real value.
+- Extend classifier, runner, pre-push, secret-scan, and secretless-policy regressions so selected
+  gates cannot be silently omitted and every documented Anthropic input is recognized without
+  embedding or printing a real value.
 - Continue using the existing credential-free `live-policy` Environment and required status.
   GitHub receives no provider credential and does not rerun provider tests.
 - Record only bounded exact-head evidence: command, provider, selected model, UTC date, result,
@@ -256,8 +267,13 @@ Status: `Not started`.
 - Bind the supported protocol subset to current official sources.
 - Confirm reuse of the provider-neutral configuration and credential-supplier boundary.
 - Extend the single value-free local environment-file convention with Anthropic-specific inputs.
-- Extend live-runner routing, task isolation, secret scanning, and policy regressions without
-  adding provider request or response behavior.
+- Introduce provider-aware live-impact classification and pre-push routing, retaining OpenAI as the
+  only delivered gate while using regression stubs to prove Anthropic-only and shared-both
+  selection.
+- Extend value-free input, secret scanning, and secretless-policy regressions without adding an
+  Anthropic runner route, Gradle live task, or provider request/response behavior.
+- Ensure deterministic hook and runner subprocesses remove every documented provider live input,
+  even when the developer exported the shared local file containing multiple providers.
 - Record the structured-output capability decision and activate P5-B only after these decisions
   and gates are accepted.
 
@@ -270,8 +286,10 @@ Status: `Not started`.
   and metadata.
 - Add deterministic `MockEngine` request/response, malformed-payload, credential-resolution,
   protected-header, redaction, and cancellation fixtures.
-- Add the dedicated Anthropic live task and run the affected response and pending-cancellation
-  smoke tests before creating or updating the package pull request.
+- Atomically add the `check-live.sh anthropic` route, the dedicated Anthropic live task, and
+  Anthropic to the delivered-provider selection used by pre-push.
+- Run every provider gate selected for the exact head, including the Anthropic response and
+  pending-cancellation smoke tests, before creating or updating the package pull request.
 
 ### P5-C: Structured output, errors, and capabilities
 
@@ -366,6 +384,10 @@ Status: `Not started`.
 - the live runner never opens, reads, or sources `.env.live`;
 - the single local file may supply both providers while the selected live route receives only its
   provider-specific key, model, and exact-head inputs;
+- provider-aware classifier and pre-push regressions cover OpenAI-only, Anthropic-only,
+  shared-both, unaffected, invalid, and ambiguous path results without omitting a required gate;
+- the P5-A policy head requires only delivered OpenAI proof, while the atomic P5-B transition
+  cannot select Anthropic until its real route and Gradle task exist on the same head;
 - secret-scan regression recognizes every documented Anthropic input without printing its value;
 - the deterministic prerequisite runs with Anthropic live inputs removed;
 - missing credential, missing model input, malformed input, unavailable provider, rate limit,
@@ -430,6 +452,11 @@ The live command must run deterministic affected tests first. Missing credential
 provider service, rate limiting, stale-head evidence, task wiring failure, or a failed assertion
 blocks pull-request creation or update; none is a skipped success.
 
+The pre-push hook must run the complete provider set selected for the exact diff. After P5-B
+delivers Anthropic, a shared transport, build, authentication, streaming, error-mapping, redaction,
+runner, classifier, or live-policy change requires both OpenAI and Anthropic live gates; a
+provider-specific adapter change requires only its affected provider gate.
+
 P5 completion requires the complete local deterministic and live gates, exact-head Linux,
 Windows, and macOS ordinary CI, the protected secretless local-evidence status, independent
 exact-head review, guarded merge, and resulting `main` workflow inspection.
@@ -454,6 +481,9 @@ Plan authoring does not exercise runtime, provider, authentication, or live beha
   distinct provider-specific key and model variables.
 - Deterministic tests use synthetic credentials and `MockEngine`; only the dedicated local live
   task receives a real credential from its process environment.
+- Provider-aware live-impact classification and pre-push routing cannot substitute OpenAI proof
+  for Anthropic impact, omit either provider for shared impact, or require an Anthropic task before
+  P5-B atomically delivers it.
 - The zero-configuration deterministic client and samples remain credential-free and network-free.
 - Canonical text, generation, plain-text, and any accepted governed structured-output requests
   translate deterministically without exposing provider DTOs.
