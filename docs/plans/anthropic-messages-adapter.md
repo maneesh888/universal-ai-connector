@@ -5,19 +5,28 @@
 P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed the protocol and
 live-test authentication-readiness package through PR
 [#39](https://github.com/maneesh888/universal-ai-connector/pull/39). The dedicated Anthropic
-credential and enabled bounded-cost model are now available, so P5 has resumed at P5-B as the only
-`In progress` milestone. P6 is `Deferred` after P6-B, and P7-P9 remain `Not started`.
+credential and enabled bounded-cost model are now available. P5-B is authoritative and P5-C is now
+the active package in the only `In progress` milestone. P6 is `Deferred` after P6-B, and P7-P9
+remain `Not started`.
 
-P5-B is completed in this candidate. It adds the internal non-streaming Messages registration and
-wire translation, deterministic authentication/request/response/cancellation/redaction coverage,
-the real `check-live.sh anthropic` route and dedicated Gradle task, and Anthropic to the delivered
-provider set. P5-C through P5-E remain deferred and unimplemented.
+P5-C is completed in this candidate. It adds the accepted `output_config.format` schema
+intersection and exact response revalidation, complete documented HTTP-error and incomplete-stop
+mapping, conservative adapter/model capabilities, deterministic fixtures, and the required
+structured-output and intentional-error live smokes. P5-D and P5-E remain deferred and
+unimplemented.
 
 P5-A became authoritative after exact head
 `a7d6fb2833140cbcd26b6a30f603c5c226e7a800` passed its deterministic and affected OpenAI live
 gates, ordinary CI, secretless live-policy status, and independent review; PR #39 then merged as
 `5635ec01d72e7f627a9ad62ca0f97be039fe6b96`, and resulting `main` run
 [31170045356](https://github.com/maneesh888/universal-ai-connector/actions/runs/31170045356)
+passed.
+
+P5-B became authoritative after exact head `4f05c3b36e1a91761f68e5359950d1a5669bedbf`
+passed its deterministic and affected Anthropic live gates, ordinary CI, secretless live-policy
+status, and independent review; PR [#42](https://github.com/maneesh888/universal-ai-connector/pull/42)
+then merged as `17349ba41a8888d225f503c7d1ef7082bd42d6b6`, and resulting `main` run
+[31214200835](https://github.com/maneesh888/universal-ai-connector/actions/runs/31214200835)
 passed.
 
 P5-B resumption is not Anthropic milestone completion or approval. Every P5-C through P5-E
@@ -130,8 +139,8 @@ P5-A closed the following decisions after P5 activation and before provider beha
 
 ### Authoritative provider protocol
 
-The following official Claude Platform sources were consulted on August 7, 2026 and govern the P5
-subset:
+The following official Claude Platform sources were consulted on August 7, 2026, revalidated for
+P5-C on August 8, 2026, and govern the P5 subset:
 
 - [API overview and direct HTTP authentication headers](https://platform.claude.com/docs/en/api/overview)
 - [API-key authentication and rotation guidance](https://platform.claude.com/docs/en/manage-claude/authentication)
@@ -366,8 +375,7 @@ before the first push or pull-request update.
 
 ### P5-B: Non-streaming request and response translation
 
-Status: `Completed` in this candidate; authoritative only after its required deterministic,
-exact-head live, CI, secretless-policy, independent-review, and guarded-merge gates pass.
+Status: `Completed` and accepted August 8, 2026 through PR #42.
 
 - Add internal provider registration and wire DTOs for the accepted non-streaming subset.
 - Implement authentication-header construction, request translation, response translation, usage,
@@ -379,7 +387,7 @@ exact-head live, CI, secretless-policy, independent-review, and guarded-merge ga
 - Run every provider gate selected for the exact head, including the Anthropic response and
   pending-cancellation smoke tests, before creating or updating the package pull request.
 
-Candidate completion record:
+Completion record:
 
 - resumed P5 as the only `In progress` milestone and deferred P6 after its accepted P6-B work;
 - added the internal direct Messages registration and bounded request/response wire models without
@@ -396,7 +404,8 @@ Candidate completion record:
 
 ### P5-C: Structured output, errors, and capabilities
 
-Status: `Deferred`; P5-B must become authoritative first.
+Status: `Completed` in this candidate; authoritative only after its required deterministic,
+exact-head live, CI, secretless-policy, independent-review, and guarded-merge gates pass.
 
 - Implement governed structured-output translation only if P5-A accepts a compatible provider
   mechanism; otherwise declare the capability unsupported.
@@ -407,9 +416,26 @@ Status: `Deferred`; P5-B must become authoritative first.
 - Run the affected structured-output smoke when supported and one intentional safe provider-error
   smoke before creating or updating the package pull request.
 
+Candidate completion record:
+
+- passed through only the documented Anthropic-compatible intersection of the governed schema
+  subset, including strict objects, supported scalar types and formats, local definitions,
+  supported unions and composition, and the documented optional/union complexity limits;
+- translated the original canonical schema through stable `output_config.format` without a beta
+  header, parsed the returned text block, and revalidated its exact value against the original
+  schema without weakening unsupported constraints;
+- mapped documented HTTP status/error-envelope failures, retry and request metadata, refusal,
+  output-limit, and other incomplete stop states to fixed safe canonical failures;
+- reported structured-output support at the adapter profile, unknown model-level support without
+  deterministic model metadata, and streaming as unsupported until P5-D;
+- added deterministic schema/value, unknown-field, metadata, error-status/envelope,
+  authentication, permission, complexity, and leak-safety fixtures; and
+- extended the fail-closed Anthropic live task with one governed structured-output smoke and one
+  intentional unavailable-model error smoke without retaining a response body.
+
 ### P5-D: Streaming translation and cancellation
 
-Status: `Deferred`; P5-C must complete first.
+Status: `Deferred`; P5-C must become authoritative first.
 
 - Implement provider SSE event translation through the P3 parser.
 - Enforce ordering, backpressure, one authoritative terminal, and missing-terminal failure.

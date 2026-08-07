@@ -53,6 +53,35 @@ private val OPENAI_UNKNOWN_MODEL_CAPABILITIES =
             ),
     )
 
+internal val ANTHROPIC_PROVIDER_CAPABILITY_PROFILE =
+    UniversalAiProviderCapabilityProfile(
+        providerId = ANTHROPIC_PROVIDER_ID,
+        capabilities =
+            UniversalAiCapabilitySet.of(
+                UniversalAiCapabilityName.StructuredOutput to
+                    UniversalAiCapabilityDeclaration(
+                        support = UniversalAiCapabilitySupport.Supported,
+                        limits =
+                            mapOf(
+                                UniversalAiCapabilityLimitName.MaxSchemaBytes to
+                                    GovernedJsonSchemaSubset.MAX_SCHEMA_BYTES.toLong(),
+                            ),
+                    ),
+                UniversalAiCapabilityName.Streaming to
+                    UniversalAiCapabilityDeclaration(
+                        support = UniversalAiCapabilitySupport.Unsupported,
+                    ),
+            ),
+    )
+
+private val ANTHROPIC_UNKNOWN_MODEL_CAPABILITIES =
+    UniversalAiCapabilitySet.of(
+        UniversalAiCapabilityName.StructuredOutput to
+            UniversalAiCapabilityDeclaration(
+                support = UniversalAiCapabilitySupport.Unknown,
+            ),
+    )
+
 internal fun builtInProviderRegistration(
     configuration: UniversalAiProviderConfiguration,
 ): ProviderRegistration =
@@ -73,6 +102,8 @@ internal fun builtInProviderRegistration(
         ANTHROPIC_PROVIDER_ID ->
             ProviderRegistration(
                 providerId = configuration.providerId,
+                capabilityProfile = ANTHROPIC_PROVIDER_CAPABILITY_PROFILE,
+                modelCapabilityOverrides = { ANTHROPIC_UNKNOWN_MODEL_CAPABILITIES },
                 adapterFactory = { transport ->
                     AnthropicMessagesAdapter(
                         configuration = configuration,

@@ -93,8 +93,18 @@ internal class AnthropicMessagesAdapter(
         if (request.target.providerId != ANTHROPIC_PROVIDER_ID) {
             throw unsupportedRequest(ANTHROPIC_TARGET_MESSAGE)
         }
-        if (request.responseFormat.kind != UniversalAiResponseFormatKind.PlainText) {
-            throw unsupportedRequest(ANTHROPIC_RESPONSE_FORMAT_MESSAGE)
+        when (request.responseFormat.kind) {
+            UniversalAiResponseFormatKind.PlainText -> Unit
+            UniversalAiResponseFormatKind.JsonSchema -> {
+                val schema =
+                    request.responseFormat.schema
+                        ?: throw unsupportedRequest(ANTHROPIC_RESPONSE_FORMAT_MESSAGE)
+                if (!AnthropicStructuredOutput.isSupported(schema)) {
+                    throw unsupportedRequest(ANTHROPIC_STRUCTURED_SCHEMA_MESSAGE)
+                }
+            }
+
+            else -> throw unsupportedRequest(ANTHROPIC_RESPONSE_FORMAT_MESSAGE)
         }
         if (request.generation.maxOutputTokens == null) {
             throw unsupportedRequest(ANTHROPIC_MAX_OUTPUT_TOKENS_MESSAGE)
@@ -223,6 +233,16 @@ private fun UniversalAiRequest.toAnthropicWire(): AnthropicCreateMessageWire {
         messages = messages,
         system = system,
         stopSequences = generation.stopSequences.takeIf(List<String>::isNotEmpty),
+        outputConfig =
+            responseFormat.schema?.let { schema ->
+                AnthropicOutputConfigurationWire(
+                    format =
+                        AnthropicOutputFormatWire(
+                            type = "json_schema",
+                            schema = schema.elementForSerialization(),
+                        ),
+                )
+            },
     )
 }
 
@@ -234,17 +254,6 @@ private fun AnthropicMessageResponseWire.toCanonical(
     requireWire(role == "assistant")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
-    val providerContent = requireWireValue(content)
-    requireWire(providerContent.isNotEmpty())
-    val text =
-        buildString {
-            providerContent.forEach { block ->
-                requireWire(block.type == "text")
-                append(requireWireValue(block.text))
-            }
-        }
-    requireWire(text.isNotEmpty())
-
     val completionReason =
         when (stopReason) {
             "end_turn" -> {
@@ -258,7 +267,44 @@ private fun AnthropicMessageResponseWire.toCanonical(
                 UniversalAiCompletionReason.Stop
             }
 
+            "max_tokens" -> throw outputLimitFailure(metadata)
+            "refusal" -> throw refusalFailure(metadata)
+            "model_context_window_exceeded", "tool_use", "pause_turn" ->
+                throw incompleteResponseFailure(metadata)
+
             else -> throw malformedResponse()
+        }
+    val providerContent = requireWireValue(content)
+    requireWire(providerContent.isNotEmpty())
+    val output =
+        request.responseFormat.schema?.let { schema ->
+            val block = providerContent.singleOrNull() ?: throw malformedStructuredResponse()
+            if (block.type != "text") {
+                throw malformedStructuredResponse()
+            }
+            val structured =
+                block.text?.let { text ->
+                    AnthropicStructuredOutput.parseAndValidate(text, schema)
+                } ?: throw malformedStructuredResponse()
+            UniversalAiOutput.structuredJson(
+                id = OutputId.of(responseId.rawValue),
+                index = 0,
+                value = structured,
+            )
+        } ?: run {
+            val text =
+                buildString {
+                    providerContent.forEach { block ->
+                        requireWire(block.type == "text")
+                        append(requireWireValue(block.text))
+                    }
+                }
+            requireWire(text.isNotEmpty())
+            UniversalAiOutput.text(
+                id = OutputId.of(responseId.rawValue),
+                index = 0,
+                text = text,
+            )
         }
 
     return UniversalAiResponse(
@@ -269,14 +315,7 @@ private fun AnthropicMessageResponseWire.toCanonical(
                 providerId = ANTHROPIC_PROVIDER_ID,
                 modelId = responseModel,
             ),
-        outputs =
-            listOf(
-                UniversalAiOutput.text(
-                    id = OutputId.of(responseId.rawValue),
-                    index = 0,
-                    text = text,
-                ),
-            ),
+        outputs = listOf(output),
         usage = requireWireValue(usage).toCanonical(),
         completionReason = completionReason,
     )
@@ -351,69 +390,156 @@ private suspend fun readBoundedBody(reader: ConnectorTransportChunkReader): Byte
 private suspend fun providerFailure(
     response: ConnectorTransportResponse,
 ): UniversalAiException {
-    readErrorEnvelopeOrNull(response.body)
+    val envelope = readErrorEnvelopeOrNull(response.body)
+    val errorEnvelope = envelope?.takeIf { value -> value.type == "error" }
+    val providerError = errorEnvelope?.error
     val mapping =
-        when (response.statusCode) {
-            400, 409, 413, 422 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.Validation,
-                    "provider_invalid_request",
-                    ANTHROPIC_INVALID_REQUEST_MESSAGE,
-                )
-
-            401 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.Authentication,
-                    "provider_authentication_failed",
-                    ANTHROPIC_AUTHENTICATION_MESSAGE,
-                )
-
-            403 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.Authorization,
-                    "provider_permission_denied",
-                    ANTHROPIC_PERMISSION_MESSAGE,
-                )
-
-            404 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.NotFound,
-                    "provider_resource_not_found",
-                    ANTHROPIC_NOT_FOUND_MESSAGE,
-                )
-
-            429 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.RateLimit,
-                    "provider_rate_limited",
-                    ANTHROPIC_RATE_LIMIT_MESSAGE,
-                )
-
-            500 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.Provider,
-                    "provider_server_error",
-                    ANTHROPIC_SERVER_ERROR_MESSAGE,
-                )
-
-            504 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.Provider,
-                    "provider_request_timeout",
-                    ANTHROPIC_TIMEOUT_MESSAGE,
-                )
-
-            529 ->
-                ProviderErrorMapping(
-                    UniversalAiErrorCategory.Provider,
-                    "provider_unavailable",
-                    ANTHROPIC_UNAVAILABLE_MESSAGE,
-                )
-
-            else -> PROVIDER_FAILURE_MAPPING
-        }
-    return mapping.toException(response.metadata.safeErrorMetadata(response.statusCode))
+        statusErrorMapping(response.statusCode)
+            ?: providerError?.let(::providerErrorMapping)
+            ?: PROVIDER_FAILURE_MAPPING
+    return mapping.toException(
+        response.metadata.safeErrorMetadata(
+            statusCode = response.statusCode,
+            providerRequestId = errorEnvelope?.requestId,
+        ),
+    )
 }
+
+private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping? =
+    when (statusCode) {
+        400, 409, 413, 422 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Validation,
+                "provider_invalid_request",
+                ANTHROPIC_INVALID_REQUEST_MESSAGE,
+            )
+
+        401 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Authentication,
+                "provider_authentication_failed",
+                ANTHROPIC_AUTHENTICATION_MESSAGE,
+            )
+
+        402 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_billing_error",
+                ANTHROPIC_BILLING_MESSAGE,
+            )
+
+        403 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Authorization,
+                "provider_permission_denied",
+                ANTHROPIC_PERMISSION_MESSAGE,
+            )
+
+        404 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.NotFound,
+                "provider_resource_not_found",
+                ANTHROPIC_NOT_FOUND_MESSAGE,
+            )
+
+        429 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.RateLimit,
+                "provider_rate_limited",
+                ANTHROPIC_RATE_LIMIT_MESSAGE,
+            )
+
+        500 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_server_error",
+                ANTHROPIC_SERVER_ERROR_MESSAGE,
+            )
+
+        504 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_request_timeout",
+                ANTHROPIC_TIMEOUT_MESSAGE,
+            )
+
+        529 ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_unavailable",
+                ANTHROPIC_UNAVAILABLE_MESSAGE,
+            )
+
+        else -> null
+    }
+
+private fun providerErrorMapping(error: AnthropicErrorWire): ProviderErrorMapping =
+    when (error.type) {
+        "invalid_request_error", "conflict_error", "request_too_large" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Validation,
+                "provider_invalid_request",
+                ANTHROPIC_INVALID_REQUEST_MESSAGE,
+            )
+
+        "authentication_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Authentication,
+                "provider_authentication_failed",
+                ANTHROPIC_AUTHENTICATION_MESSAGE,
+            )
+
+        "billing_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_billing_error",
+                ANTHROPIC_BILLING_MESSAGE,
+            )
+
+        "permission_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Authorization,
+                "provider_permission_denied",
+                ANTHROPIC_PERMISSION_MESSAGE,
+            )
+
+        "not_found_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.NotFound,
+                "provider_resource_not_found",
+                ANTHROPIC_NOT_FOUND_MESSAGE,
+            )
+
+        "rate_limit_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.RateLimit,
+                "provider_rate_limited",
+                ANTHROPIC_RATE_LIMIT_MESSAGE,
+            )
+
+        "api_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_server_error",
+                ANTHROPIC_SERVER_ERROR_MESSAGE,
+            )
+
+        "timeout_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_request_timeout",
+                ANTHROPIC_TIMEOUT_MESSAGE,
+            )
+
+        "overloaded_error" ->
+            ProviderErrorMapping(
+                UniversalAiErrorCategory.Provider,
+                "provider_unavailable",
+                ANTHROPIC_UNAVAILABLE_MESSAGE,
+            )
+
+        else -> PROVIDER_FAILURE_MAPPING
+    }
 
 private suspend fun readErrorEnvelopeOrNull(
     reader: ConnectorTransportChunkReader,
@@ -470,10 +596,13 @@ private suspend fun readOptionalBoundedBody(
 
 private fun ConnectorResponseMetadata.safeErrorMetadata(
     statusCode: Int,
+    providerRequestId: String? = null,
 ): ExtensionValue.ObjectValue {
     val members = linkedMapOf<String, ExtensionValue>()
     members["statusCode"] = ExtensionValue.number(statusCode.toString())
-    requestId?.let { value -> members["requestId"] = ExtensionValue.string(value) }
+    val resolvedRequestId =
+        requestId ?: providerRequestId.toCanonicalRequestIdOrNull()?.rawValue
+    resolvedRequestId?.let { value -> members["requestId"] = ExtensionValue.string(value) }
     retryAfterMillis?.let { value ->
         members["retryAfterMillis"] = ExtensionValue.number(value.toString())
     }
@@ -523,6 +652,36 @@ private fun malformedResponse(): UniversalAiException =
         ),
     )
 
+private fun malformedStructuredResponse(): UniversalAiException =
+    UniversalAiException(
+        UniversalAiError(
+            category = UniversalAiErrorCategory.Protocol,
+            code = UniversalAiErrorCode.of("invalid_structured_provider_response"),
+            message = ANTHROPIC_INVALID_STRUCTURED_RESPONSE_MESSAGE,
+        ),
+    )
+
+private fun outputLimitFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
+    ProviderErrorMapping(
+        category = UniversalAiErrorCategory.Provider,
+        code = "provider_output_limit_reached",
+        message = ANTHROPIC_OUTPUT_LIMIT_MESSAGE,
+    ).toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
+
+private fun refusalFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
+    ProviderErrorMapping(
+        category = UniversalAiErrorCategory.Provider,
+        code = "provider_refused_response",
+        message = ANTHROPIC_REFUSAL_MESSAGE,
+    ).toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
+
+private fun incompleteResponseFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
+    ProviderErrorMapping(
+        category = UniversalAiErrorCategory.Provider,
+        code = "provider_incomplete_response",
+        message = ANTHROPIC_INCOMPLETE_RESPONSE_MESSAGE,
+    ).toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
+
 private fun requireWire(condition: Boolean) {
     if (!condition) {
         throw malformedResponse()
@@ -541,7 +700,9 @@ internal const val ANTHROPIC_MALFORMED_RESPONSE_MESSAGE: String =
 internal const val ANTHROPIC_TARGET_MESSAGE: String =
     "The Anthropic adapter accepts only the canonical anthropic provider."
 internal const val ANTHROPIC_RESPONSE_FORMAT_MESSAGE: String =
-    "The active Anthropic adapter package supports plain-text responses only."
+    "The Anthropic adapter does not support the requested response format."
+internal const val ANTHROPIC_STRUCTURED_SCHEMA_MESSAGE: String =
+    "The governed schema is not supported by Anthropic structured output."
 internal const val ANTHROPIC_MAX_OUTPUT_TOKENS_MESSAGE: String =
     "The Anthropic adapter requires maxOutputTokens."
 internal const val ANTHROPIC_SAMPLING_MESSAGE: String =
@@ -556,6 +717,8 @@ internal const val ANTHROPIC_INVALID_REQUEST_MESSAGE: String =
     "Anthropic rejected the request."
 internal const val ANTHROPIC_AUTHENTICATION_MESSAGE: String =
     "Anthropic rejected the request authentication."
+internal const val ANTHROPIC_BILLING_MESSAGE: String =
+    "Anthropic could not process the request because billing is unavailable."
 internal const val ANTHROPIC_PERMISSION_MESSAGE: String =
     "Anthropic denied access to the requested resource."
 internal const val ANTHROPIC_NOT_FOUND_MESSAGE: String =
@@ -570,6 +733,14 @@ internal const val ANTHROPIC_UNAVAILABLE_MESSAGE: String =
     "Anthropic is temporarily unavailable."
 internal const val ANTHROPIC_PROVIDER_FAILURE_MESSAGE: String =
     "Anthropic could not complete the request."
+internal const val ANTHROPIC_OUTPUT_LIMIT_MESSAGE: String =
+    "Anthropic stopped before completing the response because the output limit was reached."
+internal const val ANTHROPIC_REFUSAL_MESSAGE: String =
+    "Anthropic refused to produce the requested response."
+internal const val ANTHROPIC_INCOMPLETE_RESPONSE_MESSAGE: String =
+    "Anthropic returned an incomplete response."
+internal const val ANTHROPIC_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
+    "The Anthropic structured response did not match the requested governed schema."
 
 private const val MESSAGES_ENDPOINT: String = "messages"
 private const val ANTHROPIC_API_VERSION: String = "2023-06-01"
@@ -581,6 +752,7 @@ private const val MAX_RESPONSE_BODY_CHUNKS: Int = 4 * 1_024
 private const val MAX_ERROR_BODY_BYTES: Int = 256 * 1_024
 private const val INITIAL_ERROR_BODY_CAPACITY: Int = 4 * 1_024
 private const val MAX_ERROR_BODY_CHUNKS: Int = 1_024
+private const val SUCCESS_STATUS_CODE: Int = 200
 
 private val PROVIDER_FAILURE_MAPPING =
     ProviderErrorMapping(

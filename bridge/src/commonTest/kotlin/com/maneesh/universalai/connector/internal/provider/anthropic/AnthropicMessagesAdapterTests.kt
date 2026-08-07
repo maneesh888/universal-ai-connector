@@ -270,7 +270,7 @@ class AnthropicMessagesAdapterTests {
                     responseFormat =
                         UniversalAiResponseFormat.jsonSchema(
                             com.maneesh.universalai.connector.contract.StructuredOutputSchema.parse(
-                                """{"type":"string"}""",
+                                """{"type":"string","minLength":1}""",
                             ),
                         ),
                 ),
@@ -471,17 +471,6 @@ class AnthropicMessagesAdapterTests {
                   "content":[],
                   "model":"model",
                   "stop_reason":"end_turn",
-                  "usage":{"input_tokens":1,"output_tokens":1}
-                }
-                """.trimIndent(),
-                """
-                {
-                  "id":"msg_0",
-                  "type":"message",
-                  "role":"assistant",
-                  "content":[{"type":"text","text":"ok"}],
-                  "model":"model",
-                  "stop_reason":"max_tokens",
                   "usage":{"input_tokens":1,"output_tokens":1}
                 }
                 """.trimIndent(),
