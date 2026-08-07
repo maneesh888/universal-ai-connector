@@ -4,17 +4,16 @@
 
 P0-P4 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A. The
 dedicated Anthropic credential/model is now available, so P5 has resumed at P5-B as the only
-`In progress` milestone and P6 is `Deferred` after P6-A.
+`In progress` milestone and P6 is `Deferred` after P6-B.
 
-P6-A completes protocol, configuration, and live-test authentication readiness in this candidate.
-No P6 work package is active after P6-A. P6-B remains `Not started` until the ignored local
-environment contains a dedicated `OPENROUTER_API_KEY` and explicit bounded-cost
-`OPENROUTER_LIVE_MODEL`.
+P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completes
+direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
+No P6 work package is active after P6-B; P6-C remains `Not started`.
 
-P6-A adds no OpenRouter or generic OpenAI-compatible request/response implementation, runner route,
-Gradle live task, provider registration, or provider-network proof. Its completion becomes
-authoritative only after the exact-head deterministic and affected OpenAI live gates, ordinary CI,
-secretless live-policy status, independent review, and guarded merge pass.
+P6-B adds no generic OpenAI-compatible adapter, structured output, complete typed provider-error
+translation, streaming, or capability claims. Its completion becomes authoritative only after the
+exact-head deterministic, OpenAI, and OpenRouter live gates, ordinary CI, secretless live-policy
+status, independent review, and guarded merge pass.
 
 ## Objective
 
@@ -38,8 +37,9 @@ The completed milestone must provide:
 
 ## Sequencing decision
 
-P5 deferral is not P5 completion. P5-B through P5-E retain their requirements and remain a P9
-release blocker. The repository may implement and verify P6 while P5 is deferred, but it must not:
+P5 deferral is not P5 completion. P5-C through P5-E retain their requirements and remain a P9
+release blocker. The repository implemented and verified P6-A/P6-B while P5 was deferred, but it
+did not:
 
 - describe the Anthropic adapter as implemented, approved, complete, or live-tested;
 - reuse an OpenRouter credential as Anthropic proof;
@@ -185,9 +185,11 @@ uses:
 - Each selected provider gate removes every non-selected provider input.
 - Secret scanning, ordinary CI, and the secretless live-policy workflow recognize the OpenRouter
   names without receiving their values.
-- P6-B must atomically add `./scripts/check-live.sh openrouter`, the non-cacheable OpenRouter
-  Gradle live task, and `openrouter` to the real delivered-provider set. The same exact head must
-  pass the real OpenRouter gate before its first push or pull-request update.
+- P6-B atomically added `./scripts/check-live.sh openrouter`, the non-cacheable OpenRouter Gradle
+  live task, and `openrouter` to the real delivered-provider set. The same exact head passed the
+  real OpenRouter gate before its first push or pull-request update.
+- After P6-B, OpenAI and OpenRouter became delivered real gates. P5-B subsequently adds Anthropic
+  as the third delivered gate while P5 is active.
 - GitHub remains credential-free and validates only the retained exact-head evidence statements.
 
 ## Work packages
@@ -211,7 +213,7 @@ guarded merge.
 
 ### P6-B: OpenRouter non-streaming request and response translation
 
-Status: `Not started`.
+Status: `Completed`.
 
 - Add the internal OpenRouter provider registration and bounded wire models.
 - Implement authentication/header construction, text request translation, response translation,
@@ -320,10 +322,12 @@ OpenRouter credential validity, credit, model access, authentication, request/re
 structured output, errors, streaming, cancellation, generic endpoint compatibility, or provider
 network behavior.
 
-Later deterministic tests prove only committed fixtures and `MockEngine` behavior. Targeted live
-tests prove only the selected OpenRouter account, model, endpoint, network, exact head, and smoke
-paths at the recorded time. They do not prove every OpenRouter model/upstream provider, routing
-outcome, future protocol revision, or third-party OpenAI-compatible endpoint.
+P6-B deterministic tests prove only the committed non-streaming fixtures and `MockEngine`
+behavior. Its targeted live tests prove only the selected OpenRouter account, model, endpoint,
+network, exact head, minimal response, and pending-cancellation paths at the recorded time. They do
+not prove structured output, complete typed errors, streaming, generic compatibility, every
+OpenRouter model/upstream provider, routing outcome, future protocol revision, or third-party
+OpenAI-compatible endpoint.
 
 P6 work does not prove Anthropic behavior, Gateway behavior, physical-device execution, remote
 distribution, credential management, or alpha-release readiness.

@@ -6,7 +6,7 @@ P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed th
 live-test authentication-readiness package through PR
 [#39](https://github.com/maneesh888/universal-ai-connector/pull/39). The dedicated Anthropic
 credential and enabled bounded-cost model are now available, so P5 has resumed at P5-B as the only
-`In progress` milestone. P6 is `Deferred` after P6-A, and P7-P9 remain `Not started`.
+`In progress` milestone. P6 is `Deferred` after P6-B, and P7-P9 remain `Not started`.
 
 P5-B is completed in this candidate. It adds the internal non-streaming Messages registration and
 wire translation, deterministic authentication/request/response/cancellation/redaction coverage,

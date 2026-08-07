@@ -67,11 +67,11 @@ provider set, and P6-A extends the bounded set and isolation regressions to Open
 provider-specific change selects its delivered gate, a shared or ambiguous live change selects
 every delivered gate, and unrelated changes remain credential-free. The hook removes every
 documented provider input from the full deterministic gate and every non-selected provider input
-from a selected live gate. OpenAI and Anthropic are the delivered gates after P5-B atomically adds
-the Anthropic runner, task, and delivered-provider selection. P6-B must atomically add the
-OpenRouter runner, task, and delivered-provider selection. The initial PR body and every affected
-update record exact-head local evidence for the secretless `Required live verification` policy
-check. GitHub does not rerun provider tests or receive provider credentials.
+from a selected live gate. OpenAI, Anthropic, and OpenRouter are the delivered real gates after
+P5-B atomically adds the Anthropic runner, task, and delivered-provider selection to the existing
+OpenAI and OpenRouter routes. The initial PR body and every affected update record exact-head local
+evidence for the secretless `Required live verification` policy check. GitHub does not rerun
+provider tests or receive provider credentials.
 
 ## Dependency updates
 

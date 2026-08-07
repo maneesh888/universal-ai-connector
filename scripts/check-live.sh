@@ -6,16 +6,20 @@ PROVIDER="${1:-}"
 
 usage() {
   cat <<'EOF'
-Usage: ./scripts/check-live.sh <openai|anthropic>
+Usage: ./scripts/check-live.sh <provider>
 
-Runs the deterministic adapter suite followed by the selected exact-head provider live suite.
-OpenAI process environment:
+Supported providers and required process environment:
+  openai
   OPENAI_API_KEY       Dedicated revocable test-project credential.
   OPENAI_LIVE_MODEL    Explicit model identifier enabled for the test project.
 
-Anthropic process environment:
+  anthropic
   ANTHROPIC_API_KEY       Dedicated revocable test-workspace credential.
   ANTHROPIC_LIVE_MODEL    Explicit model identifier enabled for the test workspace.
+
+  openrouter
+  OPENROUTER_API_KEY    Dedicated revocable spend-limited test credential.
+  OPENROUTER_LIVE_MODEL Explicit bounded-cost model slug enabled for the credential.
 
 Optional:
   UAC_LIVE_EXPECTED_SHA  Exact 40-character commit SHA expected by the caller.
@@ -32,7 +36,6 @@ fail_missing_live_input() {
   local provider_label="$2"
   local key_name="$3"
   local model_name="$4"
-  local provider_route="$5"
   cat >&2 <<EOF
 $name is required for $provider_label live verification.
 
@@ -43,7 +46,7 @@ Configure the ignored local file before retrying:
   set -a
   source .env.live
   set +a
-  ./scripts/check-live.sh $provider_route
+  ./scripts/check-live.sh $PROVIDER
 
 The runner never opens, reads, or sources .env.live automatically.
 EOF
@@ -76,13 +79,19 @@ case "$PROVIDER" in
     PROVIDER_LABEL="OpenAI"
     KEY_NAME="OPENAI_API_KEY"
     MODEL_NAME="OPENAI_LIVE_MODEL"
-    LIVE_TASK="openAiLiveTest"
+    LIVE_TASK=":bridge:openAiLiveTest"
     ;;
   anthropic)
     PROVIDER_LABEL="Anthropic"
     KEY_NAME="ANTHROPIC_API_KEY"
     MODEL_NAME="ANTHROPIC_LIVE_MODEL"
-    LIVE_TASK="anthropicLiveTest"
+    LIVE_TASK=":bridge:anthropicLiveTest"
+    ;;
+  openrouter)
+    PROVIDER_LABEL="OpenRouter"
+    KEY_NAME="OPENROUTER_API_KEY"
+    MODEL_NAME="OPENROUTER_LIVE_MODEL"
+    LIVE_TASK=":bridge:openRouterLiveTest"
     ;;
   *)
     usage >&2
@@ -108,27 +117,42 @@ if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ || "$EXPECTED_SHA" != "$HEAD_SHA" ]]; 
   fail "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA."
 fi
 
-API_KEY="${!KEY_NAME:-}"
-LIVE_MODEL="${!MODEL_NAME:-}"
-
-if [[ -z "$API_KEY" ]]; then
-  fail_missing_live_input "$KEY_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME" "$PROVIDER"
+if [[ -z "${!KEY_NAME:-}" ]]; then
+  fail_missing_live_input "$KEY_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME"
 fi
+KEY_VALUE="${!KEY_NAME}"
 
-if [[ "${#API_KEY}" -gt 8192 ||
-      "$API_KEY" == *$'\n'* ||
-      "$API_KEY" == *$'\r'* ]]; then
+if [[ "${#KEY_VALUE}" -gt 8192 ||
+      "$KEY_VALUE" == *$'\n'* ||
+      "$KEY_VALUE" == *$'\r'* ]]; then
   fail "$KEY_NAME has an invalid shape."
 fi
 
-if [[ -z "$LIVE_MODEL" ]]; then
-  fail_missing_live_input "$MODEL_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME" "$PROVIDER"
+if [[ -z "${!MODEL_NAME:-}" ]]; then
+  fail_missing_live_input "$MODEL_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME"
 fi
+MODEL_VALUE="${!MODEL_NAME}"
 
-if [[ "${#LIVE_MODEL}" -gt 128 ||
-      ! "$LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-  fail "$MODEL_NAME must be a bounded $PROVIDER_LABEL model identifier."
-fi
+case "$PROVIDER" in
+  openai)
+    if [[ "${#OPENAI_LIVE_MODEL}" -gt 128 ||
+          ! "$OPENAI_LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+      fail "OPENAI_LIVE_MODEL must be a bounded OpenAI model identifier."
+    fi
+    ;;
+  anthropic)
+    if [[ "${#ANTHROPIC_LIVE_MODEL}" -gt 128 ||
+          ! "$ANTHROPIC_LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+      fail "ANTHROPIC_LIVE_MODEL must be a bounded Anthropic model identifier."
+    fi
+    ;;
+  openrouter)
+    if [[ "${#OPENROUTER_LIVE_MODEL}" -gt 256 ||
+          ! "$OPENROUTER_LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$ ]]; then
+      fail "OPENROUTER_LIVE_MODEL must be a bounded OpenRouter model slug."
+    fi
+    ;;
+esac
 
 if [[ ! -x "$ROOT/gradlew" ]]; then
   fail "The Gradle wrapper is required for $PROVIDER_LABEL live verification."
@@ -153,38 +177,21 @@ fi
 require_clean_checkout
 
 echo "Running local $PROVIDER_LABEL live smoke tests for exact HEAD."
-case "$PROVIDER" in
-  openai)
-    env \
-      -u ANTHROPIC_API_KEY \
-      -u ANTHROPIC_LIVE_MODEL \
-      -u OPENROUTER_API_KEY \
-      -u OPENROUTER_LIVE_MODEL \
-      OPENAI_API_KEY="$API_KEY" \
-      OPENAI_LIVE_MODEL="$LIVE_MODEL" \
-      UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
-      "$ROOT/gradlew" \
-        ":bridge:$LIVE_TASK" \
-        --no-daemon \
-        --no-configuration-cache \
-        "-PuacLiveExpectedSha=$HEAD_SHA"
-    ;;
-  anthropic)
-    env \
-      -u OPENAI_API_KEY \
-      -u OPENAI_LIVE_MODEL \
-      -u OPENROUTER_API_KEY \
-      -u OPENROUTER_LIVE_MODEL \
-      ANTHROPIC_API_KEY="$API_KEY" \
-      ANTHROPIC_LIVE_MODEL="$LIVE_MODEL" \
-      UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
-      "$ROOT/gradlew" \
-        ":bridge:$LIVE_TASK" \
-        --no-daemon \
-        --no-configuration-cache \
-        "-PuacLiveExpectedSha=$HEAD_SHA"
-    ;;
-esac
+env \
+  -u OPENAI_API_KEY \
+  -u OPENAI_LIVE_MODEL \
+  -u ANTHROPIC_API_KEY \
+  -u ANTHROPIC_LIVE_MODEL \
+  -u OPENROUTER_API_KEY \
+  -u OPENROUTER_LIVE_MODEL \
+  "$KEY_NAME=$KEY_VALUE" \
+  "$MODEL_NAME=$MODEL_VALUE" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  "$ROOT/gradlew" \
+    "$LIVE_TASK" \
+    --no-daemon \
+    --no-configuration-cache \
+    "-PuacLiveExpectedSha=$HEAD_SHA"
 
 POST_LIVE_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after provider tests."
@@ -195,5 +202,5 @@ require_clean_checkout
 
 echo "$PROVIDER_LABEL live verification passed."
 echo "provider=$PROVIDER"
-echo "model=$LIVE_MODEL"
+echo "model=$MODEL_VALUE"
 echo "head_sha=$HEAD_SHA"

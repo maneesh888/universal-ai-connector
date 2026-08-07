@@ -3,14 +3,16 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PROVIDER_SOURCES="$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider"
+PROVIDER_IMPLEMENTATION_PATTERN='(OpenAi|Anthropic|OpenRouter)[A-Za-z0-9_]*(Wire|Adapter|Translator)'
 scan_status=0
 
 rg \
   --no-config \
   --line-number \
-  '^(public[[:space:]]+)?(data[[:space:]]+class|class|object|interface|enum[[:space:]]+class)[[:space:]]+(OpenAi|Anthropic)' \
+  "^(public[[:space:]]+)?(data[[:space:]]+class|class|object|interface|enum[[:space:]]+class)[[:space:]]+$PROVIDER_IMPLEMENTATION_PATTERN" \
   "$PROVIDER_SOURCES/openai" \
-  "$PROVIDER_SOURCES/anthropic" || scan_status=$?
+  "$PROVIDER_SOURCES/anthropic" \
+  "$PROVIDER_SOURCES/openrouter" || scan_status=$?
 case "$scan_status" in
   0)
     echo "A provider implementation or DTO declaration is not internal." >&2
@@ -36,7 +38,7 @@ for supported_surface in \
     --glob '!**/internal/**' \
     --glob '!**/src/test/**' \
     --glob '!**/Tests/**' \
-    'internal\.provider\.(openai|anthropic)|(OpenAi|Anthropic)[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
+    "internal\\.provider\\.(openai|anthropic|openrouter)|$PROVIDER_IMPLEMENTATION_PATTERN" \
     "$supported_surface" || scan_status=$?
   case "$scan_status" in
     0)

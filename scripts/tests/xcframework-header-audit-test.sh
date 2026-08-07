@@ -10,6 +10,7 @@ source "$ROOT/scripts/xcframework-header-audit.sh"
 
 HEADER="$TEST_DIRECTORY/UniversalAiConnectorBridge.h"
 MATCH_OUTPUT="$TEST_DIRECTORY/match.log"
+OPENROUTER_MATCH_OUTPUT="$TEST_DIRECTORY/openrouter-match.log"
 OPERATIONAL_ERROR_OUTPUT="$TEST_DIRECTORY/operational-error.log"
 FAKE_PATH="$TEST_DIRECTORY/path"
 printf '%s\n' '@interface UACBAppleConnectorBridge : NSObject' > "$HEADER"
@@ -34,13 +35,33 @@ if [[ "$provider_match_status" -ne 1 ]]; then
   echo "Expected the XCFramework header audit to reject an OpenAI wire DTO." >&2
   exit 1
 fi
+
+sed -i.bak '/OpenAiResponseWire/d' "$HEADER"
+rm -f "$HEADER.bak"
+printf '%s\n' 'OpenRouterChatCompletionWire' >> "$HEADER"
+openrouter_match_status=0
+uac_reject_xcframework_header_pattern \
+  "$HEADER" \
+  "$UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN" \
+  "An OpenRouter provider implementation leaked into the callback-bridge header." \
+  > "$OPENROUTER_MATCH_OUTPUT" 2>&1 || openrouter_match_status=$?
+if [[ "$openrouter_match_status" -ne 1 ]]; then
+  echo "Expected the XCFramework header audit to reject an OpenRouter wire DTO." >&2
+  exit 1
+fi
+if ! grep -Fq \
+  "An OpenRouter provider implementation leaked into the callback-bridge header." \
+  "$OPENROUTER_MATCH_OUTPUT"; then
+  echo "XCFramework header audit did not report the OpenRouter wire DTO." >&2
+  exit 1
+fi
 if ! grep -Fq \
   "A provider implementation type leaked into the callback-bridge header." \
   "$MATCH_OUTPUT"; then
   echo "XCFramework header audit did not report the OpenAI wire DTO." >&2
   exit 1
 fi
-sed -i.bak '/OpenAiResponseWire/d' "$HEADER"
+sed -i.bak '/OpenRouterChatCompletionWire/d' "$HEADER"
 rm -f "$HEADER.bak"
 
 printf '%s\n' 'AnthropicMessageResponseWire' >> "$HEADER"
