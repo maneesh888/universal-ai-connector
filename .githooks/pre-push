@@ -45,6 +45,8 @@ echo "Running Universal AI Connector pre-push checks..."
 env \
   -u OPENAI_API_KEY \
   -u OPENAI_LIVE_MODEL \
+  -u ANTHROPIC_API_KEY \
+  -u ANTHROPIC_LIVE_MODEL \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/scripts/check.sh" --full
 require_clean_tree
@@ -56,12 +58,39 @@ LIVE_BASE_SHA="$(git -C "$ROOT" rev-parse --verify "$LIVE_BASE_REF^{commit}" 2>/
   exit 1
 }
 HEAD_SHA="$(git -C "$ROOT" rev-parse --verify HEAD)"
-LIVE_REQUIRED="$("$ROOT/scripts/live-impact.sh" "$LIVE_BASE_SHA" "$HEAD_SHA")"
-if [[ "$LIVE_REQUIRED" == "true" ]]; then
-  echo "Provider-impacting changes require exact-head local live verification."
-  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" "$ROOT/scripts/check-live.sh" openai
-elif [[ "$LIVE_REQUIRED" != "false" ]]; then
-  echo "Provider-impact classification returned an invalid result." >&2
-  exit 1
-fi
+LIVE_PROVIDERS="$("$ROOT/scripts/live-impact.sh" "$LIVE_BASE_SHA" "$HEAD_SHA")"
+case "$LIVE_PROVIDERS" in
+  none)
+    ;;
+  openai | anthropic | openai,anthropic)
+    IFS=',' read -r -a SELECTED_LIVE_PROVIDERS <<< "$LIVE_PROVIDERS"
+    for selected_provider in "${SELECTED_LIVE_PROVIDERS[@]}"; do
+      echo "Provider-impacting changes require exact-head local $selected_provider verification."
+      case "$selected_provider" in
+        openai)
+          env \
+            -u ANTHROPIC_API_KEY \
+            -u ANTHROPIC_LIVE_MODEL \
+            UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+            "$ROOT/scripts/check-live.sh" openai
+          ;;
+        anthropic)
+          env \
+            -u OPENAI_API_KEY \
+            -u OPENAI_LIVE_MODEL \
+            UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+            "$ROOT/scripts/check-live.sh" anthropic
+          ;;
+        *)
+          echo "Provider-impact classification selected an unsupported provider." >&2
+          exit 1
+          ;;
+      esac
+    done
+    ;;
+  *)
+    echo "Provider-impact classification returned an invalid provider set." >&2
+    exit 1
+    ;;
+esac
 require_clean_tree

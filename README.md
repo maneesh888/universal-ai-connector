@@ -84,7 +84,8 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| Anthropic, OpenRouter, and gateway adapters | ⏳ Planned |
+| Anthropic Messages adapter | 🚧 P5-A authentication/live-test readiness completed; provider behavior not started |
+| OpenRouter and gateway adapters | ⏳ Planned |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
 
@@ -97,7 +98,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P2 | Canonical core and JSON contracts | ✅ Completed |
 | P3 | HTTP transport and provider registry | ✅ Completed |
 | P4 | OpenAI Responses adapter | ✅ Completed |
-| P5 | Anthropic adapter | ⏳ Planned |
+| P5 | Anthropic adapter | 🚧 In progress; P5-A completed, P5-B not activated |
 | P6 | OpenRouter and compatible adapters | ⏳ Planned |
 | P7 | Universal Gateway V2 adapter | ⏳ Planned |
 | P8 | Production distribution and host integration | ⏳ Planned |
@@ -109,9 +110,9 @@ The product-facing Apple package and closing legacy-surface cleanup are accepted
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
-### P2 through P4 completion
+### P2 through P4 completion and P5 activation
 
-P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, P3-B added URL, header, timeout, canonical error, and redaction policy, P3-C added bounded incremental SSE framing, response metadata, and the first-body-byte content-start boundary, P3-D added deterministic internal provider registration and primary-client lookup, and P3-E bound adapter construction to transport lifecycle while completing cancellation, cleanup, authoritative-terminal, host-boundary, and acceptance proof. P4 was activated on August 2, 2026. P4-A established its protocol, provider-neutral configuration decision, secret-safety convention, and protected live-verification foundation without implementing provider behavior; P4-B completed non-streaming Responses translation; P4-C completed structured output, errors, and capabilities; P4-D completed streaming and active cancellation; and P4-E reconciled concurrent lifecycle, cleanup, secretless CI, host consumption, and package boundaries before milestone closeout.
+P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin contracts, governed JSON representations, compatibility fixtures, deterministic canonical behavior, and Swift-native façade mappings without introducing provider DTOs. P3 was activated separately after P2 completion. P3-A established transport construction and lifecycle ownership, P3-B added URL, header, timeout, canonical error, and redaction policy, P3-C added bounded incremental SSE framing, response metadata, and the first-body-byte content-start boundary, P3-D added deterministic internal provider registration and primary-client lookup, and P3-E bound adapter construction to transport lifecycle while completing cancellation, cleanup, authoritative-terminal, host-boundary, and acceptance proof. P4 was activated on August 2, 2026. P4-A established its protocol, provider-neutral configuration decision, secret-safety convention, and protected live-verification foundation without implementing provider behavior; P4-B completed non-streaming Responses translation; P4-C completed structured output, errors, and capabilities; P4-D completed streaming and active cancellation; and P4-E reconciled concurrent lifecycle, cleanup, secretless CI, host consumption, and package boundaries before milestone closeout. P5 was activated on August 7, 2026. P5-A recorded the direct Anthropic Messages and authentication decisions, added value-free provider-specific environment names, and made the local-live classifier and hook provider-aware without adding Anthropic network behavior or a live task.
 
 ## Architecture direction
 
@@ -291,9 +292,9 @@ Enable the mandatory local commit and push gates once per clone:
 ```
 
 The pre-commit hook runs the quick cross-platform suite. The pre-push hook requires a clean
-worktree and runs the complete deterministic suite. If `scripts/live-impact.sh` classifies the
-branch as provider-impacting relative to `origin/main`, pre-push also requires exact-head local
-live verification. Do not bypass either hook.
+worktree and runs the complete deterministic suite. `scripts/live-impact.sh` returns the delivered
+providers affected relative to `origin/main`, and pre-push runs every selected exact-head local
+gate in stable order. Do not bypass either hook.
 
 Run individual checks when needed:
 
@@ -330,10 +331,11 @@ set +a
 ./scripts/check-live.sh openai
 ```
 
-Set `OPENAI_API_KEY` and `OPENAI_LIVE_MODEL` only in the local editor. Missing inputs, unavailable
-model access, quota/rate limits, provider failures, and assertions are blockers rather than
-skipped tests. GitHub remains credential-free; an affected PR records the passing exact SHA and
-no-retention boundary for the automatic `live-policy` evidence check. See
+The same ignored file also contains empty `ANTHROPIC_API_KEY` and `ANTHROPIC_LIVE_MODEL` entries,
+but P5-A adds no Anthropic runner or live task. Set provider values only in the local editor.
+Missing inputs, unavailable model access, quota/rate limits, provider failures, and assertions are
+blockers rather than skipped tests. GitHub remains credential-free; an affected PR records the
+passing exact SHA and no-retention boundary for the automatic `live-policy` evidence check. See
 [`docs/LIVE_PROVIDER_TESTING.md`](docs/LIVE_PROVIDER_TESTING.md).
 
 The Xcode scripts prefer the newest available `iPhone 17 Pro` simulator. Override the destination when necessary:

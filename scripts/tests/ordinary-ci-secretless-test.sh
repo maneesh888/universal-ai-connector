@@ -9,9 +9,12 @@ for forbidden in \
   'secrets.' \
   'OPENAI_API_KEY' \
   'OPENAI_LIVE_MODEL' \
+  'ANTHROPIC_API_KEY' \
+  'ANTHROPIC_LIVE_MODEL' \
   '.env.live' \
   './scripts/check-live.sh' \
   ':bridge:openAiLiveTest' \
+  ':bridge:anthropicLiveTest' \
   'environment: live-provider' \
   'environment: live-policy'; do
   if grep -Fq "$forbidden" "$WORKFLOW"; then

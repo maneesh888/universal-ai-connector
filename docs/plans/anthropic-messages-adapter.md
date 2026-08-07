@@ -2,13 +2,18 @@
 
 ## Status and activation gate
 
-P0-P4 are `Completed`. P5 remains `Not started`, no work package is active, and P6-P9 remain
-`Not started`.
+P0-P4 are `Completed`. P5 was activated on August 7, 2026 as the only `In progress` milestone,
+P5-A completed the protocol and live-test authentication-readiness package in this candidate, and
+P6-P9 remain `Not started`.
 
-Creating and reviewing this plan does not activate P5 or authorize Anthropic protocol
-implementation. P5 may begin only after a separate roadmap transition makes it the sole
-`In progress` milestone and names P5-A as the active work package. Current official Anthropic
-sources may be selected only after that activation.
+No work package is currently active. P5-B remains `Not started` because the repository does not
+yet have the dedicated Anthropic test credential and enabled bounded-cost model required for its
+first provider-behavior pull request. P5-A adds no Anthropic request/response implementation,
+runner route, Gradle live task, or claim of live provider proof.
+
+The P5-A completion transition becomes authoritative only after this candidate passes its
+exact-head deterministic and affected OpenAI live gates, ordinary CI, secretless live-policy
+status, independent review, and guarded merge.
 
 ## Objective
 
@@ -113,24 +118,69 @@ The completed milestone must provide:
 
 ## P5-A readiness decisions
 
-P5-A must close the following decisions after separate P5 activation and before provider behavior
-is implemented.
+P5-A closed the following decisions after P5 activation and before provider behavior.
 
 ### Authoritative provider protocol
 
-- Record the retrieval date and current official sources for the selected Messages request,
-  response, streaming, structured-output, authentication, versioning, error, and credential-safety
-  behavior.
-- Define the smallest protocol subset required by the accepted canonical contracts.
-- Record which provider content blocks, roles, generation parameters, stop reasons, usage fields,
-  metadata, errors, and stream events are required, optional, unsupported, or safely ignorable.
-- Determine whether the provider's documented structured-output mechanism can satisfy the
-  governed canonical schema and value rules without exposing provider tool or DTO concepts. If
-  not, report the capability as unsupported rather than broadening the public contract.
-- Keep committed fixtures synthetic and credential-free. Official examples may guide fixture
-  shape but are not copied as an ungoverned compatibility corpus.
+The following official Claude Platform sources were consulted on August 7, 2026 and govern the P5
+subset:
+
+- [API overview and direct HTTP authentication headers](https://platform.claude.com/docs/en/api/overview)
+- [API-key authentication and rotation guidance](https://platform.claude.com/docs/en/manage-claude/authentication)
+- [Messages request and response reference](https://platform.claude.com/docs/en/api/messages/create)
+- [Required API version header and compatibility policy](https://platform.claude.com/docs/en/api/versioning)
+- [Structured JSON outputs through `output_config.format`](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+- [Streaming Messages event sequence](https://platform.claude.com/docs/en/build-with-claude/streaming)
+- [Stop-reason handling](https://platform.claude.com/docs/en/build-with-claude/handling-stop-reasons)
+- [HTTP errors, error envelopes, request IDs, and retry metadata](https://platform.claude.com/docs/en/api/errors)
+
+P5 targets only the direct Claude API at `https://api.anthropic.com`, uses
+`POST /v1/messages`, and sends `x-api-key`, `anthropic-version: 2023-06-01`,
+`content-type: application/json`, and `accept: application/json`. P5 does not implement the
+Workload Identity Federation, App Attest, Amazon Bedrock, Google Cloud, Microsoft Foundry, or
+Claude Platform on AWS authentication and transport variants. No beta header is part of the
+accepted subset.
+
+The request subset is text-only:
+
+- zero or more leading canonical `system` inputs map in order to top-level system text blocks;
+- subsequent canonical inputs must alternate `user` and `assistant`, end with `user`, and map to
+  text content blocks without provider-side merging or assistant prefilling;
+- `developer`, unknown, mid-conversation `system`, consecutive same-role, final `assistant`,
+  image, document, citation, cache-control, thinking, tool, and server-feature inputs are
+  unsupported and fail before credential resolution or dispatch;
+- canonical `maxOutputTokens` is required because the provider field is required and the adapter
+  does not invent a provider limit when canonical intent omits one;
+- canonical stop sequences map directly within both contracts' accepted bounds; and
+- explicit `temperature` and `topP` remain unsupported because current provider support is
+  model-dependent or deprecated and P5 performs no model discovery. Omitted sampling values
+  delegate to the selected provider model.
+
+The response subset accepts ordered text content blocks plus message ID, model, supported stop
+state, input/output token usage, and bounded response metadata. Thinking, tool, citation,
+fallback, refusal content, unknown required content, or an absent/unsupported terminal cannot
+become canonical success. P5-C owns fixed safe incomplete/error mapping, and P5-D owns the
+documented `message_start`, indexed content-block, cumulative `message_delta`, `message_stop`,
+`ping`, and stream-error sequence. New event or enum values remain distinguishable and fail when
+they can affect the supported result.
+
+The stable `output_config.format` JSON-schema mechanism is accepted for P5-C without provider
+tools or public provider DTOs. An internal compatibility validator must pass through only the
+faithfully representable intersection of the governed canonical subset and Anthropic's documented
+schema dialect. It must not weaken constraints by moving them into descriptions. Unsupported
+keywords, bounds, formats, recursion, or complexity fail before credential resolution or
+dispatch. Returned text is parsed and revalidated against the original governed schema; refusal,
+`max_tokens`, or other incomplete stop states are never accepted as structured success.
+Model-level support remains conservative until deterministic metadata and the selected live model
+prove it.
+
+Committed fixtures remain synthetic and credential-free. Official examples may guide fixture
+shape but are not copied as an ungoverned compatibility corpus.
 
 ### Configuration and credentials
+
+The existing `UniversalAiProviderConfiguration` boundary is sufficient for P5. No public
+Anthropic configuration, credential, request, or host-storage type is approved.
 
 - Reuse the immutable provider-neutral configuration keyed by canonical provider identifier,
   validated base URL, and synchronous host-owned credential supplier.
@@ -152,8 +202,8 @@ is implemented.
 - `.env.live` remains the only repository-defined local environment file for manual live-provider
   inputs. It remains Git-ignored, is never opened or sourced automatically, and should retain
   owner-only permissions.
-- `.env.live.example` remains tracked and value-free. P5-A adds empty
-  `ANTHROPIC_API_KEY` and `ANTHROPIC_LIVE_MODEL` entries alongside the existing OpenAI entries.
+- `.env.live.example` remains tracked and value-free. It contains empty `ANTHROPIC_API_KEY` and
+  `ANTHROPIC_LIVE_MODEL` entries alongside the existing OpenAI entries.
 - Each provider owns distinct variables. `OPENAI_API_KEY` is never reused as an Anthropic
   credential, and no generic cross-provider `API_KEY` variable is introduced.
 - A developer explicitly exports the chosen file into the local process before running a live
@@ -164,35 +214,46 @@ is implemented.
 
 ### Live verification and merge protection
 
-- P5-A must replace the current boolean live-impact result with provider-aware selection and update
-  the pre-push hook to run every selected provider gate. Provider-specific paths select their
-  provider, shared transport/build/live-policy paths select every delivered provider, unrelated
-  paths select none, and ambiguous affected paths fail closed to every delivered provider.
-- During P5-A, OpenAI remains the only delivered provider gate. The provider-aware classifier and
-  pre-push regressions must exercise stubbed OpenAI-only, Anthropic-only, shared-both, and
-  unaffected routes, but an actual P5-A push must not require a nonexistent Anthropic task.
+- `scripts/live-impact.sh` now returns `none` or a stable comma-separated provider set instead of a
+  boolean. Provider-specific paths select their delivered provider, shared
+  transport/build/authentication/live-policy paths select every delivered provider, unrelated
+  paths select none, and an undelivered or ambiguous affected provider path fails closed to every
+  delivered provider.
+- OpenAI remains the only delivered provider gate in P5-A. The pre-push hook runs each selected
+  gate in stable order. Regression classifiers and runner stubs add Anthropic to the synthetic
+  delivered set and prove OpenAI-only, Anthropic-only, shared-both, unaffected, invalid-revision,
+  and ambiguous-path behavior without making an actual P5-A push require a nonexistent Anthropic
+  task.
 - P5-B must atomically add the `check-live.sh anthropic` route, the dedicated Anthropic Gradle live
-  task, and Anthropic to the classifier's delivered-provider set. That same head must run the
-  Anthropic gate, plus the OpenAI gate when its shared changes can affect OpenAI behavior.
+  task, and `anthropic` to the classifier's embedded delivered-provider set. Merely changing that
+  set causes pre-push to call the missing route and fail, so the same head must deliver and run the
+  Anthropic gate, plus the OpenAI gate when shared changes can affect OpenAI behavior.
 - Require a clean committed checkout, bind the run to exact `HEAD`, and reject a mismatched
   `UAC_LIVE_EXPECTED_SHA`.
-- Run the pre-push full deterministic gate with every documented provider key and live-model input
-  removed from its process environment.
-- Run the deterministic Anthropic adapter prerequisites with every Anthropic live input removed
-  from their process environment before starting the provider task.
+- The pre-push full deterministic gate and the existing OpenAI runner prerequisite remove every
+  documented OpenAI and Anthropic key and live-model input from their process environments.
+- Each selected provider gate removes every non-selected provider input before invoking its
+  runner; the OpenAI Gradle task is now proven to receive no Anthropic input.
+- P5-B must run the deterministic Anthropic adapter prerequisites with every Anthropic live input
+  removed from their process environment before starting the provider task.
 - Pass `ANTHROPIC_API_KEY`, `ANTHROPIC_LIVE_MODEL`, and the exact-head binding only to the dedicated
   non-cacheable, no-daemon Anthropic live task. Do not pass the credential through Gradle
   properties, command-line arguments, reusable daemon state, configuration cache, or retained
   test output, and remove every non-selected provider input from that task's process environment.
 - Keep the live task excluded from ordinary `jvmTest`, `check.sh`, samples, and CI. Missing inputs,
   provider access, quota, selected-model access, task wiring, or assertions fail rather than skip.
-- Extend classifier, runner, pre-push, secret-scan, and secretless-policy regressions so selected
-  gates cannot be silently omitted and every documented Anthropic input is recognized without
-  embedding or printing a real value.
+- Classifier, runner, pre-push, secret-scan, ordinary-CI, and secretless-policy regressions prove
+  selected gates cannot be silently omitted and every documented Anthropic input remains absent
+  from deterministic/remote execution and is recognized without embedding or printing a real
+  value.
 - Continue using the existing credential-free `live-policy` Environment and required status.
   GitHub receives no provider credential and does not rerun provider tests.
 - Record only bounded exact-head evidence: command, provider, selected model, UTC date, result,
   proof limits, and the existing statement `No credential or provider response body retained.`
+
+The secretless workflow accepts the legacy P4 `true`/`false` result only for the trusted-base
+transition and normalizes it to `openai`/`none`; current classifiers must return a valid provider
+set. GitHub still receives no credential and does not independently prove local execution.
 
 ## Adapter contract
 
@@ -262,7 +323,8 @@ time.
 
 ### P5-A: Protocol and live-test authentication readiness
 
-Status: `Not started`.
+Status: `Completed` in the August 7, 2026 candidate; authoritative after its required gates and
+guarded merge.
 
 - Bind the supported protocol subset to current official sources.
 - Confirm reuse of the provider-neutral configuration and credential-supplier boundary.
@@ -276,6 +338,25 @@ Status: `Not started`.
   even when the developer exported the shared local file containing multiple providers.
 - Record the structured-output capability decision and activate P5-B only after these decisions
   and gates are accepted.
+
+Completion record:
+
+- activated P5 as the only `In progress` milestone and bound the supported direct Messages subset
+  to the dated official sources in this plan;
+- confirmed the existing provider-neutral configuration and synchronous host-owned credential
+  supplier without adding a public Anthropic or storage API;
+- accepted stable JSON-schema output for a strict provider-compatible intersection while rejecting
+  semantic weakening, unsupported schemas, and incomplete provider results;
+- extended the one ignored `.env.live` convention with value-free Anthropic key/model names;
+- replaced boolean live impact with stable provider-set selection and updated pre-push to run every
+  selected gate with deterministic and cross-provider environment isolation;
+- added stubbed OpenAI-only, Anthropic-only, shared-both, unaffected, undelivered, ambiguous, and
+  failure regressions while leaving OpenAI as the only real delivered gate; and
+- added no Anthropic runner route, Gradle live task, provider DTO, network behavior, or live proof.
+
+P5-B is deliberately not activated. It requires a dedicated revocable Anthropic test key and
+enabled bounded-cost model because its atomic runner/task/adapter head must pass
+`./scripts/check-live.sh anthropic` before the first push or pull-request update.
 
 ### P5-B: Non-streaming request and response translation
 
@@ -447,6 +528,9 @@ Every exact head that adds or changes Anthropic live behavior must pass:
 ```bash
 ./scripts/check-live.sh anthropic
 ```
+
+P5-A changes shared local-live routing and therefore must pass the delivered OpenAI gate for its
+exact head. It cannot claim or substitute Anthropic live proof.
 
 The live command must run deterministic affected tests first. Missing credentials, unavailable
 provider service, rate limiting, stale-head evidence, task wiring failure, or a failed assertion

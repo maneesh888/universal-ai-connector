@@ -6,22 +6,34 @@ provider or Gateway path must pass the exact-head local live gate. GitHub valida
 exact-head evidence through the credential-free `live-policy` deployment; it does not run
 provider tests or receive provider credentials.
 
-## OpenAI credential contract
+## Local input contract
 
-The OpenAI live suite reads two process-environment values:
+The single ignored `.env.live` file may contain distinct inputs for each provider:
 
 - `OPENAI_API_KEY`: a dedicated, revocable, low-quota test-project key.
 - `OPENAI_LIVE_MODEL`: an explicit model identifier enabled for that test project.
+- `ANTHROPIC_API_KEY`: a dedicated, revocable, conservatively quota-limited Anthropic test key.
+- `ANTHROPIC_LIVE_MODEL`: an explicit bounded-cost model identifier enabled for that key.
 
-Do not use a production key. Restrict access to the test project, set conservative spend and rate
-limits, and monitor its usage. The repository, samples, mobile or desktop artifacts, Gradle
-properties, command-line arguments, and normal CI must never contain the key.
+OpenAI is the only delivered local-live gate during P5-A. The Anthropic names are value-free
+readiness inputs only: no runner route, Gradle live task, or provider network behavior receives
+them. P5-B must atomically deliver those paths and add Anthropic to provider selection, then pass
+the exact-head Anthropic gate before its first push or pull-request update.
+
+Do not use production keys. Restrict access to the test project or workspace, set conservative
+spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
+Gradle properties, command-line arguments, and normal CI must never contain a key.
 
 Create and manage API keys through the official
 [OpenAI API-key settings](https://platform.openai.com/settings/organization/api-keys), and follow
 the official [production key-safety guidance](https://developers.openai.com/api/docs/guides/production-best-practices).
 An API project needs its own billing/credits and limits; a ChatGPT subscription is not an API
 credential.
+
+Create an Anthropic key only when P5-B is ready through the official
+[Claude API authentication settings and guidance](https://platform.claude.com/docs/en/manage-claude/authentication).
+Use an expiring workspace-scoped test key when available. Do not send a credential through issue,
+pull-request, chat, or review text.
 
 The tracked `.env.live.example` is deliberately value-free. Configure the ignored local file
 manually:
@@ -37,10 +49,11 @@ source .env.live
 set +a
 ```
 
-Set `OPENAI_API_KEY` and `OPENAI_LIVE_MODEL` in that local editor. Never print the file to diagnose
-it. The live script and hook do not open, read, or source files automatically; they accept values
-only from their process environment, which keeps file choice and permissions under host control.
-If either value is absent, the failure repeats these setup directions instead of skipping.
+Set only the provider values needed locally. Leave Anthropic values empty until a dedicated test
+key and model are available. Never print the file to diagnose it. The live script and hook do not
+open, read, or source files automatically; they accept values only from their process environment,
+which keeps file choice and permissions under host control. If a selected delivered provider input
+is absent, the failure repeats value-free setup directions instead of skipping.
 
 ## Local exact-head gate
 
@@ -63,11 +76,14 @@ response, one pending-response cancellation, and one active-stream cancellation.
 from `jvmTest`, `check.sh`, samples, and ordinary CI, and fails closed without valid inputs or
 provider access.
 
-The pre-push hook runs `scripts/live-impact.sh` between `origin/main` and exact `HEAD`. Unrelated
-changes run only the full deterministic gate. Affected bridge, Swift façade, build, transport, or
-live-gate changes additionally run `check-live.sh`; missing configuration, quota, model access,
-provider availability, or assertions block the push. Set `UAC_LIVE_BASE_REF` only when the
-intended base is genuinely different and locally resolvable.
+The pre-push hook runs `scripts/live-impact.sh` between `origin/main` and exact `HEAD`. The
+classifier returns `none` or an ordered comma-separated delivered-provider set. Unrelated changes
+run only the full deterministic gate, provider-specific changes select that delivered provider,
+and shared or ambiguous affected changes select every delivered provider. The hook removes every
+provider input from the deterministic gate and every non-selected provider input from each live
+gate. Missing configuration, quota, model access, provider availability, task wiring, or
+assertions block the push. Set `UAC_LIVE_BASE_REF` only when the intended base is genuinely
+different and locally resolvable.
 
 Every head change invalidates earlier evidence. For an affected pull request, record:
 
@@ -91,13 +107,13 @@ No credential or provider response body retained.
 
 ## Secretless GitHub policy
 
-The `Universal AI Connector Live Verification` workflow classifies whether the exact pull-request
-head can affect live adapter behavior. After the P4-A foundation reaches the default branch, every
-bridge source, bridge build, Swift package, repository build-infrastructure, or live-gate change is
-conservatively affected; classification never depends on an adapter package name or sentinel file.
-A documentation-only change produces a successful secretless `Required live verification` result
-automatically. The one-time bootstrap used before the trusted classifier exists rejects every
-bridge source, Swift package, or build-behavior change.
+The `Universal AI Connector Live Verification` workflow classifies the provider set affected by
+the exact pull-request head. Provider-specific paths select that delivered provider; shared
+bridge, build, Swift package, authentication, and live-policy paths select all delivered providers.
+An undelivered or ambiguous affected provider path fails closed to every delivered provider. A
+documentation-only change produces a successful secretless `Required live verification` result
+automatically. During the P5-A transition only, the workflow normalizes the trusted P4
+classifier's legacy boolean result to `openai` or `none`.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, and records the no-retention boundary. It executes no candidate provider
@@ -140,9 +156,9 @@ Rotate the test key immediately when:
 - the provider or GitHub reports suspicious use; or
 - the routine rotation interval for the test project expires.
 
-Revoke the old key in the OpenAI project first, create a replacement with the same least-privilege
-scope, update only the approved local secret store, and run the smallest live smoke test. Never
-commit a rotation record containing key material.
+Revoke the old key in the affected provider project or workspace first, create a replacement with
+the same least-privilege scope, update only the approved local secret store, and run the smallest
+available live smoke test. Never commit a rotation record containing key material.
 
 If exposure may have reached Git history, artifacts, caches, or pull-request text, revocation is
 still the first action. Follow with repository-specific cleanup and security review; history
@@ -151,6 +167,7 @@ rewrites are separate destructive operations and require explicit scope.
 ## Proof limits
 
 A passing live gate proves only the provider, model, account, network, exact commit, and paths
-recorded for that execution. It does not prove every OpenAI model or feature, physical-device
-behavior, Gateway behavior, provider failover, released-artifact distribution, or production
-credential management.
+recorded for that execution. P5-A proves no Anthropic credential validity, model access,
+authentication success, or provider behavior. A provider gate does not prove every model or
+feature, physical-device behavior, Gateway behavior, provider failover, released-artifact
+distribution, or production credential management.
