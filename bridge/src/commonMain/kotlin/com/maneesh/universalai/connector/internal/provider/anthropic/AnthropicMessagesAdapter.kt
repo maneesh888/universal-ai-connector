@@ -283,13 +283,31 @@ private fun AnthropicMessageResponseWire.toCanonical(
 }
 
 private fun AnthropicUsageWire.toCanonical(): UniversalAiUsage {
-    val input = requireWireValue(inputTokens)
+    val uncachedInput = requireWireValue(inputTokens)
+    val cacheCreationInput = cacheCreationInputTokens ?: 0L
+    val cacheReadInput = cacheReadInputTokens ?: 0L
     val output = requireWireValue(outputTokens)
-    requireWire(input >= 0L && output >= 0L && input <= Long.MAX_VALUE - output)
+    requireWire(
+        uncachedInput >= 0L &&
+            cacheCreationInput >= 0L &&
+            cacheReadInput >= 0L &&
+            output >= 0L,
+    )
+    requireWire(uncachedInput <= Long.MAX_VALUE - cacheCreationInput)
+    val inputWithCacheCreation = uncachedInput + cacheCreationInput
+    requireWire(inputWithCacheCreation <= Long.MAX_VALUE - cacheReadInput)
+    val input = inputWithCacheCreation + cacheReadInput
+    requireWire(input <= Long.MAX_VALUE - output)
+    val inputDetails =
+        buildMap {
+            cacheCreationInputTokens?.let { value -> put("cache_write_tokens", value) }
+            cacheReadInputTokens?.let { value -> put("cached_tokens", value) }
+        }
     return UniversalAiUsage(
         inputTokens = input,
         outputTokens = output,
         totalTokens = input + output,
+        inputDetails = inputDetails,
     )
 }
 

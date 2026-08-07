@@ -70,7 +70,8 @@ class AnthropicMessagesAdapterTests {
                               "usage": {
                                 "input_tokens": 12,
                                 "output_tokens": 8,
-                                "cache_creation_input_tokens": 2
+                                "cache_creation_input_tokens": 2,
+                                "cache_read_input_tokens": 3
                               },
                               "future_optional_field": true
                             }
@@ -113,9 +114,16 @@ class AnthropicMessagesAdapterTests {
             assertEquals(UniversalAiOutputKind.Text, output.kind)
             assertEquals("first response", output.text)
             with(assertNotNull(response.usage)) {
-                assertEquals(12, inputTokens)
+                assertEquals(17, inputTokens)
                 assertEquals(8, outputTokens)
-                assertEquals(20, totalTokens)
+                assertEquals(25, totalTokens)
+                assertEquals(
+                    mapOf(
+                        "cache_write_tokens" to 2L,
+                        "cached_tokens" to 3L,
+                    ),
+                    inputDetails,
+                )
             }
 
             val sentRequest = engine.requestHistory.single()
@@ -486,6 +494,36 @@ class AnthropicMessagesAdapterTests {
                   "model":"model",
                   "stop_reason":"end_turn",
                   "usage":{"input_tokens":-1,"output_tokens":1}
+                }
+                """.trimIndent(),
+                """
+                {
+                  "id":"msg_0",
+                  "type":"message",
+                  "role":"assistant",
+                  "content":[{"type":"text","text":"ok"}],
+                  "model":"model",
+                  "stop_reason":"end_turn",
+                  "usage":{
+                    "input_tokens":1,
+                    "cache_read_input_tokens":-1,
+                    "output_tokens":1
+                  }
+                }
+                """.trimIndent(),
+                """
+                {
+                  "id":"msg_0",
+                  "type":"message",
+                  "role":"assistant",
+                  "content":[{"type":"text","text":"ok"}],
+                  "model":"model",
+                  "stop_reason":"end_turn",
+                  "usage":{
+                    "input_tokens":9223372036854775807,
+                    "cache_creation_input_tokens":1,
+                    "output_tokens":1
+                  }
                 }
                 """.trimIndent(),
             )

@@ -50,6 +50,10 @@ internal data class AnthropicResponseContentWire(
 internal data class AnthropicUsageWire(
     @SerialName("input_tokens")
     val inputTokens: Long? = null,
+    @SerialName("cache_creation_input_tokens")
+    val cacheCreationInputTokens: Long? = null,
+    @SerialName("cache_read_input_tokens")
+    val cacheReadInputTokens: Long? = null,
     @SerialName("output_tokens")
     val outputTokens: Long? = null,
 )
