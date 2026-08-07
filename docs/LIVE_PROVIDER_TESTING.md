@@ -17,11 +17,10 @@ The single ignored `.env.live` file may contain distinct inputs for each provide
 - `OPENROUTER_API_KEY`: a dedicated, revocable, conservatively spend-limited OpenRouter test key.
 - `OPENROUTER_LIVE_MODEL`: an explicit bounded-cost model slug enabled for that key.
 
-OpenAI remains the only delivered local-live gate during P6-A. The Anthropic and OpenRouter names
-are value-free readiness inputs only: no runner route, Gradle live task, or provider network
-behavior receives them. Anthropic remains deferred. P6-B must atomically deliver the OpenRouter
-paths and add OpenRouter to real provider selection, then pass the exact-head OpenRouter gate
-before its first push or pull-request update.
+OpenAI and Anthropic are delivered local-live gates after P5-B. OpenRouter remains a value-free
+readiness input only: no runner route, Gradle live task, or provider network behavior receives it.
+P6-B must atomically deliver the OpenRouter paths and add OpenRouter to real provider selection,
+then pass the exact-head OpenRouter gate before its first push or pull-request update.
 
 Do not use production keys. Restrict access to the test project or workspace, set conservative
 spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
@@ -33,7 +32,7 @@ the official [production key-safety guidance](https://developers.openai.com/api/
 An API project needs its own billing/credits and limits; a ChatGPT subscription is not an API
 credential.
 
-Create an Anthropic key only when P5-B is ready through the official
+Create and manage the P5-B Anthropic test key through the official
 [Claude API authentication settings and guidance](https://platform.claude.com/docs/en/manage-claude/authentication).
 Use an expiring workspace-scoped test key when available. Do not send a credential through issue,
 pull-request, chat, or review text.
@@ -56,12 +55,11 @@ source .env.live
 set +a
 ```
 
-Set only the provider values needed locally. Leave Anthropic values empty until a dedicated test
-key and model are available. OpenRouter values are not consumed until P6-B delivers its real live
-route. Never print the file to diagnose it. The live script and hook do not open, read, or source
-files automatically; they accept values only from their process environment, which keeps file
-choice and permissions under host control. If a selected delivered provider input is absent, the
-failure repeats value-free setup directions instead of skipping.
+Set only the provider values needed locally. OpenRouter values are not consumed until P6-B
+delivers its real live route. Never print the file to diagnose it. The live script and hook do not
+open, read, or source files automatically; they accept values only from their process environment,
+which keeps file choice and permissions under host control. If a selected delivered provider
+input is absent, the failure repeats value-free setup directions instead of skipping.
 
 ## Local exact-head gate
 
@@ -70,19 +68,25 @@ shown above, and run:
 
 ```bash
 ./scripts/check-live.sh openai
+./scripts/check-live.sh anthropic
 ```
 
 The command refuses a dirty checkout, validates the expected SHA when
 `UAC_LIVE_EXPECTED_SHA` is present, runs deterministic tests first, and then runs the dedicated
-OpenAI live task without a reusable Gradle daemon. It never prints the credential or full provider
-request/response content, and disables Gradle configuration caching for the credential-bearing
-process.
+selected-provider live task without a reusable Gradle daemon. It never prints the credential or
+full provider request/response content, and disables Gradle configuration caching for the
+credential-bearing process.
 
 The completed P4 `:bridge:openAiLiveTest` task covers one minimal non-streaming response, one
 governed structured response, one safe intentional provider error, one ordered streaming
 response, one pending-response cancellation, and one active-stream cancellation. It is excluded
 from `jvmTest`, `check.sh`, samples, and ordinary CI, and fails closed without valid inputs or
 provider access.
+
+The P5-B `:bridge:anthropicLiveTest` task covers one minimal non-streaming text response and one
+pending-response cancellation after credential resolution. It has the same deterministic/CI
+exclusions and fail-closed exact-head behavior. Structured output, intentional provider-error,
+streaming, and active-stream cancellation proof remain P5-C/P5-D work.
 
 The pre-push hook runs `scripts/live-impact.sh` between `origin/main` and exact `HEAD`. The
 classifier returns `none` or an ordered comma-separated delivered-provider set. Unrelated changes
@@ -96,7 +100,8 @@ different and locally resolvable.
 Every head change invalidates earlier evidence. For an affected pull request, record:
 
 - exact 40-character head SHA;
-- `./scripts/check-live.sh openai`;
+- the selected `./scripts/check-live.sh openai` and/or
+  `./scripts/check-live.sh anthropic` command;
 - provider and model identifier;
 - execution date;
 - pass or fail result; and
@@ -176,8 +181,9 @@ rewrites are separate destructive operations and require explicit scope.
 ## Proof limits
 
 A passing live gate proves only the provider, model, account, network, exact commit, and paths
-recorded for that execution. P5-A proves no Anthropic credential validity, model access,
-authentication success, or provider behavior. P6-A likewise proves no OpenRouter credential,
-credit, model access, authentication, compatibility, or provider behavior. A provider gate does
-not prove every model or feature, physical-device behavior, Gateway behavior, provider failover,
-released-artifact distribution, or production credential management.
+recorded for that execution. P5-B adds bounded Anthropic authentication, non-streaming response,
+and pending-cancellation proof for the selected exact head; it does not prove structured output,
+complete provider errors, capabilities, streaming, or active-stream cancellation. P6-A likewise
+proves no OpenRouter credential, credit, model access, authentication, compatibility, or provider
+behavior. A provider gate does not prove every model or feature, physical-device behavior, Gateway
+behavior, provider failover, released-artifact distribution, or production credential management.

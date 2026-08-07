@@ -43,6 +43,26 @@ fi
 sed -i.bak '/OpenAiResponseWire/d' "$HEADER"
 rm -f "$HEADER.bak"
 
+printf '%s\n' 'AnthropicMessageResponseWire' >> "$HEADER"
+provider_match_status=0
+uac_reject_xcframework_header_pattern \
+  "$HEADER" \
+  "$UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN" \
+  "A provider implementation type leaked into the callback-bridge header." \
+  > "$MATCH_OUTPUT" 2>&1 || provider_match_status=$?
+if [[ "$provider_match_status" -ne 1 ]]; then
+  echo "Expected the XCFramework header audit to reject an Anthropic wire DTO." >&2
+  exit 1
+fi
+if ! grep -Fq \
+  "A provider implementation type leaked into the callback-bridge header." \
+  "$MATCH_OUTPUT"; then
+  echo "XCFramework header audit did not report the Anthropic wire DTO." >&2
+  exit 1
+fi
+sed -i.bak '/AnthropicMessageResponseWire/d' "$HEADER"
+rm -f "$HEADER.bak"
+
 printf '%s\n' 'ConnectorTransport' >> "$HEADER"
 match_status=0
 uac_reject_xcframework_header_pattern \

@@ -13,10 +13,12 @@ import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiProviderCapabilityProfile
 import com.maneesh.universalai.connector.contract.schema.GovernedJsonSchemaSubset
+import com.maneesh.universalai.connector.internal.provider.anthropic.AnthropicMessagesAdapter
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiResponsesAdapter
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
 
 internal val OPENAI_PROVIDER_ID: ProviderId = ProviderId.of("openai")
+internal val ANTHROPIC_PROVIDER_ID: ProviderId = ProviderId.of("anthropic")
 
 internal val OPENAI_PROVIDER_CAPABILITY_PROFILE =
     UniversalAiProviderCapabilityProfile(
@@ -60,6 +62,17 @@ internal fun builtInProviderRegistration(
                 modelCapabilityOverrides = { OPENAI_UNKNOWN_MODEL_CAPABILITIES },
                 adapterFactory = { transport ->
                     OpenAiResponsesAdapter(
+                        configuration = configuration,
+                        transport = transport,
+                    )
+                },
+            )
+
+        ANTHROPIC_PROVIDER_ID ->
+            ProviderRegistration(
+                providerId = configuration.providerId,
+                adapterFactory = { transport ->
+                    AnthropicMessagesAdapter(
                         configuration = configuration,
                         transport = transport,
                     )

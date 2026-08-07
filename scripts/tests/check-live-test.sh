@@ -83,6 +83,30 @@ if [[ "$*" == *":bridge:openAiLiveTest"* ]]; then
   exit 0
 fi
 
+if [[ "$*" == *":bridge:anthropicLiveTest"* ]]; then
+  if [[ "${ANTHROPIC_API_KEY:-}" != "$UAC_TEST_EXPECTED_KEY" ||
+        "${ANTHROPIC_LIVE_MODEL:-}" != "$UAC_TEST_EXPECTED_MODEL" ||
+        -n "${OPENAI_API_KEY:-}" ||
+        -n "${OPENAI_LIVE_MODEL:-}" ||
+        -n "${OPENROUTER_API_KEY:-}" ||
+        -n "${OPENROUTER_LIVE_MODEL:-}" ||
+        "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
+    echo "Anthropic live task did not receive its exact expected environment." >&2
+    exit 13
+  fi
+  if [[ "$*" != *"-PuacLiveExpectedSha=$UAC_TEST_EXPECTED_SHA"* ||
+        "$*" != *"--no-daemon"* ||
+        "$*" != *"--no-configuration-cache"* ]]; then
+    echo "Anthropic live task did not receive its exact-head arguments." >&2
+    exit 14
+  fi
+  echo "live" >> "$UAC_TEST_CALL_LOG"
+  if [[ -n "${UAC_TEST_DIRTY_AFTER_LIVE:-}" ]]; then
+    printf '%s\n' "live mutation" > "$UAC_TEST_DIRTY_AFTER_LIVE"
+  fi
+  exit 0
+fi
+
 echo "Unexpected Gradle invocation." >&2
 exit 12
 EOF
@@ -108,14 +132,15 @@ expect_failure() {
     echo "Live runner did not report: $expected_message" >&2
     exit 1
   fi
-  if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT"; then
+  if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
+    grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT"; then
     echo "Live runner exposed credential material." >&2
     exit 1
   fi
 }
 
 expect_failure \
-  "Usage: ./scripts/check-live.sh openai" \
+  "Usage: ./scripts/check-live.sh <openai|anthropic>" \
   "$RUNNER" unsupported
 
 expect_failure \
@@ -137,6 +162,18 @@ if ! grep -Fq "cp .env.live.example .env.live" "$OUTPUT" ||
   echo "Missing-model failure omitted safe local configuration guidance." >&2
   exit 1
 fi
+
+expect_failure \
+  "ANTHROPIC_API_KEY is required" \
+  "$RUNNER" anthropic
+if ! grep -Fq "ANTHROPIC_API_KEY and ANTHROPIC_LIVE_MODEL" "$OUTPUT"; then
+  echo "Anthropic missing-key failure omitted provider-specific guidance." >&2
+  exit 1
+fi
+
+expect_failure \
+  "ANTHROPIC_LIVE_MODEL is required" \
+  env ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" "$RUNNER" anthropic
 
 expect_failure \
   "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA." \
@@ -249,6 +286,40 @@ fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
   ! grep -Fq "model=$MODEL" "$OUTPUT"; then
   echo "Successful live runner output omitted bounded evidence metadata." >&2
+  exit 1
+fi
+
+: > "$CALL_LOG"
+env \
+  OPENAI_API_KEY="$SYNTHETIC_KEY" \
+  OPENAI_LIVE_MODEL="$MODEL" \
+  ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
+  OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+  OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$ANTHROPIC_MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" anthropic > "$OUTPUT" 2>&1
+
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "Anthropic runner did not execute deterministic then live tasks exactly once." >&2
+  exit 1
+fi
+if grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
+  echo "Successful Anthropic runner output exposed credential material." >&2
+  exit 1
+fi
+if ! grep -Fq "provider=anthropic" "$OUTPUT" ||
+  ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
+  ! grep -Fq "model=$ANTHROPIC_MODEL" "$OUTPUT"; then
+  echo "Successful Anthropic runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
 

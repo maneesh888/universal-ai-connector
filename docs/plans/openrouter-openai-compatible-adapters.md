@@ -2,9 +2,9 @@
 
 ## Status and activation gate
 
-P0-P4 are `Completed`. P5 is `Deferred` after completing only P5-A because the dedicated
-Anthropic credential/model required for provider behavior is unavailable. P6 was explicitly
-activated on August 7, 2026 as the only `In progress` milestone.
+P0-P4 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A. The
+dedicated Anthropic credential/model is now available, so P5 has resumed at P5-B as the only
+`In progress` milestone and P6 is `Deferred` after P6-A.
 
 P6-A completes protocol, configuration, and live-test authentication readiness in this candidate.
 No P6 work package is active after P6-A. P6-B remains `Not started` until the ignored local
@@ -46,7 +46,8 @@ release blocker. The repository may implement and verify P6 while P5 is deferred
 - weaken P5 acceptance or silently remove Anthropic from the release matrix; or
 - have more than one non-deferred milestone marked `In progress`.
 
-P5 resumes at P5-B when a dedicated Anthropic key and enabled bounded-cost model are available.
+That gate is now satisfied. P5 has resumed at P5-B and P6 remains deferred until P5 is no longer
+the active milestone.
 
 ## Design constraints
 

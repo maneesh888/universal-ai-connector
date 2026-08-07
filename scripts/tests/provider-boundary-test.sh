@@ -2,23 +2,24 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-OPENAI_SOURCES="$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai"
+PROVIDER_SOURCES="$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider"
 scan_status=0
 
 rg \
   --no-config \
   --line-number \
-  '^(public[[:space:]]+)?(data[[:space:]]+class|class|object|interface|enum[[:space:]]+class)[[:space:]]+OpenAi' \
-  "$OPENAI_SOURCES" || scan_status=$?
+  '^(public[[:space:]]+)?(data[[:space:]]+class|class|object|interface|enum[[:space:]]+class)[[:space:]]+(OpenAi|Anthropic)' \
+  "$PROVIDER_SOURCES/openai" \
+  "$PROVIDER_SOURCES/anthropic" || scan_status=$?
 case "$scan_status" in
   0)
-    echo "An OpenAI provider implementation or DTO declaration is not internal." >&2
+    echo "A provider implementation or DTO declaration is not internal." >&2
     exit 1
     ;;
   1)
     ;;
   *)
-    echo "The OpenAI provider declaration audit could not complete (rg exit $scan_status)." >&2
+    echo "The provider declaration audit could not complete (rg exit $scan_status)." >&2
     exit "$scan_status"
     ;;
 esac
@@ -35,11 +36,11 @@ for supported_surface in \
     --glob '!**/internal/**' \
     --glob '!**/src/test/**' \
     --glob '!**/Tests/**' \
-    'internal\.provider\.openai|OpenAi[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
+    'internal\.provider\.(openai|anthropic)|(OpenAi|Anthropic)[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
     "$supported_surface" || scan_status=$?
   case "$scan_status" in
     0)
-      echo "An OpenAI provider implementation or DTO leaked into a supported host surface." >&2
+      echo "A provider implementation or DTO leaked into a supported host surface." >&2
       exit 1
       ;;
     1)

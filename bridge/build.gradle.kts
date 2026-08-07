@@ -84,6 +84,7 @@ tasks.withType<Test>().configureEach {
 val jvmTestTask = tasks.named<Test>("jvmTest")
 jvmTestTask.configure {
     exclude("**/OpenAiLiveTest.class")
+    exclude("**/AnthropicLiveTest.class")
 }
 
 tasks.register<Test>("openAiLiveTest") {
@@ -124,6 +125,49 @@ tasks.register<Test>("openAiLiveTest") {
         if (System.getenv("UAC_LIVE_EXPECTED_SHA") != expectedSha.get()) {
             throw GradleException(
                 "OpenAI live verification process and Gradle exact-head inputs do not match.",
+            )
+        }
+    }
+}
+
+tasks.register<Test>("anthropicLiveTest") {
+    group = "verification"
+    description = "Runs the explicit exact-head Anthropic live smoke tests."
+    dependsOn("jvmTestClasses")
+    testClassesDirs = jvmTestTask.get().testClassesDirs
+    classpath = jvmTestTask.get().classpath
+    include("**/AnthropicLiveTest.class")
+
+    val expectedSha = providers.gradleProperty("uacLiveExpectedSha").orElse("")
+    inputs.property("uacLiveExpectedSha", expectedSha)
+    systemProperty("uac.live.expectedSha", expectedSha)
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf("Live provider tests must execute and retain no reusable result.") {
+        true
+    }
+
+    doFirst {
+        val credentialPresent = !System.getenv("ANTHROPIC_API_KEY").isNullOrBlank()
+        val modelPresent = !System.getenv("ANTHROPIC_LIVE_MODEL").isNullOrBlank()
+        if (!credentialPresent || !modelPresent) {
+            throw GradleException(
+                """
+                Anthropic live verification is not configured.
+                Copy .env.live.example to the Git-ignored .env.live file, add ANTHROPIC_API_KEY
+                and ANTHROPIC_LIVE_MODEL manually, restrict it with chmod 600 .env.live, then
+                export it into this process before rerunning ./scripts/check-live.sh anthropic.
+                The live task never reads or sources .env.live automatically.
+                """.trimIndent(),
+            )
+        }
+        if (!expectedSha.get().matches(Regex("^[0-9a-f]{40}$"))) {
+            throw GradleException(
+                "Anthropic live verification requires -PuacLiveExpectedSha=<exact-HEAD-SHA>.",
+            )
+        }
+        if (System.getenv("UAC_LIVE_EXPECTED_SHA") != expectedSha.get()) {
+            throw GradleException(
+                "Anthropic live verification process and Gradle exact-head inputs do not match.",
             )
         }
     }
