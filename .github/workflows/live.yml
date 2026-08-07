@@ -93,7 +93,9 @@ jobs:
             false)
               live_providers=none
               ;;
-            none | openai | anthropic | openai,anthropic)
+            none | openai | anthropic | openrouter | \
+              openai,anthropic | openai,openrouter | anthropic,openrouter | \
+              openai,anthropic,openrouter)
               ;;
             *)
               echo "Live-impact classification produced an invalid provider set."

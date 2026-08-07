@@ -42,6 +42,7 @@ fi
 SELECT_ALL_DELIVERED="false"
 SELECT_OPENAI="false"
 SELECT_ANTHROPIC="false"
+SELECT_OPENROUTER="false"
 
 provider_is_delivered() {
   local requested_provider="$1"
@@ -67,11 +68,15 @@ select_provider() {
     anthropic)
       SELECT_ANTHROPIC="true"
       ;;
+    openrouter)
+      SELECT_OPENROUTER="true"
+      ;;
   esac
 }
 
 DELIVERED_OPENAI_SEEN="false"
 DELIVERED_ANTHROPIC_SEEN="false"
+DELIVERED_OPENROUTER_SEEN="false"
 for delivered_provider in "${DELIVERED_PROVIDERS[@]}"; do
   case "$delivered_provider" in
     openai)
@@ -88,6 +93,13 @@ for delivered_provider in "${DELIVERED_PROVIDERS[@]}"; do
       fi
       DELIVERED_ANTHROPIC_SEEN="true"
       ;;
+    openrouter)
+      if [[ "$DELIVERED_OPENROUTER_SEEN" == "true" ]]; then
+        echo "Live-impact classifier contains a duplicate delivered provider." >&2
+        exit 2
+      fi
+      DELIVERED_OPENROUTER_SEEN="true"
+      ;;
     *)
       echo "Live-impact classifier contains an unsupported delivered provider." >&2
       exit 2
@@ -102,6 +114,9 @@ while IFS= read -r -d '' changed_path; do
       ;;
     bridge/src/*/internal/provider/anthropic/*)
       select_provider "anthropic"
+      ;;
+    bridge/src/*/internal/provider/openrouter/*)
+      select_provider "openrouter"
       ;;
     bridge/src/*/internal/provider/* | \
       bridge/src/* | \
@@ -137,6 +152,11 @@ for delivered_provider in "${DELIVERED_PROVIDERS[@]}"; do
       ;;
     anthropic)
       if [[ "$SELECT_ANTHROPIC" == "true" ]]; then
+        provider_selected="true"
+      fi
+      ;;
+    openrouter)
+      if [[ "$SELECT_OPENROUTER" == "true" ]]; then
         provider_selected="true"
       fi
       ;;

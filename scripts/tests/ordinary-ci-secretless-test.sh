@@ -11,10 +11,13 @@ for forbidden in \
   'OPENAI_LIVE_MODEL' \
   'ANTHROPIC_API_KEY' \
   'ANTHROPIC_LIVE_MODEL' \
+  'OPENROUTER_API_KEY' \
+  'OPENROUTER_LIVE_MODEL' \
   '.env.live' \
   './scripts/check-live.sh' \
   ':bridge:openAiLiveTest' \
   ':bridge:anthropicLiveTest' \
+  ':bridge:openRouterLiveTest' \
   'environment: live-provider' \
   'environment: live-policy'; do
   if grep -Fq "$forbidden" "$WORKFLOW"; then

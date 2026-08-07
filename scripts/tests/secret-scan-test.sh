@@ -16,7 +16,9 @@ for documented_input in \
   OPENAI_API_KEY \
   OPENAI_LIVE_MODEL \
   ANTHROPIC_API_KEY \
-  ANTHROPIC_LIVE_MODEL; do
+  ANTHROPIC_LIVE_MODEL \
+  OPENROUTER_API_KEY \
+  OPENROUTER_LIVE_MODEL; do
   if ! grep -Fxq "$documented_input=" "$LIVE_INPUT_EXAMPLE"; then
     echo "Value-free live-input example omitted or populated $documented_input." >&2
     exit 1
@@ -92,6 +94,31 @@ if grep -Fq "$SYNTHETIC_ANTHROPIC_SECRET" "$ANTHROPIC_DETECTION_OUTPUT"; then
   exit 1
 fi
 rm -f "$ANTHROPIC_PROBE_FILE"
+
+OPENROUTER_DETECTION_OUTPUT="$TEST_DIRECTORY/openrouter-detection.log"
+OPENROUTER_PROBE_FILE="$TEST_REPOSITORY/openrouter-config.txt"
+SYNTHETIC_OPENROUTER_SECRET="$(
+  printf '%s%s' 'sk-or-v1-' 'CCCCCCCCCCCCCCCCCCCCCCCC'
+)"
+printf 'OPENROUTER_API_KEY="%s"\n' "$SYNTHETIC_OPENROUTER_SECRET" > \
+  "$OPENROUTER_PROBE_FILE"
+
+openrouter_detection_status=0
+"$SCANNER_UNDER_TEST" > "$OPENROUTER_DETECTION_OUTPUT" 2>&1 ||
+  openrouter_detection_status=$?
+if [[ "$openrouter_detection_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject the synthetic OpenRouter input." >&2
+  exit 1
+fi
+if ! grep -Fq "Potential secret material found." "$OPENROUTER_DETECTION_OUTPUT"; then
+  echo "Secret scan did not recognize the documented OpenRouter credential input." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_OPENROUTER_SECRET" "$OPENROUTER_DETECTION_OUTPUT"; then
+  echo "Secret scan exposed matched OpenRouter credential material." >&2
+  exit 1
+fi
+rm -f "$OPENROUTER_PROBE_FILE"
 
 LOCAL_LIVE_OUTPUT="$TEST_DIRECTORY/local-live.log"
 LOCAL_LIVE_FILE="$TEST_REPOSITORY/.env.live"

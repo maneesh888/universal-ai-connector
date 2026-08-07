@@ -14,11 +14,14 @@ The single ignored `.env.live` file may contain distinct inputs for each provide
 - `OPENAI_LIVE_MODEL`: an explicit model identifier enabled for that test project.
 - `ANTHROPIC_API_KEY`: a dedicated, revocable, conservatively quota-limited Anthropic test key.
 - `ANTHROPIC_LIVE_MODEL`: an explicit bounded-cost model identifier enabled for that key.
+- `OPENROUTER_API_KEY`: a dedicated, revocable, conservatively spend-limited OpenRouter test key.
+- `OPENROUTER_LIVE_MODEL`: an explicit bounded-cost model slug enabled for that key.
 
-OpenAI is the only delivered local-live gate during P5-A. The Anthropic names are value-free
-readiness inputs only: no runner route, Gradle live task, or provider network behavior receives
-them. P5-B must atomically deliver those paths and add Anthropic to provider selection, then pass
-the exact-head Anthropic gate before its first push or pull-request update.
+OpenAI remains the only delivered local-live gate during P6-A. The Anthropic and OpenRouter names
+are value-free readiness inputs only: no runner route, Gradle live task, or provider network
+behavior receives them. Anthropic remains deferred. P6-B must atomically deliver the OpenRouter
+paths and add OpenRouter to real provider selection, then pass the exact-head OpenRouter gate
+before its first push or pull-request update.
 
 Do not use production keys. Restrict access to the test project or workspace, set conservative
 spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
@@ -35,6 +38,10 @@ Create an Anthropic key only when P5-B is ready through the official
 Use an expiring workspace-scoped test key when available. Do not send a credential through issue,
 pull-request, chat, or review text.
 
+OpenRouter authenticates API requests with a Bearer key as documented by its official
+[current-key API reference](https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key).
+Use a dedicated key with a conservative spending limit and an explicit bounded-cost model.
+
 The tracked `.env.live.example` is deliberately value-free. Configure the ignored local file
 manually:
 
@@ -50,10 +57,11 @@ set +a
 ```
 
 Set only the provider values needed locally. Leave Anthropic values empty until a dedicated test
-key and model are available. Never print the file to diagnose it. The live script and hook do not
-open, read, or source files automatically; they accept values only from their process environment,
-which keeps file choice and permissions under host control. If a selected delivered provider input
-is absent, the failure repeats value-free setup directions instead of skipping.
+key and model are available. OpenRouter values are not consumed until P6-B delivers its real live
+route. Never print the file to diagnose it. The live script and hook do not open, read, or source
+files automatically; they accept values only from their process environment, which keeps file
+choice and permissions under host control. If a selected delivered provider input is absent, the
+failure repeats value-free setup directions instead of skipping.
 
 ## Local exact-head gate
 
@@ -112,8 +120,9 @@ the exact pull-request head. Provider-specific paths select that delivered provi
 bridge, build, Swift package, authentication, and live-policy paths select all delivered providers.
 An undelivered or ambiguous affected provider path fails closed to every delivered provider. A
 documentation-only change produces a successful secretless `Required live verification` result
-automatically. During the P5-A transition only, the workflow normalizes the trusted P4
-classifier's legacy boolean result to `openai` or `none`.
+automatically. The workflow retains trusted-base compatibility with the legacy P4 boolean
+classifier and accepts stable ordered provider sets through
+`openai,anthropic,openrouter`.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, and records the no-retention boundary. It executes no candidate provider
@@ -168,6 +177,7 @@ rewrites are separate destructive operations and require explicit scope.
 
 A passing live gate proves only the provider, model, account, network, exact commit, and paths
 recorded for that execution. P5-A proves no Anthropic credential validity, model access,
-authentication success, or provider behavior. A provider gate does not prove every model or
-feature, physical-device behavior, Gateway behavior, provider failover, released-artifact
-distribution, or production credential management.
+authentication success, or provider behavior. P6-A likewise proves no OpenRouter credential,
+credit, model access, authentication, compatibility, or provider behavior. A provider gate does
+not prove every model or feature, physical-device behavior, Gateway behavior, provider failover,
+released-artifact distribution, or production credential management.

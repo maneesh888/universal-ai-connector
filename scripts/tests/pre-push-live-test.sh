@@ -25,7 +25,7 @@ mkdir -p \
 cp "$ROOT/.githooks/pre-push" "$TEST_REPOSITORY/.githooks/pre-push"
 awk '
   $0 == "DELIVERED_PROVIDERS=(\"openai\")" {
-    print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\")"
+    print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")"
     next
   }
   { print }
@@ -45,6 +45,8 @@ if [[ -n "${OPENAI_API_KEY:-}" ||
       -n "${OPENAI_LIVE_MODEL:-}" ||
       -n "${ANTHROPIC_API_KEY:-}" ||
       -n "${ANTHROPIC_LIVE_MODEL:-}" ||
+      -n "${OPENROUTER_API_KEY:-}" ||
+      -n "${OPENROUTER_LIVE_MODEL:-}" ||
       -n "${UAC_LIVE_EXPECTED_SHA:-}" ]]; then
   echo "Pre-push exposed live inputs to the deterministic gate." >&2
   exit 12
@@ -64,7 +66,9 @@ case "${1:-}" in
     if [[ "${OPENAI_API_KEY:-}" != "synthetic-openai-key" ||
           "${OPENAI_LIVE_MODEL:-}" != "synthetic-openai-model" ||
           -n "${ANTHROPIC_API_KEY:-}" ||
-          -n "${ANTHROPIC_LIVE_MODEL:-}" ]]; then
+          -n "${ANTHROPIC_LIVE_MODEL:-}" ||
+          -n "${OPENROUTER_API_KEY:-}" ||
+          -n "${OPENROUTER_LIVE_MODEL:-}" ]]; then
       echo "Pre-push did not isolate the OpenAI live gate." >&2
       exit 12
     fi
@@ -73,14 +77,27 @@ case "${1:-}" in
     if [[ "${ANTHROPIC_API_KEY:-}" != "synthetic-anthropic-key" ||
           "${ANTHROPIC_LIVE_MODEL:-}" != "synthetic-anthropic-model" ||
           -n "${OPENAI_API_KEY:-}" ||
-          -n "${OPENAI_LIVE_MODEL:-}" ]]; then
+          -n "${OPENAI_LIVE_MODEL:-}" ||
+          -n "${OPENROUTER_API_KEY:-}" ||
+          -n "${OPENROUTER_LIVE_MODEL:-}" ]]; then
       echo "Pre-push did not isolate the Anthropic live gate." >&2
       exit 13
     fi
     ;;
+  openrouter)
+    if [[ "${OPENROUTER_API_KEY:-}" != "synthetic-openrouter-key" ||
+          "${OPENROUTER_LIVE_MODEL:-}" != "synthetic-openrouter-model" ||
+          -n "${OPENAI_API_KEY:-}" ||
+          -n "${OPENAI_LIVE_MODEL:-}" ||
+          -n "${ANTHROPIC_API_KEY:-}" ||
+          -n "${ANTHROPIC_LIVE_MODEL:-}" ]]; then
+      echo "Pre-push did not isolate the OpenRouter live gate." >&2
+      exit 14
+    fi
+    ;;
   *)
     echo "Pre-push selected an unsupported live gate." >&2
-    exit 14
+    exit 15
     ;;
 esac
 echo "live:$1" >> "$UAC_TEST_CALL_LOG"
@@ -109,6 +126,8 @@ run_hook() {
       OPENAI_LIVE_MODEL="synthetic-openai-model" \
       ANTHROPIC_API_KEY="synthetic-anthropic-key" \
       ANTHROPIC_LIVE_MODEL="synthetic-anthropic-model" \
+      OPENROUTER_API_KEY="synthetic-openrouter-key" \
+      OPENROUTER_LIVE_MODEL="synthetic-openrouter-model" \
       UAC_TEST_CALL_LOG="$CALL_LOG" \
       ./.githooks/pre-push
   ) > "$OUTPUT" 2>&1
@@ -171,6 +190,26 @@ if [[ "$(sed -n '1p' "$CALL_LOG")" != "full" ||
 fi
 
 git -C "$TEST_REPOSITORY" update-ref refs/remotes/origin/main "$ANTHROPIC_SHA"
+OPENROUTER_PATH="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/example/internal/provider/openrouter"
+mkdir -p "$OPENROUTER_PATH"
+printf '%s\n' "OpenRouter provider behavior" > "$OPENROUTER_PATH/OpenRouterAdapter.kt"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Pre-push Live Test" \
+  -c user.email="pre-push-live@example.invalid" \
+  commit -qm "OpenRouter provider behavior"
+OPENROUTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+: > "$CALL_LOG"
+run_hook "$OPENROUTER_SHA"
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "full" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live:openrouter" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "OpenRouter-only push did not run full then the OpenRouter gate exactly once." >&2
+  exit 1
+fi
+
+git -C "$TEST_REPOSITORY" update-ref refs/remotes/origin/main "$OPENROUTER_SHA"
 printf '%s\n' "shared provider behavior" > \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin/SharedBehavior.kt"
 git -C "$TEST_REPOSITORY" add .
@@ -185,7 +224,8 @@ run_hook "$SHARED_SHA"
 if [[ "$(sed -n '1p' "$CALL_LOG")" != "full" ||
       "$(sed -n '2p' "$CALL_LOG")" != "live:openai" ||
       "$(sed -n '3p' "$CALL_LOG")" != "live:anthropic" ||
-      -n "$(sed -n '4p' "$CALL_LOG")" ]]; then
+      "$(sed -n '4p' "$CALL_LOG")" != "live:openrouter" ||
+      -n "$(sed -n '5p' "$CALL_LOG")" ]]; then
   echo "Shared push did not run full then every selected provider gate." >&2
   exit 1
 fi
