@@ -2,6 +2,7 @@ package com.maneesh.universalai.connector.internal.provider.anthropic
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 internal data class AnthropicCreateMessageWire(
@@ -12,6 +13,19 @@ internal data class AnthropicCreateMessageWire(
     val system: List<AnthropicTextBlockWire>? = null,
     @SerialName("stop_sequences")
     val stopSequences: List<String>? = null,
+    @SerialName("output_config")
+    val outputConfig: AnthropicOutputConfigurationWire? = null,
+)
+
+@Serializable
+internal data class AnthropicOutputConfigurationWire(
+    val format: AnthropicOutputFormatWire,
+)
+
+@Serializable
+internal data class AnthropicOutputFormatWire(
+    val type: String,
+    val schema: JsonElement,
 )
 
 @Serializable
