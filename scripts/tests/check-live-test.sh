@@ -11,6 +11,8 @@ unset \
 unset \
   OPENAI_API_KEY \
   OPENAI_LIVE_MODEL \
+  ANTHROPIC_API_KEY \
+  ANTHROPIC_LIVE_MODEL \
   UAC_LIVE_EXPECTED_SHA
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
@@ -19,6 +21,8 @@ CALL_LOG="$TEST_DIRECTORY/calls.log"
 OUTPUT="$TEST_DIRECTORY/output.log"
 SYNTHETIC_KEY="test-key-material-that-must-not-appear"
 MODEL="test-model-2026-08-02"
+ANTHROPIC_SYNTHETIC_KEY="test-anthropic-material-that-must-not-appear"
+ANTHROPIC_MODEL="test-anthropic-model-2026-08-07"
 
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
@@ -36,6 +40,8 @@ set -euo pipefail
 if [[ "$*" == *":bridge:jvmTest"* ]]; then
   if [[ -n "${OPENAI_API_KEY:-}" ||
         -n "${OPENAI_LIVE_MODEL:-}" ||
+        -n "${ANTHROPIC_API_KEY:-}" ||
+        -n "${ANTHROPIC_LIVE_MODEL:-}" ||
         -n "${UAC_LIVE_EXPECTED_SHA:-}" ]]; then
     echo "Deterministic tests received live environment values." >&2
     exit 9
@@ -50,6 +56,8 @@ fi
 if [[ "$*" == *":bridge:openAiLiveTest"* ]]; then
   if [[ "${OPENAI_API_KEY:-}" != "$UAC_TEST_EXPECTED_KEY" ||
         "${OPENAI_LIVE_MODEL:-}" != "$UAC_TEST_EXPECTED_MODEL" ||
+        -n "${ANTHROPIC_API_KEY:-}" ||
+        -n "${ANTHROPIC_LIVE_MODEL:-}" ||
         "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
     echo "Live task did not receive its exact expected environment." >&2
     exit 10
@@ -156,6 +164,8 @@ expect_failure \
   env \
     OPENAI_API_KEY="$SYNTHETIC_KEY" \
     OPENAI_LIVE_MODEL="$MODEL" \
+    ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+    ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
     UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
     UAC_TEST_CALL_LOG="$CALL_LOG" \
     UAC_TEST_DIRTY_AFTER_DETERMINISTIC="$POST_DETERMINISTIC_DIRTY_PATH" \
@@ -174,6 +184,8 @@ expect_failure \
   env \
     OPENAI_API_KEY="$SYNTHETIC_KEY" \
     OPENAI_LIVE_MODEL="$MODEL" \
+    ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+    ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
     UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
     UAC_TEST_CALL_LOG="$CALL_LOG" \
     UAC_TEST_DIRTY_AFTER_LIVE="$POST_LIVE_DIRTY_PATH" \
@@ -193,6 +205,8 @@ fi
 env \
   OPENAI_API_KEY="$SYNTHETIC_KEY" \
   OPENAI_LIVE_MODEL="$MODEL" \
+  ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   UAC_TEST_CALL_LOG="$CALL_LOG" \
   UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
@@ -208,6 +222,10 @@ if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
 fi
 if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT"; then
   echo "Successful live runner output exposed credential material." >&2
+  exit 1
+fi
+if grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT"; then
+  echo "Successful OpenAI runner output exposed non-selected provider material." >&2
   exit 1
 fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||

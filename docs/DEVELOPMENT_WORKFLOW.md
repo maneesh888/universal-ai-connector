@@ -62,8 +62,12 @@ When a milestone adds an authoritative contract, provider, gateway, publication,
 
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
 `--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
-`scripts/live-impact.sh`; affected adapter or shared-live changes run the live gate after full
-deterministic verification, while unrelated changes remain credential-free. The initial PR body
+`scripts/live-impact.sh`; P5-A replaces the boolean result with `none` or an ordered delivered
+provider set. A provider-specific change selects its delivered gate, a shared or ambiguous live
+change selects every delivered gate, and unrelated changes remain credential-free. The hook
+removes every documented provider input from the full deterministic gate and every non-selected
+provider input from a selected live gate. OpenAI remains the only real delivered gate until P5-B
+atomically adds the Anthropic runner, task, and delivered-provider selection. The initial PR body
 and every affected update record exact-head local evidence for the secretless `Required live
 verification` policy check. GitHub does not rerun provider tests or receive provider credentials.
 
@@ -93,7 +97,7 @@ git config --local --get core.hooksPath
 The path must be `.githooks`.
 
 - Pre-commit rejects unstaged tracked changes and untracked files, then runs `./scripts/check.sh --quick` against the proposed contents.
-- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`. If the branch is live-impacting relative to `origin/main`, it then runs the exact-head local provider gate and fails closed when the required process environment is absent.
+- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`. It then runs every exact-head provider gate selected relative to `origin/main` and fails closed when any selected gate, task, or required process input is absent.
 - Never use `--no-verify`. Missing toolchains and failed checks are blockers.
 
 These hook requirements are safety gates; they do not make every task a Release analysis task.

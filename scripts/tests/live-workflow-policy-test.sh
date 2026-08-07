@@ -9,10 +9,13 @@ for forbidden in \
   'secrets.' \
   'OPENAI_API_KEY' \
   'OPENAI_LIVE_MODEL' \
+  'ANTHROPIC_API_KEY' \
+  'ANTHROPIC_LIVE_MODEL' \
   'protected-openai-live' \
   'environment: live-provider' \
   './scripts/check-live.sh' \
-  ':bridge:openAiLiveTest'; do
+  ':bridge:openAiLiveTest' \
+  ':bridge:anthropicLiveTest'; do
   if grep -Fq "$forbidden" "$WORKFLOW"; then
     echo "Secretless live-policy workflow contains forbidden provider execution: $forbidden" >&2
     exit 1
@@ -21,6 +24,10 @@ done
 
 for required in \
   'environment: live-policy' \
+  'live_providers' \
+  'live_providers=openai' \
+  'live_providers=none' \
+  'none | openai | anthropic | openai,anthropic' \
   'Local live verification: passed' \
   'No credential or provider response body retained.' \
   'GitHub did not execute provider tests or receive provider credentials.'; do

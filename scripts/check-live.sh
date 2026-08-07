@@ -108,6 +108,8 @@ echo "Running deterministic OpenAI prerequisite tests for exact HEAD."
 env \
   -u OPENAI_API_KEY \
   -u OPENAI_LIVE_MODEL \
+  -u ANTHROPIC_API_KEY \
+  -u ANTHROPIC_LIVE_MODEL \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/gradlew" :bridge:jvmTest
 
@@ -119,9 +121,12 @@ fi
 require_clean_checkout
 
 echo "Running local OpenAI live smoke tests for exact HEAD."
-OPENAI_API_KEY="$OPENAI_API_KEY" \
-OPENAI_LIVE_MODEL="$OPENAI_LIVE_MODEL" \
-UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+env \
+  -u ANTHROPIC_API_KEY \
+  -u ANTHROPIC_LIVE_MODEL \
+  OPENAI_API_KEY="$OPENAI_API_KEY" \
+  OPENAI_LIVE_MODEL="$OPENAI_LIVE_MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   "$ROOT/gradlew" \
     :bridge:openAiLiveTest \
     --no-daemon \

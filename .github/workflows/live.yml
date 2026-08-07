@@ -23,6 +23,7 @@ jobs:
     outputs:
       head_sha: ${{ steps.classify.outputs.head_sha }}
       live_required: ${{ steps.classify.outputs.live_required }}
+      live_providers: ${{ steps.classify.outputs.live_providers }}
     steps:
       - name: Check out exact candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -48,7 +49,7 @@ jobs:
             trusted_classifier="$RUNNER_TEMP/live-impact.sh"
             git show "$PR_BASE_SHA:scripts/live-impact.sh" > "$trusted_classifier"
             chmod +x "$trusted_classifier"
-            live_required="$(
+            live_providers="$(
               UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
                 "$trusted_classifier" "$PR_BASE_SHA" "$PR_HEAD_SHA"
             )"
@@ -80,18 +81,39 @@ jobs:
                   ;;
               esac
             done < "$bootstrap_changed_paths"
-            live_required=false
+            live_providers=none
           fi
           head_sha="$PR_HEAD_SHA"
 
-          if [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ||
-                ( "$live_required" != "true" && "$live_required" != "false" ) ]]; then
+          case "$live_providers" in
+            true)
+              # Compatibility with the trusted P4 classifier during the P5-A transition.
+              live_providers=openai
+              ;;
+            false)
+              live_providers=none
+              ;;
+            none | openai | anthropic | openai,anthropic)
+              ;;
+            *)
+              echo "Live-impact classification produced an invalid provider set."
+              exit 1
+              ;;
+          esac
+          if [[ "$live_providers" == "none" ]]; then
+            live_required=false
+          else
+            live_required=true
+          fi
+
+          if [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ]]; then
             echo "Live-impact classification produced invalid output."
             exit 1
           fi
 
           echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
           echo "live_required=$live_required" >> "$GITHUB_OUTPUT"
+          echo "live_providers=$live_providers" >> "$GITHUB_OUTPUT"
 
   required-live-verification:
     name: Required live verification
@@ -107,6 +129,7 @@ jobs:
           HEAD_SHA: ${{ needs.impact.outputs.head_sha }}
           IMPACT_RESULT: ${{ needs.impact.result }}
           LIVE_REQUIRED: ${{ needs.impact.outputs.live_required }}
+          LIVE_PROVIDERS: ${{ needs.impact.outputs.live_providers }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           if [[ "$IMPACT_RESULT" != "success" ]]; then
@@ -119,6 +142,7 @@ jobs:
             exit 0
           fi
 
+          echo "Retained local evidence is required for: $LIVE_PROVIDERS"
           if [[ "$PR_BODY" != *"Local live verification: passed"* ]]; then
             echo "The pull request must record 'Local live verification: passed'."
             exit 1

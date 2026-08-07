@@ -5,11 +5,23 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
 SCANNER_UNDER_TEST="$TEST_REPOSITORY/scripts/secret-scan.sh"
+LIVE_INPUT_EXAMPLE="$ROOT/.env.live.example"
 
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
 }
 trap cleanup EXIT
+
+for documented_input in \
+  OPENAI_API_KEY \
+  OPENAI_LIVE_MODEL \
+  ANTHROPIC_API_KEY \
+  ANTHROPIC_LIVE_MODEL; do
+  if ! grep -Fxq "$documented_input=" "$LIVE_INPUT_EXAMPLE"; then
+    echo "Value-free live-input example omitted or populated $documented_input." >&2
+    exit 1
+  fi
+done
 
 mkdir -p "$TEST_REPOSITORY/scripts"
 cp "$ROOT/scripts/secret-scan.sh" "$SCANNER_UNDER_TEST"
@@ -56,6 +68,30 @@ if grep -Fq "$SYNTHETIC_SECRET" "$IGNORED_DETECTION_OUTPUT"; then
   exit 1
 fi
 rm -f "$IGNORED_PROBE_FILE" "$TEST_REPOSITORY/.ignore"
+
+ANTHROPIC_DETECTION_OUTPUT="$TEST_DIRECTORY/anthropic-detection.log"
+ANTHROPIC_PROBE_FILE="$TEST_REPOSITORY/anthropic-config.txt"
+SYNTHETIC_ANTHROPIC_SECRET="$(
+  printf '%s%s' 'sk-ant-api03-' 'BBBBBBBBBBBBBBBBBBBBBBBB'
+)"
+printf 'ANTHROPIC_API_KEY="%s"\n' "$SYNTHETIC_ANTHROPIC_SECRET" > "$ANTHROPIC_PROBE_FILE"
+
+anthropic_detection_status=0
+"$SCANNER_UNDER_TEST" > "$ANTHROPIC_DETECTION_OUTPUT" 2>&1 ||
+  anthropic_detection_status=$?
+if [[ "$anthropic_detection_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject the synthetic Anthropic input." >&2
+  exit 1
+fi
+if ! grep -Fq "Potential secret material found." "$ANTHROPIC_DETECTION_OUTPUT"; then
+  echo "Secret scan did not recognize the documented Anthropic credential input." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_ANTHROPIC_SECRET" "$ANTHROPIC_DETECTION_OUTPUT"; then
+  echo "Secret scan exposed matched Anthropic credential material." >&2
+  exit 1
+fi
+rm -f "$ANTHROPIC_PROBE_FILE"
 
 LOCAL_LIVE_OUTPUT="$TEST_DIRECTORY/local-live.log"
 LOCAL_LIVE_FILE="$TEST_REPOSITORY/.env.live"
