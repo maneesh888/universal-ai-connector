@@ -130,7 +130,7 @@ An undelivered or ambiguous affected provider path fails closed to every deliver
 documentation-only change produces a successful secretless `Required live verification` result
 automatically. The workflow retains trusted-base compatibility with the legacy P4 boolean
 classifier and accepts stable ordered provider sets through
-`openai,anthropic,openrouter`; the currently delivered ordered set is `openai,openrouter`.
+`openai,anthropic,openrouter`; that is also the currently delivered ordered set.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, and records the no-retention boundary. It executes no candidate provider

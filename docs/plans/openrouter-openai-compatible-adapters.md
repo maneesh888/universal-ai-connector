@@ -300,8 +300,10 @@ or update rather than becoming a skipped success.
 
 ## Acceptance criteria
 
-- P5 is described as deferred, with P5-B through P5-E and the P9 blocker intact.
-- P6 is the only non-deferred `In progress` milestone.
+- P5's temporary deferral is recorded without a completion claim; after P6-B, P5 resumes at P5-B
+  with P5-C through P5-E and the P9 blocker intact.
+- P6-A and P6-B are completed, P6-C remains unactivated, and P6 is deferred while P5 is the only
+  non-deferred `In progress` milestone.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.

@@ -510,6 +510,74 @@ class AnthropicMessagesAdapterTests {
     }
 
     @Test
+    fun oversizedSuccessfulPayloadFailsWithOneFixedSafeError(): Unit = runTest {
+        val credential = "oversized-success-anthropic-test-credential"
+        val oversizedPayload = ByteArray(TEST_MAX_RESPONSE_BODY_BYTES + 1) { 'x'.code.toByte() }
+        val engine =
+            MockEngine {
+                respond(
+                    content = ByteReadChannel(oversizedPayload),
+                    status = HttpStatusCode.OK,
+                )
+            }
+        val connector = connector(engine) { credential }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+            assertEquals("malformed_provider_response", failure.error.code.rawValue)
+            assertEquals(ANTHROPIC_MALFORMED_RESPONSE_MESSAGE, failure.message)
+            assertFalse(failure.stackTraceToString().contains(credential))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun oversizedProviderErrorBodyIsDiscardedBeforeSafeStatusMapping(): Unit = runTest {
+        val credential = "oversized-error-anthropic-test-credential"
+        val oversizedPayload = ByteArray(TEST_MAX_ERROR_BODY_BYTES + 1) { 'x'.code.toByte() }
+        val engine =
+            MockEngine {
+                respond(
+                    content = ByteReadChannel(oversizedPayload),
+                    status = HttpStatusCode.TooManyRequests,
+                    headers =
+                        Headers.build {
+                            append("request-id", "req_oversized_error")
+                            append("retry-after", "3")
+                        },
+                )
+            }
+        val connector = connector(engine) { credential }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.RateLimit, failure.error.category)
+            assertEquals("provider_rate_limited", failure.error.code.rawValue)
+            assertEquals(ANTHROPIC_RATE_LIMIT_MESSAGE, failure.message)
+            with(assertNotNull(failure.error.metadata)) {
+                assertEquals(429L, number("statusCode")?.toLongOrNull())
+                assertEquals("req_oversized_error", string("requestId"))
+                assertEquals(3_000L, number("retryAfterMillis")?.toLongOrNull())
+            }
+            assertFalse(failure.stackTraceToString().contains(credential))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
     fun callerCancellationCancelsPendingProviderResponseWithoutCanonicalFailure(): Unit = runTest {
         val requestStarted = CompletableDeferred<Unit>()
         var credentialCalls = 0
@@ -611,6 +679,8 @@ class AnthropicMessagesAdapterTests {
         """.trimIndent()
 
     private companion object {
+        const val TEST_MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
+        const val TEST_MAX_ERROR_BODY_BYTES: Int = 256 * 1_024
         val ANTHROPIC_PROVIDER_ID: ProviderId = ProviderId.of("anthropic")
         val JSON = Json
     }

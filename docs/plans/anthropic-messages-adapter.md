@@ -381,7 +381,7 @@ exact-head live, CI, secretless-policy, independent-review, and guarded-merge ga
 
 Candidate completion record:
 
-- resumed P5 as the only `In progress` milestone and deferred P6 after its accepted P6-A work;
+- resumed P5 as the only `In progress` milestone and deferred P6 after its accepted P6-B work;
 - added the internal direct Messages registration and bounded request/response wire models without
   adding a provider-specific public or host-storage API;
 - translated the accepted leading-system and alternating user/assistant text subset, required
