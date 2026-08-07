@@ -75,6 +75,8 @@ class TransportPolicyTests {
                 "http://128.0.0.1/api",
                 "http://127.0.0.1.example/api",
                 "http://127.0.0.01/api",
+                "http://١٢٧.٠.٠.١/api",
+                "http://１２７.０.０.１/api",
                 "http://[::2]/api",
                 "http://[::ffff:127.0.0.1]/api",
                 "https://user@example.invalid/api",

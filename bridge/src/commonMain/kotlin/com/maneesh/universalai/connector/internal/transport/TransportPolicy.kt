@@ -383,7 +383,7 @@ private fun String.isCanonicalIpv4Loopback(): Boolean {
             if (
                 octet.isEmpty() ||
                 octet.length > 3 ||
-                octet.any { character -> !character.isDigit() } ||
+                octet.any { character -> character !in '0'..'9' } ||
                 (octet.length > 1 && octet.startsWith('0'))
             ) {
                 return false
