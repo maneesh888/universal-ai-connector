@@ -35,7 +35,9 @@ for required in \
   'openai,anthropic,openrouter' \
   'Local live verification: passed' \
   'No credential or provider response body retained.' \
-  'GitHub did not execute provider tests or receive provider credentials.'; do
+  'Trust boundary: local execution is contributor-attested; GitHub verifies retained exact-head evidence only.' \
+  'Local execution remains contributor-attested.' \
+  'GitHub verified retained exact-head evidence only and did not receive provider credentials.'; do
   if ! grep -Fq "$required" "$WORKFLOW"; then
     echo "Secretless live-policy workflow omitted required evidence policy: $required" >&2
     exit 1

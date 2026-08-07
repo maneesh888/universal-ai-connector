@@ -157,6 +157,11 @@ jobs:
             echo "The pull request must record the live-proof retention boundary."
             exit 1
           fi
+          if [[ "$PR_BODY" != *"Trust boundary: local execution is contributor-attested; GitHub verifies retained exact-head evidence only."* ]]; then
+            echo "The pull request must acknowledge the local-execution trust boundary."
+            exit 1
+          fi
 
           echo "Exact-head local live evidence was recorded for policy review."
-          echo "GitHub did not execute provider tests or receive provider credentials."
+          echo "Local execution remains contributor-attested."
+          echo "GitHub verified retained exact-head evidence only and did not receive provider credentials."

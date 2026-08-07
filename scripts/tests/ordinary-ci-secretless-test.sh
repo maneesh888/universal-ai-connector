@@ -36,4 +36,11 @@ for required in \
   fi
 done
 
+setup_gradle_steps="$(grep -Fc 'uses: gradle/actions/setup-gradle@' "$WORKFLOW")"
+wrapper_validation_settings="$(grep -Fc 'validate-wrappers: true' "$WORKFLOW")"
+if [[ "$setup_gradle_steps" -eq 0 || "$wrapper_validation_settings" -ne "$setup_gradle_steps" ]]; then
+  echo "Every setup-gradle step must explicitly enable Gradle wrapper JAR validation." >&2
+  exit 1
+fi
+
 echo "Ordinary CI remains read-only, deterministic, and secretless."

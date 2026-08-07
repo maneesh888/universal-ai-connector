@@ -23,6 +23,7 @@ expected = {
       "dependency-name" => "*",
       "update-types" => [
         "version-update:semver-patch",
+        "version-update:semver-minor",
       ],
     },
   ],
@@ -75,7 +76,7 @@ RUBY
 }
 
 if ! validate_policy "$CONFIG"; then
-  echo "Dependabot Gradle policy must retain the exact patch-only isolated groups." >&2
+  echo "Dependabot Gradle policy must retain minor-and-patch updates with isolated patch groups." >&2
   exit 1
 fi
 
@@ -115,7 +116,7 @@ awk '
 ' "$CONFIG" > "$SPLIT_ALLOW_RULE"
 
 if validate_policy "$SPLIT_ALLOW_RULE"; then
-  echo "An unrestricted wildcard allow rule must not borrow a patch limit from another entry." >&2
+  echo "An unrestricted wildcard allow rule must not borrow update limits from another entry." >&2
   exit 1
 fi
 
@@ -152,4 +153,4 @@ if validate_policy "$BARE_WILDCARD_ALLOW"; then
   exit 1
 fi
 
-echo "Dependabot patch-only grouping policy passed."
+echo "Dependabot minor-and-patch update policy passed."
