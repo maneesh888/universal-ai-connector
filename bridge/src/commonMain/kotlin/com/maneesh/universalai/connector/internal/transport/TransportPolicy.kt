@@ -10,7 +10,8 @@ import io.ktor.http.decodeURLPart
 import io.ktor.http.encodedPath
 
 /**
- * One validated and normalized HTTP(S) base URL.
+ * One validated and normalized HTTPS base URL, with plaintext HTTP limited to exact loopback
+ * hosts for local development and deterministic mock-server use.
  *
  * Normalized values always end in exactly one slash so endpoint resolution cannot discard an
  * optional path prefix.
@@ -59,7 +60,7 @@ internal class ConnectorBaseUrl private constructor(
                     throw invalidBaseUrl()
                 }
             if (
-                parsed.protocol.name !in SUPPORTED_SCHEMES ||
+                !parsed.usesSecureOrLoopbackScheme() ||
                 parsed.host.isBlank() ||
                 parsed.user != null ||
                 parsed.password != null ||
@@ -361,6 +362,75 @@ private fun String.hasExplicitSupportedScheme(): Boolean {
     }
     return substring(authorityStart, authorityEnd).hasValidAuthorityShape()
 }
+
+private fun Url.usesSecureOrLoopbackScheme(): Boolean =
+    protocol.name == "https" || (protocol.name == "http" && host.isExactLoopbackHost())
+
+private fun String.isExactLoopbackHost(): Boolean {
+    val normalizedHost = lowercase().removeSurrounding("[", "]")
+    return normalizedHost == "localhost" ||
+        normalizedHost.isCanonicalIpv4Loopback() ||
+        normalizedHost.isIpv6Loopback()
+}
+
+private fun String.isCanonicalIpv4Loopback(): Boolean {
+    val octets = split('.')
+    if (octets.size != 4) {
+        return false
+    }
+    val numericOctets =
+        octets.map { octet ->
+            if (
+                octet.isEmpty() ||
+                octet.length > 3 ||
+                octet.any { character -> !character.isDigit() } ||
+                (octet.length > 1 && octet.startsWith('0'))
+            ) {
+                return false
+            }
+            octet.toIntOrNull()?.takeIf { value -> value in 0..255 } ?: return false
+        }
+    return numericOctets.first() == 127
+}
+
+private fun String.isIpv6Loopback(): Boolean {
+    fun parseGroups(value: String): List<Int>? {
+        if (value.isEmpty()) {
+            return emptyList()
+        }
+        val groups = value.split(':')
+        if (groups.any(String::isEmpty)) {
+            return null
+        }
+        return groups.map { group ->
+            if (group.length !in 1..4 || group.any { character -> !character.isHexDigit() }) {
+                return null
+            }
+            group.toIntOrNull(radix = 16) ?: return null
+        }
+    }
+
+    val compressionIndex = indexOf("::")
+    val groups =
+        if (compressionIndex >= 0) {
+            if (indexOf("::", startIndex = compressionIndex + 2) >= 0) {
+                return false
+            }
+            val leadingGroups = parseGroups(substring(0, compressionIndex)) ?: return false
+            val trailingGroups = parseGroups(substring(compressionIndex + 2)) ?: return false
+            val omittedGroupCount = 8 - leadingGroups.size - trailingGroups.size
+            if (omittedGroupCount < 1) {
+                return false
+            }
+            leadingGroups + List(omittedGroupCount) { 0 } + trailingGroups
+        } else {
+            parseGroups(this) ?: return false
+        }
+    return groups.size == 8 && groups.dropLast(1).all { group -> group == 0 } && groups.last() == 1
+}
+
+private fun Char.isHexDigit(): Boolean =
+    this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'
 
 private fun String.hasValidAuthorityShape(): Boolean {
     if (isEmpty() || '@' in this) {

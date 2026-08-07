@@ -119,6 +119,7 @@ For an affected PR, include these exact policy statements with the current SHA:
 Local live verification: passed
 Exact head SHA: <40-character SHA>
 No credential or provider response body retained.
+Trust boundary: local execution is contributor-attested; GitHub verifies retained exact-head evidence only.
 ```
 
 ## Secretless GitHub policy
@@ -133,9 +134,10 @@ classifier and accepts stable ordered provider sets through
 `openai,anthropic,openrouter`; that is also the currently delivered ordered set.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
-current exact head SHA, and records the no-retention boundary. It executes no candidate provider
-test, uses no secret or model variable, and works the same way for same-repository and fork heads.
-Never use `pull_request_target`.
+current exact head SHA, records the no-retention boundary, and explicitly acknowledges that local
+execution is contributor-attested rather than independently proved by GitHub. It executes no
+candidate provider test, uses no secret or model variable, and works the same way for
+same-repository and fork heads. Never use `pull_request_target`.
 
 The stable status job targets the credential-free `live-policy` Environment. A branch ruleset
 requires a successful deployment to that Environment before merge. The deployment has no required
@@ -156,8 +158,9 @@ credential failure.
 
 First confirm ordinary required checks are successful. Close an invalid or superseded pull request
 instead of repeatedly updating it. For an affected head, confirm the local-live statements, exact
-SHA, command/result, and proof limits are current. Do not approve `live-provider`; the local-only
-workflow never requests it. Every head change requires a fresh local run and updated PR evidence.
+SHA, trust-boundary acknowledgment, command/result, and proof limits are current. Do not approve
+`live-provider`; the local-only workflow never requests it. Every head change requires a fresh
+local run and updated PR evidence.
 
 Because GitHub receives neither credentials nor provider output, this automatic policy proves only
 that the required exact-head statements are retained. It cannot independently prove that the

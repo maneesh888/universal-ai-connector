@@ -75,16 +75,22 @@ provider tests or receive provider credentials.
 
 ## Dependency updates
 
-Dependabot checks Gradle dependencies monthly, but routine version-update pull requests are limited
-to SemVer patches. Android build tooling, Compose, and Lifecycle patches use separate groups so an
-incompatible host-platform dependency cannot invalidate otherwise independent updates. Other
-patches remain separate unless a cohesive group is added deliberately.
+The Gradle wrapper pins both its distribution version and the official binary-distribution
+SHA-256. Every ordinary CI job that configures Gradle explicitly enables wrapper-JAR validation;
+the hygiene gate rejects removal or drift of either protection.
 
-Minor and major version upgrades require an explicit maintenance task that evaluates toolchain,
-platform, public-contract, packaging, and live-impact consequences before changing the accepted
-baseline. This restriction applies to routine version updates; security updates retain their
-separate Dependabot path. A failed automated dependency pull request is closed rather than merged,
-rebased repeatedly, or expanded into an incidental platform upgrade.
+Dependabot checks Gradle dependencies monthly, and routine version-update pull requests are limited
+to SemVer patches and minors. Android build tooling, Compose, and Lifecycle patches use separate
+groups so an incompatible host-platform dependency cannot invalidate otherwise independent
+updates. Minor updates and other patches remain separate unless a cohesive group is added
+deliberately.
+
+Major version upgrades require an explicit maintenance task that evaluates toolchain, platform,
+public-contract, packaging, and live-impact consequences before changing the accepted baseline.
+Repository settings keep Dependabot alerts and automated security-update pull requests enabled;
+those security updates remain separate from the configured routine version-update levels. A failed
+automated dependency pull request is closed rather than merged, rebased repeatedly, or expanded
+into an incidental platform upgrade.
 
 ## Hooks
 
@@ -119,13 +125,14 @@ Pull-request jobs check out the exact PR head. Third-party actions remain pinned
 `.github/workflows/live.yml` remains separate from ordinary CI. It classifies live impact
 secretlessly and reports `Required live verification`. For an affected head it requires the PR to
 record `Local live verification: passed`, the exact head SHA, and the no-retained-secret proof
-boundary. Its stable status job uses the credential-free `live-policy` Environment, whose
-successful deployment is a server-required merge condition. The protected `live-provider`
-Environment is retained with its reviewer protection but is not requested by this local-only
-policy; no GitHub job receives provider credentials. An unrelated documentation head passes
-without local provider inputs. The `live-policy` deployment is automatic and has no required
-reviewer; it validates retained evidence but cannot independently prove that the local provider
-call ran.
+boundary. It must also state that local execution is contributor-attested and GitHub verifies only
+the retained exact-head evidence. Its stable status job uses the credential-free `live-policy`
+Environment, whose successful deployment is a server-required merge condition. The protected
+`live-provider` Environment is retained with its reviewer protection but is not requested by this
+local-only policy; no GitHub job receives provider credentials. An unrelated documentation head
+passes without local provider inputs. The `live-policy` deployment is automatic and has no
+required reviewer; it validates retained evidence but cannot independently prove that the local
+provider call ran.
 
 ## Host integration
 

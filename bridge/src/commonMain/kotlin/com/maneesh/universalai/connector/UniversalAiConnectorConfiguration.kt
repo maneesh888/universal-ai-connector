@@ -21,7 +21,12 @@ class UniversalAiProviderConfiguration(
     internal val validatedBaseUrl: ConnectorBaseUrl = ConnectorBaseUrl.parse(baseUrl)
     internal val credentialSupplier: () -> String = credentialSupplier
 
-    /** The validated, normalized provider base URL. */
+    /**
+     * The validated, normalized provider base URL.
+     *
+     * Provider traffic requires HTTPS. Plaintext HTTP is accepted only for exact loopback hosts
+     * used by local development and test servers.
+     */
     val baseUrl: String
         get() = validatedBaseUrl.value
 }

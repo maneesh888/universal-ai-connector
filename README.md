@@ -170,7 +170,10 @@ The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConne
 
 Provider configuration is immutable and provider-neutral. Applications supply a synchronous
 credential loader owned by the host; the connector invokes it once per network request and does
-not read environment files or application storage:
+not read environment files or application storage. Provider base URLs require HTTPS. Plaintext
+HTTP is accepted only for exact loopback hosts (`localhost`, canonical IPv4 addresses in
+`127.0.0.0/8`, or IPv6 loopback `::1`) so local mock servers remain usable without allowing a
+credentialed request to cross a non-loopback network in cleartext:
 
 ```kotlin
 fun openAiConnector(loadCredential: () -> String): UniversalAiConnector =

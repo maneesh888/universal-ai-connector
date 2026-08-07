@@ -17,8 +17,8 @@ class TransportPolicyTests {
             ConnectorBaseUrl.parse("https://example.invalid").value,
         )
         assertEquals(
-            "http://example.invalid:8443/api/v1/",
-            ConnectorBaseUrl.parse("http://example.invalid:8443/api/v1///").value,
+            "http://localhost:8443/api/v1/",
+            ConnectorBaseUrl.parse("http://localhost:8443/api/v1///").value,
         )
         assertEquals(
             "https://example.invalid/prefix%20value/",
@@ -33,9 +33,22 @@ class TransportPolicyTests {
             ConnectorBaseUrl.parse("https://example.invalid:443/api").value,
         )
         assertEquals(
-            "http://example.invalid:80/api/",
-            ConnectorBaseUrl.parse("http://example.invalid:80/api").value,
+            "http://127.0.0.1:80/api/",
+            ConnectorBaseUrl.parse("http://127.0.0.1:80/api").value,
         )
+    }
+
+    @Test
+    fun baseUrlAllowsPlaintextHttpOnlyForExactLoopbackHosts() {
+        listOf(
+            "http://localhost:8080/",
+            "http://127.0.0.1:8080/",
+            "http://127.255.255.255:8080/",
+            "http://[::1]:8080/",
+            "http://[0:0:0:0:0:0:0:1]:8080/",
+        ).forEach { loopbackUrl ->
+            assertEquals(loopbackUrl, ConnectorBaseUrl.parse(loopbackUrl).value)
+        }
     }
 
     @Test
@@ -54,6 +67,16 @@ class TransportPolicyTests {
                 "https://user@/api",
                 "https://2001:db8::1/api",
                 "ftp://example.invalid/api",
+                "http://example.invalid/api",
+                "http://localhost.example/api",
+                "http://localhost./api",
+                "http://127.example/api",
+                "http://126.255.255.255/api",
+                "http://128.0.0.1/api",
+                "http://127.0.0.1.example/api",
+                "http://127.0.0.01/api",
+                "http://[::2]/api",
+                "http://[::ffff:127.0.0.1]/api",
                 "https://user@example.invalid/api",
                 "https://user:password@example.invalid/api",
                 "https://example.invalid/api?mode=unsafe",
@@ -105,9 +128,9 @@ class TransportPolicyTests {
                 .resolve("responses?mode=fake"),
         )
         assertEquals(
-            "http://[2001:db8::1]:80/api/models",
+            "http://[::1]:80/api/models",
             ConnectorBaseUrl
-                .parse("http://[2001:db8::1]:80/api")
+                .parse("http://[::1]:80/api")
                 .resolve("models"),
         )
     }

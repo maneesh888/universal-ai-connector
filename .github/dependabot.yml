@@ -18,6 +18,7 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-patch"
+          - "version-update:semver-minor"
     groups:
       android-build-tooling-patches:
         patterns:
