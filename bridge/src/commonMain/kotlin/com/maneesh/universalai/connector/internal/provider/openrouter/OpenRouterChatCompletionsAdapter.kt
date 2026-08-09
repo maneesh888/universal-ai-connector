@@ -14,6 +14,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiInputRole
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
+import com.maneesh.universalai.connector.contract.UniversalAiResponseFormat
 import com.maneesh.universalai.connector.contract.UniversalAiResponseFormatKind
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
@@ -21,6 +22,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENROUTER_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
@@ -45,7 +47,7 @@ internal class OpenRouterChatCompletionsAdapter(
             if (response.statusCode !in 200..299) {
                 throw providerFailure(response)
             }
-            translateSuccessfulResponse(response)
+            translateSuccessfulResponse(request, response)
         }
     }
 
@@ -88,8 +90,18 @@ internal class OpenRouterChatCompletionsAdapter(
         if (request.target.providerId != OPENROUTER_PROVIDER_ID) {
             throw unsupportedRequest(OPENROUTER_TARGET_MESSAGE)
         }
-        if (request.responseFormat.kind != UniversalAiResponseFormatKind.PlainText) {
-            throw unsupportedRequest(OPENROUTER_RESPONSE_FORMAT_MESSAGE)
+        when (request.responseFormat.kind) {
+            UniversalAiResponseFormatKind.PlainText -> Unit
+            UniversalAiResponseFormatKind.JsonSchema -> {
+                val schema =
+                    request.responseFormat.schema
+                        ?: throw unsupportedRequest(OPENROUTER_RESPONSE_FORMAT_MESSAGE)
+                if (!OpenAiStructuredOutput.isSupported(schema)) {
+                    throw unsupportedRequest(OPENROUTER_STRUCTURED_SCHEMA_MESSAGE)
+                }
+            }
+
+            else -> throw unsupportedRequest(OPENROUTER_RESPONSE_FORMAT_MESSAGE)
         }
         if (!request.extensions.isEmpty) {
             throw unsupportedRequest(OPENROUTER_EXTENSIONS_MESSAGE)
@@ -129,6 +141,7 @@ internal class OpenRouterChatCompletionsAdapter(
     }
 
     private suspend fun translateSuccessfulResponse(
+        request: UniversalAiRequest,
         response: ConnectorTransportResponse,
     ): UniversalAiResponse {
         val bytes = readBoundedBody(response.body)
@@ -149,6 +162,7 @@ internal class OpenRouterChatCompletionsAdapter(
 
         return try {
             wire.toCanonical(
+                request = request,
                 metadata = response.metadata,
             )
         } catch (cancellation: CancellationException) {
@@ -175,33 +189,52 @@ private fun UniversalAiRequest.toOpenRouterWire(): OpenRouterChatCompletionReque
         temperature = generation.temperature,
         topP = generation.topP,
         stop = generation.stopSequences.takeIf { values -> values.isNotEmpty() },
+        responseFormat = responseFormat.toOpenRouterWireOrNull(),
         provider =
             OpenRouterProviderPreferencesWire(
                 requireParameters = true,
             ),
     )
 
+private fun UniversalAiResponseFormat.toOpenRouterWireOrNull(): OpenRouterResponseFormatWire? =
+    schema?.let { schema ->
+        OpenRouterResponseFormatWire(
+            type = "json_schema",
+            jsonSchema =
+                OpenRouterJsonSchemaWire(
+                    name = OPENROUTER_STRUCTURED_OUTPUT_NAME,
+                    strict = true,
+                    schema = schema.elementForSerialization(),
+                ),
+        )
+    }
+
 internal fun OpenRouterChatCompletionResponseWire.toCanonical(
+    request: UniversalAiRequest,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiResponse {
     if (error != null) {
-        throw providerResponseFailure(metadata)
+        throw providerResponseFailure(error, metadata)
     }
     requireWire(objectType == "chat.completion")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
     val choice = requireWireValue(choices).singleOrNull() ?: throw malformedResponse()
+    choice.error?.let { error -> throw providerResponseFailure(error, metadata) }
+    requireWire(choice.delta == null)
     requireWire(choice.index == 0)
     val message = requireWireValue(choice.message)
     requireWire(message.role == "assistant")
     requireWire(
-        message.refusal == null &&
+            message.refusal == null &&
             message.reasoning == null &&
+            message.reasoningContent == null &&
             message.reasoningDetails == null &&
             message.annotations == null &&
             message.images == null &&
             message.audio == null &&
-            message.toolCalls == null,
+            message.toolCalls == null &&
+            message.functionCall == null,
     )
     val text = requireWireValue(message.content)
     requireWire(text.isNotBlank())
@@ -214,18 +247,32 @@ internal fun OpenRouterChatCompletionResponseWire.toCanonical(
                 providerId = OPENROUTER_PROVIDER_ID,
                 modelId = responseModel,
             ),
-        outputs =
-            listOf(
-                UniversalAiOutput.text(
-                    id = OutputId.of(responseId.rawValue),
-                    index = 0,
-                    text = text,
-                ),
-            ),
+        outputs = listOf(text.toCanonicalOutput(request, responseId)),
         usage = requireWireValue(usage).toCanonical(),
         completionReason = requireWireValue(choice.finishReason).toCanonicalCompletionReason(),
     )
 }
+
+private fun String.toCanonicalOutput(
+    request: UniversalAiRequest,
+    responseId: ResponseId,
+): UniversalAiOutput =
+    request.responseFormat.schema?.let { schema ->
+        val value =
+            OpenAiStructuredOutput.parseAndValidate(
+                json = this,
+                schema = schema,
+            ) ?: throw malformedStructuredResponse()
+        UniversalAiOutput.structuredJson(
+            id = OutputId.of(responseId.rawValue),
+            index = 0,
+            value = value,
+        )
+    } ?: UniversalAiOutput.text(
+        id = OutputId.of(responseId.rawValue),
+        index = 0,
+        text = this,
+    )
 
 private fun String.toCanonicalCompletionReason(): UniversalAiCompletionReason =
     when (this) {
@@ -304,19 +351,43 @@ private suspend fun readBoundedBody(reader: ConnectorTransportChunkReader): Byte
     return if (size == buffer.size) buffer else buffer.copyOf(size)
 }
 
-private fun providerFailure(
+private suspend fun providerFailure(
     response: ConnectorTransportResponse,
-): UniversalAiException =
-    statusErrorMapping(response.statusCode).toException(
+): UniversalAiException {
+    val typedMapping = response.decodeErrorEnvelopeOrNull()?.toTypedErrorMappingOrNull()
+    return (typedMapping ?: statusErrorMapping(response.statusCode)).toException(
         metadata = response.metadata.safeErrorMetadata(response.statusCode),
     )
+}
 
 private fun providerResponseFailure(
+    error: OpenRouterErrorWire,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiException =
-    PROVIDER_FAILURE_MAPPING.toException(
-        metadata = metadata.safeErrorMetadata(SUCCESS_STATUS_CODE),
+    (error.toTypedErrorMappingOrNull() ?: PROVIDER_FAILURE_MAPPING).toException(
+        metadata = metadata.safeErrorMetadata(error.code ?: SUCCESS_STATUS_CODE),
     )
+
+private suspend fun ConnectorTransportResponse.decodeErrorEnvelopeOrNull(): OpenRouterErrorWire? {
+    val bytes =
+        try {
+            readBoundedBody(body)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (_: Throwable) {
+            return null
+        }
+    return try {
+        OPENROUTER_WIRE_JSON
+            .decodeFromString<OpenRouterChatCompletionResponseWire>(
+                bytes.decodeToString(throwOnInvalidSequence = true),
+            ).error
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Throwable) {
+        null
+    }
+}
 
 private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping =
     when (statusCode) {
@@ -331,6 +402,12 @@ private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping =
                 category = UniversalAiErrorCategory.Authentication,
                 code = "provider_authentication_failed",
                 message = OPENROUTER_AUTHENTICATION_MESSAGE,
+            )
+        402 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authorization,
+                code = "provider_permission_denied",
+                message = OPENROUTER_PAYMENT_REQUIRED_MESSAGE,
             )
         403 ->
             ProviderErrorMapping(
@@ -362,7 +439,104 @@ private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping =
                 code = "provider_unavailable",
                 message = OPENROUTER_UNAVAILABLE_MESSAGE,
             )
+        in 500..599 ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_server_error",
+                message = OPENROUTER_SERVER_ERROR_MESSAGE,
+            )
         else -> PROVIDER_FAILURE_MAPPING
+    }
+
+private fun OpenRouterErrorWire.toTypedErrorMappingOrNull(): ProviderErrorMapping? =
+    when (metadata?.errorType) {
+        "context_length_exceeded",
+        "max_tokens_exceeded",
+        "token_limit_exceeded",
+        "string_too_long",
+        "invalid_request",
+        "invalid_prompt",
+        "precondition_failed",
+        "payload_too_large",
+        "unprocessable",
+        "invalid_image",
+        "image_too_large",
+        "image_too_small",
+        "unsupported_image_format",
+        "image_not_found",
+        "image_download_failed",
+        ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Validation,
+                code = "provider_invalid_request",
+                message = OPENROUTER_INVALID_REQUEST_MESSAGE,
+            )
+
+        "authentication" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authentication,
+                code = "provider_authentication_failed",
+                message = OPENROUTER_AUTHENTICATION_MESSAGE,
+            )
+
+        "permission_denied" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authorization,
+                code = "provider_permission_denied",
+                message = OPENROUTER_PERMISSION_MESSAGE,
+            )
+
+        "payment_required" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Authorization,
+                code = "provider_permission_denied",
+                message = OPENROUTER_PAYMENT_REQUIRED_MESSAGE,
+            )
+
+        "rate_limit_exceeded" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.RateLimit,
+                code = "provider_rate_limited",
+                message = OPENROUTER_RATE_LIMIT_MESSAGE,
+            )
+
+        "not_found" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.NotFound,
+                code = "provider_resource_not_found",
+                message = OPENROUTER_NOT_FOUND_MESSAGE,
+            )
+
+        "content_policy_violation", "refusal" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_response_filtered",
+                message = OPENROUTER_FILTERED_RESPONSE_MESSAGE,
+            )
+
+        "provider_overloaded", "provider_unavailable" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_unavailable",
+                message = OPENROUTER_UNAVAILABLE_MESSAGE,
+            )
+
+        "timeout" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_request_timeout",
+                message = OPENROUTER_TIMEOUT_MESSAGE,
+            )
+
+        "server" ->
+            ProviderErrorMapping(
+                category = UniversalAiErrorCategory.Provider,
+                code = "provider_server_error",
+                message = OPENROUTER_SERVER_ERROR_MESSAGE,
+            )
+
+        "unmapped" -> PROVIDER_FAILURE_MAPPING
+        else -> null
     }
 
 private fun ConnectorResponseMetadata.safeErrorMetadata(
@@ -422,6 +596,15 @@ private fun malformedResponse(): UniversalAiException =
         ),
     )
 
+private fun malformedStructuredResponse(): UniversalAiException =
+    UniversalAiException(
+        UniversalAiError(
+            category = UniversalAiErrorCategory.Protocol,
+            code = UniversalAiErrorCode.of("invalid_structured_provider_response"),
+            message = OPENROUTER_INVALID_STRUCTURED_RESPONSE_MESSAGE,
+        ),
+    )
+
 private fun requireWire(condition: Boolean) {
     if (!condition) {
         throw malformedResponse()
@@ -440,7 +623,11 @@ internal const val OPENROUTER_MALFORMED_RESPONSE_MESSAGE: String =
 internal const val OPENROUTER_TARGET_MESSAGE: String =
     "The OpenRouter adapter accepts only the canonical openrouter provider."
 internal const val OPENROUTER_RESPONSE_FORMAT_MESSAGE: String =
-    "The active OpenRouter adapter package supports plain-text responses only."
+    "The OpenRouter adapter supports only plain-text and governed JSON-schema responses."
+internal const val OPENROUTER_STRUCTURED_SCHEMA_MESSAGE: String =
+    "The requested schema cannot be represented faithfully by the OpenRouter adapter."
+internal const val OPENROUTER_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
+    "The OpenRouter structured response did not satisfy the requested schema."
 internal const val OPENROUTER_EXTENSIONS_MESSAGE: String =
     "The active OpenRouter adapter package does not support request extensions."
 internal const val OPENROUTER_INPUT_ROLE_MESSAGE: String =
@@ -453,12 +640,18 @@ internal const val OPENROUTER_AUTHENTICATION_MESSAGE: String =
     "OpenRouter rejected the request authentication."
 internal const val OPENROUTER_PERMISSION_MESSAGE: String =
     "OpenRouter denied access to the requested resource."
+internal const val OPENROUTER_PAYMENT_REQUIRED_MESSAGE: String =
+    "OpenRouter denied the request because the account has insufficient credit."
 internal const val OPENROUTER_NOT_FOUND_MESSAGE: String =
     "OpenRouter could not find the requested resource."
 internal const val OPENROUTER_RATE_LIMIT_MESSAGE: String =
     "OpenRouter rate-limited or quota-limited the request."
 internal const val OPENROUTER_PROVIDER_FAILURE_MESSAGE: String =
     "OpenRouter could not complete the request."
+internal const val OPENROUTER_FILTERED_RESPONSE_MESSAGE: String =
+    "OpenRouter filtered or refused the response."
+internal const val OPENROUTER_SERVER_ERROR_MESSAGE: String =
+    "OpenRouter encountered a server error."
 internal const val OPENROUTER_TIMEOUT_MESSAGE: String =
     "OpenRouter timed out while processing the request."
 internal const val OPENROUTER_UNAVAILABLE_MESSAGE: String =
@@ -471,6 +664,7 @@ private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
 private const val MAX_RESPONSE_BODY_CHUNKS: Int = 4 * 1_024
 private const val SUCCESS_STATUS_CODE: Int = 200
+private const val OPENROUTER_STRUCTURED_OUTPUT_NAME: String = "universal_ai_response"
 
 private val PROVIDER_FAILURE_MAPPING =
     ProviderErrorMapping(

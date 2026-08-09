@@ -15,6 +15,22 @@ internal data class OpenAiCompatibleChatCompletionRequestWire(
     @SerialName("top_p")
     val topP: Double? = null,
     val stop: List<String>? = null,
+    @SerialName("response_format")
+    val responseFormat: OpenAiCompatibleResponseFormatWire? = null,
+)
+
+@Serializable
+internal data class OpenAiCompatibleResponseFormatWire(
+    val type: String,
+    @SerialName("json_schema")
+    val jsonSchema: OpenAiCompatibleJsonSchemaWire,
+)
+
+@Serializable
+internal data class OpenAiCompatibleJsonSchemaWire(
+    val name: String,
+    val strict: Boolean,
+    val schema: JsonElement,
 )
 
 @Serializable

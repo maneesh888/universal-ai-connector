@@ -17,17 +17,17 @@ failures, conservative capabilities, incremental streaming, cancellation, lifecy
 secret-safe live verification, and package-boundary audits. P5 completes the Anthropic Messages
 path through protocol readiness, non-streaming and structured translation, safe errors,
 capabilities, streaming, cancellation, lifecycle cleanup, exact-head live proof, and boundary
-acceptance. P6 completed OpenRouter/generic protocol readiness in P6-A and direct non-streaming
-OpenRouter behavior in P6-B; the P6-C candidate adds bounded generic OpenAI-compatible
-construction and non-streaming translation through the existing provider-neutral host boundary.
+acceptance. P6 completed OpenRouter/generic protocol readiness in P6-A, direct non-streaming
+OpenRouter behavior in P6-B, and generic OpenAI-compatible non-streaming behavior in P6-C. The
+P6-D candidate adds strict structured output, bounded errors/metadata, and conservative
+capabilities through the existing provider-neutral host boundary.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
 > output, errors, capabilities, streaming, cancellation, concurrent lifecycle, secret-safety,
 > live evidence, and boundary acceptance. P5 Anthropic Messages is completed authoritatively.
-> P6-A readiness and P6-B direct non-streaming OpenRouter behavior are complete. P6-C generic
-> compatibility is implemented in the current candidate; structured output, complete typed
-> errors, capabilities, and streaming remain later P6 packages.
+> P6-A through P6-C are complete. P6-D structured output, errors, metadata, and capabilities is
+> implemented in the current candidate; streaming remains a later P6 package.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -94,7 +94,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| OpenRouter and compatible adapters | 🚧 P6-A/P6-B completed; P6-C generic non-streaming compatibility implemented in the current candidate |
+| OpenRouter and compatible adapters | 🚧 P6-A through P6-C completed; P6-D structured output, errors, metadata, and capabilities implemented in the current candidate |
 | Universal Gateway V2 adapter | ⏳ Planned |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
@@ -109,7 +109,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P3 | HTTP transport and provider registry | ✅ Completed |
 | P4 | OpenAI Responses adapter | ✅ Completed |
 | P5 | Anthropic adapter | ✅ Completed |
-| P6 | OpenRouter and compatible adapters | 🚧 In progress; P6-A/P6-B completed, P6-C implemented in the current candidate |
+| P6 | OpenRouter and compatible adapters | 🚧 In progress; P6-A through P6-C completed, P6-D implemented in the current candidate |
 | P7 | Universal Gateway V2 adapter | ⏳ Planned |
 | P8 | Production distribution and host integration | ⏳ Planned |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
@@ -135,9 +135,10 @@ translation and active cancellation, and P5-E completed concurrent lifecycle, cl
 supported-consumer, secret-safety, and package-boundary acceptance. P6-A recorded direct OpenRouter
 Chat Completions, generic compatibility, credential, and live-routing boundaries, and P6-B
 completed direct non-streaming OpenRouter request/response behavior and its exact-head local-live
-gate. The current candidate implements P6-C generic non-streaming construction, translation,
-safe error handling, deterministic compatibility fixtures, and representative OpenRouter live
-coverage; later packages remain pending.
+gate. P6-C completed generic non-streaming construction, translation, safe error handling,
+deterministic compatibility fixtures, and representative OpenRouter live coverage. The current
+candidate implements P6-D structured output, typed and safe errors, bounded metadata, conservative
+capabilities, and targeted live coverage; later packages remain pending.
 
 ## Architecture direction
 
