@@ -3,8 +3,8 @@
 ## Status and activation gate
 
 P0-P4 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A. The
-dedicated Anthropic credential/model is now available, so P5 has resumed at P5-B as the only
-`In progress` milestone and P6 is `Deferred` after P6-B.
+dedicated Anthropic credential/model is now available, so P5 has resumed and is active at P5-D as
+the only `In progress` milestone while P6 is `Deferred` after P6-B.
 
 P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completes
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
@@ -37,8 +37,8 @@ The completed milestone must provide:
 
 ## Sequencing decision
 
-P5 deferral is not P5 completion. P5-C through P5-E retain their requirements and remain a P9
-release blocker. The repository implemented and verified P6-A/P6-B while P5 was deferred, but it
+P5 deferral was not P5 completion. P5-E retains its requirements and remains a P9 release blocker.
+The repository implemented and verified P6-A/P6-B while P5 was deferred, but it
 did not:
 
 - describe the Anthropic adapter as implemented, approved, complete, or live-tested;
@@ -46,8 +46,8 @@ did not:
 - weaken P5 acceptance or silently remove Anthropic from the release matrix; or
 - have more than one non-deferred milestone marked `In progress`.
 
-That gate is now satisfied. P5 has resumed at P5-B and P6 remains deferred until P5 is no longer
-the active milestone.
+That gate is now satisfied. P5 has resumed and advanced through P5-D in this candidate; P6 remains
+deferred until P5 is no longer the active milestone.
 
 ## Design constraints
 

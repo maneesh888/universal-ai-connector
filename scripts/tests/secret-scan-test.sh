@@ -7,6 +7,25 @@ TEST_REPOSITORY="$TEST_DIRECTORY/repository"
 SCANNER_UNDER_TEST="$TEST_REPOSITORY/scripts/secret-scan.sh"
 LIVE_INPUT_EXAMPLE="$ROOT/.env.live.example"
 
+# Git exports repository-local state to hooks. Keep the nested regression
+# repository independent from the real commit index and object database.
+unset \
+  GIT_ALTERNATE_OBJECT_DIRECTORIES \
+  GIT_COMMON_DIR \
+  GIT_CONFIG \
+  GIT_CONFIG_COUNT \
+  GIT_CONFIG_PARAMETERS \
+  GIT_DIR \
+  GIT_GRAFT_FILE \
+  GIT_IMPLICIT_WORK_TREE \
+  GIT_INDEX_FILE \
+  GIT_NO_REPLACE_OBJECTS \
+  GIT_OBJECT_DIRECTORY \
+  GIT_PREFIX \
+  GIT_REPLACE_REF_BASE \
+  GIT_SHALLOW_FILE \
+  GIT_WORK_TREE
+
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
 }

@@ -5,15 +5,14 @@
 P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed the protocol and
 live-test authentication-readiness package through PR
 [#39](https://github.com/maneesh888/universal-ai-connector/pull/39). The dedicated Anthropic
-credential and enabled bounded-cost model are now available. P5-B is authoritative and P5-C is now
-the active package in the only `In progress` milestone. P6 is `Deferred` after P6-B, and P7-P9
-remain `Not started`.
+credential and enabled bounded-cost model are now available. P5-A through P5-C are authoritative,
+and P5-D is now the active package in the only `In progress` milestone. P6 is `Deferred` after
+P6-B, and P7-P9 remain `Not started`.
 
-P5-C is completed in this candidate. It adds the accepted `output_config.format` schema
-intersection and exact response revalidation, complete documented HTTP-error and incomplete-stop
-mapping, conservative adapter/model capabilities, deterministic fixtures, and the required
-structured-output and intentional-error live smokes. P5-D and P5-E remain deferred and
-unimplemented.
+P5-D is completed in this candidate. It adds incremental translation for the accepted Anthropic
+SSE sequence, bounded ordered content and cumulative usage state, one authoritative canonical
+terminal, active cancellation and backpressure coverage, deterministic fixtures, and the required
+streaming and active-cancellation live smokes. P5-E remains deferred and unimplemented.
 
 P5-A became authoritative after exact head
 `a7d6fb2833140cbcd26b6a30f603c5c226e7a800` passed its deterministic and affected OpenAI live
@@ -29,8 +28,15 @@ then merged as `17349ba41a8888d225f503c7d1ef7082bd42d6b6`, and resulting `main` 
 [31214200835](https://github.com/maneesh888/universal-ai-connector/actions/runs/31214200835)
 passed.
 
-P5-B resumption is not Anthropic milestone completion or approval. Every P5-C through P5-E
-acceptance and live-proof requirement still blocks P9 release.
+P5-C became authoritative after exact head `e896dcc5e1504967f4228dae16b60db040869d86`
+passed its deterministic and affected Anthropic live gates, ordinary CI, secretless live-policy
+status, and independent review; PR [#48](https://github.com/maneesh888/universal-ai-connector/pull/48)
+then merged as `e09d548513449320f648b0be31f7251e8e802342`, and resulting `main` run
+[31220845292](https://github.com/maneesh888/universal-ai-connector/actions/runs/31220845292)
+passed.
+
+P5-D implementation is not Anthropic milestone completion or approval. P5-D authority and every
+P5-E acceptance and live-proof requirement still block P9 release.
 
 ## Objective
 
@@ -140,7 +146,7 @@ P5-A closed the following decisions after P5 activation and before provider beha
 ### Authoritative provider protocol
 
 The following official Claude Platform sources were consulted on August 7, 2026, revalidated for
-P5-C on August 8, 2026, and govern the P5 subset:
+P5-C on August 8, 2026 and P5-D on August 9, 2026, and govern the P5 subset:
 
 - [API overview and direct HTTP authentication headers](https://platform.claude.com/docs/en/api/overview)
 - [API-key authentication and rotation guidance](https://platform.claude.com/docs/en/manage-claude/authentication)
@@ -404,8 +410,7 @@ Completion record:
 
 ### P5-C: Structured output, errors, and capabilities
 
-Status: `Completed` in this candidate; authoritative only after its required deterministic,
-exact-head live, CI, secretless-policy, independent-review, and guarded-merge gates pass.
+Status: `Completed` and accepted August 8, 2026 through PR #48.
 
 - Implement governed structured-output translation only if P5-A accepts a compatible provider
   mechanism; otherwise declare the capability unsupported.
@@ -416,7 +421,7 @@ exact-head live, CI, secretless-policy, independent-review, and guarded-merge ga
 - Run the affected structured-output smoke when supported and one intentional safe provider-error
   smoke before creating or updating the package pull request.
 
-Candidate completion record:
+Completion record:
 
 - passed through only the documented Anthropic-compatible intersection of the governed schema
   subset, including strict objects, supported scalar types and formats, local definitions,
@@ -435,7 +440,8 @@ Candidate completion record:
 
 ### P5-D: Streaming translation and cancellation
 
-Status: `Deferred`; P5-C must become authoritative first.
+Status: `Completed` in this candidate; authoritative only after its required deterministic,
+exact-head live, CI, secretless-policy, independent-review, and guarded-merge gates pass.
 
 - Implement provider SSE event translation through the P3 parser.
 - Enforce ordering, backpressure, one authoritative terminal, and missing-terminal failure.
@@ -444,6 +450,26 @@ Status: `Deferred`; P5-C must become authoritative first.
   fixtures.
 - Run the affected streaming and active-cancellation smoke tests before creating or updating the
   package pull request.
+
+Candidate completion record:
+
+- opted the existing internal Messages request into streaming with `stream: true`, required the
+  documented named SSE/data pairing and event-stream response type, and reused the P3 incremental
+  reader without adding an SDK or provider-specific host surface;
+- translated `message_start`, indexed text content blocks and deltas, cumulative `message_delta`
+  usage, `message_stop`, `ping`, and safe in-stream provider errors into one valid canonical
+  sequence while ignoring only forward-compatible unknown top-level events;
+- accumulated multiple ordered text blocks into the existing single canonical Anthropic output,
+  delayed governed structured output until exact final-schema validation, bounded event/content
+  state, and rejected unsupported content or delta types, contradictory usage, invalid ordering,
+  duplicate state, truncation, oversized records, and missing terminals with fixed safe failures;
+- preserved rendezvous backpressure, stopped body reads at the first valid provider terminal, and
+  covered cancellation before headers, during partial and complete records, after observable
+  content, and during canonical terminal delivery with no later event or terminal;
+- changed the conservative Anthropic adapter streaming capability from unsupported to supported
+  while leaving undocumented model-level structured-output support unknown; and
+- extended the fail-closed Anthropic live task with one ordered streaming response and one active
+  stream cancellation after observable content without retaining a response body.
 
 ### P5-E: Lifecycle integration and acceptance
 

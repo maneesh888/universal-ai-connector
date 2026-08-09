@@ -30,7 +30,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -357,31 +356,6 @@ class AnthropicMessagesAdapterTests {
                 connector.close()
                 engine.close()
             }
-        }
-    }
-
-    @Test
-    fun streamingFailsBeforeCredentialResolutionOrDispatch(): Unit = runTest {
-        var credentialCalls = 0
-        val engine = MockEngine { error("P5-B streaming must not dispatch.") }
-        val connector =
-            connector(engine) {
-                credentialCalls += 1
-                "unused"
-            }
-
-        try {
-            val failure =
-                assertFailsWith<UniversalAiException> {
-                    connector.stream(request()).first()
-                }
-            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
-            assertEquals(ANTHROPIC_STREAMING_MESSAGE, failure.message)
-            assertEquals(0, credentialCalls)
-            assertEquals(0, engine.requestHistory.size)
-        } finally {
-            connector.close()
-            engine.close()
         }
     }
 

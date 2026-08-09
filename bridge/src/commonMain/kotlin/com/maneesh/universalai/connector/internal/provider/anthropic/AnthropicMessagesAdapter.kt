@@ -22,14 +22,18 @@ import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.ANTHROPIC_PROVIDER_ID
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
+import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEventReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportHeader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -40,7 +44,7 @@ internal class AnthropicMessagesAdapter(
 ) : ConnectorEngine {
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
-        val transportRequest = transportRequest(request)
+        val transportRequest = transportRequest(request, stream = false)
 
         return transport.execute(transportRequest) { response ->
             if (response.statusCode !in 200..299) {
@@ -51,16 +55,56 @@ internal class AnthropicMessagesAdapter(
     }
 
     override fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
-        flow {
-            validateRequest(request)
-            throw unsupportedRequest(ANTHROPIC_STREAMING_MESSAGE)
+        channelFlow<AnthropicStreamSignal> {
+            try {
+                validateRequest(request)
+                val transportRequest = transportRequest(request, stream = true)
+                transport.execute(transportRequest) { response ->
+                    if (response.statusCode !in 200..299) {
+                        throw providerFailure(response)
+                    }
+                    if (!response.hasEventStreamContentType()) {
+                        throw malformedAnthropicStream()
+                    }
+                    val reader = ConnectorServerSentEventReader(response.body)
+                    val translator =
+                        AnthropicStreamTranslator(
+                            request = request,
+                            metadata = response.metadata,
+                        )
+                    while (true) {
+                        val event = reader.readEvent() ?: break
+                        translator.translate(event).forEach { translated ->
+                            send(AnthropicStreamSignal.Event(translated))
+                        }
+                        if (translator.isTerminal) {
+                            return@execute
+                        }
+                    }
+                    translator.finish()
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (failure: Throwable) {
+                send(AnthropicStreamSignal.Failure(failure))
+            }
         }
+            .buffer(Channel.RENDEZVOUS)
+            .transform { signal ->
+                when (signal) {
+                    is AnthropicStreamSignal.Event -> emit(signal.event)
+                    is AnthropicStreamSignal.Failure -> throw signal.failure
+                }
+            }
 
-    private fun transportRequest(request: UniversalAiRequest): ConnectorTransportRequest {
+    private fun transportRequest(
+        request: UniversalAiRequest,
+        stream: Boolean,
+    ): ConnectorTransportRequest {
         val credential = resolveCredential()
         val body =
             ANTHROPIC_WIRE_JSON
-                .encodeToString(request.toAnthropicWire())
+                .encodeToString(request.toAnthropicWire(stream))
                 .encodeToByteArray()
         return ConnectorTransportRequest(
             method = "POST",
@@ -82,7 +126,7 @@ internal class AnthropicMessagesAdapter(
                     ),
                     ConnectorTransportHeader(
                         name = "accept",
-                        value = JSON_CONTENT_TYPE,
+                        value = if (stream) EVENT_STREAM_CONTENT_TYPE else JSON_CONTENT_TYPE,
                     ),
                 ),
             body = body,
@@ -204,7 +248,25 @@ internal class AnthropicMessagesAdapter(
     }
 }
 
-private fun UniversalAiRequest.toAnthropicWire(): AnthropicCreateMessageWire {
+private sealed interface AnthropicStreamSignal {
+    data class Event(
+        val event: UniversalAiStreamEvent,
+    ) : AnthropicStreamSignal
+
+    data class Failure(
+        val failure: Throwable,
+    ) : AnthropicStreamSignal
+}
+
+private fun ConnectorTransportResponse.hasEventStreamContentType(): Boolean =
+    headers
+        .lastOrNull { header -> header.name.equals("content-type", ignoreCase = true) }
+        ?.value
+        ?.substringBefore(';')
+        ?.trim()
+        ?.equals(EVENT_STREAM_CONTENT_TYPE, ignoreCase = true) == true
+
+private fun UniversalAiRequest.toAnthropicWire(stream: Boolean): AnthropicCreateMessageWire {
     val firstMessageIndex =
         input.indexOfFirst { item -> item.role != UniversalAiInputRole.System }
     val system =
@@ -243,6 +305,7 @@ private fun UniversalAiRequest.toAnthropicWire(): AnthropicCreateMessageWire {
                         ),
                 )
             },
+        stream = true.takeIf { stream },
     )
 }
 
@@ -541,6 +604,14 @@ private fun providerErrorMapping(error: AnthropicErrorWire): ProviderErrorMappin
         else -> PROVIDER_FAILURE_MAPPING
     }
 
+internal fun anthropicStreamProviderFailure(
+    error: AnthropicErrorWire,
+    metadata: ConnectorResponseMetadata,
+): UniversalAiException =
+    providerErrorMapping(error).toException(
+        metadata.safeErrorMetadata(SUCCESS_STATUS_CODE),
+    )
+
 private suspend fun readErrorEnvelopeOrNull(
     reader: ConnectorTransportChunkReader,
 ): AnthropicErrorEnvelopeWire? {
@@ -661,21 +732,21 @@ private fun malformedStructuredResponse(): UniversalAiException =
         ),
     )
 
-private fun outputLimitFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
+internal fun outputLimitFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
     ProviderErrorMapping(
         category = UniversalAiErrorCategory.Provider,
         code = "provider_output_limit_reached",
         message = ANTHROPIC_OUTPUT_LIMIT_MESSAGE,
     ).toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
 
-private fun refusalFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
+internal fun refusalFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
     ProviderErrorMapping(
         category = UniversalAiErrorCategory.Provider,
         code = "provider_refused_response",
         message = ANTHROPIC_REFUSAL_MESSAGE,
     ).toException(metadata.safeErrorMetadata(SUCCESS_STATUS_CODE))
 
-private fun incompleteResponseFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
+internal fun incompleteResponseFailure(metadata: ConnectorResponseMetadata): UniversalAiException =
     ProviderErrorMapping(
         category = UniversalAiErrorCategory.Provider,
         code = "provider_incomplete_response",
@@ -711,8 +782,6 @@ internal const val ANTHROPIC_EXTENSIONS_MESSAGE: String =
     "The active Anthropic adapter package does not support request extensions."
 internal const val ANTHROPIC_INPUT_ROLE_MESSAGE: String =
     "The Anthropic adapter requires leading system input followed by alternating user and assistant turns ending with user."
-internal const val ANTHROPIC_STREAMING_MESSAGE: String =
-    "The active Anthropic adapter package does not support streaming."
 internal const val ANTHROPIC_INVALID_REQUEST_MESSAGE: String =
     "Anthropic rejected the request."
 internal const val ANTHROPIC_AUTHENTICATION_MESSAGE: String =
@@ -745,6 +814,7 @@ internal const val ANTHROPIC_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
 private const val MESSAGES_ENDPOINT: String = "messages"
 private const val ANTHROPIC_API_VERSION: String = "2023-06-01"
 private const val JSON_CONTENT_TYPE: String = "application/json"
+private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
 private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
