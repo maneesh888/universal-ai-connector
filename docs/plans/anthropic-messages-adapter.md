@@ -13,7 +13,7 @@ and P7-P9 remain `Not started`.
 P5-E added integrated concurrent response and stream isolation, per-request credential resolution,
 connector close-race and body-cleanup coverage, consumer and artifact-boundary acceptance, and
 milestone evidence reconciliation without changing the supported host or provider protocol
-surface. Its exact-head deterministic, live, ordinary-CI, secretless live-policy,
+surface. Its exact-head deterministic, affected Anthropic live, ordinary-CI, secretless live-policy,
 independent-review, guarded-merge, and resulting-`main` gates passed.
 
 P5-A became authoritative after exact head
@@ -46,7 +46,7 @@ live-policy status, and independent review; PR
 passed.
 
 P5-E became authoritative after exact head `d0b2a7f97bb12f075ad28e9636306b11c41424dc`
-passed the complete deterministic and delivered-provider live gates, ordinary CI, secretless
+passed the complete deterministic and affected Anthropic live gate, ordinary CI, secretless
 live-policy status, and independent review; PR
 [#50](https://github.com/maneesh888/universal-ai-connector/pull/50) then merged as
 `d984631ea8de5f3f1c377ac72df155d23b6710da`, and resulting `main` run
@@ -513,7 +513,7 @@ Completion record:
   audits through the existing fail-closed gates and Anthropic-specific regression probes;
 - reconciled P5-A through P5-D package evidence and the complete P5 deterministic, host,
   secret-safety, and targeted live smoke matrices; and
-- passed the complete exact-head deterministic and delivered-provider live gates, secretless
+- passed the complete exact-head deterministic and affected Anthropic live gate, secretless
   policy, ordinary CI, and independent review at
   `d0b2a7f97bb12f075ad28e9636306b11c41424dc`; PR #50 merged as
   `d984631ea8de5f3f1c377ac72df155d23b6710da`, and resulting `main` run 31328462444 passed.
@@ -743,7 +743,7 @@ For every activated P5 package, record:
 - proof limits and unexercised provider behavior; and
 - the next incomplete P5 package.
 
-P5 completion is authoritative because closing PR #50 passed the full exact-head local
-deterministic and live gates, exact-head ordinary CI, protected secretless evidence policy,
+P5 completion is authoritative because closing PR #50 passed the full exact-head deterministic
+and affected Anthropic live gate, exact-head ordinary CI, protected secretless evidence policy,
 independent review, guarded merge, and resulting `main` workflow inspection required by repository
 policy. The roadmap remains the authority for current milestone status.
