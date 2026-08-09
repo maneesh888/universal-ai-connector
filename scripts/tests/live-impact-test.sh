@@ -17,6 +17,7 @@ PROVIDER_DIRECTORY="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/maneesh/un
 OPENAI_DIRECTORY="$PROVIDER_DIRECTORY/openai"
 ANTHROPIC_DIRECTORY="$PROVIDER_DIRECTORY/anthropic"
 OPENROUTER_DIRECTORY="$PROVIDER_DIRECTORY/openrouter"
+OPENAI_COMPATIBLE_DIRECTORY="$PROVIDER_DIRECTORY/openaicompatible"
 
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
@@ -210,6 +211,26 @@ if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$ANTHROPIC_SHA" "$OPENROUTER_SHA")" != \
   exit 1
 fi
 
+mkdir -p "$OPENAI_COMPATIBLE_DIRECTORY"
+printf '%s\n' "internal generic adapter marker" > \
+  "$OPENAI_COMPATIBLE_DIRECTORY/OpenAiCompatibleChatCompletionsAdapter.kt"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "add generic adapter marker"
+OPENAI_COMPATIBLE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$OPENROUTER_SHA" "$OPENAI_COMPATIBLE_SHA")" != "openrouter" ]]; then
+  echo "A generic-adapter change must select the representative OpenRouter gate." >&2
+  exit 1
+fi
+if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$OPENROUTER_SHA" "$OPENAI_COMPATIBLE_SHA")" != \
+  "openrouter" ]]; then
+  echo "A generic-adapter change must select only the representative OpenRouter gate." >&2
+  exit 1
+fi
+
 printf '%s\n' "shared behavior marker" > \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin/SharedBehavior.kt"
 git -C "$TEST_REPOSITORY" add .
@@ -219,12 +240,12 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "change shared behavior"
 SHARED_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$OPENROUTER_SHA" "$SHARED_SHA")" != \
+if [[ "$("$CLASSIFIER" "$OPENAI_COMPATIBLE_SHA" "$SHARED_SHA")" != \
   "openai,anthropic,openrouter" ]]; then
   echo "A shared change must select the current delivered provider gates." >&2
   exit 1
 fi
-if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$OPENROUTER_SHA" "$SHARED_SHA")" != \
+if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$OPENAI_COMPATIBLE_SHA" "$SHARED_SHA")" != \
   "openai,anthropic,openrouter" ]]; then
   echo "A shared change must select every delivered provider gate." >&2
   exit 1

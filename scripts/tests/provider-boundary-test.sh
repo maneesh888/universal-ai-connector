@@ -12,7 +12,8 @@ rg \
   "^(public[[:space:]]+)?(data[[:space:]]+class|class|object|interface|enum[[:space:]]+class)[[:space:]]+$PROVIDER_IMPLEMENTATION_PATTERN" \
   "$PROVIDER_SOURCES/openai" \
   "$PROVIDER_SOURCES/anthropic" \
-  "$PROVIDER_SOURCES/openrouter" || scan_status=$?
+  "$PROVIDER_SOURCES/openrouter" \
+  "$PROVIDER_SOURCES/openaicompatible" || scan_status=$?
 case "$scan_status" in
   0)
     echo "A provider implementation or DTO declaration is not internal." >&2
@@ -38,7 +39,7 @@ for supported_surface in \
     --glob '!**/internal/**' \
     --glob '!**/src/test/**' \
     --glob '!**/Tests/**' \
-    "internal\\.provider\\.(openai|anthropic|openrouter)|$PROVIDER_IMPLEMENTATION_PATTERN" \
+    "internal\\.provider\\.(openai|anthropic|openrouter|openaicompatible)|$PROVIDER_IMPLEMENTATION_PATTERN" \
     "$supported_surface" || scan_status=$?
   case "$scan_status" in
     0)

@@ -4,18 +4,17 @@
 
 P0-P5 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A/P6-B
 before P5 resumed. P5 then completed authoritatively through PR #50 and resulting-`main`
-verification. This milestone-resumption candidate makes P6 the only `In progress` milestone and
-activates P6-C without adding generic adapter behavior.
+verification. P6 is now the only `In progress` milestone, and this candidate implements P6-C.
 
 P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completed
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
-P6-C is `In progress` in this candidate; implementation starts only after the resumption
-transition passes its exact-head Release gates and guarded merge.
+P6-C is `In progress` in this candidate. It adds the bounded generic non-streaming adapter and
+becomes authoritative only after its exact-head Release gates and guarded merge pass.
 
-P6-B adds no generic OpenAI-compatible adapter, structured output, complete typed provider-error
-translation, streaming, or capability claims. Its exact-head deterministic, OpenAI, and OpenRouter
-live gates, ordinary CI, secretless live-policy status, independent review, guarded merge, and
-resulting-`main` verification passed through PR #41.
+P6-B's accepted scope added no generic OpenAI-compatible adapter, structured output, complete
+typed provider-error translation, streaming, or capability claims. Its exact-head deterministic,
+OpenAI, and OpenRouter live gates, ordinary CI, secretless live-policy status, independent review,
+guarded merge, and resulting-`main` verification passed through PR #41.
 
 ## Objective
 
@@ -227,8 +226,8 @@ Status: `Completed`.
 
 ### P6-C: Generic OpenAI-compatible construction and translation
 
-Status: `In progress` in this milestone-resumption candidate; implementation begins after the
-resumption transition becomes authoritative.
+Status: `In progress`; implementation is complete in this candidate and awaits exact-head Release
+verification and guarded merge.
 
 - Add the internal `openai-compatible` registration without adding a provider-specific public
   configuration type.
@@ -305,8 +304,8 @@ or update rather than becoming a skipped success.
 
 - P5's temporary deferral is recorded without a false completion claim; after P6-B, P5 resumed at
   P5-B and completed authoritatively through P5-E, PR #50, and resulting-`main` verification.
-- P6-A and P6-B are completed, and this separate milestone-resumption change makes P6 the only
-  `In progress` milestone with P6-C active and no generic adapter behavior added yet.
+- P6-A and P6-B are completed, P6 is the only `In progress` milestone, and the P6-C candidate adds
+  bounded generic non-streaming behavior without activating P6-D.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.
@@ -333,6 +332,12 @@ network, exact head, minimal response, and pending-cancellation paths at the rec
 not prove structured output, complete typed errors, streaming, generic compatibility, every
 OpenRouter model/upstream provider, routing outcome, future protocol revision, or third-party
 OpenAI-compatible endpoint.
+
+P6-C deterministic tests prove only the committed conservative generic Chat Completions subset.
+Its representative live test proves only that the selected OpenRouter endpoint and model accepted
+that generic request and produced a supported response at the recorded exact head and time. It
+does not prove compatibility with other servers, models, protocol variants, structured output,
+complete error semantics, capabilities, or streaming.
 
 P6 work does not prove Anthropic behavior, Gateway behavior, physical-device execution, remote
 distribution, credential management, or alpha-release readiness.

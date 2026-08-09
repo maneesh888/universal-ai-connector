@@ -19,7 +19,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Explicit P6-B OpenRouter provider smoke tests.
+ * Explicit P6-B/P6-C OpenRouter and representative generic compatibility smoke tests.
  *
  * The ordinary jvmTest task excludes this class. scripts/check-live.sh supplies and exact-head
  * binds the required process environment without retaining credentials or provider bodies.
@@ -27,7 +27,7 @@ import kotlin.test.assertTrue
 class OpenRouterLiveTest {
     @Test
     fun minimalNonStreamingResponseTranslatesToCanonicalOutput(): Unit = runBlocking {
-        connector().use { connector ->
+        connector(OPENROUTER_PROVIDER_ID).use { connector ->
             val response =
                 connector.respond(
                     liveRequest("Reply with exactly one short word: ready."),
@@ -36,6 +36,28 @@ class OpenRouterLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == OPENROUTER_PROVIDER_ID)
+            with(assertNotNull(response.usage)) {
+                assertTrue(inputTokens >= 0)
+                assertTrue(outputTokens >= 0)
+                assertTrue(totalTokens > 0)
+            }
+        }
+    }
+
+    @Test
+    fun selectedOpenRouterModelAcceptsTheGenericCompatibleAdapter(): Unit = runBlocking {
+        connector(OPENAI_COMPATIBLE_PROVIDER_ID).use { connector ->
+            val response =
+                connector.respond(
+                    liveRequest(
+                        prompt = "Reply with exactly one short word: ready.",
+                        providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
+                    ),
+                )
+
+            assertTrue(response.outputs.isNotEmpty())
+            assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
+            assertTrue(response.target.providerId == OPENAI_COMPATIBLE_PROVIDER_ID)
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
                 assertTrue(outputTokens >= 0)
@@ -70,19 +92,20 @@ class OpenRouterLiveTest {
         }
     }
 
-    private fun connector(): UniversalAiConnector =
-        configuredConnector {
+    private fun connector(providerId: ProviderId): UniversalAiConnector =
+        configuredConnector(providerId) {
             requiredEnvironment("OPENROUTER_API_KEY")
         }
 
     private fun configuredConnector(
+        providerId: ProviderId = OPENROUTER_PROVIDER_ID,
         credentialSupplier: () -> String,
     ): UniversalAiConnector =
         UniversalAiConnector(
             UniversalAiConnectorConfiguration(
                 listOf(
                     UniversalAiProviderConfiguration(
-                        providerId = OPENROUTER_PROVIDER_ID,
+                        providerId = providerId,
                         baseUrl = "https://openrouter.ai/api/v1",
                         credentialSupplier = credentialSupplier,
                     ),
@@ -90,11 +113,14 @@ class OpenRouterLiveTest {
             ),
         )
 
-    private fun liveRequest(prompt: String): UniversalAiRequest =
+    private fun liveRequest(
+        prompt: String,
+        providerId: ProviderId = OPENROUTER_PROVIDER_ID,
+    ): UniversalAiRequest =
         UniversalAiRequest(
             target =
                 UniversalAiTarget(
-                    providerId = OPENROUTER_PROVIDER_ID,
+                    providerId = providerId,
                     modelId = ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
                 ),
             input =
@@ -112,6 +138,7 @@ class OpenRouterLiveTest {
 
     private companion object {
         val OPENROUTER_PROVIDER_ID: ProviderId = ProviderId.of("openrouter")
+        val OPENAI_COMPATIBLE_PROVIDER_ID: ProviderId = ProviderId.of("openai-compatible")
 
         fun requiredEnvironment(name: String): String =
             checkNotNull(System.getenv(name)?.takeIf(String::isNotBlank)) {

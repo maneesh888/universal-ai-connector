@@ -64,6 +64,20 @@ fi
 sed -i.bak '/OpenRouterChatCompletionWire/d' "$HEADER"
 rm -f "$HEADER.bak"
 
+printf '%s\n' 'OpenAiCompatibleChatCompletionWire' >> "$HEADER"
+provider_match_status=0
+uac_reject_xcframework_header_pattern \
+  "$HEADER" \
+  "$UAC_PROVIDER_IMPLEMENTATION_HEADER_PATTERN" \
+  "A generic provider implementation leaked into the callback-bridge header." \
+  > "$MATCH_OUTPUT" 2>&1 || provider_match_status=$?
+if [[ "$provider_match_status" -ne 1 ]]; then
+  echo "Expected the XCFramework header audit to reject a generic wire DTO." >&2
+  exit 1
+fi
+sed -i.bak '/OpenAiCompatibleChatCompletionWire/d' "$HEADER"
+rm -f "$HEADER.bak"
+
 printf '%s\n' 'AnthropicMessageResponseWire' >> "$HEADER"
 provider_match_status=0
 uac_reject_xcframework_header_pattern \

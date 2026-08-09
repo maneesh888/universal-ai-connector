@@ -2,9 +2,9 @@
 
 ## Status
 
-- Repository stage: P5 Anthropic adapter completed authoritatively; P6 OpenRouter and OpenAI-compatible adapters resumed at P6-C in this milestone-resumption candidate
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, and authoritative P6-A/P6-B direct OpenRouter packages; generic OpenAI-compatible runtime behavior remains unimplemented
-- Active work package: P6-C generic OpenAI-compatible construction and translation is activated in this candidate; implementation remains not started until the resumption transition becomes authoritative
+- Repository stage: P5 Anthropic adapter completed authoritatively; P6 OpenRouter and OpenAI-compatible adapters are in progress at P6-C
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, authoritative P6-A/P6-B direct OpenRouter packages, and the P6-C generic OpenAI-compatible implementation candidate
+- Active work package: P6-C generic OpenAI-compatible construction and translation is implemented in this candidate; P6-D remains inactive until P6-C becomes authoritative
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
@@ -24,6 +24,7 @@
 - P6-A completion authority: exact head `759e7db62b9881429f0a81ba0a3a03ce4466f7e5` passed deterministic and affected OpenAI live gates, ordinary CI, secretless live-policy status, and independent review; PR [#40](https://github.com/maneesh888/universal-ai-connector/pull/40) merged as `6feabf364b1a20e0544c4583456cd7bef35bc5dc`, and resulting `main` run [31179405791](https://github.com/maneesh888/universal-ai-connector/actions/runs/31179405791) passed
 - P6-B completion: delivered the internal direct OpenRouter Chat Completions registration, bounded non-streaming text request/response and usage translation, host-supplied bearer authentication, deterministic malformed/redaction/cancellation coverage, the exact-head OpenRouter live task, and real `openai,openrouter` provider selection
 - P6-B completion authority: exact head `7c8bd034d9c73f7533753b0a52fbbee8413ce077` passed deterministic, OpenAI, and OpenRouter live gates, ordinary CI, secretless live-policy status, and independent review; PR [#41](https://github.com/maneesh888/universal-ai-connector/pull/41) merged as `4a69e73d96a94d76ec47c3517648fe0ef0e23be1`, and resulting `main` run [31209384740](https://github.com/maneesh888/universal-ai-connector/actions/runs/31209384740) passed
+- P6-C candidate: adds the internal generic `openai-compatible` registration, conservative non-streaming Chat Completions construction and translation, safe generic errors, deterministic URL/header/unknown-field/cancellation coverage, and representative live compatibility coverage through the existing OpenRouter gate; authority requires the exact-head Release lifecycle and guarded merge
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -125,7 +126,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P3 | HTTP transport and provider registry | Completed | Provider-neutral transport, policy, SSE/metadata, registry, and integrated lifecycle behavior accepted through deterministic tests and existing host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P6 | OpenRouter and OpenAI-compatible adapters | In progress | P6-A readiness and P6-B direct non-streaming OpenRouter behavior completed; P6-C is activated in this milestone-resumption candidate |
+| P6 | OpenRouter and OpenAI-compatible adapters | In progress | P6-A readiness and P6-B direct non-streaming OpenRouter behavior completed; P6-C generic compatibility is implemented in this candidate |
 | P7 | Universal Gateway V2 adapter | Not started | |
 | P8 | Production distribution and host integration | Not started | |
 | P9 | Release hardening and internal alpha | Not started | |
@@ -222,8 +223,8 @@ packages were then explicitly deferred for lack of a dedicated credential/model,
 completed under `openrouter-openai-compatible-adapters.md`. The dedicated Anthropic inputs are now
 available, so P5-B resumed and became authoritative through PR #42. P5-C became authoritative
 through PR #48, P5-D became authoritative through PR #49, and P5-E completed P5 authoritatively
-through PR #50 and resulting-`main` verification. This milestone-resumption candidate makes P6
-the only `In progress` milestone and activates P6-C without adding generic adapter behavior.
+through PR #50 and resulting-`main` verification. P6 is now the only `In progress` milestone, and
+the active P6-C candidate adds generic non-streaming OpenAI-compatible behavior.
 
 ## P8: Production distribution and host integration
 

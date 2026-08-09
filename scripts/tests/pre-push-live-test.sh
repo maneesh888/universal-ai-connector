@@ -210,6 +210,27 @@ if [[ "$(sed -n '1p' "$CALL_LOG")" != "full" ||
 fi
 
 git -C "$TEST_REPOSITORY" update-ref refs/remotes/origin/main "$OPENROUTER_SHA"
+OPENAI_COMPATIBLE_PATH="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/example/internal/provider/openaicompatible"
+mkdir -p "$OPENAI_COMPATIBLE_PATH"
+printf '%s\n' "generic OpenAI-compatible behavior" > \
+  "$OPENAI_COMPATIBLE_PATH/OpenAiCompatibleAdapter.kt"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Pre-push Live Test" \
+  -c user.email="pre-push-live@example.invalid" \
+  commit -qm "generic OpenAI-compatible behavior"
+OPENAI_COMPATIBLE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+: > "$CALL_LOG"
+run_hook "$OPENAI_COMPATIBLE_SHA"
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "full" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live:openrouter" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "Generic-adapter push did not run full then the OpenRouter gate exactly once." >&2
+  exit 1
+fi
+
+git -C "$TEST_REPOSITORY" update-ref refs/remotes/origin/main "$OPENAI_COMPATIBLE_SHA"
 printf '%s\n' "shared provider behavior" > \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin/SharedBehavior.kt"
 git -C "$TEST_REPOSITORY" add .
