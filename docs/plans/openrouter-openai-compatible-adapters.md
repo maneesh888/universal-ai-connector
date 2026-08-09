@@ -4,17 +4,18 @@
 
 P0-P5 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A/P6-B
 before P5 resumed. P5 then completed authoritatively through PR #50 and resulting-`main`
-verification. P6 is now the only `In progress` milestone, and this candidate implements P6-C.
+verification. P6 is now the only `In progress` milestone, and this candidate implements P6-D.
 
 P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completed
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
-P6-C is `In progress` in this candidate. It adds the bounded generic non-streaming adapter and
-becomes authoritative only after its exact-head Release gates and guarded merge pass.
+P6-C completed authoritatively through PR #52 and resulting-`main` verification. P6-D is `In
+progress` in this candidate, adding structured output, complete bounded error/metadata handling,
+and conservative capabilities; P6-E remains inactive.
 
-P6-B's accepted scope added no generic OpenAI-compatible adapter, structured output, complete
-typed provider-error translation, streaming, or capability claims. Its exact-head deterministic,
-OpenAI, and OpenRouter live gates, ordinary CI, secretless live-policy status, independent review,
-guarded merge, and resulting-`main` verification passed through PR #41.
+P6-C's accepted scope added no structured output, complete typed provider-error translation,
+streaming, or capability claims. Its exact-head deterministic and delivered-provider live gates,
+ordinary CI, secretless live-policy status, independent review, guarded merge, and
+resulting-`main` verification passed through PR #52.
 
 ## Objective
 
@@ -49,8 +50,9 @@ did not:
 
 That gate is now satisfied. P5 resumed and completed authoritatively through PR #50 and
 resulting-`main` verification. The prior milestone-resumption transition then made P6 the only
-`In progress` milestone and activated P6-C without implementing it; this candidate implements
-the activated package.
+`In progress` milestone and activated P6-C without implementing it. P6-C then completed through
+PR #52 and resulting-`main` verification; this candidate implements the subsequently activated
+P6-D package.
 
 ## Design constraints
 
@@ -81,8 +83,8 @@ the activated package.
 
 ### Authoritative OpenRouter protocol
 
-The following official OpenRouter sources were consulted on August 7, 2026 and govern the P6
-subset:
+The following official OpenRouter sources were consulted on August 7, 2026 and revalidated for
+P6-D on August 10, 2026; they govern the P6 subset:
 
 - [Chat Completions request reference](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion)
 - [Bearer-key authentication example and current-key endpoint](https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key)
@@ -227,8 +229,7 @@ Status: `Completed`.
 
 ### P6-C: Generic OpenAI-compatible construction and translation
 
-Status: `In progress`; implementation is complete in this candidate and awaits exact-head Release
-verification and guarded merge.
+Status: `Completed`; accepted August 10, 2026 through PR #52 and resulting-`main` verification.
 
 - Add the internal `openai-compatible` registration without adding a provider-specific public
   configuration type.
@@ -240,7 +241,8 @@ verification and guarded merge.
 
 ### P6-D: Structured output, errors, metadata, and capabilities
 
-Status: `Not started`.
+Status: `In progress`; implementation is complete in this candidate and awaits exact-head Release
+verification and guarded merge.
 
 - Implement the strict supported JSON-schema intersection and revalidation.
 - Complete OpenRouter typed-error and generic safe-error mapping.
@@ -305,8 +307,8 @@ or update rather than becoming a skipped success.
 
 - P5's temporary deferral is recorded without a false completion claim; after P6-B, P5 resumed at
   P5-B and completed authoritatively through P5-E, PR #50, and resulting-`main` verification.
-- P6-A and P6-B are completed, P6 is the only `In progress` milestone, and the P6-C candidate adds
-  bounded generic non-streaming behavior without activating P6-D.
+- P6-A through P6-C are completed, P6 is the only `In progress` milestone, and the P6-D candidate
+  adds structured output, bounded errors/metadata, and capabilities without activating P6-E.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.
@@ -339,6 +341,14 @@ Its representative live test proves only that the selected OpenRouter endpoint a
 that generic request and produced a supported response at the recorded exact head and time. It
 does not prove compatibility with other servers, models, protocol variants, structured output,
 complete error semantics, capabilities, or streaming.
+
+P6-D deterministic tests prove the committed strict schema intersection, post-response
+revalidation, documented OpenRouter typed-error fixtures, fixed generic HTTP-status mapping,
+bounded transport metadata, redaction, and conservative capability declarations. Its targeted
+live tests prove only the selected OpenRouter account, endpoint, model, direct/generic structured
+requests, and invalid-model error path at the recorded exact head and time. They do not prove
+every JSON Schema dialect, model, upstream provider, third-party compatible endpoint, provider
+error variant, or streaming behavior.
 
 P6 work does not prove Anthropic behavior, Gateway behavior, physical-device execution, remote
 distribution, credential management, or alpha-release readiness.

@@ -15,7 +15,23 @@ internal data class OpenRouterChatCompletionRequestWire(
     @SerialName("top_p")
     val topP: Double? = null,
     val stop: List<String>? = null,
+    @SerialName("response_format")
+    val responseFormat: OpenRouterResponseFormatWire? = null,
     val provider: OpenRouterProviderPreferencesWire,
+)
+
+@Serializable
+internal data class OpenRouterResponseFormatWire(
+    val type: String,
+    @SerialName("json_schema")
+    val jsonSchema: OpenRouterJsonSchemaWire,
+)
+
+@Serializable
+internal data class OpenRouterJsonSchemaWire(
+    val name: String,
+    val strict: Boolean,
+    val schema: JsonElement,
 )
 
 @Serializable
@@ -38,7 +54,7 @@ internal data class OpenRouterChatCompletionResponseWire(
     val model: String? = null,
     val choices: List<OpenRouterChoiceWire>? = null,
     val usage: OpenRouterUsageWire? = null,
-    val error: JsonElement? = null,
+    val error: OpenRouterErrorWire? = null,
 )
 
 @Serializable
@@ -47,6 +63,8 @@ internal data class OpenRouterChoiceWire(
     val message: OpenRouterResponseMessageWire? = null,
     @SerialName("finish_reason")
     val finishReason: String? = null,
+    val error: OpenRouterErrorWire? = null,
+    val delta: JsonElement? = null,
 )
 
 @Serializable
@@ -55,6 +73,8 @@ internal data class OpenRouterResponseMessageWire(
     val content: String? = null,
     val refusal: JsonElement? = null,
     val reasoning: JsonElement? = null,
+    @SerialName("reasoning_content")
+    val reasoningContent: JsonElement? = null,
     @SerialName("reasoning_details")
     val reasoningDetails: JsonElement? = null,
     val annotations: JsonElement? = null,
@@ -62,6 +82,21 @@ internal data class OpenRouterResponseMessageWire(
     val audio: JsonElement? = null,
     @SerialName("tool_calls")
     val toolCalls: JsonElement? = null,
+    @SerialName("function_call")
+    val functionCall: JsonElement? = null,
+)
+
+@Serializable
+internal data class OpenRouterErrorWire(
+    val code: Int? = null,
+    val message: String? = null,
+    val metadata: OpenRouterErrorMetadataWire? = null,
+)
+
+@Serializable
+internal data class OpenRouterErrorMetadataWire(
+    @SerialName("error_type")
+    val errorType: String? = null,
 )
 
 @Serializable

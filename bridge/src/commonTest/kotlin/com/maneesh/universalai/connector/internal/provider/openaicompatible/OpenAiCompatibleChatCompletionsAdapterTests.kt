@@ -6,6 +6,9 @@ import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
 import com.maneesh.universalai.connector.contract.ModelId
 import com.maneesh.universalai.connector.contract.ProviderId
 import com.maneesh.universalai.connector.contract.StructuredOutputSchema
+import com.maneesh.universalai.connector.contract.StructuredOutputValue
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityName
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySupport
 import com.maneesh.universalai.connector.contract.UniversalAiCompletionReason
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiException
@@ -20,6 +23,12 @@ import com.maneesh.universalai.connector.contract.extension.ExtensionNamespace
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.contract.extension.Extensions
 import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_PROVIDER_CAPABILITY_PROFILE
+import com.maneesh.universalai.connector.internal.provider.ProviderRegistry
+import com.maneesh.universalai.connector.internal.provider.builtInProviderRegistration
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.Headers
@@ -170,17 +179,6 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
 
     @Test
     fun credentialsAndUnsupportedFeaturesCannotOverrideProtectedHeaders() = runTest {
-        val schema =
-            StructuredOutputSchema.parse(
-                """
-                {
-                  "type":"object",
-                  "properties":{"answer":{"type":"string"}},
-                  "required":["answer"],
-                  "additionalProperties":false
-                }
-                """.trimIndent(),
-            )
         val extensions =
             Extensions.of(
                 ExtensionNamespace.of("com.example.headers") to
@@ -200,7 +198,6 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
                             ),
                         ),
                 ),
-                request(responseFormat = UniversalAiResponseFormat.jsonSchema(schema)),
                 request(extensions = extensions),
             )
         var credentialCalls = 0
@@ -248,6 +245,100 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
                 invalidConnector.close()
                 invalidEngine.close()
             }
+        }
+    }
+
+    @Test
+    fun structuredOutputUsesTheStrictCompatibleShapeAndRevalidatesTheResult() = runTest {
+        val schema = supportedSchema()
+        val structuredJson = """{"answer":"ready","score":1}"""
+        val engine =
+            MockEngine { request ->
+                val document =
+                    JSON.parseToJsonElement(request.body.bodyBytes().decodeToString()) as JsonObject
+                assertFalse("provider" in document)
+                val responseFormat = document["response_format"] as JsonObject
+                assertEquals("json_schema", responseFormat.string("type"))
+                val jsonSchema = responseFormat["json_schema"] as JsonObject
+                assertEquals("universal_ai_response", jsonSchema.string("name"))
+                assertEquals(JSON.parseToJsonElement(schema.toJson()), jsonSchema["schema"])
+                respond(successResponse(text = structuredJson))
+            }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val output =
+                connector
+                    .respond(request(responseFormat = UniversalAiResponseFormat.jsonSchema(schema)))
+                    .outputs
+                    .single()
+            assertEquals(UniversalAiOutputKind.StructuredJson, output.kind)
+            assertNull(output.text)
+            assertEquals(StructuredOutputValue.parse(structuredJson), output.structuredJson)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun unsupportedSchemasAndInvalidStructuredValuesFailSafely() = runTest {
+        val unsupported =
+            StructuredOutputSchema.parse(
+                """
+                {
+                  "type":"object",
+                  "properties":{"answer":{"type":"string","minLength":1}},
+                  "required":["answer"],
+                  "additionalProperties":false
+                }
+                """.trimIndent(),
+            )
+        var credentialCalls = 0
+        val noDispatchEngine = MockEngine { error("Unsupported schemas must not dispatch.") }
+        val noDispatchConnector = connector(noDispatchEngine) { credentialCalls += 1; "credential" }
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    noDispatchConnector.respond(
+                        request(responseFormat = UniversalAiResponseFormat.jsonSchema(unsupported)),
+                    )
+                }
+            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+            assertEquals(OPENAI_COMPATIBLE_STRUCTURED_SCHEMA_MESSAGE, failure.message)
+            assertEquals(0, credentialCalls)
+            assertTrue(noDispatchEngine.requestHistory.isEmpty())
+        } finally {
+            noDispatchConnector.close()
+            noDispatchEngine.close()
+        }
+
+        val sensitive = "generic-structured-sensitive-fragment"
+        val invalidEngine =
+            MockEngine {
+                respond(
+                    successResponse(
+                        text = """{"answer":"ready","score":1,"extra":"$sensitive"}""",
+                    ),
+                )
+            }
+        val invalidConnector = connector(invalidEngine) { "credential" }
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    invalidConnector.respond(
+                        request(
+                            responseFormat = UniversalAiResponseFormat.jsonSchema(supportedSchema()),
+                        ),
+                    )
+                }
+            assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+            assertEquals("invalid_structured_provider_response", failure.error.code.rawValue)
+            assertEquals(OPENAI_COMPATIBLE_INVALID_STRUCTURED_RESPONSE_MESSAGE, failure.message)
+            assertFalse(failure.stackTraceToString().contains(sensitive))
+        } finally {
+            invalidConnector.close()
+            invalidEngine.close()
         }
     }
 
@@ -319,6 +410,101 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
     }
 
     @Test
+    fun mapsGenericHttpStatusesWithoutTrustingEndpointErrorBodies() = runTest {
+        data class Case(
+            val status: Int,
+            val category: UniversalAiErrorCategory,
+            val code: String,
+            val message: String,
+        )
+
+        val cases =
+            listOf(
+                Case(400, UniversalAiErrorCategory.Validation, "provider_invalid_request", OPENAI_COMPATIBLE_INVALID_REQUEST_MESSAGE),
+                Case(401, UniversalAiErrorCategory.Authentication, "provider_authentication_failed", OPENAI_COMPATIBLE_AUTHENTICATION_MESSAGE),
+                Case(403, UniversalAiErrorCategory.Authorization, "provider_permission_denied", OPENAI_COMPATIBLE_PERMISSION_MESSAGE),
+                Case(404, UniversalAiErrorCategory.NotFound, "provider_resource_not_found", OPENAI_COMPATIBLE_NOT_FOUND_MESSAGE),
+                Case(408, UniversalAiErrorCategory.Provider, "provider_request_timeout", OPENAI_COMPATIBLE_TIMEOUT_MESSAGE),
+                Case(429, UniversalAiErrorCategory.RateLimit, "provider_rate_limited", OPENAI_COMPATIBLE_RATE_LIMIT_MESSAGE),
+                Case(500, UniversalAiErrorCategory.Provider, "provider_server_error", OPENAI_COMPATIBLE_SERVER_ERROR_MESSAGE),
+                Case(503, UniversalAiErrorCategory.Provider, "provider_unavailable", OPENAI_COMPATIBLE_UNAVAILABLE_MESSAGE),
+                Case(599, UniversalAiErrorCategory.Provider, "provider_server_error", OPENAI_COMPATIBLE_SERVER_ERROR_MESSAGE),
+            )
+        val sensitive = "generic-status-sensitive-fragment"
+        cases.forEach { case ->
+            val engine =
+                MockEngine {
+                    respond(
+                        content =
+                            """{"error":{"type":"server-specific","message":"$sensitive"}}""",
+                        status = HttpStatusCode.fromValue(case.status),
+                    )
+                }
+            val connector = connector(engine) { "credential" }
+            try {
+                val failure =
+                    assertFailsWith<UniversalAiException> { connector.respond(request()) }
+                assertEquals(case.category, failure.error.category)
+                assertEquals(case.code, failure.error.code.rawValue)
+                assertEquals(case.message, failure.message)
+                assertFalse(failure.stackTraceToString().contains(sensitive))
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
+    fun reportsUnknownStructuredSupportAndUnsupportedStreamingConservatively() {
+        val configuration =
+            UniversalAiProviderConfiguration(
+                providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
+                baseUrl = "https://compatible.example.invalid/v1",
+                credentialSupplier = { error("Capability lookup must not resolve credentials.") },
+            )
+        val registration = builtInProviderRegistration(configuration)
+        assertEquals(
+            OPENAI_COMPATIBLE_PROVIDER_CAPABILITY_PROFILE,
+            registration.capabilityProfile,
+        )
+        assertEquals(
+            UniversalAiCapabilitySupport.Unknown,
+            assertNotNull(
+                registration.capabilityProfile.capabilities[
+                    UniversalAiCapabilityName.StructuredOutput
+                ],
+            ).support,
+        )
+        assertEquals(
+            UniversalAiCapabilitySupport.Unsupported,
+            assertNotNull(
+                registration.capabilityProfile.capabilities[
+                    UniversalAiCapabilityName.Streaming
+                ],
+            ).support,
+        )
+        val registry = ProviderRegistry(listOf(registration), noDispatchTransport())
+        val modelCapabilities =
+            assertNotNull(
+                registry.capabilitiesOrNull(
+                    UniversalAiTarget(
+                        providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
+                        modelId = ModelId.of("unverified-compatible-model"),
+                    ),
+                ),
+            )
+        assertEquals(
+            UniversalAiCapabilitySupport.Unknown,
+            assertNotNull(modelCapabilities[UniversalAiCapabilityName.StructuredOutput]).support,
+        )
+        assertEquals(
+            UniversalAiCapabilitySupport.Unsupported,
+            assertNotNull(modelCapabilities[UniversalAiCapabilityName.Streaming]).support,
+        )
+    }
+
+    @Test
     fun errorsUseFixedGenericMappingWithoutCredentialOrProviderBody() = runTest {
         val credential = "adversarial-compatible-credential"
         val providerDetail = "provider-sensitive-detail"
@@ -341,9 +527,9 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
                 assertFailsWith<UniversalAiException> {
                     connector.respond(request())
                 }
-            assertEquals(UniversalAiErrorCategory.Provider, failure.error.category)
-            assertEquals("provider_request_failed", failure.error.code.rawValue)
-            assertEquals(OPENAI_COMPATIBLE_PROVIDER_FAILURE_MESSAGE, failure.message)
+            assertEquals(UniversalAiErrorCategory.RateLimit, failure.error.category)
+            assertEquals("provider_rate_limited", failure.error.code.rawValue)
+            assertEquals(OPENAI_COMPATIBLE_RATE_LIMIT_MESSAGE, failure.message)
             with(assertNotNull(failure.error.metadata)) {
                 assertEquals(429L, number("statusCode")?.toLongOrNull())
                 assertEquals("req_generic_error", string("requestId"))
@@ -466,7 +652,7 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
             "index":0,
             "message":{
               "role":"assistant",
-              "content":"$text"
+              "content":${JsonPrimitive(text)}
               $extraMessageMembers
             },
             "finish_reason":"$finishReason",
@@ -484,6 +670,31 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
           "future_response_field":true
         }
         """.trimIndent()
+
+    private fun supportedSchema(): StructuredOutputSchema =
+        StructuredOutputSchema.parse(
+            """
+            {
+              "type":"object",
+              "properties":{
+                "answer":{"type":"string","enum":["ready"]},
+                "score":{"type":"integer","minimum":1,"maximum":2}
+              },
+              "required":["answer","score"],
+              "additionalProperties":false
+            }
+            """.trimIndent(),
+        )
+
+    private fun noDispatchTransport(): ConnectorTransport =
+        object : ConnectorTransport {
+            override suspend fun <Result> execute(
+                request: ConnectorTransportRequest,
+                consumeResponse: suspend (ConnectorTransportResponse) -> Result,
+            ): Result = error("Capability lookup must not dispatch.")
+
+            override fun close() = Unit
+        }
 }
 
 private fun OutgoingContent.bodyBytes(): ByteArray =
