@@ -2,9 +2,10 @@
 
 ## Status and activation gate
 
-P0-P4 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A. The
-dedicated Anthropic credential/model is now available, so P5 has resumed and is active at P5-D as
-the only `In progress` milestone while P6 is `Deferred` after P6-B.
+P0-P4 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A. P5 later
+resumed after the dedicated Anthropic credential/model became available and is completed in its
+P5-E milestone-closing candidate. P6 remains `Deferred` after P6-B and requires separate resumption
+before P6-C implementation.
 
 P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completes
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
@@ -37,8 +38,8 @@ The completed milestone must provide:
 
 ## Sequencing decision
 
-P5 deferral was not P5 completion. P5-E retains its requirements and remains a P9 release blocker.
-The repository implemented and verified P6-A/P6-B while P5 was deferred, but it
+P5 deferral was not P5 completion. The repository implemented and verified P6-A/P6-B while P5 was
+deferred, but it
 did not:
 
 - describe the Anthropic adapter as implemented, approved, complete, or live-tested;
@@ -46,8 +47,9 @@ did not:
 - weaken P5 acceptance or silently remove Anthropic from the release matrix; or
 - have more than one non-deferred milestone marked `In progress`.
 
-That gate is now satisfied. P5 has resumed and advanced through P5-D in this candidate; P6 remains
-deferred until P5 is no longer the active milestone.
+That gate is now satisfied. P5 resumed, advanced authoritatively through P5-D, and completed P5-E
+in its milestone-closing candidate. P6 remains deferred and must be resumed separately before P6-C
+becomes active.
 
 ## Design constraints
 
@@ -188,8 +190,8 @@ uses:
 - P6-B atomically added `./scripts/check-live.sh openrouter`, the non-cacheable OpenRouter Gradle
   live task, and `openrouter` to the real delivered-provider set. The same exact head passed the
   real OpenRouter gate before its first push or pull-request update.
-- After P6-B, OpenAI and OpenRouter became delivered real gates. P5-B subsequently adds Anthropic
-  as the third delivered gate while P5 is active.
+- After P6-B, OpenAI and OpenRouter became delivered real gates. P5-B subsequently added Anthropic
+  as the third delivered gate during resumed P5 implementation.
 - GitHub remains credential-free and validates only the retained exact-head evidence statements.
 
 ## Work packages
@@ -300,10 +302,11 @@ or update rather than becoming a skipped success.
 
 ## Acceptance criteria
 
-- P5's temporary deferral is recorded without a completion claim; after P6-B, P5 resumes at P5-B
-  with P5-C through P5-E and the P9 blocker intact.
-- P6-A and P6-B are completed, P6-C remains unactivated, and P6 is deferred while P5 is the only
-  non-deferred `In progress` milestone.
+- P5's temporary deferral is recorded without a false completion claim; after P6-B, P5 resumed at
+  P5-B, advanced authoritatively through P5-D, and completed P5-E in its milestone-closing
+  candidate.
+- P6-A and P6-B are completed, P6-C remains unactivated, and P6 is deferred until a separate
+  milestone-resumption change makes it the only non-deferred `In progress` milestone.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.

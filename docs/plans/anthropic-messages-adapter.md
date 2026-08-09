@@ -5,14 +5,16 @@
 P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed the protocol and
 live-test authentication-readiness package through PR
 [#39](https://github.com/maneesh888/universal-ai-connector/pull/39). The dedicated Anthropic
-credential and enabled bounded-cost model are now available. P5-A through P5-C are authoritative,
-and P5-D is now the active package in the only `In progress` milestone. P6 is `Deferred` after
-P6-B, and P7-P9 remain `Not started`.
+credential and enabled bounded-cost model are now available. P5-A through P5-D are authoritative,
+and P5-E lifecycle integration and acceptance is completed in this milestone-closing candidate.
+P6 is `Deferred` after P6-B, and P7-P9 remain `Not started`.
 
-P5-D is completed in this candidate. It adds incremental translation for the accepted Anthropic
-SSE sequence, bounded ordered content and cumulative usage state, one authoritative canonical
-terminal, active cancellation and backpressure coverage, deterministic fixtures, and the required
-streaming and active-cancellation live smokes. P5-E remains deferred and unimplemented.
+P5-E adds integrated concurrent response and stream isolation, per-request credential resolution,
+connector close-race and body-cleanup coverage, consumer and artifact-boundary acceptance, and
+milestone evidence reconciliation without changing the supported host or provider protocol
+surface. This candidate records P5 as complete. The transition becomes authoritative only after
+the exact-head deterministic, live, ordinary-CI, secretless live-policy, independent-review,
+guarded-merge, and resulting-`main` gates in this plan pass.
 
 P5-A became authoritative after exact head
 `a7d6fb2833140cbcd26b6a30f603c5c226e7a800` passed its deterministic and affected OpenAI live
@@ -35,8 +37,16 @@ then merged as `e09d548513449320f648b0be31f7251e8e802342`, and resulting `main` 
 [31220845292](https://github.com/maneesh888/universal-ai-connector/actions/runs/31220845292)
 passed.
 
-P5-D implementation is not Anthropic milestone completion or approval. P5-D authority and every
-P5-E acceptance and live-proof requirement still block P9 release.
+P5-D became authoritative after exact head `0d0b030b72ca204baeb27163d936d788e696292c`
+passed deterministic and complete delivered-provider live gates, ordinary CI, secretless
+live-policy status, and independent review; PR
+[#49](https://github.com/maneesh888/universal-ai-connector/pull/49) then merged as
+`de00a1a9bc7770ab399dd3ae9222944fb54160ae`, and resulting `main` run
+[31318381641](https://github.com/maneesh888/universal-ai-connector/actions/runs/31318381641)
+passed.
+
+P5-E implementation is the separate Anthropic milestone-closing change. Its exact-head and
+post-merge gates still determine whether this completion record becomes authoritative.
 
 ## Objective
 
@@ -440,8 +450,7 @@ Completion record:
 
 ### P5-D: Streaming translation and cancellation
 
-Status: `Completed` in this candidate; authoritative only after its required deterministic,
-exact-head live, CI, secretless-policy, independent-review, and guarded-merge gates pass.
+Status: `Completed` and accepted August 9, 2026 through PR #49.
 
 - Implement provider SSE event translation through the P3 parser.
 - Enforce ordering, backpressure, one authoritative terminal, and missing-terminal failure.
@@ -451,7 +460,7 @@ exact-head live, CI, secretless-policy, independent-review, and guarded-merge ga
 - Run the affected streaming and active-cancellation smoke tests before creating or updating the
   package pull request.
 
-Candidate completion record:
+Completion record:
 
 - opted the existing internal Messages request into streaming with `stream: true`, required the
   documented named SSE/data pairing and event-stream response type, and reused the P3 incremental
@@ -473,7 +482,7 @@ Candidate completion record:
 
 ### P5-E: Lifecycle integration and acceptance
 
-Status: `Deferred`; P5-D must complete first.
+Status: `Completed` in this milestone-closing candidate.
 
 - Reconcile configuration, credential, adapter, registry, transport, stream, error, and cleanup
   behavior across concurrent requests and close races.
@@ -485,6 +494,24 @@ Status: `Deferred`; P5-D must complete first.
   evidence.
 - Mark P5 complete only in a separate milestone-closing change after every acceptance criterion
   has durable evidence.
+
+Completion record:
+
+- added integrated Anthropic lifecycle coverage for concurrent responses and streams,
+  request-scoped credential resolution, immutable registry reuse, isolated translation state,
+  concurrent close, pending-response and active-stream cancellation, response-body cleanup, use
+  after close, and both sides of provider-terminal-versus-close arbitration;
+- retained the supported Kotlin client, Swift façade, and deterministic JVM, Android, and iOS
+  sample paths without provider-specific host methods, persisted credentials, or live calls;
+- completed the provider-DTO, supported-host source, JVM and Android public-signature, exported
+  XCFramework-header, repository-secret, log-redaction, and read-only secretless ordinary-CI
+  audits through the existing fail-closed gates and Anthropic-specific regression probes;
+- reconciled P5-A through P5-D package evidence and the complete P5 deterministic, host,
+  secret-safety, and targeted live smoke matrices; and
+- bound the closing exact-head deterministic, affected Anthropic live, secretless-policy,
+  ordinary-CI, independent-review, merge, and resulting-`main` evidence to the milestone-closing
+  pull-request brief because those identifiers are self-referential or exist only after this
+  document changes.
 
 ## Test matrix
 
