@@ -9,6 +9,8 @@ internal data class OpenRouterChatCompletionRequestWire(
     val model: String,
     val messages: List<OpenRouterMessageWire>,
     val stream: Boolean = false,
+    @SerialName("stream_options")
+    val streamOptions: OpenRouterStreamOptionsWire? = null,
     @SerialName("max_tokens")
     val maxTokens: Int? = null,
     val temperature: Double? = null,
@@ -18,6 +20,12 @@ internal data class OpenRouterChatCompletionRequestWire(
     @SerialName("response_format")
     val responseFormat: OpenRouterResponseFormatWire? = null,
     val provider: OpenRouterProviderPreferencesWire,
+)
+
+@Serializable
+internal data class OpenRouterStreamOptionsWire(
+    @SerialName("include_usage")
+    val includeUsage: Boolean,
 )
 
 @Serializable

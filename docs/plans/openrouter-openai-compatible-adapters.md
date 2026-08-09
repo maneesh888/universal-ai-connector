@@ -4,18 +4,19 @@
 
 P0-P5 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A/P6-B
 before P5 resumed. P5 then completed authoritatively through PR #50 and resulting-`main`
-verification. P6 is now the only `In progress` milestone, and this candidate implements P6-D.
+verification. P6 is now the only `In progress` milestone, and this candidate implements P6-E.
 
 P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completed
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
-P6-C completed authoritatively through PR #52 and resulting-`main` verification. P6-D is `In
-progress` in this candidate, adding structured output, complete bounded error/metadata handling,
-and conservative capabilities; P6-E remains inactive.
+P6-C completed authoritatively through PR #52 and resulting-`main` verification. P6-D completed
+authoritatively through PR #53 and resulting-`main` verification. P6-E is `In progress` in this
+candidate, adding incremental streaming translation and active cancellation; P6-F remains
+inactive.
 
-P6-C's accepted scope added no structured output, complete typed provider-error translation,
-streaming, or capability claims. Its exact-head deterministic and delivered-provider live gates,
-ordinary CI, secretless live-policy status, independent review, guarded merge, and
-resulting-`main` verification passed through PR #52.
+P6-D's accepted scope added strict structured output, complete bounded provider-error and metadata
+translation, and conservative capabilities but no streaming behavior. Its exact-head deterministic
+and delivered-provider live gates, ordinary CI, secretless live-policy status, independent review,
+guarded merge, and resulting-`main` verification passed through PR #53.
 
 ## Objective
 
@@ -241,8 +242,7 @@ Status: `Completed`; accepted August 10, 2026 through PR #52 and resulting-`main
 
 ### P6-D: Structured output, errors, metadata, and capabilities
 
-Status: `In progress`; implementation is complete in this candidate and awaits exact-head Release
-verification and guarded merge.
+Status: `Completed`; accepted August 10, 2026 through PR #53 and resulting-`main` verification.
 
 - Implement the strict supported JSON-schema intersection and revalidation.
 - Complete OpenRouter typed-error and generic safe-error mapping.
@@ -252,7 +252,8 @@ verification and guarded merge.
 
 ### P6-E: Streaming translation and cancellation
 
-Status: `Not started`.
+Status: `In progress`; implementation is complete in this candidate and awaits exact-head Release
+verification and guarded merge.
 
 - Implement incremental Chat Completions SSE translation through P3.
 - Handle keep-alive comments, supported deltas, `[DONE]`, mid-stream errors, ordering, one
@@ -307,8 +308,8 @@ or update rather than becoming a skipped success.
 
 - P5's temporary deferral is recorded without a false completion claim; after P6-B, P5 resumed at
   P5-B and completed authoritatively through P5-E, PR #50, and resulting-`main` verification.
-- P6-A through P6-C are completed, P6 is the only `In progress` milestone, and the P6-D candidate
-  adds structured output, bounded errors/metadata, and capabilities without activating P6-E.
+- P6-A through P6-D are completed, P6 is the only `In progress` milestone, and the P6-E candidate
+  adds streaming translation and cancellation without activating P6-F.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.
@@ -349,6 +350,13 @@ live tests prove only the selected OpenRouter account, endpoint, model, direct/g
 requests, and invalid-model error path at the recorded exact head and time. They do not prove
 every JSON Schema dialect, model, upstream provider, third-party compatible endpoint, provider
 error variant, or streaming behavior.
+
+P6-E deterministic tests prove the committed direct and generic SSE fixtures, supported delta and
+terminal state machine, bounded mid-stream failures, and cancellation boundaries. Its targeted
+live tests prove only the selected OpenRouter account, endpoint, model, direct/generic plain-text
+streaming, and direct active-cancellation path at the recorded exact head and time. They do not
+prove every model, upstream provider, third-party compatible endpoint, stream variant, billing
+cancellation outcome, or future protocol revision.
 
 P6 work does not prove Anthropic behavior, Gateway behavior, physical-device execution, remote
 distribution, credential management, or alpha-release readiness.

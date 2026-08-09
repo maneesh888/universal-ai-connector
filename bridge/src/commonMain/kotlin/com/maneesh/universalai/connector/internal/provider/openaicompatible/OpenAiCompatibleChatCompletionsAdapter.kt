@@ -22,19 +22,28 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamSignal
+import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamTranslator
+import com.maneesh.universalai.connector.internal.provider.chatcompletions.hasChatCompletionsEventStreamContentType
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
+import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEventReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportHeader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 internal class OpenAiCompatibleChatCompletionsAdapter(
     private val configuration: UniversalAiProviderConfiguration,
@@ -42,7 +51,7 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
 ) : ConnectorEngine {
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
-        val transportRequest = transportRequest(request)
+        val transportRequest = transportRequest(request, stream = false)
         return transport.execute(transportRequest) { response ->
             if (response.statusCode !in 200..299) {
                 throw providerFailure(response)
@@ -52,16 +61,60 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
     }
 
     override fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
-        flow {
-            validateRequest(request)
-            throw unsupportedRequest(OPENAI_COMPATIBLE_STREAMING_MESSAGE)
+        channelFlow<ChatCompletionsStreamSignal> {
+            try {
+                validateRequest(request)
+                val transportRequest = transportRequest(request, stream = true)
+                transport.execute(transportRequest) { response ->
+                    if (response.statusCode !in 200..299) {
+                        throw providerFailure(response)
+                    }
+                    if (!response.hasChatCompletionsEventStreamContentType()) {
+                        throw malformedOpenAiCompatibleStream()
+                    }
+                    val reader = ConnectorServerSentEventReader(response.body)
+                    val translator =
+                        ChatCompletionsStreamTranslator(
+                            request = request,
+                            providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
+                            metadata = response.metadata,
+                            json = OPENAI_COMPATIBLE_WIRE_JSON,
+                            malformedStream = ::malformedOpenAiCompatibleStream,
+                            providerError = ::openAiCompatibleStreamProviderFailure,
+                        )
+                    while (true) {
+                        val event = reader.readEvent() ?: break
+                        translator.translate(event).forEach { translated ->
+                            send(ChatCompletionsStreamSignal.Event(translated))
+                        }
+                        if (translator.isTerminal) {
+                            return@execute
+                        }
+                    }
+                    translator.finish()
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (failure: Throwable) {
+                send(ChatCompletionsStreamSignal.Failure(failure))
+            }
         }
+            .buffer(Channel.RENDEZVOUS)
+            .transform { signal ->
+                when (signal) {
+                    is ChatCompletionsStreamSignal.Event -> emit(signal.event)
+                    is ChatCompletionsStreamSignal.Failure -> throw signal.failure
+                }
+            }
 
-    private fun transportRequest(request: UniversalAiRequest): ConnectorTransportRequest {
+    private fun transportRequest(
+        request: UniversalAiRequest,
+        stream: Boolean,
+    ): ConnectorTransportRequest {
         val credential = resolveCredential()
         val body =
             OPENAI_COMPATIBLE_WIRE_JSON
-                .encodeToString(request.toOpenAiCompatibleWire())
+                .encodeToString(request.toOpenAiCompatibleWire(stream))
                 .encodeToByteArray()
         return ConnectorTransportRequest(
             method = "POST",
@@ -79,7 +132,7 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
                     ),
                     ConnectorTransportHeader(
                         name = "accept",
-                        value = JSON_CONTENT_TYPE,
+                        value = if (stream) EVENT_STREAM_CONTENT_TYPE else JSON_CONTENT_TYPE,
                     ),
                 ),
             body = body,
@@ -173,7 +226,9 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
     }
 }
 
-private fun UniversalAiRequest.toOpenAiCompatibleWire():
+private fun UniversalAiRequest.toOpenAiCompatibleWire(
+    stream: Boolean,
+):
     OpenAiCompatibleChatCompletionRequestWire =
     OpenAiCompatibleChatCompletionRequestWire(
         model = target.modelId.rawValue,
@@ -184,6 +239,8 @@ private fun UniversalAiRequest.toOpenAiCompatibleWire():
                     content = item.content,
                 )
             },
+        stream = stream,
+        streamOptions = OpenAiCompatibleStreamOptionsWire(includeUsage = true).takeIf { stream },
         maxTokens = generation.maxOutputTokens,
         temperature = generation.temperature,
         topP = generation.topP,
@@ -355,6 +412,16 @@ private fun providerResponseFailure(metadata: ConnectorResponseMetadata): Univer
         metadata = metadata.safeErrorMetadata(SUCCESS_STATUS_CODE),
     )
 
+private fun openAiCompatibleStreamProviderFailure(
+    element: JsonElement,
+    metadata: ConnectorResponseMetadata,
+): UniversalAiException {
+    if (element !is JsonObject || element.isEmpty()) {
+        throw malformedOpenAiCompatibleStream()
+    }
+    return providerResponseFailure(metadata)
+}
+
 private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping =
     when (statusCode) {
         400, 409, 413, 422 ->
@@ -472,6 +539,15 @@ private fun malformedStructuredResponse(): UniversalAiException =
         ),
     )
 
+internal fun malformedOpenAiCompatibleStream(): UniversalAiException =
+    UniversalAiException(
+        UniversalAiError(
+            category = UniversalAiErrorCategory.Protocol,
+            code = UniversalAiErrorCode.of("malformed_provider_stream"),
+            message = OPENAI_COMPATIBLE_MALFORMED_STREAM_MESSAGE,
+        ),
+    )
+
 private fun requireWire(condition: Boolean) {
     if (!condition) {
         throw malformedResponse()
@@ -499,8 +575,8 @@ internal const val OPENAI_COMPATIBLE_EXTENSIONS_MESSAGE: String =
     "The active generic adapter package does not support request extensions."
 internal const val OPENAI_COMPATIBLE_INPUT_ROLE_MESSAGE: String =
     "The generic adapter supports only system, user, and assistant text input roles."
-internal const val OPENAI_COMPATIBLE_STREAMING_MESSAGE: String =
-    "The active generic adapter package does not support streaming."
+internal const val OPENAI_COMPATIBLE_MALFORMED_STREAM_MESSAGE: String =
+    "The OpenAI-compatible response stream was malformed or unsupported."
 internal const val OPENAI_COMPATIBLE_PROVIDER_FAILURE_MESSAGE: String =
     "The OpenAI-compatible endpoint could not complete the request."
 internal const val OPENAI_COMPATIBLE_INVALID_REQUEST_MESSAGE: String =
@@ -522,6 +598,7 @@ internal const val OPENAI_COMPATIBLE_SERVER_ERROR_MESSAGE: String =
 
 private const val CHAT_COMPLETIONS_ENDPOINT: String = "chat/completions"
 private const val JSON_CONTENT_TYPE: String = "application/json"
+private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
 private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
