@@ -16,11 +16,13 @@ import com.maneesh.universalai.connector.contract.schema.GovernedJsonSchemaSubse
 import com.maneesh.universalai.connector.internal.provider.anthropic.AnthropicMessagesAdapter
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiResponsesAdapter
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
+import com.maneesh.universalai.connector.internal.provider.openaicompatible.OpenAiCompatibleChatCompletionsAdapter
 import com.maneesh.universalai.connector.internal.provider.openrouter.OpenRouterChatCompletionsAdapter
 
 internal val OPENAI_PROVIDER_ID: ProviderId = ProviderId.of("openai")
 internal val ANTHROPIC_PROVIDER_ID: ProviderId = ProviderId.of("anthropic")
 internal val OPENROUTER_PROVIDER_ID: ProviderId = ProviderId.of("openrouter")
+internal val OPENAI_COMPATIBLE_PROVIDER_ID: ProviderId = ProviderId.of("openai-compatible")
 
 internal val OPENAI_PROVIDER_CAPABILITY_PROFILE =
     UniversalAiProviderCapabilityProfile(
@@ -117,6 +119,17 @@ internal fun builtInProviderRegistration(
                 providerId = configuration.providerId,
                 adapterFactory = { transport ->
                     OpenRouterChatCompletionsAdapter(
+                        configuration = configuration,
+                        transport = transport,
+                    )
+                },
+            )
+
+        OPENAI_COMPATIBLE_PROVIDER_ID ->
+            ProviderRegistration(
+                providerId = configuration.providerId,
+                adapterFactory = { transport ->
+                    OpenAiCompatibleChatCompletionsAdapter(
                         configuration = configuration,
                         transport = transport,
                     )

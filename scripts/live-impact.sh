@@ -118,6 +118,10 @@ while IFS= read -r -d '' changed_path; do
     bridge/src/*/internal/provider/openrouter/*)
       select_provider "openrouter"
       ;;
+    bridge/src/*/internal/provider/openaicompatible/*)
+      # OpenRouter is the selected representative live endpoint for the generic adapter.
+      select_provider "openrouter"
+      ;;
     bridge/src/*/internal/provider/* | \
       bridge/src/* | \
       bridge/build.gradle.kts | \
