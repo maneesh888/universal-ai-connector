@@ -120,7 +120,7 @@ The product-facing Apple package and closing legacy-surface cleanup are accepted
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
-### P2 through P5 completion and P6 deferral
+### P2 through P5 completion and P6 resumption
 
 P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin
 contracts, governed JSON representations, compatibility fixtures, deterministic canonical
