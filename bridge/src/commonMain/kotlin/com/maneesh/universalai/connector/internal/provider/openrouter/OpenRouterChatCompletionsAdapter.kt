@@ -22,19 +22,31 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENROUTER_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamSignal
+import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamTranslator
+import com.maneesh.universalai.connector.internal.provider.chatcompletions.hasChatCompletionsEventStreamContentType
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
+import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEventReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportHeader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 
 internal class OpenRouterChatCompletionsAdapter(
     private val configuration: UniversalAiProviderConfiguration,
@@ -42,7 +54,7 @@ internal class OpenRouterChatCompletionsAdapter(
 ) : ConnectorEngine {
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
-        val transportRequest = transportRequest(request)
+        val transportRequest = transportRequest(request, stream = false)
         return transport.execute(transportRequest) { response ->
             if (response.statusCode !in 200..299) {
                 throw providerFailure(response)
@@ -52,16 +64,60 @@ internal class OpenRouterChatCompletionsAdapter(
     }
 
     override fun stream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> =
-        flow {
-            validateRequest(request)
-            throw unsupportedRequest(OPENROUTER_STREAMING_MESSAGE)
+        channelFlow<ChatCompletionsStreamSignal> {
+            try {
+                validateRequest(request)
+                val transportRequest = transportRequest(request, stream = true)
+                transport.execute(transportRequest) { response ->
+                    if (response.statusCode !in 200..299) {
+                        throw providerFailure(response)
+                    }
+                    if (!response.hasChatCompletionsEventStreamContentType()) {
+                        throw malformedOpenRouterStream()
+                    }
+                    val reader = ConnectorServerSentEventReader(response.body)
+                    val translator =
+                        ChatCompletionsStreamTranslator(
+                            request = request,
+                            providerId = OPENROUTER_PROVIDER_ID,
+                            metadata = response.metadata,
+                            json = OPENROUTER_WIRE_JSON,
+                            malformedStream = ::malformedOpenRouterStream,
+                            providerError = ::openRouterStreamProviderFailure,
+                        )
+                    while (true) {
+                        val event = reader.readEvent() ?: break
+                        translator.translate(event).forEach { translated ->
+                            send(ChatCompletionsStreamSignal.Event(translated))
+                        }
+                        if (translator.isTerminal) {
+                            return@execute
+                        }
+                    }
+                    translator.finish()
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (failure: Throwable) {
+                send(ChatCompletionsStreamSignal.Failure(failure))
+            }
         }
+            .buffer(Channel.RENDEZVOUS)
+            .transform { signal ->
+                when (signal) {
+                    is ChatCompletionsStreamSignal.Event -> emit(signal.event)
+                    is ChatCompletionsStreamSignal.Failure -> throw signal.failure
+                }
+            }
 
-    private fun transportRequest(request: UniversalAiRequest): ConnectorTransportRequest {
+    private fun transportRequest(
+        request: UniversalAiRequest,
+        stream: Boolean,
+    ): ConnectorTransportRequest {
         val credential = resolveCredential()
         val body =
             OPENROUTER_WIRE_JSON
-                .encodeToString(request.toOpenRouterWire())
+                .encodeToString(request.toOpenRouterWire(stream))
                 .encodeToByteArray()
         return ConnectorTransportRequest(
             method = "POST",
@@ -79,7 +135,7 @@ internal class OpenRouterChatCompletionsAdapter(
                     ),
                     ConnectorTransportHeader(
                         name = "accept",
-                        value = JSON_CONTENT_TYPE,
+                        value = if (stream) EVENT_STREAM_CONTENT_TYPE else JSON_CONTENT_TYPE,
                     ),
                 ),
             body = body,
@@ -175,7 +231,9 @@ internal class OpenRouterChatCompletionsAdapter(
     }
 }
 
-private fun UniversalAiRequest.toOpenRouterWire(): OpenRouterChatCompletionRequestWire =
+private fun UniversalAiRequest.toOpenRouterWire(
+    stream: Boolean,
+): OpenRouterChatCompletionRequestWire =
     OpenRouterChatCompletionRequestWire(
         model = target.modelId.rawValue,
         messages =
@@ -185,6 +243,8 @@ private fun UniversalAiRequest.toOpenRouterWire(): OpenRouterChatCompletionReque
                     content = item.content,
                 )
             },
+        stream = stream,
+        streamOptions = OpenRouterStreamOptionsWire(includeUsage = true).takeIf { stream },
         maxTokens = generation.maxOutputTokens,
         temperature = generation.temperature,
         topP = generation.topP,
@@ -214,13 +274,13 @@ internal fun OpenRouterChatCompletionResponseWire.toCanonical(
     metadata: ConnectorResponseMetadata,
 ): UniversalAiResponse {
     if (error != null) {
-        throw providerResponseFailure(error, metadata)
+        throw openRouterProviderResponseFailure(error, metadata)
     }
     requireWire(objectType == "chat.completion")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
     val choice = requireWireValue(choices).singleOrNull() ?: throw malformedResponse()
-    choice.error?.let { error -> throw providerResponseFailure(error, metadata) }
+    choice.error?.let { error -> throw openRouterProviderResponseFailure(error, metadata) }
     requireWire(choice.delta == null)
     requireWire(choice.index == 0)
     val message = requireWireValue(choice.message)
@@ -360,13 +420,36 @@ private suspend fun providerFailure(
     )
 }
 
-private fun providerResponseFailure(
+internal fun openRouterProviderResponseFailure(
     error: OpenRouterErrorWire,
     metadata: ConnectorResponseMetadata,
 ): UniversalAiException =
     (error.toTypedErrorMappingOrNull() ?: PROVIDER_FAILURE_MAPPING).toException(
         metadata = metadata.safeErrorMetadata(error.code ?: SUCCESS_STATUS_CODE),
+)
+
+private fun openRouterStreamProviderFailure(
+    element: JsonElement,
+    metadata: ConnectorResponseMetadata,
+): UniversalAiException {
+    val error = element as? JsonObject ?: throw malformedOpenRouterStream()
+    val message = (error["message"] as? JsonPrimitive)?.contentOrNull
+    if (message.isNullOrBlank()) {
+        throw malformedOpenRouterStream()
+    }
+    val code = (error["code"] as? JsonPrimitive)?.intOrNull
+    val metadataObject = error["metadata"] as? JsonObject
+    val errorType = (metadataObject?.get("error_type") as? JsonPrimitive)?.contentOrNull
+    return openRouterProviderResponseFailure(
+        error =
+            OpenRouterErrorWire(
+                code = code,
+                message = message,
+                metadata = OpenRouterErrorMetadataWire(errorType = errorType),
+            ),
+        metadata = metadata,
     )
+}
 
 private suspend fun ConnectorTransportResponse.decodeErrorEnvelopeOrNull(): OpenRouterErrorWire? {
     val bytes =
@@ -604,6 +687,15 @@ private fun malformedStructuredResponse(): UniversalAiException =
         ),
     )
 
+internal fun malformedOpenRouterStream(): UniversalAiException =
+    UniversalAiException(
+        UniversalAiError(
+            category = UniversalAiErrorCategory.Protocol,
+            code = UniversalAiErrorCode.of("malformed_provider_stream"),
+            message = OPENROUTER_MALFORMED_STREAM_MESSAGE,
+        ),
+    )
+
 private fun requireWire(condition: Boolean) {
     if (!condition) {
         throw malformedResponse()
@@ -631,8 +723,8 @@ internal const val OPENROUTER_EXTENSIONS_MESSAGE: String =
     "The active OpenRouter adapter package does not support request extensions."
 internal const val OPENROUTER_INPUT_ROLE_MESSAGE: String =
     "The OpenRouter adapter supports only system, user, and assistant text input roles."
-internal const val OPENROUTER_STREAMING_MESSAGE: String =
-    "The active OpenRouter adapter package does not support streaming."
+internal const val OPENROUTER_MALFORMED_STREAM_MESSAGE: String =
+    "The OpenRouter response stream was malformed or unsupported."
 internal const val OPENROUTER_INVALID_REQUEST_MESSAGE: String =
     "OpenRouter rejected the request."
 internal const val OPENROUTER_AUTHENTICATION_MESSAGE: String =
@@ -658,6 +750,7 @@ internal const val OPENROUTER_UNAVAILABLE_MESSAGE: String =
 
 private const val CHAT_COMPLETIONS_ENDPOINT: String = "chat/completions"
 private const val JSON_CONTENT_TYPE: String = "application/json"
+private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
 private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024

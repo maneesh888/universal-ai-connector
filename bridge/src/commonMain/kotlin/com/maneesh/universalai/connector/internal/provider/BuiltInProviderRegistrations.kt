@@ -94,7 +94,7 @@ internal val OPENROUTER_PROVIDER_CAPABILITY_PROFILE =
                     ),
                 UniversalAiCapabilityName.Streaming to
                     UniversalAiCapabilityDeclaration(
-                        support = UniversalAiCapabilitySupport.Unsupported,
+                        support = UniversalAiCapabilitySupport.Supported,
                     ),
             ),
     )
@@ -118,7 +118,7 @@ internal val OPENAI_COMPATIBLE_PROVIDER_CAPABILITY_PROFILE =
                     ),
                 UniversalAiCapabilityName.Streaming to
                     UniversalAiCapabilityDeclaration(
-                        support = UniversalAiCapabilitySupport.Unsupported,
+                        support = UniversalAiCapabilitySupport.Unknown,
                     ),
             ),
     )

@@ -9,6 +9,8 @@ internal data class OpenAiCompatibleChatCompletionRequestWire(
     val model: String,
     val messages: List<OpenAiCompatibleMessageWire>,
     val stream: Boolean = false,
+    @SerialName("stream_options")
+    val streamOptions: OpenAiCompatibleStreamOptionsWire? = null,
     @SerialName("max_tokens")
     val maxTokens: Int? = null,
     val temperature: Double? = null,
@@ -17,6 +19,12 @@ internal data class OpenAiCompatibleChatCompletionRequestWire(
     val stop: List<String>? = null,
     @SerialName("response_format")
     val responseFormat: OpenAiCompatibleResponseFormatWire? = null,
+)
+
+@Serializable
+internal data class OpenAiCompatibleStreamOptionsWire(
+    @SerialName("include_usage")
+    val includeUsage: Boolean,
 )
 
 @Serializable

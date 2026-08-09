@@ -39,7 +39,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -283,11 +282,6 @@ class OpenRouterChatCompletionsAdapterTests {
                 assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
                 assertEquals("invalid_request", failure.error.code.rawValue)
             }
-            val streamFailure =
-                assertFailsWith<UniversalAiException> {
-                    connector.stream(request()).collect {}
-                }
-            assertEquals(OPENROUTER_STREAMING_MESSAGE, streamFailure.message)
             assertEquals(0, engine.requestHistory.size)
         } finally {
             connector.close()
@@ -514,7 +508,7 @@ class OpenRouterChatCompletionsAdapterTests {
             structured.limits[UniversalAiCapabilityLimitName.MaxSchemaDepth],
         )
         assertEquals(
-            UniversalAiCapabilitySupport.Unsupported,
+            UniversalAiCapabilitySupport.Supported,
             assertNotNull(
                 registration.capabilityProfile.capabilities[
                     UniversalAiCapabilityName.Streaming
@@ -536,7 +530,7 @@ class OpenRouterChatCompletionsAdapterTests {
             assertNotNull(modelCapabilities[UniversalAiCapabilityName.StructuredOutput]).support,
         )
         assertEquals(
-            UniversalAiCapabilitySupport.Unsupported,
+            UniversalAiCapabilitySupport.Supported,
             assertNotNull(modelCapabilities[UniversalAiCapabilityName.Streaming]).support,
         )
     }
