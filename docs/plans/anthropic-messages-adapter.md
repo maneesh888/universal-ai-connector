@@ -6,15 +6,15 @@ P0-P4 are `Completed`. P5 was activated on August 7, 2026, and P5-A completed th
 live-test authentication-readiness package through PR
 [#39](https://github.com/maneesh888/universal-ai-connector/pull/39). The dedicated Anthropic
 credential and enabled bounded-cost model are now available. P5-A through P5-D are authoritative,
-and P5-E lifecycle integration and acceptance is completed in this milestone-closing candidate.
-P6 is `Deferred` after P6-B, and P7-P9 remain `Not started`.
+and P5-E lifecycle integration and acceptance completed authoritatively through PR #50 and
+resulting-`main` verification. P6 is resumed at P6-C in a separate milestone-resumption candidate,
+and P7-P9 remain `Not started`.
 
-P5-E adds integrated concurrent response and stream isolation, per-request credential resolution,
+P5-E added integrated concurrent response and stream isolation, per-request credential resolution,
 connector close-race and body-cleanup coverage, consumer and artifact-boundary acceptance, and
 milestone evidence reconciliation without changing the supported host or provider protocol
-surface. This candidate records P5 as complete. The transition becomes authoritative only after
-the exact-head deterministic, live, ordinary-CI, secretless live-policy, independent-review,
-guarded-merge, and resulting-`main` gates in this plan pass.
+surface. Its exact-head deterministic, live, ordinary-CI, secretless live-policy,
+independent-review, guarded-merge, and resulting-`main` gates passed.
 
 P5-A became authoritative after exact head
 `a7d6fb2833140cbcd26b6a30f603c5c226e7a800` passed its deterministic and affected OpenAI live
@@ -45,8 +45,13 @@ live-policy status, and independent review; PR
 [31318381641](https://github.com/maneesh888/universal-ai-connector/actions/runs/31318381641)
 passed.
 
-P5-E implementation is the separate Anthropic milestone-closing change. Its exact-head and
-post-merge gates still determine whether this completion record becomes authoritative.
+P5-E became authoritative after exact head `d0b2a7f97bb12f075ad28e9636306b11c41424dc`
+passed the complete deterministic and delivered-provider live gates, ordinary CI, secretless
+live-policy status, and independent review; PR
+[#50](https://github.com/maneesh888/universal-ai-connector/pull/50) then merged as
+`d984631ea8de5f3f1c377ac72df155d23b6710da`, and resulting `main` run
+[31328462444](https://github.com/maneesh888/universal-ai-connector/actions/runs/31328462444)
+passed.
 
 ## Objective
 
@@ -482,7 +487,7 @@ Completion record:
 
 ### P5-E: Lifecycle integration and acceptance
 
-Status: `Completed` in this milestone-closing candidate.
+Status: `Completed` and accepted August 9, 2026 through PR #50.
 
 - Reconcile configuration, credential, adapter, registry, transport, stream, error, and cleanup
   behavior across concurrent requests and close races.
@@ -508,10 +513,10 @@ Completion record:
   audits through the existing fail-closed gates and Anthropic-specific regression probes;
 - reconciled P5-A through P5-D package evidence and the complete P5 deterministic, host,
   secret-safety, and targeted live smoke matrices; and
-- bound the closing exact-head deterministic, affected Anthropic live, secretless-policy,
-  ordinary-CI, independent-review, merge, and resulting-`main` evidence to the milestone-closing
-  pull-request brief because those identifiers are self-referential or exist only after this
-  document changes.
+- passed the complete exact-head deterministic and delivered-provider live gates, secretless
+  policy, ordinary CI, and independent review at
+  `d0b2a7f97bb12f075ad28e9636306b11c41424dc`; PR #50 merged as
+  `d984631ea8de5f3f1c377ac72df155d23b6710da`, and resulting `main` run 31328462444 passed.
 
 ## Test matrix
 
@@ -738,7 +743,7 @@ For every activated P5 package, record:
 - proof limits and unexercised provider behavior; and
 - the next incomplete P5 package.
 
-P5 completion becomes authoritative only after the closing pull request passes the full exact-head
-local deterministic and live gates, exact-head ordinary CI, protected secretless evidence policy,
+P5 completion is authoritative because closing PR #50 passed the full exact-head local
+deterministic and live gates, exact-head ordinary CI, protected secretless evidence policy,
 independent review, guarded merge, and resulting `main` workflow inspection required by repository
-policy. Until then, the roadmap remains the authority for P5 status.
+policy. The roadmap remains the authority for current milestone status.

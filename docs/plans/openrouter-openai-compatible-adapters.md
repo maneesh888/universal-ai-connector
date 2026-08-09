@@ -2,19 +2,20 @@
 
 ## Status and activation gate
 
-P0-P4 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A. P5 later
-resumed after the dedicated Anthropic credential/model became available and is completed in its
-P5-E milestone-closing candidate. P6 remains `Deferred` after P6-B and requires separate resumption
-before P6-C implementation.
+P0-P5 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A/P6-B
+before P5 resumed. P5 then completed authoritatively through PR #50 and resulting-`main`
+verification. This milestone-resumption candidate makes P6 the only `In progress` milestone and
+activates P6-C without adding generic adapter behavior.
 
-P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completes
+P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completed
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
-No P6 work package is active after P6-B; P6-C remains `Not started`.
+P6-C is `In progress` in this candidate; implementation starts only after the resumption
+transition passes its exact-head Release gates and guarded merge.
 
 P6-B adds no generic OpenAI-compatible adapter, structured output, complete typed provider-error
-translation, streaming, or capability claims. Its completion becomes authoritative only after the
-exact-head deterministic, OpenAI, and OpenRouter live gates, ordinary CI, secretless live-policy
-status, independent review, and guarded merge pass.
+translation, streaming, or capability claims. Its exact-head deterministic, OpenAI, and OpenRouter
+live gates, ordinary CI, secretless live-policy status, independent review, guarded merge, and
+resulting-`main` verification passed through PR #41.
 
 ## Objective
 
@@ -47,9 +48,9 @@ did not:
 - weaken P5 acceptance or silently remove Anthropic from the release matrix; or
 - have more than one non-deferred milestone marked `In progress`.
 
-That gate is now satisfied. P5 resumed, advanced authoritatively through P5-D, and completed P5-E
-in its milestone-closing candidate. P6 remains deferred and must be resumed separately before P6-C
-becomes active.
+That gate is now satisfied. P5 resumed and completed authoritatively through PR #50 and
+resulting-`main` verification. This separate transition resumes P6 as the only `In progress`
+milestone and activates P6-C without implementing it.
 
 ## Design constraints
 
@@ -200,8 +201,7 @@ Execute one package at a time.
 
 ### P6-A: Protocol, configuration, and authentication-test readiness
 
-Status: `Completed` in the August 7, 2026 candidate; authoritative after its required gates and
-guarded merge.
+Status: `Completed` and accepted August 7, 2026 through PR #40.
 
 - Record the P5 deferral without a false completion claim and activate P6.
 - Bind the supported OpenRouter and generic compatibility subsets to current official sources.
@@ -227,7 +227,8 @@ Status: `Completed`.
 
 ### P6-C: Generic OpenAI-compatible construction and translation
 
-Status: `Not started`.
+Status: `In progress` in this milestone-resumption candidate; implementation begins after the
+resumption transition becomes authoritative.
 
 - Add the internal `openai-compatible` registration without adding a provider-specific public
   configuration type.
@@ -303,10 +304,9 @@ or update rather than becoming a skipped success.
 ## Acceptance criteria
 
 - P5's temporary deferral is recorded without a false completion claim; after P6-B, P5 resumed at
-  P5-B, advanced authoritatively through P5-D, and completed P5-E in its milestone-closing
-  candidate.
-- P6-A and P6-B are completed, P6-C remains unactivated, and P6 is deferred until a separate
-  milestone-resumption change makes it the only non-deferred `In progress` milestone.
+  P5-B and completed authoritatively through P5-E, PR #50, and resulting-`main` verification.
+- P6-A and P6-B are completed, and this separate milestone-resumption change makes P6 the only
+  `In progress` milestone with P6-C active and no generic adapter behavior added yet.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.

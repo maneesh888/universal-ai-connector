@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P5%20complete-16a34a)
+![Project stage](https://img.shields.io/badge/stage-P6%20in%20progress-f59e0b)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -17,17 +17,17 @@ failures, conservative capabilities, incremental streaming, cancellation, lifecy
 secret-safe live verification, and package-boundary audits. P5 completes the Anthropic Messages
 path through protocol readiness, non-streaming and structured translation, safe errors,
 capabilities, streaming, cancellation, lifecycle cleanup, exact-head live proof, and boundary
-acceptance in this milestone-closing candidate. P6 completed OpenRouter/generic protocol readiness
-in P6-A and direct non-streaming OpenRouter behavior in P6-B; P6-C remains deferred until P6 is
-resumed separately.
+acceptance. P6 completed OpenRouter/generic protocol readiness in P6-A and direct non-streaming
+OpenRouter behavior in P6-B; P6-C generic OpenAI-compatible construction and translation is active
+in the milestone-resumption candidate without runtime behavior yet.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
 > output, errors, capabilities, streaming, cancellation, concurrent lifecycle, secret-safety,
-> live evidence, and boundary acceptance. P5 Anthropic Messages is completed in this
-> milestone-closing candidate; P6-A readiness and P6-B direct non-streaming OpenRouter behavior
-> are complete, while generic compatibility, structured output, complete typed errors, and
-> streaming remain deferred.
+> live evidence, and boundary acceptance. P5 Anthropic Messages is completed authoritatively.
+> P6-A readiness and P6-B direct non-streaming OpenRouter behavior are complete, while P6-C
+> generic compatibility is active and structured output, complete typed errors, and streaming
+> remain later P6 packages.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -93,8 +93,8 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof in this milestone-closing candidate |
-| OpenRouter and compatible adapters | ⏸️ P6-A readiness and P6-B direct non-streaming behavior completed; P6-C and later work deferred |
+| Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
+| OpenRouter and compatible adapters | 🚧 P6-A readiness and P6-B direct non-streaming behavior completed; P6-C active in the milestone-resumption candidate |
 | Universal Gateway V2 adapter | ⏳ Planned |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
@@ -108,8 +108,8 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P2 | Canonical core and JSON contracts | ✅ Completed |
 | P3 | HTTP transport and provider registry | ✅ Completed |
 | P4 | OpenAI Responses adapter | ✅ Completed |
-| P5 | Anthropic adapter | ✅ Completed in this milestone-closing candidate |
-| P6 | OpenRouter and compatible adapters | ⏸️ Deferred; P6-A and P6-B completed, P6-C requires separate resumption |
+| P5 | Anthropic adapter | ✅ Completed |
+| P6 | OpenRouter and compatible adapters | 🚧 In progress; P6-A and P6-B completed, P6-C active in the milestone-resumption candidate |
 | P7 | Universal Gateway V2 adapter | ⏳ Planned |
 | P8 | Production distribution and host integration | ⏳ Planned |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
@@ -131,11 +131,11 @@ proof. P4 completed the internal OpenAI Responses adapter. P5-A recorded the dir
 Messages and authentication decisions. The dedicated Anthropic key/model gate is now satisfied,
 so P5 resumed at P5-B with the internal non-streaming adapter and exact-head local live route.
 P5-C then completed governed structured output, errors, and capabilities, P5-D completed streaming
-translation and active cancellation, and P5-E reconciles concurrent lifecycle, close races,
-cleanup, supported consumers, secret safety, and package boundaries in this milestone-closing
-candidate. P6-A recorded direct OpenRouter Chat Completions, generic compatibility, credential,
-and live-routing boundaries, and P6-B completed direct non-streaming OpenRouter request/response
-behavior and its exact-head local-live gate. P6-C and later work require a separate P6 resumption.
+translation and active cancellation, and P5-E completed concurrent lifecycle, close-race, cleanup,
+supported-consumer, secret-safety, and package-boundary acceptance. P6-A recorded direct OpenRouter
+Chat Completions, generic compatibility, credential, and live-routing boundaries, and P6-B
+completed direct non-streaming OpenRouter request/response behavior and its exact-head local-live
+gate. The milestone-resumption candidate activates P6-C; later packages remain pending.
 
 ## Architecture direction
 
