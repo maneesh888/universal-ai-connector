@@ -4,19 +4,31 @@
 
 P0-P5 are `Completed`. P6 was explicitly activated on August 7, 2026 and completed P6-A/P6-B
 before P5 resumed. P5 then completed authoritatively through PR #50 and resulting-`main`
-verification. P6 is now the only `In progress` milestone, and this candidate implements P6-E.
+verification. P6-A through P6-E are authoritative, and P6-F lifecycle integration and acceptance
+are complete in this milestone-closing candidate. P7-P9 remain `Not started`.
 
 P6-A completed protocol, configuration, and live-test authentication readiness. P6-B completed
 direct OpenRouter non-streaming request/response translation and exact-head local-live delivery.
 P6-C completed authoritatively through PR #52 and resulting-`main` verification. P6-D completed
-authoritatively through PR #53 and resulting-`main` verification. P6-E is `In progress` in this
-candidate, adding incremental streaming translation and active cancellation; P6-F remains
-inactive.
+authoritatively through PR #53 and resulting-`main` verification. P6-E completed authoritatively
+through PR #54 and resulting-`main` verification. P6-F reconciles the integrated lifecycle,
+consumer, audit, and milestone-acceptance boundaries without changing the host or provider
+protocol surface.
 
 P6-D's accepted scope added strict structured output, complete bounded provider-error and metadata
 translation, and conservative capabilities but no streaming behavior. Its exact-head deterministic
 and delivered-provider live gates, ordinary CI, secretless live-policy status, independent review,
 guarded merge, and resulting-`main` verification passed through PR #53.
+
+P6-E became authoritative after exact head `dc80de7dd99a01ef833175a5780c5d5873f3de3c`
+passed the complete deterministic and delivered-provider live gates, ordinary CI, secretless
+live-policy status, and independent review; PR #54 then merged as
+`4721d4077ce51f1a4072fe11a7930c7e9ba810ac`, and resulting-`main` run 31340246682 passed.
+
+P6-F is the separate P6 milestone-closing change. This candidate records P6 as complete, but that
+transition becomes authoritative only after its exact-head deterministic, delivered-provider
+live, ordinary-CI, secretless live-policy, independent-review, guarded-merge, and
+resulting-`main` gates pass.
 
 ## Objective
 
@@ -53,7 +65,8 @@ That gate is now satisfied. P5 resumed and completed authoritatively through PR 
 resulting-`main` verification. The prior milestone-resumption transition then made P6 the only
 `In progress` milestone and activated P6-C without implementing it. P6-C then completed through
 PR #52 and resulting-`main` verification, and P6-D completed through PR #53 and resulting-`main`
-verification. This candidate implements the subsequently activated P6-E package.
+verification. P6-E then completed through PR #54 and resulting-`main` verification. This candidate
+implements the subsequently activated P6-F milestone-closing package.
 
 ## Design constraints
 
@@ -253,8 +266,7 @@ Status: `Completed`; accepted August 10, 2026 through PR #53 and resulting-`main
 
 ### P6-E: Streaming translation and cancellation
 
-Status: `In progress`; implementation is complete in this candidate and awaits exact-head Release
-verification and guarded merge.
+Status: `Completed`; accepted August 10, 2026 through PR #54 and resulting-`main` verification.
 
 - Implement incremental Chat Completions SSE translation through P3.
 - Handle keep-alive comments, supported deltas, `[DONE]`, mid-stream errors, ordering, one
@@ -263,9 +275,24 @@ verification and guarded merge.
   terminal.
 - Pass affected live streaming and active-cancellation smokes.
 
+Completion record:
+
+- added one shared internal, bounded Chat Completions SSE translator for the governed direct and
+  generic overlap while preserving adapter-specific error policy;
+- translated supported text and structured streams, cumulative usage, `[DONE]`, safe mid-stream
+  failures, and exactly one canonical terminal with strict ordering, identity, semantic, and
+  missing-terminal checks;
+- covered cancellation before headers, during partial content, between records, after provider
+  terminal, and under the existing rendezvous backpressure boundary;
+- passed exact-head direct and representative generic OpenRouter streaming plus direct active
+  cancellation live smokes on `google/gemini-2.5-flash-lite`; and
+- passed the full Release lifecycle at exact head
+  `dc80de7dd99a01ef833175a5780c5d5873f3de3c`, PR #54, merge
+  `4721d4077ce51f1a4072fe11a7930c7e9ba810ac`, and resulting-`main` run 31340246682.
+
 ### P6-F: Lifecycle integration and acceptance
 
-Status: `Not started`.
+Status: `Completed` in this milestone-closing candidate.
 
 - Reconcile registry, configuration, transport, concurrent requests, close races, errors,
   streaming, cleanup, and package boundaries.
@@ -273,6 +300,24 @@ Status: `Not started`.
 - Complete DTO, credential, artifact, redaction, and secretless-CI audits.
 - Pass full deterministic, OpenAI-selected shared, and complete OpenRouter live exact-head gates.
 - Mark P6 complete only in a separate milestone-closing change with durable evidence.
+
+Completion record:
+
+- added integrated direct/generic lifecycle coverage for eight concurrent responses and streams,
+  immutable registry reuse, request-scoped credential isolation, and independent translation
+  state;
+- covered cross-adapter concurrent close, pending-response and active-stream cancellation,
+  response-body cleanup, use after close, and both sides of provider-terminal-versus-close
+  arbitration;
+- retained the supported Kotlin client, Swift façade, and deterministic JVM, Android, and iOS
+  sample paths without provider-specific host methods, persisted credentials, or live calls;
+- reconciled the provider-DTO, supported-host source, JVM and Android public-signature, exported
+  XCFramework-header, repository-secret, redaction, and read-only secretless ordinary-CI audits
+  through the existing fail-closed gates; and
+- bound closing exact-head deterministic, delivered-provider live, secretless-policy,
+  ordinary-CI, independent-review, merge, and resulting-`main` evidence to the milestone-closing
+  pull-request brief because those identifiers are self-referential or exist only after this
+  document changes.
 
 ## Verification
 
@@ -309,8 +354,8 @@ or update rather than becoming a skipped success.
 
 - P5's temporary deferral is recorded without a false completion claim; after P6-B, P5 resumed at
   P5-B and completed authoritatively through P5-E, PR #50, and resulting-`main` verification.
-- P6-A through P6-D are completed, P6 is the only `In progress` milestone, and the P6-E candidate
-  adds streaming translation and cancellation without activating P6-F.
+- P6-A through P6-E are completed authoritatively; P6-F reconciles lifecycle and acceptance in
+  this milestone-closing candidate without activating P7.
 - The supported direct and generic subsets are traceable to dated official sources.
 - Existing provider-neutral configuration and credential supply remain the only host boundary.
 - One ignored `.env.live` file holds distinct value-free provider names in the tracked example.
@@ -358,6 +403,11 @@ live tests prove only the selected OpenRouter account, endpoint, model, direct/g
 streaming, and direct active-cancellation path at the recorded exact head and time. They do not
 prove every model, upstream provider, third-party compatible endpoint, stream variant, billing
 cancellation outcome, or future protocol revision.
+
+P6-F deterministic tests prove integrated behavior only for the committed direct/generic
+lifecycle fixtures, existing consumers, and automated audit surfaces. They do not expand the
+supported protocol subset, prove arbitrary compatible endpoints, establish upstream billing
+cancellation, or add Gateway, distribution, physical-device, or release proof.
 
 P6 work does not prove Anthropic behavior, Gateway behavior, physical-device execution, remote
 distribution, credential management, or alpha-release readiness.

@@ -2,9 +2,9 @@
 
 ## Status
 
-- Repository stage: P5 Anthropic adapter completed authoritatively; P6 OpenRouter and OpenAI-compatible adapters are in progress at P6-E
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, authoritative P6-A through P6-D packages, and the P6-E streaming-translation and cancellation implementation candidate
-- Active work package: P6-E streaming translation and cancellation is implemented in this candidate; P6-F remains inactive until P6-E becomes authoritative
+- Repository stage: P6 OpenRouter and OpenAI-compatible adapters are completed in this milestone-closing candidate; P7-P9 remain not started
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, authoritative P6-A through P6-E packages, and the P6-F integrated lifecycle, close-race, cleanup, consumer, and boundary-acceptance candidate
+- Active work package: P6-F lifecycle integration and acceptance is completed in this candidate; no later milestone is activated
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
@@ -28,7 +28,10 @@
 - P6-C completion authority: exact head `a68528ad5d6ba78fff68d9cdf0c117eb1a19c86c` passed the complete deterministic and delivered-provider live gates, ordinary CI, secretless live-policy status, and independent review; PR [#52](https://github.com/maneesh888/universal-ai-connector/pull/52) merged as `999f9e3410d6a1cdb733fac9c99319002eb2cb18`, and resulting `main` run [31334952957](https://github.com/maneesh888/universal-ai-connector/actions/runs/31334952957) passed
 - P6-D completion: delivered strict JSON-schema request/response revalidation, OpenRouter typed errors, fixed generic status errors, bounded request/retry metadata, conservative capability reporting, and targeted deterministic/live coverage
 - P6-D completion authority: exact head `02dda3027a59a7805461de8f87a4067a0b69b090` passed the full local gate, complete delivered-provider live gates, ordinary CI, secretless live-policy status, and independent review; PR [#53](https://github.com/maneesh888/universal-ai-connector/pull/53) merged as `a6c63cf4dce4d9a1ee17795c65ce936c9cd637ab`, and resulting `main` run [31337372432](https://github.com/maneesh888/universal-ai-connector/actions/runs/31337372432) passed
-- P6-E candidate: adds incremental direct and generic Chat Completions SSE translation, strict ordering and terminal handling, safe mid-stream failures, deterministic cancellation-boundary coverage, and targeted live streaming/cancellation smokes; authority requires the exact-head Release lifecycle and guarded merge
+- P6-E completion: delivered incremental direct and generic Chat Completions SSE translation, strict ordering and terminal handling, safe mid-stream failures, deterministic cancellation-boundary coverage, and targeted live streaming/cancellation smokes
+- P6-E completion authority: exact head `dc80de7dd99a01ef833175a5780c5d5873f3de3c` passed the complete deterministic and delivered-provider live gates, ordinary CI, secretless live-policy status, and independent review; PR [#54](https://github.com/maneesh888/universal-ai-connector/pull/54) merged as `4721d4077ce51f1a4072fe11a7930c7e9ba810ac`, and resulting `main` run [31340246682](https://github.com/maneesh888/universal-ai-connector/actions/runs/31340246682) passed
+- P6 completion: P6-A through P6-F delivered direct OpenRouter and conservative generic OpenAI-compatible readiness, provider-neutral credential supply, bounded non-streaming and structured translation, safe errors and metadata, conservative capabilities, incremental streaming, cancellation, cross-adapter concurrent lifecycle and close-race coverage, targeted live proof, and the existing automated secret and package-boundary audits
+- P6 closeout authority: the transition in this milestone-closing candidate is accepted only after the complete deterministic and delivered-provider live exact-head gates, exact-head ordinary CI and secretless live-policy status, independent review, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - Gateway and OpenKeyboard integration: deferred
@@ -130,7 +133,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P3 | HTTP transport and provider registry | Completed | Provider-neutral transport, policy, SSE/metadata, registry, and integrated lifecycle behavior accepted through deterministic tests and existing host consumers; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P6 | OpenRouter and OpenAI-compatible adapters | In progress | P6-A through P6-D completed authoritatively; P6-E streaming translation and cancellation is implemented in this candidate |
+| P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P7 | Universal Gateway V2 adapter | Not started | |
 | P8 | Production distribution and host integration | Not started | |
 | P9 | Release hardening and internal alpha | Not started | |
@@ -227,9 +230,9 @@ packages were then explicitly deferred for lack of a dedicated credential/model,
 completed under `openrouter-openai-compatible-adapters.md`. The dedicated Anthropic inputs are now
 available, so P5-B resumed and became authoritative through PR #42. P5-C became authoritative
 through PR #48, P5-D became authoritative through PR #49, and P5-E completed P5 authoritatively
-through PR #50 and resulting-`main` verification. P6 is now the only `In progress` milestone;
-P6-C completed authoritatively through PR #52, P6-D completed authoritatively through PR #53,
-and the active P6-E candidate adds streaming translation and cancellation.
+through PR #50 and resulting-`main` verification. P6-C completed authoritatively through PR #52,
+P6-D through PR #53, and P6-E through PR #54. P6-F reconciles lifecycle and acceptance in this
+milestone-closing candidate without activating P7.
 
 ## P8: Production distribution and host integration
 
