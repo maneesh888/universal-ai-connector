@@ -266,6 +266,9 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
             successResponse(objectType = "response"),
             successResponse(extraMessageMembers = ",\"tool_calls\":[{\"id\":\"call_1\"}]"),
             successResponse(extraMessageMembers = ",\"refusal\":\"blocked\""),
+            successResponse(extraMessageMembers = ",\"function_call\":{\"name\":\"tool\"}"),
+            successResponse(extraMessageMembers = ",\"reasoning_content\":\"hidden\""),
+            successResponse(extraChoiceMembers = ",\"delta\":{\"content\":\"streamed\"}"),
             successResponse(finishReason = "tool_calls"),
             successResponse(text = ""),
         ).forEach { payload ->
@@ -283,6 +286,35 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
                 connector.close()
                 engine.close()
             }
+        }
+    }
+
+    @Test
+    fun choiceLevelErrorInNominalSuccessUsesFixedSafeProviderFailure() = runTest {
+        val sensitive = "embedded-provider-sensitive-detail"
+        val engine =
+            MockEngine {
+                respond(
+                    successResponse(
+                        extraChoiceMembers =
+                            ",\"error\":{\"message\":\"$sensitive\",\"code\":500}",
+                    ),
+                )
+            }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+            assertEquals(UniversalAiErrorCategory.Provider, failure.error.category)
+            assertEquals("provider_request_failed", failure.error.code.rawValue)
+            assertEquals(OPENAI_COMPATIBLE_PROVIDER_FAILURE_MESSAGE, failure.message)
+            assertFalse(failure.stackTraceToString().contains(sensitive))
+        } finally {
+            connector.close()
+            engine.close()
         }
     }
 
@@ -423,6 +455,7 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
         text: String = "ready",
         finishReason: String = "stop",
         extraMessageMembers: String = "",
+        extraChoiceMembers: String = "",
     ): String =
         """
         {
@@ -438,6 +471,7 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
             },
             "finish_reason":"$finishReason",
             "future_choice_field":true
+            $extraChoiceMembers
           }],
           "usage":{
             "prompt_tokens":12,

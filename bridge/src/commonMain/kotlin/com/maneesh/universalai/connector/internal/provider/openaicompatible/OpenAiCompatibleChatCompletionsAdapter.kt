@@ -187,17 +187,23 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
     val choice = requireWireValue(choices).singleOrNull() ?: throw malformedResponse()
+    if (choice.error != null) {
+        throw providerResponseFailure(metadata)
+    }
+    requireWire(choice.delta == null)
     requireWire(choice.index == 0)
     val message = requireWireValue(choice.message)
     requireWire(message.role == "assistant")
     requireWire(
         message.refusal == null &&
             message.reasoning == null &&
+            message.reasoningContent == null &&
             message.reasoningDetails == null &&
             message.annotations == null &&
             message.images == null &&
             message.audio == null &&
-            message.toolCalls == null,
+            message.toolCalls == null &&
+            message.functionCall == null,
     )
     val text = requireWireValue(message.content)
     requireWire(text.isNotBlank())

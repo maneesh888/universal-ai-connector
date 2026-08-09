@@ -40,6 +40,8 @@ internal data class OpenAiCompatibleChoiceWire(
     val message: OpenAiCompatibleResponseMessageWire? = null,
     @SerialName("finish_reason")
     val finishReason: String? = null,
+    val error: JsonElement? = null,
+    val delta: JsonElement? = null,
 )
 
 @Serializable
@@ -48,6 +50,8 @@ internal data class OpenAiCompatibleResponseMessageWire(
     val content: String? = null,
     val refusal: JsonElement? = null,
     val reasoning: JsonElement? = null,
+    @SerialName("reasoning_content")
+    val reasoningContent: JsonElement? = null,
     @SerialName("reasoning_details")
     val reasoningDetails: JsonElement? = null,
     val annotations: JsonElement? = null,
@@ -55,6 +59,8 @@ internal data class OpenAiCompatibleResponseMessageWire(
     val audio: JsonElement? = null,
     @SerialName("tool_calls")
     val toolCalls: JsonElement? = null,
+    @SerialName("function_call")
+    val functionCall: JsonElement? = null,
 )
 
 @Serializable

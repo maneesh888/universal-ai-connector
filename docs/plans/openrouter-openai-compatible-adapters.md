@@ -48,8 +48,9 @@ did not:
 - have more than one non-deferred milestone marked `In progress`.
 
 That gate is now satisfied. P5 resumed and completed authoritatively through PR #50 and
-resulting-`main` verification. This separate transition resumes P6 as the only `In progress`
-milestone and activates P6-C without implementing it.
+resulting-`main` verification. The prior milestone-resumption transition then made P6 the only
+`In progress` milestone and activated P6-C without implementing it; this candidate implements
+the activated package.
 
 ## Design constraints
 
