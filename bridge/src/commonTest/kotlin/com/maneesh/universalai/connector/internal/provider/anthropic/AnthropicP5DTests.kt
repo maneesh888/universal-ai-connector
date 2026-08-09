@@ -17,6 +17,8 @@ import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
+import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
+import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEvent
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportChunkReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransportHeader
@@ -367,6 +369,78 @@ class AnthropicP5DTests {
         }
 
     @Test
+    fun enforcesAggregateEventBlockAndOutputBounds(): Unit = runTest {
+        val ping = providerEvent("ping", "{\"type\":\"ping\"}")
+        val eventBoundTranslator = translator()
+        eventBoundTranslator.translate(messageStartEvent().singleProviderEvent())
+        repeat(65_535) {
+            eventBoundTranslator.translate(ping)
+        }
+        assertMalformedStream {
+            eventBoundTranslator.translate(ping)
+        }
+
+        val blockBoundTranslator = translator()
+        blockBoundTranslator.translate(messageStartEvent().singleProviderEvent())
+        repeat(128) { index ->
+            blockBoundTranslator.translate(contentBlockStartEvent(index).singleProviderEvent())
+            blockBoundTranslator.translate(contentBlockDeltaEvent(index, "x").singleProviderEvent())
+            blockBoundTranslator.translate(contentBlockStopEvent(index).singleProviderEvent())
+        }
+        assertMalformedStream {
+            blockBoundTranslator.translate(contentBlockStartEvent(128).singleProviderEvent())
+        }
+
+        val outputBoundTranslator = translator()
+        outputBoundTranslator.translate(messageStartEvent().singleProviderEvent())
+        outputBoundTranslator.translate(contentBlockStartEvent(0).singleProviderEvent())
+        val boundedChunk = "x".repeat(16_384)
+        repeat(64) {
+            outputBoundTranslator.translate(
+                contentBlockDeltaEvent(0, boundedChunk).singleProviderEvent(),
+            )
+        }
+        assertMalformedStream {
+            outputBoundTranslator.translate(contentBlockDeltaEvent(0, "x").singleProviderEvent())
+        }
+    }
+
+    @Test
+    fun rejectsDecreasingOrContradictoryCumulativeUsage(): Unit = runTest {
+        val decreasingUsageTranslator = translatorWithCompletedTextBlock()
+        decreasingUsageTranslator.translate(
+            messageDeltaEvent(stopReason = null, outputTokens = 3).singleProviderEvent(),
+        )
+        assertMalformedStream {
+            decreasingUsageTranslator.translate(
+                messageDeltaEvent(stopReason = null, outputTokens = 2).singleProviderEvent(),
+            )
+        }
+
+        listOf(
+            "\"input_tokens\":3",
+            "\"cache_creation_input_tokens\":2",
+            "\"cache_read_input_tokens\":3",
+        ).forEach { contradictoryField ->
+            val translator = translatorWithCompletedTextBlock()
+            assertMalformedStream {
+                translator.translate(
+                    providerEvent(
+                        "message_delta",
+                        """
+                        {
+                          "type":"message_delta",
+                          "delta":{"stop_reason":null,"stop_sequence":null},
+                          "usage":{$contradictoryField,"output_tokens":2}
+                        }
+                        """,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
     fun successRequiresEventStreamContentType(): Unit = runTest {
         val engine =
             MockEngine {
@@ -644,6 +718,24 @@ class AnthropicP5DTests {
             transport = transport,
         )
 
+    private fun translator(): AnthropicStreamTranslator =
+        AnthropicStreamTranslator(
+            request = request(),
+            metadata =
+                ConnectorResponseMetadata(
+                    requestId = "req_stream",
+                    retryAfterMillis = null,
+                ),
+        )
+
+    private fun translatorWithCompletedTextBlock(): AnthropicStreamTranslator =
+        translator().apply {
+            translate(messageStartEvent().singleProviderEvent())
+            translate(contentBlockStartEvent(0).singleProviderEvent())
+            translate(contentBlockDeltaEvent(0, "ready").singleProviderEvent())
+            translate(contentBlockStopEvent(0).singleProviderEvent())
+        }
+
     private fun request(
         responseFormat: UniversalAiResponseFormat = UniversalAiResponseFormat.PlainText,
         stopSequences: List<String> = emptyList(),
@@ -735,7 +827,14 @@ private fun successfulAnthropicStream(
             append(
                 anthropicSse(
                     "future_optional",
-                    "{\"type\":\"future_optional\",\"ignored\":true}",
+                    """
+                    {
+                      "type":"future_optional",
+                      "index":"opaque",
+                      "message":"opaque",
+                      "delta":["opaque"]
+                    }
+                    """,
                     lineEnding,
                 ),
             )
@@ -887,6 +986,44 @@ private fun anthropicSse(
         append(lineEnding)
         append(lineEnding)
     }
+
+private fun providerEvent(
+    eventName: String,
+    json: String,
+): ConnectorServerSentEvent =
+    ConnectorServerSentEvent(
+        data = Json.parseToJsonElement(json).toString(),
+        event = eventName,
+        id = null,
+        retryMillis = null,
+    )
+
+private fun String.singleProviderEvent(): ConnectorServerSentEvent {
+    val normalized = replace("\r\n", "\n")
+    val eventName =
+        normalized
+            .lineSequence()
+            .single { line -> line.startsWith("event: ") }
+            .removePrefix("event: ")
+    val data =
+        normalized
+            .lineSequence()
+            .single { line -> line.startsWith("data: ") }
+            .removePrefix("data: ")
+    return ConnectorServerSentEvent(
+        data = data,
+        event = eventName,
+        id = null,
+        retryMillis = null,
+    )
+}
+
+private fun assertMalformedStream(block: () -> Unit) {
+    val failure = assertFailsWith<UniversalAiException>(block = block)
+    assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+    assertEquals("malformed_provider_stream", failure.error.code.rawValue)
+    assertEquals(ANTHROPIC_MALFORMED_STREAM_MESSAGE, failure.message)
+}
 
 private fun singleChunkReader(stream: String): ConnectorTransportChunkReader {
     var delivered = false

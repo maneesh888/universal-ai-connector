@@ -76,9 +76,17 @@ internal class AnthropicStreamTranslator(
         eventCount += 1
         streamRequire(eventCount <= MAX_PROVIDER_STREAM_EVENTS)
 
-        val wire = ANTHROPIC_WIRE_JSON.decodeFromString<AnthropicStreamEventWire>(event.data)
-        val type = streamValue(wire.type)
+        val type =
+            streamValue(
+                ANTHROPIC_WIRE_JSON
+                    .decodeFromString<AnthropicStreamEventTypeWire>(event.data)
+                    .type,
+            )
         streamRequire(event.event == type)
+        if (type !in SUPPORTED_PROVIDER_STREAM_EVENT_TYPES) {
+            return emptyList()
+        }
+        val wire = ANTHROPIC_WIRE_JSON.decodeFromString<AnthropicStreamEventWire>(event.data)
 
         return when (type) {
             "message_start" -> messageStart(wire)
@@ -89,7 +97,7 @@ internal class AnthropicStreamTranslator(
             "message_stop" -> messageStop(wire)
             "ping" -> ping(wire)
             "error" -> providerError(wire)
-            else -> emptyList()
+            else -> throw malformedAnthropicStream()
         }
     }
 
@@ -525,3 +533,14 @@ private const val MAX_PROVIDER_CONTENT_BLOCKS: Int = 128
 private const val CANONICAL_OUTPUT_INDEX: Int = 0
 private const val MAX_STREAM_OUTPUT_BYTES: Int = 1_048_576
 private const val MAX_CANONICAL_TOKEN_COUNT: Long = 9_007_199_254_740_991L
+private val SUPPORTED_PROVIDER_STREAM_EVENT_TYPES: Set<String> =
+    setOf(
+        "message_start",
+        "content_block_start",
+        "content_block_delta",
+        "content_block_stop",
+        "message_delta",
+        "message_stop",
+        "ping",
+        "error",
+    )

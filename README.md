@@ -14,16 +14,16 @@ The repository has completed its P1 cross-platform baseline and P2 provider-neut
 P4 completed the first bounded provider path: OpenAI Responses authentication, plain-text and
 governed structured request/response translation, usage and request metadata, safe provider
 failures, conservative capabilities, incremental streaming, cancellation, lifecycle cleanup,
-secret-safe live verification, and package-boundary audits. P5-A completed Anthropic protocol and
-authentication-test readiness, and P5-B now completes the internal non-streaming Messages adapter,
-deterministic authentication/translation coverage, and exact-head local live proof. P6 completed
-OpenRouter/generic protocol readiness in P6-A and direct non-streaming OpenRouter behavior in
-P6-B; P6-C and later work are deferred while P5 is active.
+secret-safe live verification, and package-boundary audits. P5-A through P5-C completed Anthropic
+protocol readiness, non-streaming Messages translation, structured output, safe errors, and
+capabilities. P5-D adds streaming translation, cancellation coverage, and targeted exact-head live
+proof in this candidate. P6 completed OpenRouter/generic protocol readiness in P6-A and direct
+non-streaming OpenRouter behavior in P6-B; P6-C and later work are deferred while P5 is active.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
 > output, errors, capabilities, streaming, cancellation, concurrent lifecycle, secret-safety,
-> live evidence, and boundary acceptance. P5 has resumed at P5-B without a milestone-completion
+> live evidence, and boundary acceptance. P5 is active at P5-D without a milestone-completion
 > claim; P6-A readiness and P6-B direct non-streaming OpenRouter behavior are complete, while
 > generic compatibility, structured output, complete typed errors, and streaming remain deferred.
 >

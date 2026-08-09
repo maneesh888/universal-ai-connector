@@ -88,6 +88,11 @@ internal data class AnthropicErrorWire(
 )
 
 @Serializable
+internal data class AnthropicStreamEventTypeWire(
+    val type: String? = null,
+)
+
+@Serializable
 internal data class AnthropicStreamEventWire(
     val type: String? = null,
     val message: AnthropicMessageResponseWire? = null,
