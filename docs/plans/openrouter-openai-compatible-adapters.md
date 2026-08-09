@@ -52,8 +52,8 @@ did not:
 That gate is now satisfied. P5 resumed and completed authoritatively through PR #50 and
 resulting-`main` verification. The prior milestone-resumption transition then made P6 the only
 `In progress` milestone and activated P6-C without implementing it. P6-C then completed through
-PR #52 and resulting-`main` verification; this candidate implements the subsequently activated
-P6-D package.
+PR #52 and resulting-`main` verification, and P6-D completed through PR #53 and resulting-`main`
+verification. This candidate implements the subsequently activated P6-E package.
 
 ## Design constraints
 
@@ -85,7 +85,7 @@ P6-D package.
 ### Authoritative OpenRouter protocol
 
 The following official OpenRouter sources were consulted on August 7, 2026 and revalidated for
-P6-D on August 10, 2026; they govern the P6 subset:
+P6-D and P6-E on August 10, 2026; they govern the P6 subset:
 
 - [Chat Completions request reference](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion)
 - [Bearer-key authentication example and current-key endpoint](https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key)
@@ -98,7 +98,8 @@ P6-D on August 10, 2026; they govern the P6 subset:
 
 The direct OpenRouter adapter uses base URL `https://openrouter.ai/api/v1`, sends
 `POST /chat/completions`, authenticates with `Authorization: Bearer <credential>`, and sends
-`content-type: application/json` and `accept: application/json`.
+`content-type: application/json`. Unary requests send `accept: application/json`; streaming
+requests send `accept: text/event-stream`.
 
 `HTTP-Referer`, `X-OpenRouter-Title`, and `X-OpenRouter-Categories` are attribution inputs, not
 authentication requirements. P6 does not synthesize them, read them from process state, or expose
