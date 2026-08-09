@@ -416,6 +416,7 @@ class OpenRouterChatCompletionsAdapterTests {
                 Case("authentication", UniversalAiErrorCategory.Authentication, "provider_authentication_failed", OPENROUTER_AUTHENTICATION_MESSAGE),
                 Case("payment_required", UniversalAiErrorCategory.Authorization, "provider_permission_denied", OPENROUTER_PAYMENT_REQUIRED_MESSAGE),
                 Case("not_found", UniversalAiErrorCategory.NotFound, "provider_resource_not_found", OPENROUTER_NOT_FOUND_MESSAGE),
+                Case("image_not_found", UniversalAiErrorCategory.NotFound, "provider_resource_not_found", OPENROUTER_NOT_FOUND_MESSAGE),
                 Case("rate_limit_exceeded", UniversalAiErrorCategory.RateLimit, "provider_rate_limited", OPENROUTER_RATE_LIMIT_MESSAGE),
                 Case("content_policy_violation", UniversalAiErrorCategory.Provider, "provider_response_filtered", OPENROUTER_FILTERED_RESPONSE_MESSAGE),
                 Case("provider_overloaded", UniversalAiErrorCategory.Provider, "provider_unavailable", OPENROUTER_UNAVAILABLE_MESSAGE),
@@ -575,6 +576,37 @@ class OpenRouterChatCompletionsAdapterTests {
             val diagnostic = failure.stackTraceToString()
             assertFalse(diagnostic.contains(credential))
             assertFalse(diagnostic.contains(providerFragment))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun bodylessPayloadTooLargeMapsToSafeValidationFallback() = runTest {
+        val engine =
+            MockEngine {
+                respond(
+                    content = "",
+                    status = HttpStatusCode.fromValue(413),
+                    headers = Headers.build { append("X-Request-Id", "req_payload_too_large") },
+                )
+            }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+            assertEquals("provider_invalid_request", failure.error.code.rawValue)
+            assertEquals(OPENROUTER_INVALID_REQUEST_MESSAGE, failure.message)
+            with(assertNotNull(failure.error.metadata)) {
+                assertEquals(413L, number("statusCode")?.toLongOrNull())
+                assertEquals("req_payload_too_large", string("requestId"))
+            }
         } finally {
             connector.close()
             engine.close()

@@ -391,7 +391,7 @@ private suspend fun ConnectorTransportResponse.decodeErrorEnvelopeOrNull(): Open
 
 private fun statusErrorMapping(statusCode: Int): ProviderErrorMapping =
     when (statusCode) {
-        400, 409, 422 ->
+        400, 409, 413, 422 ->
             ProviderErrorMapping(
                 category = UniversalAiErrorCategory.Validation,
                 code = "provider_invalid_request",
@@ -463,7 +463,6 @@ private fun OpenRouterErrorWire.toTypedErrorMappingOrNull(): ProviderErrorMappin
         "image_too_large",
         "image_too_small",
         "unsupported_image_format",
-        "image_not_found",
         "image_download_failed",
         ->
             ProviderErrorMapping(
@@ -500,7 +499,7 @@ private fun OpenRouterErrorWire.toTypedErrorMappingOrNull(): ProviderErrorMappin
                 message = OPENROUTER_RATE_LIMIT_MESSAGE,
             )
 
-        "not_found" ->
+        "not_found", "image_not_found" ->
             ProviderErrorMapping(
                 category = UniversalAiErrorCategory.NotFound,
                 code = "provider_resource_not_found",
