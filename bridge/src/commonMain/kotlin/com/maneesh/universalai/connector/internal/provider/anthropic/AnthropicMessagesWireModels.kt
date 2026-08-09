@@ -15,6 +15,7 @@ internal data class AnthropicCreateMessageWire(
     val stopSequences: List<String>? = null,
     @SerialName("output_config")
     val outputConfig: AnthropicOutputConfigurationWire? = null,
+    val stream: Boolean? = null,
 )
 
 @Serializable
@@ -84,4 +85,26 @@ internal data class AnthropicErrorEnvelopeWire(
 internal data class AnthropicErrorWire(
     val type: String? = null,
     val message: String? = null,
+)
+
+@Serializable
+internal data class AnthropicStreamEventWire(
+    val type: String? = null,
+    val message: AnthropicMessageResponseWire? = null,
+    val index: Int? = null,
+    @SerialName("content_block")
+    val contentBlock: AnthropicResponseContentWire? = null,
+    val delta: AnthropicStreamDeltaWire? = null,
+    val usage: AnthropicUsageWire? = null,
+    val error: AnthropicErrorWire? = null,
+)
+
+@Serializable
+internal data class AnthropicStreamDeltaWire(
+    val type: String? = null,
+    val text: String? = null,
+    @SerialName("stop_reason")
+    val stopReason: String? = null,
+    @SerialName("stop_sequence")
+    val stopSequence: String? = null,
 )

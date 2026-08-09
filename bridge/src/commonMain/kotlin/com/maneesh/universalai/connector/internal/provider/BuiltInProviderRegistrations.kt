@@ -69,7 +69,7 @@ internal val ANTHROPIC_PROVIDER_CAPABILITY_PROFILE =
                     ),
                 UniversalAiCapabilityName.Streaming to
                     UniversalAiCapabilityDeclaration(
-                        support = UniversalAiCapabilitySupport.Unsupported,
+                        support = UniversalAiCapabilitySupport.Supported,
                     ),
             ),
     )

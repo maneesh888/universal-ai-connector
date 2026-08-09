@@ -83,11 +83,11 @@ response, one pending-response cancellation, and one active-stream cancellation.
 from `jvmTest`, `check.sh`, samples, and ordinary CI, and fails closed without valid inputs or
 provider access.
 
-The P5-C `:bridge:anthropicLiveTest` task covers one minimal non-streaming text response, one
-governed structured response, one safe intentional unavailable-model error, and one
-pending-response cancellation after credential resolution. It has the same deterministic/CI
-exclusions and fail-closed exact-head behavior. Streaming and active-stream cancellation proof
-remain P5-D work.
+The P5-D `:bridge:anthropicLiveTest` task covers one minimal non-streaming text response, one
+governed structured response, one safe intentional unavailable-model error, one ordered streaming
+response, one pending-response cancellation after credential resolution, and one active-stream
+cancellation after observable content. It has the same deterministic/CI exclusions and
+fail-closed exact-head behavior.
 
 The P6-B `:bridge:openRouterLiveTest` task covers one minimal non-streaming response and one
 pending-response cancellation. It has the same exclusion, exact-head, credential-isolation, and
@@ -188,10 +188,11 @@ rewrites are separate destructive operations and require explicit scope.
 ## Proof limits
 
 A passing live gate proves only the provider, model, account, network, exact commit, and paths
-recorded for that execution. P5-C adds bounded Anthropic authentication, non-streaming response,
-one governed structured response, one intentional unavailable-model error, and
-pending-cancellation proof for the selected exact head; it does not prove every schema, error,
-model, account state, capability, streaming, or active-stream cancellation. P6-B proves
+recorded for that execution. P5-D adds bounded Anthropic authentication, non-streaming response,
+one governed structured response, one intentional unavailable-model error, ordered streaming,
+pending-response cancellation, and active-stream cancellation proof for the selected exact head;
+it does not prove every schema, error, event sequence, model, account state, capability, or
+cancellation timing. P6-B proves
 only the selected OpenRouter
 non-streaming response and pending-cancellation paths; it does not prove structured output, typed
 provider errors, streaming, generic endpoint compatibility, every model or upstream route,

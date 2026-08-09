@@ -89,7 +89,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| Anthropic Messages adapter | 🚧 P5-B non-streaming translation and exact-head live route completed in this candidate |
+| Anthropic Messages adapter | 🚧 P5-D structured, error, streaming, cancellation, and exact-head live behavior completed in this candidate |
 | OpenRouter and compatible adapters | ⏸️ P6-A readiness and P6-B direct non-streaming behavior completed; P6-C and later work deferred |
 | Universal Gateway V2 adapter | ⏳ Planned |
 
@@ -104,7 +104,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P2 | Canonical core and JSON contracts | ✅ Completed |
 | P3 | HTTP transport and provider registry | ✅ Completed |
 | P4 | OpenAI Responses adapter | ✅ Completed |
-| P5 | Anthropic adapter | 🚧 In progress; P5-B completed in this candidate |
+| P5 | Anthropic adapter | 🚧 In progress; P5-D completed in this candidate, P5-E remains |
 | P6 | OpenRouter and compatible adapters | ⏸️ Deferred; P6-A and P6-B completed, P6-C not activated |
 | P7 | Universal Gateway V2 adapter | ⏳ Planned |
 | P8 | Production distribution and host integration | ⏳ Planned |
@@ -125,8 +125,9 @@ transport construction, lifecycle ownership, URL/header/timeout policy, bounded 
 metadata, provider registration, cancellation, cleanup, terminal arbitration, and host-boundary
 proof. P4 completed the internal OpenAI Responses adapter. P5-A recorded the direct Anthropic
 Messages and authentication decisions. The dedicated Anthropic key/model gate is now satisfied,
-so P5 has resumed at P5-B with the internal non-streaming adapter, deterministic
-authentication/translation coverage, and exact-head local live route; P5-C through P5-E remain
+so P5 resumed at P5-B with the internal non-streaming adapter and exact-head local live route.
+P5-C then completed governed structured output, errors, and capabilities, and P5-D adds streaming
+translation and active cancellation in this candidate; P5-E lifecycle acceptance remains
 incomplete. P6-A recorded direct OpenRouter Chat Completions, generic compatibility, credential,
 and live-routing boundaries, and P6-B completed direct non-streaming OpenRouter request/response
 behavior and its exact-head local-live gate. P6-C and later work are deferred while P5 is active.

@@ -469,7 +469,7 @@ class AnthropicP5CTests {
         )
         assertNull(structured.limits[UniversalAiCapabilityLimitName.MaxSchemaDepth])
         assertEquals(
-            UniversalAiCapabilitySupport.Unsupported,
+            UniversalAiCapabilitySupport.Supported,
             assertNotNull(profileCapabilities[UniversalAiCapabilityName.Streaming]).support,
         )
 
@@ -497,7 +497,7 @@ class AnthropicP5CTests {
             assertNotNull(modelCapabilities[UniversalAiCapabilityName.StructuredOutput]).limits.isEmpty(),
         )
         assertEquals(
-            UniversalAiCapabilitySupport.Unsupported,
+            UniversalAiCapabilitySupport.Supported,
             assertNotNull(modelCapabilities[UniversalAiCapabilityName.Streaming]).support,
         )
         assertTrue(credentialCalls.isEmpty())
