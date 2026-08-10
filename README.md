@@ -29,7 +29,9 @@ milestone-closing candidate.
 > output, errors, capabilities, streaming, cancellation, concurrent lifecycle, secret-safety,
 > live evidence, and boundary acceptance. P5 Anthropic Messages is completed authoritatively.
 > P6-A through P6-E are authoritative. P6-F lifecycle integration and milestone acceptance are
-> complete in this milestone-closing candidate; P7 remains inactive.
+> complete in this milestone-closing candidate. P7 remains inactive and is now correctly scoped
+> as validation of the existing generic OpenAI-compatible adapter against the independently
+> maintained LLM Gateway, not as a proprietary Gateway protocol.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -64,7 +66,7 @@ Cross-platform baseline   ██████████████████
 Canonical AI contracts    ████████████████████ 100%  ✅ Complete
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
-Gateway integration       ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Gateway compatibility     ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
@@ -99,7 +101,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | OpenRouter and compatible adapters | ✅ P6 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof in this milestone-closing candidate |
-| Universal Gateway V2 adapter | ⏳ Planned |
+| OpenAI-compatible Gateway validation | ⏳ Planned through the existing generic adapter |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
 
@@ -114,7 +116,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P4 | OpenAI Responses adapter | ✅ Completed |
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed in this milestone-closing candidate |
-| P7 | Universal Gateway V2 adapter | ⏳ Planned |
+| P7 | OpenAI-compatible Gateway validation | ⏳ Planned |
 | P8 | Production distribution and host integration | ⏳ Planned |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
@@ -180,7 +182,7 @@ The planned host-facing shape is deliberately small:
 
 Native Linux, Windows, and macOS artifacts are demand-driven. The initial desktop/server path is Kotlin/JVM; Java-specific, JavaScript, and Wasm façades are not currently committed support surfaces.
 
-P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after provider and Gateway adapters exist. The JVM console remains the headless and server-oriented verification path.
+P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. The JVM console remains the headless and server-oriented verification path.
 
 The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes.
 

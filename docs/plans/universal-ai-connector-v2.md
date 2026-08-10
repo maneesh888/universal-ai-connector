@@ -34,7 +34,7 @@
 - P6 closeout authority: the transition in this milestone-closing candidate is accepted only after the complete deterministic and delivered-provider live exact-head gates, exact-head ordinary CI and secretless live-policy status, independent review, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
-- Gateway and OpenKeyboard integration: deferred
+- OpenAI-compatible Gateway validation and OpenKeyboard integration: deferred; P7 remains inactive
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
@@ -42,7 +42,9 @@ This document is the package repository's source of truth for implementation ord
 
 Universal AI Connector is an independent Kotlin Multiplatform package. It must not depend on OpenKeyboard, SwiftUI, App Group storage, Keychain storage, keyboard actions, keyboard prompts, or Gateway V1 DTOs.
 
-The package will own provider-neutral public models. Provider and gateway protocols remain internal adapters:
+The package owns provider-neutral public models. Provider protocols remain internal adapters. An
+OpenAI-compatible Gateway uses the existing generic `openai-compatible` adapter rather than a
+Gateway-specific public or internal protocol:
 
 ```text
 Canonical request
@@ -73,7 +75,7 @@ The initial alpha optimizes for broad practical reach without maintaining every 
 
 Native macOS ARM64 and Linux X64 may be added when a no-JVM or native-language consumer requires them. Windows Kotlin/Native, JavaScript, and Wasm remain demand-driven. A host is not described as supported merely because the compiler can produce a target: the repository must also test its public API, packaging, documented consumption path, and lifecycle behavior.
 
-The initial JVM console remains the headless and server-oriented proof. P8 must add one Compose Multiplatform desktop demonstration application that runs from the same JVM code on macOS, Windows, and Linux. It must offer a zero-configuration deterministic mode for evaluation and an explicitly configured live mode once provider and Gateway adapters exist. Native desktop library targets remain demand-driven; the demonstration application consumes the Kotlin/JVM artifact.
+The initial JVM console remains the headless and server-oriented proof. P8 must add one Compose Multiplatform desktop demonstration application that runs from the same JVM code on macOS, Windows, and Linux. It must offer a zero-configuration deterministic mode for evaluation and an explicitly configured live mode once the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. Native desktop library targets remain demand-driven; the demonstration application consumes the Kotlin/JVM artifact.
 
 The host-facing developer experience must converge on:
 
@@ -93,7 +95,7 @@ Cross-platform delivery is a foundation cost, not a platform tax that every late
 |---|---|---|
 | P1 | High, one-time foundation | Establish targets, package boundaries, thin samples, lifecycle behavior, and the deterministic host matrix |
 | P2-P3 | Controlled contract stabilization | Finalize canonical models, the primary client contract, construction, transport injection, ownership, and cleanup without adding host targets or provider-specific host APIs |
-| P4-P7 | Low | Implement provider and Gateway behavior in shared/internal adapter modules and tests; reuse the stable Kotlin and Swift entry points and existing samples |
+| P4-P7 | Low | Implement provider adapters, then validate an OpenAI-compatible Gateway through the existing generic adapter; reuse the stable Kotlin and Swift entry points and existing samples |
 | P8 | High, planned distribution work | Add publication, released-artifact consumers, signing/checksums, and the desktop demonstration without duplicating connector behavior per host |
 | P9 | Verification and hardening | Exercise the complete matrix and fix defects; do not introduce a new platform surface as incidental release work |
 
@@ -101,7 +103,7 @@ Apply these guardrails to every future work package:
 
 - Do not add another host target, sample, or CI lane without an approved consumer requirement and an explicit maintenance-cost decision.
 - During P2-P3, change the supported Kotlin or Swift façade only when the canonical contract, construction, or lifecycle requires it. After P3 acceptance, keep those host entry points stable through P7 except for an approved compatibility, correctness, or security fix.
-- P4-P7 must not add per-provider Swift, Android, or JVM implementations, DTOs, controls, or lifecycle paths. Provider differences stay behind canonical shared contracts and internal adapter modules.
+- P4-P7 must not add per-provider Swift, Android, or JVM implementations, DTOs, controls, or lifecycle paths. Provider differences stay behind canonical shared contracts and internal adapter modules. P7 must not add a Gateway-specific adapter when the existing generic OpenAI-compatible boundary is sufficient.
 - Keep the Android, iOS, and JVM samples as stable contract consumers. Update all samples only when an approved canonical host behavior changes, not merely because another provider adapter is added.
 - Use affected-module and targeted host tests during implementation. Run the repository's mandatory quick gate at commit time and the complete supported platform matrix at push, pull-request, and release gates rather than repeatedly in the inner edit loop.
 - If a proposed P3-P7 feature materially requires changes across the shared API, Swift façade, Android/JVM host API, all samples, packaging scripts, and CI lanes, pause implementation. Record the cross-platform reason in an ADR or scoped plan decision and either correct the abstraction or explicitly approve the wider platform cost before proceeding.
@@ -134,7 +136,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P7 | Universal Gateway V2 adapter | Not started | |
+| P7 | OpenAI-compatible Gateway validation | Not started | See `openai-compatible-gateway-validation.md` |
 | P8 | Production distribution and host integration | Not started | |
 | P9 | Release hardening and internal alpha | Not started | |
 
@@ -201,14 +203,13 @@ Generation retries remain disabled by default. Never reconnect or retry after re
 
 P3 verification remains deterministic through Ktor `MockEngine` and local fixtures because no provider adapter is active yet. Once P4 establishes the live suite, any later P3 change that can affect live behavior is subject to the local pre-push live gate and secretless GitHub evidence policy above.
 
-## P4-P7: Adapters
+## P4-P6: Provider adapters; P7: Gateway validation
 
-The default adapter delivery order is:
+The provider-adapter delivery order is:
 
 1. OpenAI Responses
 2. Anthropic Messages
 3. OpenRouter and generic OpenAI-compatible endpoints
-4. Universal Gateway V2 canonical protocol
 
 Each adapter owns its provider DTOs, request translation, response translation, structured-output handling, streaming translation, capability reporting, and canonical error mapping. Each adapter milestone must add deterministic mock coverage and targeted live response, streaming, error, and cancellation smoke coverage. A pull request that adds or changes live adapter behavior may not be created or updated until the affected live suite passes locally for its exact head, and it may not merge until the secretless GitHub policy validates that exact-head evidence and completes the required `live-policy` deployment.
 
@@ -234,6 +235,15 @@ through PR #50 and resulting-`main` verification. P6-C completed authoritatively
 P6-D through PR #53, and P6-E through PR #54. P6-F reconciles lifecycle and acceptance in this
 milestone-closing candidate without activating P7.
 
+P7 does not introduce a fourth provider protocol. It validates the existing generic
+`openai-compatible` adapter against the separately maintained LLM Gateway's finalized standard
+Chat Completions contract. The Gateway is configured as an independently selectable
+`openai-compatible` endpoint through its base URL, model identifier, and Gateway-owned bearer
+credential. The connector does not depend on the Gateway's internal model backend, routing,
+storage, or administration choices and does not assume that it stores OpenAI, Anthropic, or other
+provider credentials. P7 remains `Not started` until explicitly activated under
+`openai-compatible-gateway-validation.md` after the external contract stabilizes.
+
 ## P8: Production distribution and host integration
 
 Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
@@ -246,7 +256,7 @@ Acceptance requires:
 - user-visible Android, iOS, and desktop demonstrations covering response, streaming, stable errors, and cancellation;
 - a desktop deterministic mode that starts without an account, network, gateway, provider credential, or secret;
 - an opt-in desktop live mode that accepts host-provided adapter configuration only after the corresponding adapter milestone is complete;
-- Gateway client configuration limited to its base URL and gateway credential provider, with provider credentials remaining on the Gateway server and no secret logging or committed credentials;
+- OpenAI-compatible Gateway configuration limited to provider ID `openai-compatible`, its base URL, model identifier, and a host-owned Gateway credential supplier, with no assumption about Gateway internals and no secret logging or committed credentials;
 - local pre-push live gates and protected secretless GitHub evidence policy pass for any distribution or sample change that affects live provider or Gateway behavior;
 - self-contained desktop distributions built and smoke-tested on their matching macOS, Windows, and Linux hosts;
 - documented minimum toolchain and platform versions;
@@ -269,10 +279,10 @@ Release `0.1.0-alpha.1` only after:
 
 The following remain outside this package roadmap until explicitly activated:
 
-- Gateway V2 server implementation
+- LLM Gateway server implementation or deployment; it is maintained as an independent project
 - OpenKeyboard application and keyboard-extension migration
 - provider-selection UI and credential storage
-- billing, quotas, server routing, and server model allowlists
+- Gateway administration, billing, quotas, internal backend routing, and model allowlists
 - agent frameworks, tool execution, RAG, and multimodal inputs
 - native desktop library targets without a demonstrated no-JVM or native-language consumer requirement; the planned P8 graphical desktop demo uses Kotlin/JVM
 - Java-specific, JavaScript, and Wasm façades until their consumer demand and maintenance cost are approved
