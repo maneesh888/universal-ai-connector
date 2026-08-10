@@ -157,7 +157,7 @@ Applications will consume Universal AI Connector models rather than provider DTO
 Application
     -> Universal AI Connector client
     -> provider adapter
-    -> provider or Universal Gateway
+    -> provider or OpenAI-compatible LLM Gateway endpoint
     -> canonical response/error/stream events
 ```
 
