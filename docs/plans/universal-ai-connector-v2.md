@@ -2,9 +2,9 @@
 
 ## Status
 
-- Repository stage: P0-P6 are completed; P7 OpenAI-compatible Gateway validation is active at P7-B, while P8-P9 remain not started
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, authoritative P7-A contract fixtures, and the P7-B compatibility-correction plus local-Gateway-gate candidate
-- Active work package: P7-B compatibility corrections and local live gate is completed in this candidate; P7-C remains not started
+- Repository stage: P0-P7 are completed in this milestone-closing candidate; P8-P9 remain not started
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, authoritative P7-A contract fixtures and P7-B compatibility/live proof, and P7-C lifecycle, configuration, and package-boundary acceptance
+- Active work package: P7-C lifecycle integration and acceptance is completed in this candidate; no later milestone is active
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
@@ -35,10 +35,12 @@
 - P7-A completion: P7 was activated on August 11, 2026 after the external LLM Gateway's standard Chat Completions contract was pinned to an exact tested commit; P7-A records the conservative base-URL, authentication, request, response, structured-output, error, streaming, cancellation, and proof boundaries and adds Gateway-representative deterministic fixtures without changing runtime behavior
 - P7-A completion authority: exact head `bdde3b603ec8511294209d5d382e8880b5ecce82` passed the full local gate, ordinary CI, independent review, and secretless live-policy status; PR [#57](https://github.com/maneesh888/universal-ai-connector/pull/57) merged as `052e4598e4ce6a347c2283ecadd143fc3e3057ec`, and resulting `main` run [31492933413](https://github.com/maneesh888/universal-ai-connector/actions/runs/31492933413) passed
 - P7-B completion: accepts omitted non-streaming usage while keeping null, incomplete, or negative present usage malformed, preserves safe status-only Gateway error handling, adds a dedicated exact-head Gateway live task and fail-closed runner, and extends delivered live-impact routing and secretless-policy validation to the Gateway
-- P7-B completion authority: this candidate becomes authoritative only after the exact-head deterministic and Gateway live gates, ordinary CI, secretless live-policy status, independent review, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
+- P7-B completion authority: exact head `4aa2134120279771871cb8b180bbf464f78a37e5` passed the full deterministic and Gateway live gates, ordinary CI, secretless live-policy status, and independent review; PR [#58](https://github.com/maneesh888/universal-ai-connector/pull/58) merged as `f93d3ed2d7eff2856f610f486fdaff85bd5c5987`, and resulting-`main` run [31527045862](https://github.com/maneesh888/universal-ai-connector/actions/runs/31527045862) passed
+- P7 completion: P7-A through P7-C validate the pinned Gateway standard intersection through the existing generic adapter, including deterministic fixtures, omitted-usage compatibility, safe errors, exact-head live proof, concurrent lifecycle and cleanup, copy-paste Kotlin and Swift configuration, and existing secret/package-boundary audits
+- P7 closeout authority: this milestone-closing candidate becomes authoritative only after the full deterministic and Gateway live exact-head gates, ordinary CI, secretless live-policy status, independent review, guarded merge, and resulting `main` workflow inspection pass; those self-referential identifiers belong in the pull-request brief
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
-- OpenAI-compatible Gateway validation is active at P7-B; OpenKeyboard integration remains deferred
+- OpenAI-compatible Gateway validation is completed in this candidate; OpenKeyboard integration remains deferred
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
@@ -140,7 +142,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P7 | OpenAI-compatible Gateway validation | In progress | P7-A is authoritative; P7-B compatibility corrections and the local live gate are completed in the current candidate; see `openai-compatible-gateway-validation.md` |
+| P7 | OpenAI-compatible Gateway validation | Completed | P7-A and P7-B are authoritative; P7-C lifecycle and acceptance complete the milestone in this closing candidate; see `openai-compatible-gateway-validation.md` |
 | P8 | Production distribution and host integration | Not started | |
 | P9 | Release hardening and internal alpha | Not started | |
 
@@ -250,7 +252,9 @@ provider credentials. P7 was activated on August 11, 2026 under
 Gateway commit. P7-A freezes that conservative standard intersection and adds deterministic
 compatibility fixtures without adding Gateway runtime behavior. P7-B corrects the demonstrated
 omitted-usage gap and adds the dedicated fail-closed local Gateway proof route without adding a
-Gateway-specific adapter or host surface.
+Gateway-specific adapter or host surface. P7-C reconciles Gateway-representative concurrency,
+close races, cleanup, redaction, copy-paste Kotlin and Swift configuration, and the existing host
+package boundaries without activating P8.
 
 ## P8: Production distribution and host integration
 
