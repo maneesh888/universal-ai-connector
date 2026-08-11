@@ -228,7 +228,7 @@ class UniversalAiConnector private constructor(
     }
 
     companion object {
-        const val LIBRARY_VERSION: String = "0.1.0-alpha.1"
+        const val LIBRARY_VERSION: String = UNIVERSAL_AI_CONNECTOR_VERSION
         const val SIMULATED_ERROR_INPUT: String = "__force_error__"
 
         internal const val CLOSED_MESSAGE: String = "The Universal AI Connector is closed."

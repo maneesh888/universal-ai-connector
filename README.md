@@ -73,7 +73,7 @@ Canonical AI contracts    ██████████████████
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
 Gateway compatibility     ████████████████████ 100%  ✅ Complete
-Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Production distribution   ██░░░░░░░░░░░░░░░░░░  P8-A  🔄 Active
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
 
@@ -123,7 +123,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
 | P7 | OpenAI-compatible Gateway validation | ✅ Completed in the milestone-closing candidate |
-| P8 | Production distribution and host integration | ⏳ Planned |
+| P8 | Production distribution and host integration | 🔄 P8-A active; external release identities pending |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion

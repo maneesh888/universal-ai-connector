@@ -41,7 +41,7 @@ class AppleConnectorBridgeTests {
         val successes = mutableListOf<AppleBridgeResponse>()
         val errors = mutableListOf<AppleBridgeError>()
 
-        assertEquals("0.1.0-alpha.1", bridge.version())
+        assertEquals("0.1.0-0.p8.1", bridge.version())
         bridge.respond(
             request = request(" hello "),
             onSuccess = successes::add,
@@ -523,7 +523,7 @@ class AppleConnectorBridgeTests {
         bridge.close()
         advanceUntilIdle()
 
-        assertEquals("0.1.0-alpha.1", bridge.version())
+        assertEquals("0.1.0-0.p8.1", bridge.version())
         assertFalse(responseCallbackDelivered)
         assertFalse(streamTerminalDelivered)
         assertEquals(1, bridge.instrumentationSnapshot().responseCancellations)
