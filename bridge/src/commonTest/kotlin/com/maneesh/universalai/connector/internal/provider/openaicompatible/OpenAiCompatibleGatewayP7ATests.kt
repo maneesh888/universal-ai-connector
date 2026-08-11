@@ -19,6 +19,9 @@ import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportRequest
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportResponse
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.Headers
@@ -34,7 +37,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -301,16 +303,23 @@ class OpenAiCompatibleGatewayP7ATests {
     fun cancellingPendingGatewayFixtureRemainsCallerCancellation() = runTest {
         val started = CompletableDeferred<Unit>()
         val cancelled = CompletableDeferred<Unit>()
-        val engine =
-            MockEngine {
-                started.complete(Unit)
-                try {
-                    awaitCancellation()
-                } finally {
-                    cancelled.complete(Unit)
+        val transport =
+            object : ConnectorTransport {
+                override suspend fun <Result> execute(
+                    request: ConnectorTransportRequest,
+                    consumeResponse: suspend (ConnectorTransportResponse) -> Result,
+                ): Result {
+                    started.complete(Unit)
+                    try {
+                        awaitCancellation()
+                    } finally {
+                        cancelled.complete(Unit)
+                    }
                 }
+
+                override fun close() = Unit
             }
-        val connector = gatewayConnector(engine) { "synthetic-gateway-credential" }
+        val connector = gatewayConnector(transport) { "synthetic-gateway-credential" }
 
         try {
             val operation =
@@ -320,10 +329,9 @@ class OpenAiCompatibleGatewayP7ATests {
             started.await()
             operation.cancel()
             assertFailsWith<CancellationException> { operation.await() }
-            withTimeout(1_000) { cancelled.await() }
+            assertTrue(cancelled.isCompleted)
         } finally {
             connector.close()
-            engine.close()
         }
     }
 }
@@ -335,16 +343,29 @@ private fun gatewayConnector(
     UniversalAiConnector(
         configuration =
             UniversalAiConnectorConfiguration(
-                providers =
-                    listOf(
-                        UniversalAiProviderConfiguration(
-                            providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
-                            baseUrl = P7_GATEWAY_BASE_URL,
-                            credentialSupplier = credentialSupplier,
-                        ),
-                    ),
+                providers = listOf(gatewayProviderConfiguration(credentialSupplier)),
             ),
         httpEngine = engine,
+    )
+
+private fun gatewayConnector(
+    transport: ConnectorTransport,
+    credentialSupplier: () -> String,
+): UniversalAiConnector =
+    UniversalAiConnector(
+        OpenAiCompatibleChatCompletionsAdapter(
+            configuration = gatewayProviderConfiguration(credentialSupplier),
+            transport = transport,
+        ),
+    )
+
+private fun gatewayProviderConfiguration(
+    credentialSupplier: () -> String,
+): UniversalAiProviderConfiguration =
+    UniversalAiProviderConfiguration(
+        providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
+        baseUrl = P7_GATEWAY_BASE_URL,
+        credentialSupplier = credentialSupplier,
     )
 
 private fun gatewayRequest(

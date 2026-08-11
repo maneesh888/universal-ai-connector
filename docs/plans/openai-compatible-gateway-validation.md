@@ -167,11 +167,12 @@ the compatibility identity so later Gateway changes do not silently widen this p
 ### Deterministic fixture boundary
 
 `OpenAiCompatibleGatewayP7ATests` covers the pinned standard intersection through the existing
-generic adapter and Ktor `MockEngine`: request path and bearer authentication, non-streaming
-response translation, strict structured output, safe Gateway status/envelope handling, SSE and
-`[DONE]` translation, and caller cancellation. These are Gateway-representative protocol examples,
-not a second adapter or an assertion that every Gateway backend/model supports every optional
-feature.
+generic adapter, Ktor `MockEngine`, and a cancellation-tracking transport: request path and bearer
+authentication, non-streaming response translation, strict structured output, safe Gateway
+status/envelope handling, SSE and `[DONE]` translation, and in-flight caller cancellation. The
+accepted generic-adapter lifecycle tests continue to cover cleanup and close races. These are
+Gateway-representative protocol examples, not a second adapter or an assertion that every Gateway
+backend/model supports every optional feature.
 
 ## Verification
 
