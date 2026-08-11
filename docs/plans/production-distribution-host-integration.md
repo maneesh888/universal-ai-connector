@@ -35,17 +35,21 @@ P8 proves distribution mechanics with a disposable pre-alpha candidate that prec
 - The public root coordinate is `io.github.maneesh888:universal-ai-connector:<version>`.
 - Maven Central is the supported remote repository. The Kotlin Multiplatform root publication owns
   Gradle metadata and selects the published JVM or Android variant for supported consumers.
-- Platform publications, POM metadata, source artifacts, checksums, and signatures are generated
-  from the same exact source head and version. The internal Gradle module name `bridge` does not
-  become the product artifact ID.
+- The root, JVM, Android, `iosArm64`, and `iosSimulatorArm64` publications are uploaded together so
+  every variant referenced by root Gradle metadata resolves. The iOS Kotlin/Native artifacts are
+  publication-graph dependencies, not a supported Apple host API; Apple consumers use only the
+  Swift façade and remote Swift Package.
+- Every publication carries complete POM, source, Central-compatible Javadoc, Gradle metadata where
+  applicable, checksum, and signature artifacts from the same exact source head and version. The
+  internal Gradle module name `bridge` does not become the product artifact ID.
 - P8 local checks publish to an isolated repository under build output. Remote Central publication
   is explicit, credentialed, immutable, and never runs from pull-request or ordinary CI events.
 - The Central namespace, portal token, and PGP signing identity are host-owned release inputs. They
   are never committed, printed, retained in build output, or made runtime dependencies.
 
 This follows Kotlin's current Multiplatform publication model, in which the root publication and
-target-specific publications are uploaded together, and Maven Central requires complete POM and
-signature metadata.
+every metadata-referenced target publication are uploaded together, and Maven Central requires
+complete POM, sources, Javadoc, checksum, and signature metadata.
 
 ### Apple
 
@@ -92,8 +96,10 @@ a URL-based binary target, and a checksum produced by `swift package compute-che
   but must reject semantic drift.
 - P8 remote proof uses a disposable version that has lower SemVer precedence than
   `0.1.0-alpha.1`; the exact value is frozen in P8-A after confirming that it is unused remotely.
-- Tags use `v<version>`. Publication commands fail closed unless the tag, Gradle version, remote
-  Swift manifest, archive name, and exact `HEAD` agree and the worktree is clean.
+- Tags use `v<version>`. No immutable remote publication occurs until Kotlin, Apple, and desktop
+  distribution-producing changes are frozen together. Publication commands fail closed unless the
+  tag, Gradle version, remote Swift manifest, archives, and exact `HEAD` agree and the worktree is
+  clean.
 - Published Maven versions, Git tags, release assets, checksums, and Swift binary-target URLs are
   immutable. A correction uses a new version.
 - P8 establishes a checked-in Kotlin public API baseline and a checked Swift façade/header
@@ -144,28 +150,18 @@ P8-A adds no remote publication, remote Swift binary, desktop application, or re
 
 Status: `Not started`.
 
-- Configure the Kotlin Multiplatform root, JVM, and Android publications with complete POM,
-  sources, Gradle metadata, checksums, and host-supplied signing.
+- Configure the Kotlin Multiplatform root and every referenced JVM, Android, `iosArm64`, and
+  `iosSimulatorArm64` publication with complete POM, sources, Central-compatible Javadoc, Gradle
+  metadata where applicable, checksums, and host-supplied signing.
 - Add an isolated local publication repository and validate its artifact inventory and metadata.
 - Add standalone JVM and Android consumer fixtures that resolve only the injected Maven repository
   and public coordinate.
+- Prove every variant referenced by root metadata exists while rejecting any documentation or
+  sample that presents a Kotlin/Native publication as the supported Apple entry point.
 - Add public API compatibility validation for the supported Kotlin surface.
 - Keep remote credentials optional for deterministic checks and fail closed for remote commands.
 
-### P8-C: Maven Central proof
-
-Status: `Not started`.
-
-- Publish the disposable exact-head P8 version through a reviewed local release command.
-- Verify Central accepted every required publication and signature before releasing the deployment.
-- Resolve the immutable public coordinate from clean Linux, Windows, and macOS consumers.
-- Record Central URLs, exact source head, version, commands, date, and proof limits without
-  retaining credentials or build directories.
-
-Missing namespace ownership, portal credentials, signing material, Central validation, or public
-resolution is a blocker, not a skipped success.
-
-### P8-D: Reproducible Apple binary distribution
+### P8-C: Reproducible Apple binary distribution
 
 Status: `Not started`.
 
@@ -176,21 +172,7 @@ Status: `Not started`.
 - Add a standalone Swift consumer fixture that can target an injected remote package URL and tag.
 - Keep generated XCFrameworks, ZIPs, DerivedData, and result bundles out of Git.
 
-### P8-E: Remote Swift Package proof
-
-Status: `Not started`.
-
-- Create the immutable disposable P8 tag and GitHub prerelease from the verified exact head.
-- Upload the checksummed XCFramework ZIP and checksum manifest through the reviewed local release
-  path; do not add a write-enabled publication workflow.
-- Resolve and compile the standalone Swift consumer solely from the public repository tag and
-  release asset.
-- Re-run the iOS simulator sample and generic-device link through the remote package boundary.
-
-An unavailable GitHub release asset, checksum mismatch, tag drift, or remote Swift resolution
-failure is a blocker.
-
-### P8-F: Deterministic Compose desktop demonstration
+### P8-D: Deterministic Compose desktop demonstration
 
 Status: `Not started`.
 
@@ -200,7 +182,7 @@ Status: `Not started`.
 - Add deterministic controller tests and UI semantics suitable for launch inspection.
 - Consume the public Kotlin artifact boundary; do not duplicate connector behavior in the UI.
 
-### P8-G: Live desktop boundary and matching-host packages
+### P8-E: Live desktop boundary and matching-host packages
 
 Status: `Not started`.
 
@@ -211,7 +193,43 @@ Status: `Not started`.
   without network or credentials.
 - Exercise opt-in live mode only through the already delivered provider/Gateway gates selected by
   affected-path routing.
-- Produce package checksums and apply the required signing/notarization policy before publication.
+- Prepare package checksums and the required signing/notarization path without publishing an
+  immutable artifact.
+
+### P8-F: Unified release-candidate freeze and publication
+
+Status: `Not started`.
+
+- Freeze one exact candidate head only after Maven, Apple, and desktop distribution-producing
+  changes are complete. Finalize the remote Swift checksum in that head and require a rebuild from
+  the tagged head to reproduce it.
+- Run the complete deterministic, API, packaging, secret, matching-host desktop, and affected-live
+  gates before creating immutable remote state.
+- Create the disposable P8 tag and GitHub prerelease from that exact head. Upload the checksummed
+  XCFramework and matching-head desktop packages through the reviewed local release path; do not
+  add a write-enabled publication workflow.
+- Publish the same version and source head to Maven Central, verify every required root and target
+  publication, Javadoc/source artifact, checksum, and signature, then release the deployment.
+- Record artifact URLs, version, source head, commands, dates, signing/notarization results, and
+  proof limits without retaining credentials or build directories.
+
+Missing namespace ownership, portal credentials, signing material, notarization inputs, Central
+validation, GitHub release assets, or checksum agreement is a blocker, not a skipped success. A
+failed immutable candidate is never overwritten; fixes use a new lower-than-alpha.1 candidate
+version and repeat P8-F.
+
+### P8-G: Remote clean-consumer and distribution proof
+
+Status: `Not started`.
+
+- Resolve the immutable public Maven coordinate from clean Linux, Windows, and macOS consumers.
+- Resolve and compile the standalone Swift consumer solely from the public repository tag and
+  release asset, then re-run the iOS simulator and generic-device sample links through that remote
+  package boundary.
+- Download the matching-head desktop packages, verify checksums/signatures, and smoke-test their
+  deterministic no-secret mode on each matching host.
+- Treat any remote resolution, checksum, signature, install, launch, or deterministic smoke failure
+  as a failed candidate requiring a new version; never mutate the published candidate.
 
 ### P8-H: Distribution and host acceptance
 
