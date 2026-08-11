@@ -2,15 +2,16 @@
 
 ## Status and activation gate
 
-Status: `In progress` at P7-B.
+Status: `Completed` in the P7-C milestone-closing candidate.
 
 P0-P6 are completed. P7 was activated on August 11, 2026 after the separately maintained LLM
 Gateway's stable, tested OpenAI-compatible contract was pinned for P7-A, and P7 became the sole
 roadmap milestone marked `In progress`.
 
 P7-A authoritatively froze the deterministic compatibility boundary and added representative
-fixtures. P7-B corrects the fixture-demonstrated omitted-usage gap and adds the selected-deployment
-live proof; P7-C remains the lifecycle and milestone-acceptance package.
+fixtures. P7-B authoritatively corrected the fixture-demonstrated omitted-usage gap and added the
+selected-deployment live proof. P7-C reconciles lifecycle, host configuration, package boundaries,
+and milestone acceptance in this closing candidate.
 
 ## Objective
 
@@ -89,7 +90,7 @@ Completion became authoritative through PR #57 and resulting-`main` run 31492933
 
 ### P7-B: Compatibility corrections and local live gate
 
-Status: `Completed in the current candidate`.
+Status: `Completed`.
 
 - Implement only compatibility or correctness fixes demonstrated by P7-A fixtures.
 - Preserve safe generic error handling when Gateway error envelopes include optional extensions.
@@ -99,13 +100,11 @@ Status: `Completed in the current candidate`.
   cancellation against the selected local or deployed Gateway without retaining secrets or
   response bodies.
 
-Completion becomes authoritative only after the candidate passes the exact-head deterministic and
-Gateway live gates, ordinary CI, secretless live-policy status, independent review, guarded merge,
-and resulting-`main` verification. Exact-head evidence belongs in the pull-request brief.
+Completion became authoritative through PR #58 and resulting-`main` run 31527045862.
 
 ### P7-C: Lifecycle integration and acceptance
 
-Status: `Not started`.
+Status: `Completed in the current milestone-closing candidate`.
 
 - Reconcile concurrent response/stream behavior, close races, cleanup, redaction, and the existing
   Kotlin and Swift package boundaries.
@@ -113,6 +112,10 @@ Status: `Not started`.
 - Pass the complete deterministic gate, exact-head Gateway live gate, secretless policy, ordinary
   CI, independent review, guarded merge, and resulting-`main` verification.
 - Mark P7 complete only in its milestone-closing change.
+
+Completion becomes authoritative only after the closing candidate passes every listed exact-head
+gate, merges through the guarded path, and its resulting-`main` workflow passes. Self-referential
+evidence belongs in the pull-request brief.
 
 ## P7-A external contract freeze
 
@@ -205,6 +208,28 @@ fixed authentication error, and caller cancellation after an actual Gateway resp
 proves only the selected Gateway deployment and model. A `false` capability records that structured
 output was not proved for that model; it does not claim connector incompatibility. The task does
 not strengthen the pinned Gateway's server-side upstream-disconnect claim.
+
+## P7-C lifecycle integration and acceptance
+
+`OpenAiCompatibleGatewayP7CLifecycleTests` exercises the Gateway-selected configuration through the
+existing generic adapter with eight concurrent responses and streams. It covers request-scoped
+credential resolution, isolated translation state, omitted non-streaming usage, ordered streaming,
+and exactly one terminal per completed stream. Its concurrent-close fixture cancels one pending
+response and one active stream, releases the active response body, makes repeated close idempotent,
+rejects use after close, and keeps the synthetic credential out of request bodies and failure
+diagnostics.
+
+The accepted generic Chat Completions lifecycle suite continues to own provider-terminal-versus-
+close arbitration and shared adapter cleanup. P7-A and P7-B retain the safe Gateway-envelope and
+bounded-metadata redaction assertions. The ordinary complete gate continues to compile the Kotlin
+JVM and Android consumers, Kotlin/Native bridge, Swift façade, and iOS sample while rejecting
+provider implementation, wire DTO, credential carrier, or Gateway-specific surface leakage.
+
+The README now provides copy-paste Kotlin configuration for Android/JVM and Swift configuration for
+Apple. Both use provider ID `openai-compatible`, a host-supplied base URL ending in `/v1`, an
+explicit request model, and a synchronous host-owned Gateway credential supplier. The guidance
+keeps model discovery, Gateway administration, backend selection, credential storage, and
+OpenKeyboard integration outside the connector.
 
 ## Verification
 
