@@ -258,6 +258,9 @@ package boundaries without activating P8.
 
 ## P8: Production distribution and host integration
 
+Use the bounded work packages in `production-distribution-host-integration.md`. P8 remains
+`Not started` until a separate P8-A change activates it as the sole milestone marked `In progress`.
+
 Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
 
 Acceptance requires:
