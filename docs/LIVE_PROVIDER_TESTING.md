@@ -16,10 +16,17 @@ The single ignored `.env.live` file may contain distinct inputs for each provide
 - `ANTHROPIC_LIVE_MODEL`: an explicit bounded-cost model identifier enabled for that key.
 - `OPENROUTER_API_KEY`: a dedicated, revocable, conservatively spend-limited OpenRouter test key.
 - `OPENROUTER_LIVE_MODEL`: an explicit bounded-cost model slug enabled for that key.
+- `GATEWAY_LIVE_BASE_URL`: the selected Gateway base URL ending in `/v1`; HTTPS is required except
+  for exact loopback HTTP.
+- `GATEWAY_API_KEY`: a dedicated, revocable Gateway-owned test credential.
+- `GATEWAY_LIVE_MODEL`: an explicit model identifier enabled for that Gateway key and deployment.
+- `GATEWAY_LIVE_STRUCTURED_OUTPUT`: explicit `true` or `false` capability evidence for the selected
+  Gateway model; `false` records that the governed structured path is not claimed.
 
-OpenAI, Anthropic, and OpenRouter are delivered local-live gates after P5-B adds the Anthropic
-route to the OpenAI and P6-B OpenRouter routes. Each provider-specific change selects only its
-delivered gate; shared or ambiguous live-impacting changes select all three.
+OpenAI, Anthropic, OpenRouter, and the OpenAI-compatible Gateway are delivered local-live gates.
+Each direct-provider change selects its delivered gate, a generic `openai-compatible` adapter
+change selects OpenRouter plus the Gateway, and shared or ambiguous live-impacting changes select
+all four.
 
 Do not use production keys. Restrict access to the test project or workspace, set conservative
 spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
@@ -39,6 +46,10 @@ pull-request, chat, or review text.
 OpenRouter authenticates API requests with a Bearer key as documented by its official
 [current-key API reference](https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key).
 Use a dedicated key with a conservative spending limit and an explicit bounded-cost model.
+
+The Gateway credential is created and rotated by the selected self-hosted Gateway deployment. It
+is not an upstream-provider key, and the connector neither knows nor retains which backend the
+Gateway routes to. Use a test key with a conservative Gateway rate limit and model scope.
 
 The tracked `.env.live.example` is deliberately value-free. Configure the ignored local file
 manually:
@@ -69,13 +80,14 @@ shown above, and run:
 ./scripts/check-live.sh openai
 ./scripts/check-live.sh anthropic
 ./scripts/check-live.sh openrouter
+./scripts/check-live.sh gateway
 ```
 
 Each command refuses a dirty checkout, validates the expected SHA when
 `UAC_LIVE_EXPECTED_SHA` is present, runs deterministic tests first, and then runs the selected
-provider task without a reusable Gradle daemon. It never prints the credential or full provider
-request/response content, and disables Gradle configuration caching for the credential-bearing
-process.
+provider or Gateway task without a reusable Gradle daemon. It never prints the Gateway base URL,
+credential, authorization header, or full request/response content, and disables Gradle
+configuration caching for the credential-bearing process.
 
 The completed P4 `:bridge:openAiLiveTest` task covers one minimal non-streaming response, one
 governed structured response, one safe intentional provider error, one ordered streaming
@@ -89,10 +101,19 @@ response, one pending-response cancellation after credential resolution, and one
 cancellation after observable content. It has the same deterministic/CI exclusions and
 fail-closed exact-head behavior.
 
-The P6-B `:bridge:openRouterLiveTest` task covers one minimal non-streaming response and one
-pending-response cancellation. It has the same exclusion, exact-head, credential-isolation, and
-fail-closed boundaries. Structured output, typed provider errors, streaming, and generic
-OpenAI-compatible behavior remain later P6 packages.
+The P6 `:bridge:openRouterLiveTest` task covers direct and representative generic non-streaming,
+structured output, safe errors, ordered streaming, pending cancellation, and active-stream
+cancellation. It has the same exclusion, exact-head, credential-isolation, and fail-closed
+boundaries.
+
+The P7-B `:bridge:gatewayLiveTest` task uses only provider ID `openai-compatible` and covers a
+non-streaming response with optional usage, one governed structured response on the selected
+supporting model when `GATEWAY_LIVE_STRUCTURED_OUTPUT=true`, ordered streaming with usage and one
+terminal, one fixed authentication error, and caller cancellation after an actual Gateway response
+starts. The capability input is mandatory and accepts only `true` or `false`, so the conditional
+path cannot silently skip. The task retains neither the Gateway base URL nor any provider response
+body. The local command fails closed when the URL, credential, model, deployment, capability
+input, or assertion is unavailable.
 
 The pre-push hook runs `scripts/live-impact.sh` between `origin/main` and exact `HEAD`. The
 classifier returns `none` or an ordered comma-separated delivered-provider set. Unrelated changes
@@ -107,7 +128,7 @@ Every head change invalidates earlier evidence. For an affected pull request, re
 
 - exact 40-character head SHA;
 - every selected `./scripts/check-live.sh <provider>` command;
-- provider and model identifier;
+- provider or Gateway label and model identifier;
 - execution date;
 - pass or fail result; and
 - limits of the exercised provider-specific paths.
@@ -132,7 +153,7 @@ An undelivered or ambiguous affected provider path fails closed to every deliver
 documentation-only change produces a successful secretless `Required live verification` result
 automatically. The workflow retains trusted-base compatibility with the legacy P4 boolean
 classifier and accepts stable ordered provider sets through
-`openai,anthropic,openrouter`; that is also the currently delivered ordered set.
+`openai,anthropic,openrouter,gateway`; that is also the currently delivered ordered set.
 
 For an affected PR, the workflow checks that its body says the local run passed, contains the
 current exact head SHA, records the no-retention boundary, and explicitly acknowledges that local
@@ -192,9 +213,11 @@ recorded for that execution. P5-D adds bounded Anthropic authentication, non-str
 one governed structured response, one intentional unavailable-model error, ordered streaming,
 pending-response cancellation, and active-stream cancellation proof for the selected exact head;
 it does not prove every schema, error, event sequence, model, account state, capability, or
-cancellation timing. P6-B proves
-only the selected OpenRouter
-non-streaming response and pending-cancellation paths; it does not prove structured output, typed
-provider errors, streaming, generic endpoint compatibility, every model or upstream route,
-physical-device behavior, Gateway behavior, released-artifact distribution, or production
-credential management.
+cancellation timing. P6 proves only the selected OpenRouter paths and does not prove every model
+or upstream route. P7-B proves only the selected Gateway deployment, model, non-streaming
+optional-usage behavior, governed structured output only when the retained capability value is
+`true`, ordered streaming with usage, one authentication error, and active stream cancellation on
+the exact recorded head and date. It does not prove every Gateway deployment, backend, model,
+optional field, error shape, stream timing,
+upstream-disconnect cleanup, physical-device behavior, released-artifact distribution, or
+production credential management.

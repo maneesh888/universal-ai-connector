@@ -2,14 +2,15 @@
 
 ## Status and activation gate
 
-Status: `In progress` at P7-A.
+Status: `In progress` at P7-B.
 
 P0-P6 are completed. P7 was activated on August 11, 2026 after the separately maintained LLM
 Gateway's stable, tested OpenAI-compatible contract was pinned for P7-A, and P7 became the sole
 roadmap milestone marked `In progress`.
 
-P7-A freezes the deterministic compatibility boundary and adds representative fixtures. It does
-not claim that a Gateway deployment or the connector-to-Gateway network path has been verified.
+P7-A authoritatively froze the deterministic compatibility boundary and added representative
+fixtures. P7-B corrects the fixture-demonstrated omitted-usage gap and adds the selected-deployment
+live proof; P7-C remains the lifecycle and milestone-acceptance package.
 
 ## Objective
 
@@ -59,7 +60,7 @@ before P7 runtime work begins. The expected conservative intersection is:
 - text-only ordered `system`, `user`, and `assistant` messages;
 - one explicit model identifier;
 - the generation parameters already supported by the generic adapter;
-- one supported non-streaming choice with text, finish state, and bounded usage;
+- one supported non-streaming choice with text and finish state, plus bounded usage when present;
 - the accepted strict JSON-schema structured-output intersection where the selected Gateway model
   supports it;
 - OpenAI-compatible SSE data records and `[DONE]` termination for streaming; and
@@ -76,7 +77,7 @@ Execute one package at a time after activation.
 
 ### P7-A: External contract freeze and deterministic compatibility fixtures
 
-Status: `Completed in the current candidate`.
+Status: `Completed`.
 
 - Bind the supported subset to the finalized Gateway implementation, documentation, and tests.
 - Record exact base-URL, authentication, request, response, error, streaming, structured-output,
@@ -84,21 +85,23 @@ Status: `Completed in the current candidate`.
 - Add Gateway-representative `MockEngine` fixtures to the existing generic adapter tests.
 - Add no live task, runtime adapter, provider identifier, host API, or sample behavior.
 
-Completion becomes authoritative only after the candidate passes the repository gates, ordinary
-CI, independent review, guarded merge, and resulting-`main` verification. Exact-head evidence
-belongs in the pull-request brief.
+Completion became authoritative through PR #57 and resulting-`main` run 31492933413.
 
 ### P7-B: Compatibility corrections and local live gate
 
-Status: `Not started`.
+Status: `Completed in the current candidate`.
 
 - Implement only compatibility or correctness fixes demonstrated by P7-A fixtures.
 - Preserve safe generic error handling when Gateway error envelopes include optional extensions.
 - Add a dedicated, fail-closed local Gateway validation command using ignored, host-supplied base
-  URL, Gateway credential, and model inputs.
+  URL, Gateway credential, model, and explicit structured-output capability inputs.
 - Prove non-streaming, structured output where supported, streaming, error, and active
   cancellation against the selected local or deployed Gateway without retaining secrets or
   response bodies.
+
+Completion becomes authoritative only after the candidate passes the exact-head deterministic and
+Gateway live gates, ordinary CI, secretless live-policy status, independent review, guarded merge,
+and resulting-`main` verification. Exact-head evidence belongs in the pull-request brief.
 
 ### P7-C: Lifecycle integration and acceptance
 
@@ -144,12 +147,11 @@ the compatibility identity so later Gateway changes do not silently widen this p
 - Send one explicit model and ordered text-only `system`, `user`, and `assistant` messages. The
   existing bounded `max_tokens`, `temperature`, `top_p`, and `stop` fields are forwarded as part of
   the standard Chat Completions body.
-- Accept one standard non-streaming choice with assistant text, a supported finish reason, a
-  complete non-negative usage object, and harmless unknown fields. The pinned Gateway forwards
-  successful response bodies without adding usage, so the selected upstream model must supply it
-  for the P7-A intersection. An otherwise valid response that omits usage remains a documented
-  generic-adapter compatibility gap for P7-B. Gateway administration and OpenKeyboard operation
-  extensions are not part of this intersection.
+- Accept one standard non-streaming choice with assistant text, a supported finish reason, and
+  harmless unknown fields. Usage is optional because the pinned Gateway forwards successful bodies
+  without adding it; when present, prompt, completion, and total counts remain complete and
+  non-negative. Gateway administration and OpenKeyboard operation extensions are not part of this
+  intersection.
 - Use standard `response_format.type = json_schema` only for the connector's already-governed
   strict schema subset. The pinned Gateway forwards ordinary Chat Completions request bodies and
   successful response bodies; actual structured-output support remains selected-model dependent,
@@ -175,9 +177,34 @@ authentication, non-streaming response translation, strict structured output, sa
 status/envelope handling, SSE and `[DONE]` translation, and in-flight caller cancellation. The
 accepted generic-adapter lifecycle tests continue to cover cleanup and close races. These are
 Gateway-representative protocol examples, not a second adapter or an assertion that every Gateway
-backend/model supports every optional feature. In particular, the non-streaming fixture includes
-the complete usage object required by the current generic adapter; P7-A does not claim that a
-Gateway response without usage is accepted.
+backend/model supports every optional feature. The historical P7-A non-streaming fixture includes
+complete usage; P7-B adds the demonstrated omitted-usage correction while keeping malformed
+present usage fail-closed.
+
+## P7-B compatibility corrections and local live gate
+
+`OpenAiCompatibleGatewayP7BTests` proves that an otherwise valid non-streaming Gateway response may
+omit usage, while incomplete or negative present usage remains malformed. It also preserves the
+safe error boundary: optional Gateway envelope extensions are ignored, fixed status-based
+canonical errors are retained, and only bounded status, request-ID, and `Retry-After` metadata may
+surface.
+
+`./scripts/check-live.sh gateway` requires the process-supplied `GATEWAY_LIVE_BASE_URL`,
+`GATEWAY_API_KEY`, `GATEWAY_LIVE_MODEL`, and explicit
+`GATEWAY_LIVE_STRUCTURED_OUTPUT=true|false` inputs. The URL must end in `/v1` and use HTTPS except
+for exact loopback HTTP. The capability input prevents an unsupported selected model from becoming
+an implicit skipped success. The runner refuses dirty or stale heads, removes every live input from
+its deterministic prerequisite, isolates the selected Gateway inputs for
+`:bridge:gatewayLiveTest`, and retains only the provider label, model identifier, structured-output
+capability result, and exact head. It never opens `.env.live` or prints the base URL, credential,
+authorization header, or provider response body.
+
+The live task covers non-streaming optional usage, a governed structured response when the selected
+model is explicitly marked as supporting it, ordered streaming with usage and one terminal, one
+fixed authentication error, and caller cancellation after an actual Gateway response starts. This
+proves only the selected Gateway deployment and model. A `false` capability records that structured
+output was not proved for that model; it does not claim connector incompatibility. The task does
+not strengthen the pinned Gateway's server-side upstream-disconnect claim.
 
 ## Verification
 

@@ -49,6 +49,10 @@ env \
   -u ANTHROPIC_LIVE_MODEL \
   -u OPENROUTER_API_KEY \
   -u OPENROUTER_LIVE_MODEL \
+  -u GATEWAY_LIVE_BASE_URL \
+  -u GATEWAY_API_KEY \
+  -u GATEWAY_LIVE_MODEL \
+  -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/scripts/check.sh" --full
 require_clean_tree
@@ -64,9 +68,12 @@ LIVE_PROVIDERS="$("$ROOT/scripts/live-impact.sh" "$LIVE_BASE_SHA" "$HEAD_SHA")"
 case "$LIVE_PROVIDERS" in
   none)
     ;;
-  openai | anthropic | openrouter | \
-    openai,anthropic | openai,openrouter | anthropic,openrouter | \
-    openai,anthropic,openrouter)
+  openai | anthropic | openrouter | gateway | \
+    openai,anthropic | openai,openrouter | openai,gateway | \
+    anthropic,openrouter | anthropic,gateway | openrouter,gateway | \
+    openai,anthropic,openrouter | openai,anthropic,gateway | \
+    openai,openrouter,gateway | anthropic,openrouter,gateway | \
+    openai,anthropic,openrouter,gateway)
     IFS=',' read -r -a SELECTED_LIVE_PROVIDERS <<< "$LIVE_PROVIDERS"
     for selected_provider in "${SELECTED_LIVE_PROVIDERS[@]}"; do
       echo "Provider-impacting changes require exact-head local $selected_provider verification."
@@ -77,6 +84,10 @@ case "$LIVE_PROVIDERS" in
             -u ANTHROPIC_LIVE_MODEL \
             -u OPENROUTER_API_KEY \
             -u OPENROUTER_LIVE_MODEL \
+            -u GATEWAY_LIVE_BASE_URL \
+            -u GATEWAY_API_KEY \
+            -u GATEWAY_LIVE_MODEL \
+            -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
             UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
             "$ROOT/scripts/check-live.sh" openai
           ;;
@@ -86,6 +97,10 @@ case "$LIVE_PROVIDERS" in
             -u OPENAI_LIVE_MODEL \
             -u OPENROUTER_API_KEY \
             -u OPENROUTER_LIVE_MODEL \
+            -u GATEWAY_LIVE_BASE_URL \
+            -u GATEWAY_API_KEY \
+            -u GATEWAY_LIVE_MODEL \
+            -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
             UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
             "$ROOT/scripts/check-live.sh" anthropic
           ;;
@@ -95,8 +110,23 @@ case "$LIVE_PROVIDERS" in
             -u OPENAI_LIVE_MODEL \
             -u ANTHROPIC_API_KEY \
             -u ANTHROPIC_LIVE_MODEL \
+            -u GATEWAY_LIVE_BASE_URL \
+            -u GATEWAY_API_KEY \
+            -u GATEWAY_LIVE_MODEL \
+            -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
             UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
             "$ROOT/scripts/check-live.sh" openrouter
+          ;;
+        gateway)
+          env \
+            -u OPENAI_API_KEY \
+            -u OPENAI_LIVE_MODEL \
+            -u ANTHROPIC_API_KEY \
+            -u ANTHROPIC_LIVE_MODEL \
+            -u OPENROUTER_API_KEY \
+            -u OPENROUTER_LIVE_MODEL \
+            UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+            "$ROOT/scripts/check-live.sh" gateway
           ;;
         *)
           echo "Provider-impact classification selected an unsupported provider." >&2

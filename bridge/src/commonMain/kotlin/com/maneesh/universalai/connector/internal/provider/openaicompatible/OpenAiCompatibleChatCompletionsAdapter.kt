@@ -303,7 +303,7 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
                 modelId = responseModel,
             ),
         outputs = listOf(text.toCanonicalOutput(request, responseId)),
-        usage = requireWireValue(usage).toCanonical(),
+        usage = usage?.toCanonical(),
         completionReason = requireWireValue(choice.finishReason).toCanonicalCompletionReason(),
     )
 }

@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="${UAC_REPOSITORY_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 BASE_SHA="${1:-}"
 HEAD_SHA="${2:-}"
-DELIVERED_PROVIDERS=("openai" "anthropic" "openrouter")
+DELIVERED_PROVIDERS=("openai" "anthropic" "openrouter" "gateway")
 
 usage() {
   echo "Usage: ./scripts/live-impact.sh <base-sha> <head-sha>" >&2
@@ -43,6 +43,7 @@ SELECT_ALL_DELIVERED="false"
 SELECT_OPENAI="false"
 SELECT_ANTHROPIC="false"
 SELECT_OPENROUTER="false"
+SELECT_GATEWAY="false"
 
 provider_is_delivered() {
   local requested_provider="$1"
@@ -71,12 +72,16 @@ select_provider() {
     openrouter)
       SELECT_OPENROUTER="true"
       ;;
+    gateway)
+      SELECT_GATEWAY="true"
+      ;;
   esac
 }
 
 DELIVERED_OPENAI_SEEN="false"
 DELIVERED_ANTHROPIC_SEEN="false"
 DELIVERED_OPENROUTER_SEEN="false"
+DELIVERED_GATEWAY_SEEN="false"
 for delivered_provider in "${DELIVERED_PROVIDERS[@]}"; do
   case "$delivered_provider" in
     openai)
@@ -100,6 +105,13 @@ for delivered_provider in "${DELIVERED_PROVIDERS[@]}"; do
       fi
       DELIVERED_OPENROUTER_SEEN="true"
       ;;
+    gateway)
+      if [[ "$DELIVERED_GATEWAY_SEEN" == "true" ]]; then
+        echo "Live-impact classifier contains a duplicate delivered provider." >&2
+        exit 2
+      fi
+      DELIVERED_GATEWAY_SEEN="true"
+      ;;
     *)
       echo "Live-impact classifier contains an unsupported delivered provider." >&2
       exit 2
@@ -119,8 +131,9 @@ while IFS= read -r -d '' changed_path; do
       select_provider "openrouter"
       ;;
     bridge/src/*/internal/provider/openaicompatible/*)
-      # OpenRouter is the selected representative live endpoint for the generic adapter.
+      # Preserve the representative OpenRouter path and the validated Gateway path.
       select_provider "openrouter"
+      select_provider "gateway"
       ;;
     bridge/src/*/internal/provider/* | \
       bridge/src/* | \
@@ -161,6 +174,11 @@ for delivered_provider in "${DELIVERED_PROVIDERS[@]}"; do
       ;;
     openrouter)
       if [[ "$SELECT_OPENROUTER" == "true" ]]; then
+        provider_selected="true"
+      fi
+      ;;
+    gateway)
+      if [[ "$SELECT_GATEWAY" == "true" ]]; then
         provider_selected="true"
       fi
       ;;

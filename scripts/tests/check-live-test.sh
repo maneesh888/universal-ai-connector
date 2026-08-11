@@ -15,6 +15,10 @@ unset \
   ANTHROPIC_LIVE_MODEL \
   OPENROUTER_API_KEY \
   OPENROUTER_LIVE_MODEL \
+  GATEWAY_LIVE_BASE_URL \
+  GATEWAY_API_KEY \
+  GATEWAY_LIVE_MODEL \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT \
   UAC_LIVE_EXPECTED_SHA
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
@@ -27,6 +31,10 @@ ANTHROPIC_SYNTHETIC_KEY="test-anthropic-material-that-must-not-appear"
 ANTHROPIC_MODEL="test-anthropic-model-2026-08-07"
 OPENROUTER_SYNTHETIC_KEY="test-openrouter-material-that-must-not-appear"
 OPENROUTER_MODEL="test-openrouter-model-2026-08-07"
+GATEWAY_BASE_URL="http://127.0.0.1:8880/v1"
+GATEWAY_SYNTHETIC_KEY="test-gateway-material-that-must-not-appear"
+GATEWAY_MODEL="test-gateway-model-2026-08-11"
+GATEWAY_STRUCTURED_OUTPUT="false"
 
 cleanup() {
   rm -rf "$TEST_DIRECTORY"
@@ -48,6 +56,10 @@ if [[ "$*" == *":bridge:jvmTest"* ]]; then
         -n "${ANTHROPIC_LIVE_MODEL:-}" ||
         -n "${OPENROUTER_API_KEY:-}" ||
         -n "${OPENROUTER_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_BASE_URL:-}" ||
+        -n "${GATEWAY_API_KEY:-}" ||
+        -n "${GATEWAY_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ||
         -n "${UAC_LIVE_EXPECTED_SHA:-}" ]]; then
     echo "Deterministic tests received live environment values." >&2
     exit 9
@@ -66,6 +78,10 @@ if [[ "$*" == *":bridge:openAiLiveTest"* ]]; then
         -n "${ANTHROPIC_LIVE_MODEL:-}" ||
         -n "${OPENROUTER_API_KEY:-}" ||
         -n "${OPENROUTER_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_BASE_URL:-}" ||
+        -n "${GATEWAY_API_KEY:-}" ||
+        -n "${GATEWAY_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ||
         "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
     echo "Live task did not receive its exact expected environment." >&2
     exit 10
@@ -90,6 +106,10 @@ if [[ "$*" == *":bridge:anthropicLiveTest"* ]]; then
         -n "${OPENAI_LIVE_MODEL:-}" ||
         -n "${OPENROUTER_API_KEY:-}" ||
         -n "${OPENROUTER_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_BASE_URL:-}" ||
+        -n "${GATEWAY_API_KEY:-}" ||
+        -n "${GATEWAY_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ||
         "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
     echo "Anthropic live task did not receive its exact expected environment." >&2
     exit 13
@@ -114,6 +134,10 @@ if [[ "$*" == *":bridge:openRouterLiveTest"* ]]; then
         -n "${OPENAI_LIVE_MODEL:-}" ||
         -n "${ANTHROPIC_API_KEY:-}" ||
         -n "${ANTHROPIC_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_BASE_URL:-}" ||
+        -n "${GATEWAY_API_KEY:-}" ||
+        -n "${GATEWAY_LIVE_MODEL:-}" ||
+        -n "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ||
         "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
     echo "Live task did not receive its exact expected environment." >&2
     exit 10
@@ -123,6 +147,34 @@ if [[ "$*" == *":bridge:openRouterLiveTest"* ]]; then
         "$*" != *"--no-configuration-cache"* ]]; then
     echo "Live task did not receive its exact-head arguments." >&2
     exit 11
+  fi
+  echo "live" >> "$UAC_TEST_CALL_LOG"
+  if [[ -n "${UAC_TEST_DIRTY_AFTER_LIVE:-}" ]]; then
+    printf '%s\n' "live mutation" > "$UAC_TEST_DIRTY_AFTER_LIVE"
+  fi
+  exit 0
+fi
+
+if [[ "$*" == *":bridge:gatewayLiveTest"* ]]; then
+  if [[ "${GATEWAY_LIVE_BASE_URL:-}" != "$UAC_TEST_EXPECTED_BASE_URL" ||
+        "${GATEWAY_API_KEY:-}" != "$UAC_TEST_EXPECTED_KEY" ||
+        "${GATEWAY_LIVE_MODEL:-}" != "$UAC_TEST_EXPECTED_MODEL" ||
+        "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" != "$UAC_TEST_EXPECTED_STRUCTURED_OUTPUT" ||
+        -n "${OPENAI_API_KEY:-}" ||
+        -n "${OPENAI_LIVE_MODEL:-}" ||
+        -n "${ANTHROPIC_API_KEY:-}" ||
+        -n "${ANTHROPIC_LIVE_MODEL:-}" ||
+        -n "${OPENROUTER_API_KEY:-}" ||
+        -n "${OPENROUTER_LIVE_MODEL:-}" ||
+        "${UAC_LIVE_EXPECTED_SHA:-}" != "$UAC_TEST_EXPECTED_SHA" ]]; then
+    echo "Gateway live task did not receive its exact expected environment." >&2
+    exit 15
+  fi
+  if [[ "$*" != *"-PuacLiveExpectedSha=$UAC_TEST_EXPECTED_SHA"* ||
+        "$*" != *"--no-daemon"* ||
+        "$*" != *"--no-configuration-cache"* ]]; then
+    echo "Gateway live task did not receive its exact-head arguments." >&2
+    exit 16
   fi
   echo "live" >> "$UAC_TEST_CALL_LOG"
   if [[ -n "${UAC_TEST_DIRTY_AFTER_LIVE:-}" ]]; then
@@ -158,7 +210,8 @@ expect_failure() {
   fi
   if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
     grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
-    grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
+    grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" ||
+    grep -Fq "$GATEWAY_SYNTHETIC_KEY" "$OUTPUT"; then
     echo "Live runner exposed credential material." >&2
     exit 1
   fi
@@ -220,6 +273,68 @@ expect_failure \
     OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
     OPENROUTER_LIVE_MODEL="invalid model" \
     "$RUNNER" openrouter
+
+expect_failure \
+  "GATEWAY_LIVE_BASE_URL is required" \
+  "$RUNNER" gateway
+if ! grep -Fq "GATEWAY_LIVE_BASE_URL, GATEWAY_API_KEY, GATEWAY_LIVE_MODEL, and GATEWAY_LIVE_STRUCTURED_OUTPUT" "$OUTPUT" ||
+  ! grep -Fq "./scripts/check-live.sh gateway" "$OUTPUT"; then
+  echo "Missing Gateway base URL failure omitted Gateway-specific guidance." >&2
+  exit 1
+fi
+
+expect_failure \
+  "GATEWAY_API_KEY is required" \
+  env GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" "$RUNNER" gateway
+
+expect_failure \
+  "GATEWAY_LIVE_MODEL is required" \
+  env \
+    GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    "$RUNNER" gateway
+
+expect_failure \
+  "GATEWAY_LIVE_BASE_URL must use HTTPS or loopback HTTP." \
+  env \
+    GATEWAY_LIVE_BASE_URL="http://gateway.example.invalid/v1" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+    "$RUNNER" gateway
+
+expect_failure \
+  "GATEWAY_LIVE_BASE_URL must end in /v1." \
+  env \
+    GATEWAY_LIVE_BASE_URL="https://gateway.example.invalid/api" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+    "$RUNNER" gateway
+
+expect_failure \
+  "GATEWAY_LIVE_STRUCTURED_OUTPUT is required" \
+  env \
+    GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+    "$RUNNER" gateway
+
+expect_failure \
+  "GATEWAY_LIVE_STRUCTURED_OUTPUT must be true or false." \
+  env \
+    GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+    GATEWAY_LIVE_STRUCTURED_OUTPUT="unknown" \
+    "$RUNNER" gateway
+
+expect_failure \
+  "GATEWAY_LIVE_MODEL must be a bounded Gateway model identifier." \
+  env \
+    GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    GATEWAY_LIVE_MODEL="invalid model" \
+    GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
+    "$RUNNER" gateway
 
 expect_failure \
   "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA." \
@@ -304,6 +419,10 @@ env \
   ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
   OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
   OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   UAC_TEST_CALL_LOG="$CALL_LOG" \
   UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
@@ -329,6 +448,10 @@ if grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
   echo "Successful OpenAI runner output exposed OpenRouter credential material." >&2
   exit 1
 fi
+if grep -Fq "$GATEWAY_SYNTHETIC_KEY" "$OUTPUT" || grep -Fq "$GATEWAY_BASE_URL" "$OUTPUT"; then
+  echo "Successful OpenAI runner output exposed Gateway material." >&2
+  exit 1
+fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
   ! grep -Fq "model=$MODEL" "$OUTPUT"; then
   echo "Successful live runner output omitted bounded evidence metadata." >&2
@@ -343,6 +466,10 @@ env \
   ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
   OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
   OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   UAC_TEST_CALL_LOG="$CALL_LOG" \
   UAC_TEST_EXPECTED_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
@@ -358,7 +485,9 @@ if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
 fi
 if grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
   grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
-  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
+  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$GATEWAY_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$GATEWAY_BASE_URL" "$OUTPUT"; then
   echo "Successful Anthropic runner output exposed credential material." >&2
   exit 1
 fi
@@ -377,6 +506,10 @@ env \
   ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
   OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
   OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   UAC_TEST_CALL_LOG="$CALL_LOG" \
   UAC_TEST_EXPECTED_KEY="$OPENROUTER_SYNTHETIC_KEY" \
@@ -392,7 +525,9 @@ if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
 fi
 if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
   grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
-  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT"; then
+  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$GATEWAY_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$GATEWAY_BASE_URL" "$OUTPUT"; then
   echo "Successful OpenRouter runner output exposed credential material." >&2
   exit 1
 fi
@@ -400,6 +535,52 @@ if ! grep -Fq "provider=openrouter" "$OUTPUT" ||
   ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
   ! grep -Fq "model=$OPENROUTER_MODEL" "$OUTPUT"; then
   echo "Successful OpenRouter runner output omitted bounded evidence metadata." >&2
+  exit 1
+fi
+
+: > "$CALL_LOG"
+env \
+  OPENAI_API_KEY="$SYNTHETIC_KEY" \
+  OPENAI_LIVE_MODEL="$MODEL" \
+  ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
+  OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+  OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_BASE_URL="$GATEWAY_BASE_URL" \
+  UAC_TEST_EXPECTED_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$GATEWAY_MODEL" \
+  UAC_TEST_EXPECTED_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" gateway > "$OUTPUT" 2>&1
+
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "Gateway live runner did not execute deterministic then live tasks exactly once." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$GATEWAY_SYNTHETIC_KEY" "$OUTPUT"; then
+  echo "Successful Gateway runner output exposed credential material." >&2
+  exit 1
+fi
+if grep -Fq "$GATEWAY_BASE_URL" "$OUTPUT"; then
+  echo "Successful Gateway runner output retained the host-supplied base URL." >&2
+  exit 1
+fi
+if ! grep -Fq "provider=gateway" "$OUTPUT" ||
+  ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
+  ! grep -Fq "model=$GATEWAY_MODEL" "$OUTPUT" ||
+  ! grep -Fq "structured_output=$GATEWAY_STRUCTURED_OUTPUT" "$OUTPUT"; then
+  echo "Successful Gateway runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
 
