@@ -2,14 +2,14 @@
 
 ## Status and activation gate
 
-Status: `Not started` and inactive.
+Status: `In progress` at P7-A.
 
-P0-P6 are completed. P7 may be activated only after the separately maintained LLM Gateway has a
-stable, tested OpenAI-compatible contract and P7 becomes the sole roadmap milestone marked
-`In progress`.
+P0-P6 are completed. P7 was activated on August 11, 2026 after the separately maintained LLM
+Gateway's stable, tested OpenAI-compatible contract was pinned for P7-A, and P7 became the sole
+roadmap milestone marked `In progress`.
 
-This plan records the corrected architecture before activation. It does not claim that the
-Gateway, its current deployment, or the connector-to-Gateway path has been verified.
+P7-A freezes the deterministic compatibility boundary and adds representative fixtures. It does
+not claim that a Gateway deployment or the connector-to-Gateway network path has been verified.
 
 ## Objective
 
@@ -76,13 +76,17 @@ Execute one package at a time after activation.
 
 ### P7-A: External contract freeze and deterministic compatibility fixtures
 
-Status: `Not started`.
+Status: `Completed in the current candidate`.
 
 - Bind the supported subset to the finalized Gateway implementation, documentation, and tests.
 - Record exact base-URL, authentication, request, response, error, streaming, structured-output,
   and cancellation expectations.
 - Add Gateway-representative `MockEngine` fixtures to the existing generic adapter tests.
 - Add no live task, runtime adapter, provider identifier, host API, or sample behavior.
+
+Completion becomes authoritative only after the candidate passes the repository gates, ordinary
+CI, independent review, guarded merge, and resulting-`main` verification. Exact-head evidence
+belongs in the pull-request brief.
 
 ### P7-B: Compatibility corrections and local live gate
 
@@ -106,6 +110,68 @@ Status: `Not started`.
 - Pass the complete deterministic gate, exact-head Gateway live gate, secretless policy, ordinary
   CI, independent review, guarded merge, and resulting-`main` verification.
 - Mark P7 complete only in its milestone-closing change.
+
+## P7-A external contract freeze
+
+### Authoritative source identity
+
+The supported Gateway intersection is bound to
+[`maneesh888/open-keyboard-llm-gateway`](https://github.com/maneesh888/open-keyboard-llm-gateway)
+commit `ed4cf92056df69d670b30f959ec192c8de742e41`, pinned for P7-A on August 11, 2026. The following
+files at that commit define the standard client-facing behavior used by P7-A:
+
+- `README.md` and `docs/OPEN_KEYBOARD_CLIENT.md` document bearer authentication and the
+  `/v1/chat/completions` endpoint;
+- `src/server.ts`, `src/middleware/auth.ts`, and `src/middleware/rateLimit.ts` define route,
+  authentication, HTTP error, and retry-header behavior;
+- `src/proxy/ollama.ts` defines standard request forwarding, model allowlisting, unmodified normal
+  response forwarding, SSE pass-through, and upstream failure statuses; and
+- `tests/auth.test.ts`, `tests/integration.test.ts`, `tests/middleware/rateLimit.test.ts`, and
+  `tests/proxy.test.ts` provide the deterministic source contract.
+
+The four targeted Gateway suites contain 56 tests and passed locally on August 11, 2026 against
+identical contract and test blobs. The local checkout also contained a later admin-UI-only commit;
+that commit did not change any source or test file listed above. The exact Gateway commit remains
+the compatibility identity so later Gateway changes do not silently widen this package.
+
+### Supported standard intersection
+
+- Configure provider ID `openai-compatible` with a base URL ending in `/v1`; the existing relative
+  endpoint produces `POST /v1/chat/completions` without a Gateway-specific path or registry entry.
+- Send `Authorization: Bearer <gateway-api-key>`, `Content-Type: application/json`, and the existing
+  response-mode `Accept` header. Credentials remain host supplied and never enter request bodies,
+  errors, fixtures, or retained evidence.
+- Send one explicit model and ordered text-only `system`, `user`, and `assistant` messages. The
+  existing bounded `max_tokens`, `temperature`, `top_p`, and `stop` fields are forwarded as part of
+  the standard Chat Completions body.
+- Accept one standard non-streaming choice with assistant text, a supported finish reason, optional
+  bounded usage, and harmless unknown fields. Gateway administration and OpenKeyboard operation
+  extensions are not part of this intersection.
+- Use standard `response_format.type = json_schema` only for the connector's already-governed
+  strict schema subset. The pinned Gateway forwards ordinary Chat Completions request bodies and
+  successful response bodies; actual structured-output support remains selected-model dependent,
+  and the connector revalidates returned JSON before producing canonical structured output.
+- Map Gateway authentication, model-allowlist, rate-limit, upstream-unavailable, and timeout
+  statuses through the existing safe status-based generic mapping. Optional Gateway `error`,
+  `detail`, `retryAfter`, `limit`, and `remaining` members are untrusted and are not surfaced;
+  bounded `Retry-After` metadata remains supported.
+- Accept OpenAI-compatible `text/event-stream` data records with standard
+  `chat.completion.chunk` payloads and `[DONE]`. The pinned Gateway proves streaming response-body
+  pass-through, while the connector owns framing, ordering, terminal validation, cleanup, and the
+  no-retry-after-content rule.
+- Caller cancellation must cancel the connector's in-flight HTTP request and remain cancellation,
+  not a canonical provider error. The pinned Gateway does not document or deterministically prove
+  that a disconnected client cancels its own upstream fetch, so P7 does not make that stronger
+  server-side resource claim.
+
+### Deterministic fixture boundary
+
+`OpenAiCompatibleGatewayP7ATests` covers the pinned standard intersection through the existing
+generic adapter and Ktor `MockEngine`: request path and bearer authentication, non-streaming
+response translation, strict structured output, safe Gateway status/envelope handling, SSE and
+`[DONE]` translation, and caller cancellation. These are Gateway-representative protocol examples,
+not a second adapter or an assertion that every Gateway backend/model supports every optional
+feature.
 
 ## Verification
 
