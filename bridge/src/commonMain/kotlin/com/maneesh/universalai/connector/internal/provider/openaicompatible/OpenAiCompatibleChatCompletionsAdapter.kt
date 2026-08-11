@@ -43,7 +43,9 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 
 internal class OpenAiCompatibleChatCompletionsAdapter(
     private val configuration: UniversalAiProviderConfiguration,
@@ -200,10 +202,18 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
         val bytes = readBoundedBody(response.body)
         val wire =
             try {
-                OPENAI_COMPATIBLE_WIRE_JSON
-                    .decodeFromString<OpenAiCompatibleChatCompletionResponseWire>(
+                val document =
+                    OPENAI_COMPATIBLE_WIRE_JSON.parseToJsonElement(
                         bytes.decodeToString(throwOnInvalidSequence = true),
                     )
+                if (
+                    document !is JsonObject ||
+                    ("usage" in document && document["usage"] == JsonNull)
+                ) {
+                    throw SerializationException("Malformed OpenAI-compatible response.")
+                }
+                OPENAI_COMPATIBLE_WIRE_JSON
+                    .decodeFromJsonElement<OpenAiCompatibleChatCompletionResponseWire>(document)
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (_: SerializationException) {
@@ -303,7 +313,7 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
                 modelId = responseModel,
             ),
         outputs = listOf(text.toCanonicalOutput(request, responseId)),
-        usage = requireWireValue(usage).toCanonical(),
+        usage = usage?.toCanonical(),
         completionReason = requireWireValue(choice.finishReason).toCanonicalCompletionReason(),
     )
 }

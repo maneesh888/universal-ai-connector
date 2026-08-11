@@ -13,12 +13,17 @@ for forbidden in \
   'ANTHROPIC_LIVE_MODEL' \
   'OPENROUTER_API_KEY' \
   'OPENROUTER_LIVE_MODEL' \
+  'GATEWAY_LIVE_BASE_URL' \
+  'GATEWAY_API_KEY' \
+  'GATEWAY_LIVE_MODEL' \
+  'GATEWAY_LIVE_STRUCTURED_OUTPUT' \
   'protected-openai-live' \
   'environment: live-provider' \
   './scripts/check-live.sh' \
   ':bridge:openAiLiveTest' \
   ':bridge:anthropicLiveTest' \
-  ':bridge:openRouterLiveTest'; do
+  ':bridge:openRouterLiveTest' \
+  ':bridge:gatewayLiveTest'; do
   if grep -Fq "$forbidden" "$WORKFLOW"; then
     echo "Secretless live-policy workflow contains forbidden provider execution: $forbidden" >&2
     exit 1
@@ -30,9 +35,12 @@ for required in \
   'live_providers' \
   'live_providers=openai' \
   'live_providers=none' \
-  'none | openai | anthropic | openrouter | \' \
-  'openai,anthropic | openai,openrouter | anthropic,openrouter | \' \
-  'openai,anthropic,openrouter' \
+  'none | openai | anthropic | openrouter | gateway | \' \
+  'openai,anthropic | openai,openrouter | openai,gateway | \' \
+  'anthropic,openrouter | anthropic,gateway | openrouter,gateway | \' \
+  'openai,anthropic,openrouter | openai,anthropic,gateway | \' \
+  'openai,openrouter,gateway | anthropic,openrouter,gateway | \' \
+  'openai,anthropic,openrouter,gateway' \
   'Local live verification: passed' \
   'No credential or provider response body retained.' \
   'Trust boundary: local execution is contributor-attested; GitHub verifies retained exact-head evidence only.' \

@@ -63,13 +63,15 @@ When a milestone adds an authoritative contract, provider, gateway, publication,
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
 `--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
 `scripts/live-impact.sh`; P5-A replaces the boolean result with `none` or an ordered delivered
-provider set, and P6-A extends the bounded set and isolation regressions to OpenRouter. A
+provider set, P6-A extends the bounded set to OpenRouter, and P7-B extends it to the selected
+OpenAI-compatible Gateway. A
 provider-specific change selects its delivered gate, a shared or ambiguous live change selects
 every delivered gate, and unrelated changes remain credential-free. The hook removes every
 documented provider input from the full deterministic gate and every non-selected provider input
-from a selected live gate. OpenAI, Anthropic, and OpenRouter are the delivered real gates after
-P5-B atomically adds the Anthropic runner, task, and delivered-provider selection to the existing
-OpenAI and OpenRouter routes. The initial PR body and every affected update record exact-head local
+from a selected live gate. OpenAI, Anthropic, OpenRouter, and the Gateway are the delivered real
+gates after P7-B adds the Gateway runner, task, and selection to the existing three routes. A
+generic-adapter change selects both its representative OpenRouter proof and the Gateway proof. The
+initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.
 

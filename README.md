@@ -21,9 +21,10 @@ acceptance. P6 completed OpenRouter/generic protocol readiness in P6-A, direct n
 OpenRouter behavior in P6-B, generic OpenAI-compatible non-streaming behavior in P6-C, and strict
 structured output, bounded errors/metadata, and conservative capabilities in P6-D, and
 incremental streaming and active cancellation in P6-E. P6-F completed concurrent lifecycle,
-close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P7 is active, and
-P7-A freezes the external Gateway contract plus deterministic compatibility fixtures without
-adding another runtime adapter.
+close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P7 is active: P7-A
+authoritatively froze the external Gateway contract and deterministic compatibility fixtures, and
+P7-B adds the demonstrated compatibility correction plus a dedicated local Gateway live gate
+without another runtime adapter.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
@@ -31,8 +32,8 @@ adding another runtime adapter.
 > live evidence, and boundary acceptance. P5 Anthropic Messages is completed authoritatively.
 > P6 is completed authoritatively. P7 is active, correctly scoped as validation of the existing
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
-> a proprietary Gateway protocol. P7-A external contract freeze and deterministic compatibility
-> fixtures are complete in the current candidate; P7-B remains not started.
+> a proprietary Gateway protocol. P7-A is authoritative, and P7-B compatibility corrections and
+> the local live gate are complete in the current candidate; P7-C remains not started.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -67,7 +68,7 @@ Cross-platform baseline   ██████████████████
 Canonical AI contracts    ████████████████████ 100%  ✅ Complete
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
-Gateway compatibility     ███████░░░░░░░░░░░░░░  33%  🚧 In progress
+Gateway compatibility     █████████████░░░░░░░  67%  🚧 In progress
 Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
@@ -102,7 +103,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | OpenRouter and compatible adapters | ✅ P6 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| OpenAI-compatible Gateway validation | 🚧 P7-A external contract freeze and deterministic fixtures completed in the current candidate |
+| OpenAI-compatible Gateway validation | 🚧 P7-A authoritative; P7-B compatibility correction and local live gate completed in the current candidate |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
 
@@ -117,7 +118,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P4 | OpenAI Responses adapter | ✅ Completed |
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
-| P7 | OpenAI-compatible Gateway validation | 🚧 In progress; P7-A completed in the current candidate |
+| P7 | OpenAI-compatible Gateway validation | 🚧 In progress; P7-B completed in the current candidate |
 | P8 | Production distribution and host integration | ⏳ Planned |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
@@ -127,7 +128,7 @@ The product-facing Apple package and closing legacy-surface cleanup are accepted
 
 The detailed implementation and acceptance criteria are in the [cross-platform client samples plan](docs/plans/cross-platform-client-samples.md).
 
-### P2 through P6 completion and P7 activation
+### P2 through P6 completion and P7 progress
 
 P2 was activated separately on July 24, 2026 after P1 completion. It defines provider-neutral Kotlin
 contracts, governed JSON representations, compatibility fixtures, deterministic canonical
@@ -149,9 +150,10 @@ targeted live coverage. P6-E completed incremental streaming, strict terminal ha
 mid-stream errors, and active cancellation. P6-F completed direct and generic concurrent
 lifecycle behavior, cross-adapter close races, response-body cleanup, existing consumers,
 secret-safety, and package boundaries. P7 was activated on August 11, 2026 after the external LLM
-Gateway's tested standard contract was pinned. P7-A freezes that conservative intersection and
-adds deterministic compatibility fixtures through the existing generic adapter; it adds no live
-task or Gateway-specific runtime surface.
+Gateway's tested standard contract was pinned. P7-A authoritatively froze that conservative
+intersection and added deterministic compatibility fixtures through the existing generic adapter.
+P7-B accepts otherwise-valid responses that omit usage while keeping present usage strict, and
+adds the dedicated exact-head Gateway live route without a Gateway-specific runtime surface.
 
 ## Architecture direction
 
@@ -373,11 +375,13 @@ set +a
 ./scripts/check-live.sh openai
 ./scripts/check-live.sh anthropic
 ./scripts/check-live.sh openrouter
+./scripts/check-live.sh gateway
 ```
 
-The same ignored file contains distinct provider-specific key/model entries. P5-B delivers the
-Anthropic route alongside the existing OpenAI and OpenRouter routes. Set provider values only in
-the local editor and run only the affected delivered providers.
+The same ignored file contains distinct provider-specific inputs. The Gateway route requires a
+base URL ending in `/v1`, a Gateway-owned bearer credential, an explicit model, and an explicit
+`true` or `false` structured-output capability value. Set values only in the local editor and run
+only the affected delivered providers or Gateway.
 Missing inputs, unavailable model access, quota/rate limits, provider failures, and assertions are
 blockers rather than skipped tests. GitHub remains credential-free; an affected PR records the
 passing exact SHA and no-retention boundary for the automatic `live-policy` evidence check. See

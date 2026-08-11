@@ -21,6 +21,13 @@ Supported providers and required process environment:
   OPENROUTER_API_KEY    Dedicated revocable spend-limited test credential.
   OPENROUTER_LIVE_MODEL Explicit bounded-cost model slug enabled for the credential.
 
+  gateway
+  GATEWAY_LIVE_BASE_URL Gateway base URL ending in /v1; HTTPS or loopback HTTP only.
+  GATEWAY_API_KEY       Dedicated revocable Gateway test credential.
+  GATEWAY_LIVE_MODEL    Explicit model identifier enabled for the Gateway key.
+  GATEWAY_LIVE_STRUCTURED_OUTPUT
+                        Explicit true or false for the selected model capability.
+
 Optional:
   UAC_LIVE_EXPECTED_SHA  Exact 40-character commit SHA expected by the caller.
 EOF
@@ -36,13 +43,17 @@ fail_missing_live_input() {
   local provider_label="$2"
   local key_name="$3"
   local model_name="$4"
+  local input_names="$key_name and $model_name"
+  if [[ -n "${BASE_URL_NAME:-}" ]]; then
+    input_names="$BASE_URL_NAME, $key_name, $model_name, and GATEWAY_LIVE_STRUCTURED_OUTPUT"
+  fi
   cat >&2 <<EOF
 $name is required for $provider_label live verification.
 
 Configure the ignored local file before retrying:
   cp .env.live.example .env.live
   chmod 600 .env.live
-  Open .env.live in your local editor and set $key_name and $model_name.
+  Open .env.live in your local editor and set $input_names.
   set -a
   source .env.live
   set +a
@@ -77,21 +88,31 @@ fi
 case "$PROVIDER" in
   openai)
     PROVIDER_LABEL="OpenAI"
+    BASE_URL_NAME=""
     KEY_NAME="OPENAI_API_KEY"
     MODEL_NAME="OPENAI_LIVE_MODEL"
     LIVE_TASK=":bridge:openAiLiveTest"
     ;;
   anthropic)
     PROVIDER_LABEL="Anthropic"
+    BASE_URL_NAME=""
     KEY_NAME="ANTHROPIC_API_KEY"
     MODEL_NAME="ANTHROPIC_LIVE_MODEL"
     LIVE_TASK=":bridge:anthropicLiveTest"
     ;;
   openrouter)
     PROVIDER_LABEL="OpenRouter"
+    BASE_URL_NAME=""
     KEY_NAME="OPENROUTER_API_KEY"
     MODEL_NAME="OPENROUTER_LIVE_MODEL"
     LIVE_TASK=":bridge:openRouterLiveTest"
+    ;;
+  gateway)
+    PROVIDER_LABEL="Gateway"
+    BASE_URL_NAME="GATEWAY_LIVE_BASE_URL"
+    KEY_NAME="GATEWAY_API_KEY"
+    MODEL_NAME="GATEWAY_LIVE_MODEL"
+    LIVE_TASK=":bridge:gatewayLiveTest"
     ;;
   *)
     usage >&2
@@ -117,6 +138,31 @@ if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ || "$EXPECTED_SHA" != "$HEAD_SHA" ]]; 
   fail "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA."
 fi
 
+BASE_URL_VALUE=""
+if [[ -n "$BASE_URL_NAME" ]]; then
+  if [[ -z "${!BASE_URL_NAME:-}" ]]; then
+    fail_missing_live_input "$BASE_URL_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME"
+  fi
+  BASE_URL_VALUE="${!BASE_URL_NAME}"
+  if [[ "${#BASE_URL_VALUE}" -gt 2048 ||
+        "$BASE_URL_VALUE" == *$'\n'* ||
+        "$BASE_URL_VALUE" == *$'\r'* ||
+        "$BASE_URL_VALUE" == *$'\t'* ||
+        "$BASE_URL_VALUE" == *' '* ||
+        "$BASE_URL_VALUE" == *'@'* ||
+        "$BASE_URL_VALUE" == *'?'* ||
+        "$BASE_URL_VALUE" == *'#'* ]]; then
+    fail "$BASE_URL_NAME has an invalid shape."
+  fi
+  if [[ "$BASE_URL_VALUE" != https://* &&
+        ! "$BASE_URL_VALUE" =~ ^http://(localhost|127\.0\.0\.1|\[::1\])(:[0-9]{1,5})?(/.*)?$ ]]; then
+    fail "$BASE_URL_NAME must use HTTPS or loopback HTTP."
+  fi
+  if [[ "$BASE_URL_VALUE" != */v1 && "$BASE_URL_VALUE" != */v1/ ]]; then
+    fail "$BASE_URL_NAME must end in /v1."
+  fi
+fi
+
 if [[ -z "${!KEY_NAME:-}" ]]; then
   fail_missing_live_input "$KEY_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME"
 fi
@@ -132,6 +178,21 @@ if [[ -z "${!MODEL_NAME:-}" ]]; then
   fail_missing_live_input "$MODEL_NAME" "$PROVIDER_LABEL" "$KEY_NAME" "$MODEL_NAME"
 fi
 MODEL_VALUE="${!MODEL_NAME}"
+
+STRUCTURED_OUTPUT_VALUE=""
+if [[ "$PROVIDER" == "gateway" ]]; then
+  if [[ -z "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ]]; then
+    fail_missing_live_input \
+      "GATEWAY_LIVE_STRUCTURED_OUTPUT" \
+      "$PROVIDER_LABEL" \
+      "$KEY_NAME" \
+      "$MODEL_NAME"
+  fi
+  STRUCTURED_OUTPUT_VALUE="$GATEWAY_LIVE_STRUCTURED_OUTPUT"
+  if [[ "$STRUCTURED_OUTPUT_VALUE" != "true" && "$STRUCTURED_OUTPUT_VALUE" != "false" ]]; then
+    fail "GATEWAY_LIVE_STRUCTURED_OUTPUT must be true or false."
+  fi
+fi
 
 case "$PROVIDER" in
   openai)
@@ -152,6 +213,12 @@ case "$PROVIDER" in
       fail "OPENROUTER_LIVE_MODEL must be a bounded OpenRouter model slug."
     fi
     ;;
+  gateway)
+    if [[ "${#GATEWAY_LIVE_MODEL}" -gt 256 ||
+          ! "$GATEWAY_LIVE_MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$ ]]; then
+      fail "GATEWAY_LIVE_MODEL must be a bounded Gateway model identifier."
+    fi
+    ;;
 esac
 
 if [[ ! -x "$ROOT/gradlew" ]]; then
@@ -166,6 +233,10 @@ env \
   -u ANTHROPIC_LIVE_MODEL \
   -u OPENROUTER_API_KEY \
   -u OPENROUTER_LIVE_MODEL \
+  -u GATEWAY_LIVE_BASE_URL \
+  -u GATEWAY_API_KEY \
+  -u GATEWAY_LIVE_MODEL \
+  -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/gradlew" :bridge:jvmTest
 
@@ -177,6 +248,14 @@ fi
 require_clean_checkout
 
 echo "Running local $PROVIDER_LABEL live smoke tests for exact HEAD."
+LIVE_ENVIRONMENT=(
+  "$KEY_NAME=$KEY_VALUE"
+  "$MODEL_NAME=$MODEL_VALUE"
+)
+if [[ -n "$BASE_URL_NAME" ]]; then
+  LIVE_ENVIRONMENT+=("$BASE_URL_NAME=$BASE_URL_VALUE")
+  LIVE_ENVIRONMENT+=("GATEWAY_LIVE_STRUCTURED_OUTPUT=$STRUCTURED_OUTPUT_VALUE")
+fi
 env \
   -u OPENAI_API_KEY \
   -u OPENAI_LIVE_MODEL \
@@ -184,8 +263,11 @@ env \
   -u ANTHROPIC_LIVE_MODEL \
   -u OPENROUTER_API_KEY \
   -u OPENROUTER_LIVE_MODEL \
-  "$KEY_NAME=$KEY_VALUE" \
-  "$MODEL_NAME=$MODEL_VALUE" \
+  -u GATEWAY_LIVE_BASE_URL \
+  -u GATEWAY_API_KEY \
+  -u GATEWAY_LIVE_MODEL \
+  -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
+  "${LIVE_ENVIRONMENT[@]}" \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   "$ROOT/gradlew" \
     "$LIVE_TASK" \
@@ -203,4 +285,7 @@ require_clean_checkout
 echo "$PROVIDER_LABEL live verification passed."
 echo "provider=$PROVIDER"
 echo "model=$MODEL_VALUE"
+if [[ "$PROVIDER" == "gateway" ]]; then
+  echo "structured_output=$STRUCTURED_OUTPUT_VALUE"
+fi
 echo "head_sha=$HEAD_SHA"

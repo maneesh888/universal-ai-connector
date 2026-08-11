@@ -27,15 +27,15 @@ trap cleanup EXIT
 mkdir -p "$TEST_REPOSITORY/scripts"
 cp "$ROOT/scripts/live-impact.sh" "$CLASSIFIER"
 awk '
-  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")" {
-    print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")"
+  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\" \"gateway\")" {
+    print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\" \"gateway\")"
     next
   }
   { print }
 ' "$CLASSIFIER" > "$MULTI_PROVIDER_CLASSIFIER"
 awk '
-  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\")" {
-    print "DELIVERED_PROVIDERS=(\"openai\" \"openai\" \"anthropic\" \"openrouter\")"
+  $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\" \"gateway\")" {
+    print "DELIVERED_PROVIDERS=(\"openai\" \"openai\" \"anthropic\" \"openrouter\" \"gateway\")"
     next
   }
   { print }
@@ -81,7 +81,7 @@ git -C "$TEST_REPOSITORY" \
 FOUNDATION_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$PRE_ADAPTER_DOCS_SHA" "$FOUNDATION_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "Changing the installed live gate must require live verification." >&2
   exit 1
 fi
@@ -97,7 +97,7 @@ git -C "$TEST_REPOSITORY" \
 SWIFT_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$SWIFT_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "Changing the Swift package boundary must require live verification." >&2
   exit 1
 fi
@@ -140,7 +140,7 @@ git -C "$TEST_REPOSITORY" \
 CONTROL_CHARACTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$DOCS_SHA" "$CONTROL_CHARACTER_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "Protected control-character paths must require live verification." >&2
   exit 1
 fi
@@ -154,7 +154,7 @@ git -C "$TEST_REPOSITORY" \
 BUILD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$CONTROL_CHARACTER_SHA" "$BUILD_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "Changing build infrastructure with an active adapter must require live verification." >&2
   exit 1
 fi
@@ -221,13 +221,14 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "add generic adapter marker"
 OPENAI_COMPATIBLE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$OPENROUTER_SHA" "$OPENAI_COMPATIBLE_SHA")" != "openrouter" ]]; then
-  echo "A generic-adapter change must select the representative OpenRouter gate." >&2
+if [[ "$("$CLASSIFIER" "$OPENROUTER_SHA" "$OPENAI_COMPATIBLE_SHA")" != \
+  "openrouter,gateway" ]]; then
+  echo "A generic-adapter change must select the representative OpenRouter and Gateway gates." >&2
   exit 1
 fi
 if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$OPENROUTER_SHA" "$OPENAI_COMPATIBLE_SHA")" != \
-  "openrouter" ]]; then
-  echo "A generic-adapter change must select only the representative OpenRouter gate." >&2
+  "openrouter,gateway" ]]; then
+  echo "A generic-adapter change must select the representative OpenRouter and Gateway gates." >&2
   exit 1
 fi
 
@@ -241,12 +242,12 @@ git -C "$TEST_REPOSITORY" \
 SHARED_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$OPENAI_COMPATIBLE_SHA" "$SHARED_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "A shared change must select the current delivered provider gates." >&2
   exit 1
 fi
 if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$OPENAI_COMPATIBLE_SHA" "$SHARED_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "A shared change must select every delivered provider gate." >&2
   exit 1
 fi
@@ -262,12 +263,12 @@ git -C "$TEST_REPOSITORY" \
 AMBIGUOUS_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 if [[ "$("$CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "An ambiguous provider change must select the current delivered provider gates." >&2
   exit 1
 fi
 if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != \
-  "openai,anthropic,openrouter" ]]; then
+  "openai,anthropic,openrouter,gateway" ]]; then
   echo "An ambiguous provider change must fail closed to every delivered provider." >&2
   exit 1
 fi

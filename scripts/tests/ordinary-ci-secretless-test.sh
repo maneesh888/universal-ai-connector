@@ -13,6 +13,10 @@ for forbidden in \
   'ANTHROPIC_LIVE_MODEL' \
   'OPENROUTER_API_KEY' \
   'OPENROUTER_LIVE_MODEL' \
+  'GATEWAY_LIVE_BASE_URL' \
+  'GATEWAY_API_KEY' \
+  'GATEWAY_LIVE_MODEL' \
+  'GATEWAY_LIVE_STRUCTURED_OUTPUT' \
   '.env.live' \
   './scripts/check-live.sh' \
   ':bridge:openAiLiveTest' \
