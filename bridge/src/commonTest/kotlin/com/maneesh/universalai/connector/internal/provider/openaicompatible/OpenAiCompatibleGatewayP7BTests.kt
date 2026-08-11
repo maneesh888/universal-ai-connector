@@ -43,6 +43,7 @@ class OpenAiCompatibleGatewayP7BTests {
     fun presentGatewayUsageRemainsStrictlyValidated() = runTest {
         val invalidUsageValues =
             listOf(
+                "null",
                 """{"prompt_tokens":9,"total_tokens":12}""",
                 """{"prompt_tokens":9,"completion_tokens":-1,"total_tokens":8}""",
             )

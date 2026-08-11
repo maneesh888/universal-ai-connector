@@ -184,8 +184,8 @@ present usage fail-closed.
 ## P7-B compatibility corrections and local live gate
 
 `OpenAiCompatibleGatewayP7BTests` proves that an otherwise valid non-streaming Gateway response may
-omit usage, while incomplete or negative present usage remains malformed. It also preserves the
-safe error boundary: optional Gateway envelope extensions are ignored, fixed status-based
+omit usage, while null, incomplete, or negative present usage remains malformed. It also preserves
+the safe error boundary: optional Gateway envelope extensions are ignored, fixed status-based
 canonical errors are retained, and only bounded status, request-ID, and `Retry-After` metadata may
 surface.
 
