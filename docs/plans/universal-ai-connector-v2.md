@@ -234,8 +234,8 @@ completed under `openrouter-openai-compatible-adapters.md`. The dedicated Anthro
 available, so P5-B resumed and became authoritative through PR #42. P5-C became authoritative
 through PR #48, P5-D became authoritative through PR #49, and P5-E completed P5 authoritatively
 through PR #50 and resulting-`main` verification. P6-C completed authoritatively through PR #52,
-P6-D through PR #53, and P6-E through PR #54. P6-F reconciles lifecycle and acceptance in this
-milestone-closing candidate without activating P7.
+P6-D through PR #53, and P6-E through PR #54. P6-F completed lifecycle and acceptance through
+PR #55 and resulting-`main` verification before P7 was activated.
 
 P7 does not introduce a fourth provider protocol. It validates the existing generic
 `openai-compatible` adapter against the separately maintained LLM Gateway's finalized standard

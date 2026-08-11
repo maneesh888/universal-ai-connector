@@ -144,8 +144,11 @@ the compatibility identity so later Gateway changes do not silently widen this p
 - Send one explicit model and ordered text-only `system`, `user`, and `assistant` messages. The
   existing bounded `max_tokens`, `temperature`, `top_p`, and `stop` fields are forwarded as part of
   the standard Chat Completions body.
-- Accept one standard non-streaming choice with assistant text, a supported finish reason, optional
-  bounded usage, and harmless unknown fields. Gateway administration and OpenKeyboard operation
+- Accept one standard non-streaming choice with assistant text, a supported finish reason, a
+  complete non-negative usage object, and harmless unknown fields. The pinned Gateway forwards
+  successful response bodies without adding usage, so the selected upstream model must supply it
+  for the P7-A intersection. An otherwise valid response that omits usage remains a documented
+  generic-adapter compatibility gap for P7-B. Gateway administration and OpenKeyboard operation
   extensions are not part of this intersection.
 - Use standard `response_format.type = json_schema` only for the connector's already-governed
   strict schema subset. The pinned Gateway forwards ordinary Chat Completions request bodies and
@@ -172,7 +175,9 @@ authentication, non-streaming response translation, strict structured output, sa
 status/envelope handling, SSE and `[DONE]` translation, and in-flight caller cancellation. The
 accepted generic-adapter lifecycle tests continue to cover cleanup and close races. These are
 Gateway-representative protocol examples, not a second adapter or an assertion that every Gateway
-backend/model supports every optional feature.
+backend/model supports every optional feature. In particular, the non-streaming fixture includes
+the complete usage object required by the current generic adapter; P7-A does not claim that a
+Gateway response without usage is accepted.
 
 ## Verification
 
