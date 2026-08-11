@@ -204,12 +204,18 @@ Status: `Not started`.
   changes are complete. Finalize the remote Swift checksum in that head and require a rebuild from
   the tagged head to reproduce it.
 - Run the complete deterministic, API, packaging, secret, matching-host desktop, and affected-live
-  gates before creating immutable remote state.
-- Create the disposable P8 tag and GitHub prerelease from that exact head. Upload the checksummed
-  XCFramework and matching-head desktop packages through the reviewed local release path; do not
-  add a write-enabled publication workflow.
-- Publish the same version and source head to Maven Central, verify every required root and target
-  publication, Javadoc/source artifact, checksum, and signature, then release the deployment.
+  gates, exact-head ordinary CI and live policy, and independent exact-head review while the
+  candidate pull request remains a draft. Create no tag or immutable remote artifact yet.
+- Guardedly merge the reviewed candidate, wait for the resulting `main` CI to pass, and prove the
+  resulting squash commit has the identical Git tree as the reviewed PR head. The resulting `main`
+  commit becomes the publication source identity; a tree mismatch invalidates the candidate.
+- From a clean checkout of that accepted `main` commit, rebuild and revalidate every artifact, then
+  create the disposable P8 tag and GitHub prerelease. Upload the checksummed XCFramework and
+  matching-source desktop packages through the reviewed local release path; do not add a
+  write-enabled publication workflow.
+- Publish the same version and accepted `main` source identity to Maven Central, verify every
+  required root and target publication, Javadoc/source artifact, checksum, and signature, then
+  release the deployment.
 - Record artifact URLs, version, source head, commands, dates, signing/notarization results, and
   proof limits without retaining credentials or build directories.
 
