@@ -54,6 +54,8 @@ Create new branches with `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/
 ## Safety and tools
 
 - Preserve unrelated tracked and untracked changes. Use an isolated worktree when a clean exact-head operation would otherwise disturb them.
+- Persistent machine-local live configuration belongs only at the path reported by `./scripts/local-config.sh live-env-path`, which resolves the primary checkout through Git's common metadata even from a linked worktree. Never create a credential file in a disposable worktree.
+- Do not read or source `.env.live` directly. Let `./scripts/check-live.sh` validate and load allowlisted literal assignments, or use process-environment overrides. Never display local configuration values.
 - Use the Gradle wrapper and repository scripts.
 - Never bypass hooks or security scans.
 - Never print or commit credentials, authorization headers, generated XCFrameworks, build output, DerivedData, `.xcresult` bundles, or logs.

@@ -19,10 +19,13 @@ unset \
   GATEWAY_API_KEY \
   GATEWAY_LIVE_MODEL \
   GATEWAY_LIVE_STRUCTURED_OUTPUT \
+  UAC_LIVE_ENV_FILE \
   UAC_LIVE_EXPECTED_SHA
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
+POISON_REPOSITORY="$TEST_DIRECTORY/foreign-repository"
 RUNNER="$TEST_REPOSITORY/scripts/check-live.sh"
+LOCAL_CONFIG_HELPER="$TEST_REPOSITORY/scripts/local-config.sh"
 CALL_LOG="$TEST_DIRECTORY/calls.log"
 OUTPUT="$TEST_DIRECTORY/output.log"
 SYNTHETIC_KEY="test-key-material-that-must-not-appear"
@@ -43,7 +46,14 @@ trap cleanup EXIT
 
 mkdir -p "$TEST_REPOSITORY/scripts"
 cp "$ROOT/scripts/check-live.sh" "$RUNNER"
-chmod +x "$RUNNER"
+cp "$ROOT/scripts/local-config.sh" "$LOCAL_CONFIG_HELPER"
+chmod +x "$RUNNER" "$LOCAL_CONFIG_HELPER"
+printf '%s\n' \
+  '.env.live' \
+  '.env.live.*' \
+  '!.env.live.example' > "$TEST_REPOSITORY/.gitignore"
+cp "$ROOT/.env.live.example" "$TEST_REPOSITORY/.env.live.example"
+TEST_REPOSITORY_PHYSICAL="$(cd "$TEST_REPOSITORY" && pwd -P)"
 
 cat > "$TEST_REPOSITORY/gradlew" <<'EOF'
 #!/usr/bin/env bash
@@ -60,6 +70,7 @@ if [[ "$*" == *":bridge:jvmTest"* ]]; then
         -n "${GATEWAY_API_KEY:-}" ||
         -n "${GATEWAY_LIVE_MODEL:-}" ||
         -n "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ||
+        -n "${UAC_LIVE_ENV_FILE:-}" ||
         -n "${UAC_LIVE_EXPECTED_SHA:-}" ]]; then
     echo "Deterministic tests received live environment values." >&2
     exit 9
@@ -196,6 +207,15 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "test fixture"
 HEAD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
+mkdir -p "$POISON_REPOSITORY"
+git -C "$POISON_REPOSITORY" init -q
+printf '%s\n' foreign > "$POISON_REPOSITORY/foreign.txt"
+git -C "$POISON_REPOSITORY" add foreign.txt
+git -C "$POISON_REPOSITORY" \
+  -c user.name="Live Runner Test" \
+  -c user.email="live-runner@example.invalid" \
+  commit -qm "foreign fixture"
+
 expect_failure() {
   local expected_message="$1"
   shift
@@ -224,10 +244,10 @@ expect_failure \
 expect_failure \
   "OPENAI_API_KEY is required" \
   "$RUNNER" openai
-if ! grep -Fq "cp .env.live.example .env.live" "$OUTPUT" ||
-  ! grep -Fq "chmod 600 .env.live" "$OUTPUT" ||
-  ! grep -Fq "Open .env.live in your local editor" "$OUTPUT" ||
-  ! grep -Fq "never opens, reads, or sources .env.live automatically" "$OUTPUT"; then
+if ! grep -Fq "Copy $TEST_REPOSITORY_PHYSICAL/.env.live.example to that exact path." "$OUTPUT" ||
+  ! grep -Fq "Expected file: $TEST_REPOSITORY_PHYSICAL/.env.live" "$OUTPUT" ||
+  ! grep -Fq "chmod 600 \"$TEST_REPOSITORY_PHYSICAL/.env.live\"" "$OUTPUT" ||
+  ! grep -Fq "never displays their values" "$OUTPUT"; then
   echo "Missing-key failure omitted safe local configuration guidance." >&2
   exit 1
 fi
@@ -235,8 +255,8 @@ fi
 expect_failure \
   "OPENAI_LIVE_MODEL is required" \
   env OPENAI_API_KEY="$SYNTHETIC_KEY" "$RUNNER" openai
-if ! grep -Fq "cp .env.live.example .env.live" "$OUTPUT" ||
-  ! grep -Fq "source .env.live" "$OUTPUT"; then
+if ! grep -Fq "Expected file: $TEST_REPOSITORY_PHYSICAL/.env.live" "$OUTPUT" ||
+  ! grep -Fq "Non-empty process environment values take precedence" "$OUTPUT"; then
   echo "Missing-model failure omitted safe local configuration guidance." >&2
   exit 1
 fi
@@ -363,6 +383,31 @@ expect_failure \
     "$RUNNER" openai
 cp "$TEST_DIRECTORY/index.backup" "$TEST_REPOSITORY/.git/index"
 
+# The runner securely loads selected values from the primary checkout when process inputs are absent.
+printf '%s\n' \
+  "OPENAI_API_KEY='$SYNTHETIC_KEY'" \
+  "OPENAI_LIVE_MODEL='$MODEL'" > "$TEST_REPOSITORY/.env.live"
+chmod 600 "$TEST_REPOSITORY/.env.live"
+: > "$CALL_LOG"
+env \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" openai > "$OUTPUT" 2>&1
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]]; then
+  echo "Live runner did not use canonical primary-checkout configuration." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT"; then
+  echo "Canonical local configuration execution exposed credential material." >&2
+  exit 1
+fi
+rm "$TEST_REPOSITORY/.env.live"
+
 : > "$CALL_LOG"
 POST_DETERMINISTIC_DIRTY_PATH="$TEST_REPOSITORY/post-deterministic-dirty.txt"
 expect_failure \
@@ -455,6 +500,27 @@ fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
   ! grep -Fq "model=$MODEL" "$OUTPUT"; then
   echo "Successful live runner output omitted bounded evidence metadata." >&2
+  exit 1
+fi
+
+# Ambient Git variables cannot redirect clean-state or exact-head evidence to another repository.
+: > "$CALL_LOG"
+env \
+  GIT_DIR="$POISON_REPOSITORY/.git" \
+  GIT_WORK_TREE="$POISON_REPOSITORY" \
+  OPENAI_API_KEY="$SYNTHETIC_KEY" \
+  OPENAI_LIVE_MODEL="$MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" openai > "$OUTPUT" 2>&1
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]] ||
+  ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT"; then
+  echo "Ambient Git variables redirected live verification evidence." >&2
   exit 1
 fi
 

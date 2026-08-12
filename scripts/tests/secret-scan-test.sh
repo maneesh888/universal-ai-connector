@@ -37,7 +37,11 @@ for documented_input in \
   ANTHROPIC_API_KEY \
   ANTHROPIC_LIVE_MODEL \
   OPENROUTER_API_KEY \
-  OPENROUTER_LIVE_MODEL; do
+  OPENROUTER_LIVE_MODEL \
+  GATEWAY_LIVE_BASE_URL \
+  GATEWAY_API_KEY \
+  GATEWAY_LIVE_MODEL \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT; do
   if ! grep -Fxq "$documented_input=" "$LIVE_INPUT_EXAMPLE"; then
     echo "Value-free live-input example omitted or populated $documented_input." >&2
     exit 1
@@ -148,6 +152,26 @@ if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
   echo "Secret scan exposed approved local live-input material." >&2
   exit 1
 fi
+
+NESTED_UNTRACKED_LIVE_FILE="$TEST_REPOSITORY/nested-untracked/.env.live"
+mkdir -p "$(dirname "$NESTED_UNTRACKED_LIVE_FILE")"
+printf '%s\n' "$SYNTHETIC_SECRET" > "$NESTED_UNTRACKED_LIVE_FILE"
+nested_untracked_status=0
+"$SCANNER_UNDER_TEST" > "$LOCAL_LIVE_OUTPUT" 2>&1 || nested_untracked_status=$?
+if [[ "$nested_untracked_status" -ne 1 ]]; then
+  echo "Expected the secret scan to reject a non-canonical nested live-input file." >&2
+  exit 1
+fi
+if ! grep -Fq "Potential secret material found." "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan did not report a non-canonical nested live-input file." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_SECRET" "$LOCAL_LIVE_OUTPUT"; then
+  echo "Secret scan exposed nested live-input material." >&2
+  exit 1
+fi
+rm -f "$NESTED_UNTRACKED_LIVE_FILE"
+rmdir "$(dirname "$NESTED_UNTRACKED_LIVE_FILE")"
 
 git -C "$TEST_REPOSITORY" init --quiet
 CONFIG_DETECTION_OUTPUT="$TEST_DIRECTORY/config-detection.log"

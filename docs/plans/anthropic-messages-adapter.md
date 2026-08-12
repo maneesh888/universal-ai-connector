@@ -568,7 +568,8 @@ Completion record:
 ### Secret-safety and live-gate fixtures
 
 - `.env.live.example` contains only empty documented variables and `.env.live` remains ignored;
-- the live runner never opens, reads, or sources `.env.live`;
+- the live runner never shell-sources `.env.live`; later worktree-safety maintenance permits only
+  validated, allowlisted literal parsing from the canonical primary-checkout file;
 - the single local file may supply every documented provider while the selected live route
   receives only its provider-specific key, model, and exact-head inputs;
 - provider-aware classifier and pre-push regressions cover OpenAI-only, Anthropic-only,

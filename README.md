@@ -441,18 +441,17 @@ Run individual checks when needed:
 git diff --check
 ```
 
-For provider-impacting development, create the ignored local input manually. The runner never
-opens or sources it automatically:
+For provider-impacting development, keep one ignored local input in the primary checkout. Git does
+not copy ignored or untracked files into linked worktrees, so the live runner resolves the primary
+checkout from the shared Git metadata and reuses that canonical per-machine file:
 
 ```bash
-cp .env.live.example .env.live
-chmod 600 .env.live
-${EDITOR:-vi} .env.live
-git check-ignore -q .env.live
+LIVE_ENV_FILE="$(./scripts/local-config.sh live-env-path)"
+cp .env.live.example "$LIVE_ENV_FILE"
+chmod 600 "$LIVE_ENV_FILE"
+${EDITOR:-vi} "$LIVE_ENV_FILE"
+./scripts/local-config.sh validate-live-env
 
-set -a
-source .env.live
-set +a
 ./scripts/check-live.sh openai
 ./scripts/check-live.sh anthropic
 ./scripts/check-live.sh openrouter
@@ -463,6 +462,17 @@ The same ignored file contains distinct provider-specific inputs. The Gateway ro
 base URL ending in `/v1`, a Gateway-owned bearer credential, an explicit model, and an explicit
 `true` or `false` structured-output capability value. Set values only in the local editor and run
 only the affected delivered providers or Gateway.
+The accepted file is a non-symlink regular file named `.env.live` or `.env.live.<name>` directly in
+the primary checkout, is ignored and untracked, uses restrictive permissions, and contains only the
+documented literal assignments. Non-empty process environment values take precedence. An optional
+`UAC_LIVE_ENV_FILE` may select another allowed filename in that same trusted directory; external,
+traversing, symlinked, tracked, malformed, or permissively readable files are rejected.
+
+Each machine and clone has its own canonical file because Git does not synchronize ignored files.
+For cross-machine use, store the values in a trusted secret manager and have it materialize a
+regular mode-`600` file at the path printed by `local-config.sh`; do not commit the file or copy it
+into disposable worktrees.
+
 Missing inputs, unavailable model access, quota/rate limits, provider failures, and assertions are
 blockers rather than skipped tests. GitHub remains credential-free; an affected PR records the
 passing exact SHA and no-retention boundary for the automatic `live-policy` evidence check. See

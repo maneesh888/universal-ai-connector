@@ -3,12 +3,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROVIDER="${1:-}"
+LOCAL_CONFIG_HELPER="$ROOT/scripts/local-config.sh"
 
 usage() {
   cat <<'EOF'
 Usage: ./scripts/check-live.sh <provider>
 
-Supported providers and required process environment:
+Supported providers and required live inputs:
   openai
   OPENAI_API_KEY       Dedicated revocable test-project credential.
   OPENAI_LIVE_MODEL    Explicit model identifier enabled for the test project.
@@ -30,6 +31,9 @@ Supported providers and required process environment:
 
 Optional:
   UAC_LIVE_EXPECTED_SHA  Exact 40-character commit SHA expected by the caller.
+  UAC_LIVE_ENV_FILE      .env.live or .env.live.<name> in the primary checkout.
+
+Non-empty process environment values override the canonical ignored local file.
 EOF
 }
 
@@ -51,15 +55,15 @@ fail_missing_live_input() {
 $name is required for $provider_label live verification.
 
 Configure the ignored local file before retrying:
-  cp .env.live.example .env.live
-  chmod 600 .env.live
-  Open .env.live in your local editor and set $input_names.
-  set -a
-  source .env.live
-  set +a
+  Primary checkout: $PRIMARY_CHECKOUT
+  Expected file: $LIVE_ENV_FILE_PATH
+  Copy $PRIMARY_CHECKOUT/.env.live.example to that exact path.
+  chmod 600 "$LIVE_ENV_FILE_PATH"
+  Open the file in your local editor and set $input_names.
   ./scripts/check-live.sh $PROVIDER
 
-The runner never opens, reads, or sources .env.live automatically.
+The runner parses only documented literal assignments and never displays their values.
+Non-empty process environment values take precedence over the file.
 EOF
   exit 1
 }
@@ -68,7 +72,7 @@ CHECKOUT_STATUS_FILE="$(mktemp)"
 trap 'rm -f "$CHECKOUT_STATUS_FILE"' EXIT
 
 require_clean_checkout() {
-  if ! git -C "$ROOT" status \
+  if ! uac_git -C "$ROOT" status \
     --porcelain=v1 \
     -z \
     --untracked-files=all > "$CHECKOUT_STATUS_FILE"; then
@@ -123,8 +127,50 @@ esac
 if ! command -v git >/dev/null 2>&1; then
   fail "git is required for live verification."
 fi
+if [[ ! -r "$LOCAL_CONFIG_HELPER" ]]; then
+  fail "The local configuration safety helper is required for live verification."
+fi
+# shellcheck source=scripts/local-config.sh
+source "$LOCAL_CONFIG_HELPER"
 
-HEAD_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+PRIMARY_CHECKOUT="$(uac_primary_checkout "$ROOT")" || exit $?
+LIVE_ENV_FILE_PATH="$(uac_live_env_path "$ROOT")" || exit $?
+
+REQUIRED_LIVE_INPUTS=("$KEY_NAME" "$MODEL_NAME")
+if [[ -n "$BASE_URL_NAME" ]]; then
+  REQUIRED_LIVE_INPUTS=(
+    "$BASE_URL_NAME"
+    "$KEY_NAME"
+    "$MODEL_NAME"
+    "GATEWAY_LIVE_STRUCTURED_OUTPUT"
+  )
+fi
+NEEDS_LOCAL_CONFIG=false
+for required_live_input in "${REQUIRED_LIVE_INPUTS[@]}"; do
+  if [[ -z "${!required_live_input:-}" ]]; then
+    NEEDS_LOCAL_CONFIG=true
+    break
+  fi
+done
+if [[ "$NEEDS_LOCAL_CONFIG" == "true" || -n "${UAC_LIVE_ENV_FILE:-}" ]]; then
+  local_config_status=0
+  uac_load_live_environment "$ROOT" "${REQUIRED_LIVE_INPUTS[@]}" ||
+    local_config_status=$?
+  case "$local_config_status" in
+    0)
+      ;;
+    3)
+      if [[ -n "${UAC_LIVE_ENV_FILE:-}" ]]; then
+        exit 3
+      fi
+      ;;
+    *)
+      exit "$local_config_status"
+      ;;
+  esac
+fi
+
+HEAD_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification requires a Git checkout with a committed HEAD."
 
 if [[ ! "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -237,10 +283,11 @@ env \
   -u GATEWAY_API_KEY \
   -u GATEWAY_LIVE_MODEL \
   -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
+  -u UAC_LIVE_ENV_FILE \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/gradlew" :bridge:jvmTest
 
-POST_DETERMINISTIC_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+POST_DETERMINISTIC_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after deterministic tests."
 if [[ "$POST_DETERMINISTIC_SHA" != "$HEAD_SHA" ]]; then
   fail "Live verification HEAD changed during deterministic tests."
@@ -267,6 +314,7 @@ env \
   -u GATEWAY_API_KEY \
   -u GATEWAY_LIVE_MODEL \
   -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
+  -u UAC_LIVE_ENV_FILE \
   "${LIVE_ENVIRONMENT[@]}" \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
   "$ROOT/gradlew" \
@@ -275,7 +323,7 @@ env \
     --no-configuration-cache \
     "-PuacLiveExpectedSha=$HEAD_SHA"
 
-POST_LIVE_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+POST_LIVE_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after provider tests."
 if [[ "$POST_LIVE_SHA" != "$HEAD_SHA" ]]; then
   fail "Live verification HEAD changed during provider tests."
