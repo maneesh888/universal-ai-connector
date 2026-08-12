@@ -30,18 +30,21 @@ SECRET_PATTERNS=(
 )
 
 scan_status=0
-rg --quiet \
-  --no-config \
-  --no-ignore \
-  --hidden \
-  --glob '!.git/**' \
-  --glob '!**/build/**' \
-  --glob '!swift-package/Artifacts/**' \
-  --glob '!gradle/wrapper/gradle-wrapper.jar' \
-  --glob '!.env.live' \
-  --glob '!.env.live.*' \
-  "${SECRET_PATTERNS[@]}" \
-  "$ROOT" || scan_status=$?
+(
+  cd "$ROOT"
+  rg --quiet \
+    --no-config \
+    --no-ignore \
+    --hidden \
+    --glob '!.git/**' \
+    --glob '!**/build/**' \
+    --glob '!swift-package/Artifacts/**' \
+    --glob '!gradle/wrapper/gradle-wrapper.jar' \
+    --glob '!/.env.live' \
+    --glob '!/.env.live.*' \
+    "${SECRET_PATTERNS[@]}" \
+    .
+) || scan_status=$?
 
 if [[ "$scan_status" -eq 1 && -f "$ROOT/.env.live.example" ]]; then
   example_scan_status=0

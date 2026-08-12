@@ -51,30 +51,42 @@ The Gateway credential is created and rotated by the selected self-hosted Gatewa
 is not an upstream-provider key, and the connector neither knows nor retains which backend the
 Gateway routes to. Use a test key with a conservative Gateway rate limit and model scope.
 
-The tracked `.env.live.example` is deliberately value-free. Configure the ignored local file
-manually:
+The tracked `.env.live.example` is deliberately value-free. Persistent inputs belong in the
+primary checkout, not whichever linked worktree is active. Resolve and configure that canonical
+per-machine path without printing its contents:
 
 ```bash
-cp .env.live.example .env.live
-chmod 600 .env.live
-${EDITOR:-vi} .env.live
-git check-ignore -q .env.live
-
-set -a
-source .env.live
-set +a
+LIVE_ENV_FILE="$(./scripts/local-config.sh live-env-path)"
+cp .env.live.example "$LIVE_ENV_FILE"
+chmod 600 "$LIVE_ENV_FILE"
+${EDITOR:-vi} "$LIVE_ENV_FILE"
+./scripts/local-config.sh validate-live-env
 ```
 
-Set only the provider values needed locally. Never print the file to diagnose it. The live script
-and hook do not
-open, read, or source files automatically; they accept values only from their process environment,
-which keeps file choice and permissions under host control. If a selected delivered provider
-input is absent, the failure repeats value-free setup directions instead of skipping.
+`local-config.sh` obtains the absolute Git common directory and enumerates its worktrees to identify
+the primary checkout. This works from the primary checkout or a linked worktree, with spaces in the
+path and at different clone locations. Git does not copy ignored or untracked files into linked
+worktrees, and removing a linked worktree cannot remove the canonical file.
+
+Set only the provider values needed locally. Never print the file to diagnose it. The live runner
+parses the canonical file without shell evaluation only when a selected input is absent, or when an
+explicit file override is supplied. It accepts blank lines, comments, and literal `NAME=value`
+assignments for the ten variables documented above. The file must be an ignored, untracked,
+readable regular file named `.env.live` or `.env.live.<name>` directly in the primary checkout,
+with group and other permissions denied. Tracked files, unknown variables, malformed assignments,
+external paths, traversal, and all symlinks are rejected before values are used.
+
+Non-empty process environment values remain supported and take precedence. `UAC_LIVE_ENV_FILE`
+may select an allowed filename using a basename or absolute path, but the resolved file must remain
+inside that same canonical trusted directory. Missing-file errors print the dynamically resolved
+expected path and never values. Each machine and clone needs its own configuration. If values must
+be synchronized across machines, use a trusted secret manager to materialize a regular mode-`600`
+file at the printed path instead of synchronizing it through Git or a disposable worktree.
 
 ## Local exact-head gate
 
-Commit the candidate first, ensure the checkout is clean, export the manually configured file as
-shown above, and run:
+Commit the candidate first, ensure the active checkout is clean, configure the canonical file or
+provide process-environment overrides, and run:
 
 ```bash
 ./scripts/check-live.sh openai
@@ -88,6 +100,11 @@ Each command refuses a dirty checkout, validates the expected SHA when
 provider or Gateway task without a reusable Gradle daemon. It never prints the Gateway base URL,
 credential, authorization header, or full request/response content, and disables Gradle
 configuration caching for the credential-bearing process.
+
+The repository hygiene, quick, full, sample, consumer, and ordinary CI checks are deterministic
+and credential-free. Only `check-live.sh` and the provider-impacting local pre-push route require
+live credentials; direct `:bridge:*LiveTest` tasks require already supplied process environment and
+do not parse local files themselves.
 
 The completed P4 `:bridge:openAiLiveTest` task covers one minimal non-streaming response, one
 governed structured response, one safe intentional provider error, one ordered streaming

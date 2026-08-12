@@ -192,15 +192,17 @@ the safe error boundary: optional Gateway envelope extensions are ignored, fixed
 canonical errors are retained, and only bounded status, request-ID, and `Retry-After` metadata may
 surface.
 
-`./scripts/check-live.sh gateway` requires the process-supplied `GATEWAY_LIVE_BASE_URL`,
-`GATEWAY_API_KEY`, `GATEWAY_LIVE_MODEL`, and explicit
+`./scripts/check-live.sh gateway` requires `GATEWAY_LIVE_BASE_URL`, `GATEWAY_API_KEY`,
+`GATEWAY_LIVE_MODEL`, and explicit
 `GATEWAY_LIVE_STRUCTURED_OUTPUT=true|false` inputs. The URL must end in `/v1` and use HTTPS except
 for exact loopback HTTP. The capability input prevents an unsupported selected model from becoming
-an implicit skipped success. The runner refuses dirty or stale heads, removes every live input from
-its deterministic prerequisite, isolates the selected Gateway inputs for
+an implicit skipped success. After P7, repository maintenance made the runner securely parse the
+canonical primary-checkout `.env.live` when selected process inputs are absent; non-empty process
+values still take precedence. The runner refuses dirty or stale heads, removes every live input
+from its deterministic prerequisite, isolates the selected Gateway inputs for
 `:bridge:gatewayLiveTest`, and retains only the provider label, model identifier, structured-output
-capability result, and exact head. It never opens `.env.live` or prints the base URL, credential,
-authorization header, or provider response body.
+capability result, and exact head. It never prints the base URL, credential, authorization header,
+or provider response body.
 
 The live task covers non-streaming optional usage, a governed structured response when the selected
 model is explicitly marked as supporting it, ordered streaming with usage and one terminal, one

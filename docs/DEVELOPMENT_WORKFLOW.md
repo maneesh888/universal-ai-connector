@@ -75,6 +75,21 @@ initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.
 
+Machine-local live inputs persist only in the primary checkout path printed by
+`./scripts/local-config.sh live-env-path`. The helper derives that checkout from
+`git rev-parse --path-format=absolute --git-common-dir` and the shared worktree metadata, so the
+same ignored regular file is used from the primary checkout and every linked worktree. Ignored and
+untracked files are not synchronized by Git: each clone on each machine needs its own file. Use a
+trusted secret manager to materialize a mode-`600` regular file at the resolved path when
+cross-machine synchronization is needed; never copy credentials into disposable worktrees.
+
+`./scripts/check-live.sh` is the only repository command that parses this file. It accepts only the
+documented `.env.live` literal-assignment format and variable allowlist; direct Gradle live tasks
+continue to accept process environment only. Non-empty process values override file values, and
+`UAC_LIVE_ENV_FILE` may select only `.env.live` or `.env.live.<name>` in the same canonical trusted
+directory. The quick/full deterministic gates and ordinary CI never require or load local live
+configuration.
+
 ## Dependency updates
 
 The Gradle wrapper pins both its distribution version and the official binary-distribution

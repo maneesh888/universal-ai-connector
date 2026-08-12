@@ -112,10 +112,10 @@ tasks.register<Test>("openAiLiveTest") {
             throw GradleException(
                 """
                 OpenAI live verification is not configured.
-                Copy .env.live.example to the Git-ignored .env.live file, add OPENAI_API_KEY and
-                OPENAI_LIVE_MODEL manually, restrict it with chmod 600 .env.live, then export it
-                into this process before rerunning ./scripts/check-live.sh openai.
-                The live task never reads or sources .env.live automatically.
+                Configure the primary-checkout file reported by
+                ./scripts/local-config.sh live-env-path with OPENAI_API_KEY and OPENAI_LIVE_MODEL,
+                restrict it to mode 600, then rerun ./scripts/check-live.sh openai. This Gradle
+                task accepts process environment only; the runner validates and loads the file.
                 """.trimIndent(),
             )
         }
@@ -155,10 +155,11 @@ tasks.register<Test>("anthropicLiveTest") {
             throw GradleException(
                 """
                 Anthropic live verification is not configured.
-                Copy .env.live.example to the Git-ignored .env.live file, add ANTHROPIC_API_KEY
-                and ANTHROPIC_LIVE_MODEL manually, restrict it with chmod 600 .env.live, then
-                export it into this process before rerunning ./scripts/check-live.sh anthropic.
-                The live task never reads or sources .env.live automatically.
+                Configure the primary-checkout file reported by
+                ./scripts/local-config.sh live-env-path with ANTHROPIC_API_KEY and
+                ANTHROPIC_LIVE_MODEL, restrict it to mode 600, then rerun
+                ./scripts/check-live.sh anthropic. This Gradle task accepts process environment
+                only; the runner validates and loads the file.
                 """.trimIndent(),
             )
         }
@@ -198,10 +199,11 @@ tasks.register<Test>("openRouterLiveTest") {
             throw GradleException(
                 """
                 OpenRouter live verification is not configured.
-                Copy .env.live.example to the Git-ignored .env.live file, add OPENROUTER_API_KEY
-                and OPENROUTER_LIVE_MODEL manually, restrict it with chmod 600 .env.live, then
-                export it into this process before rerunning ./scripts/check-live.sh openrouter.
-                The live task never reads or sources .env.live automatically.
+                Configure the primary-checkout file reported by
+                ./scripts/local-config.sh live-env-path with OPENROUTER_API_KEY and
+                OPENROUTER_LIVE_MODEL, restrict it to mode 600, then rerun
+                ./scripts/check-live.sh openrouter. This Gradle task accepts process environment
+                only; the runner validates and loads the file.
                 """.trimIndent(),
             )
         }
@@ -247,12 +249,12 @@ tasks.register<Test>("gatewayLiveTest") {
             throw GradleException(
                 """
                 Gateway live verification is not configured.
-                Copy .env.live.example to the Git-ignored .env.live file, add
-                GATEWAY_LIVE_BASE_URL, GATEWAY_API_KEY, GATEWAY_LIVE_MODEL, and the explicit
-                GATEWAY_LIVE_STRUCTURED_OUTPUT=true|false capability input manually, restrict it
-                with chmod 600 .env.live, then export it into this process before rerunning
-                ./scripts/check-live.sh gateway.
-                The live task never reads or sources .env.live automatically.
+                Configure the primary-checkout file reported by
+                ./scripts/local-config.sh live-env-path with GATEWAY_LIVE_BASE_URL,
+                GATEWAY_API_KEY, GATEWAY_LIVE_MODEL, and explicit
+                GATEWAY_LIVE_STRUCTURED_OUTPUT=true|false, restrict it to mode 600, then rerun
+                ./scripts/check-live.sh gateway. This Gradle task accepts process environment
+                only; the runner validates and loads the file.
                 """.trimIndent(),
             )
         }

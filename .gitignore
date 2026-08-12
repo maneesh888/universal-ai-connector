@@ -8,9 +8,9 @@ DerivedData/
 .DS_Store
 
 # Optional local live-provider environment. The tracked example remains value-free.
-.env.live
-.env.live.*
-!.env.live.example
+/.env.live
+/.env.live.*
+!/.env.live.example
 
 # Generated locally by scripts/build-xcframework.sh.
 swift-package/Artifacts/
