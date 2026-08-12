@@ -23,6 +23,7 @@ unset \
   UAC_LIVE_EXPECTED_SHA
 TEST_DIRECTORY="$(mktemp -d)"
 TEST_REPOSITORY="$TEST_DIRECTORY/repository"
+POISON_REPOSITORY="$TEST_DIRECTORY/foreign-repository"
 RUNNER="$TEST_REPOSITORY/scripts/check-live.sh"
 LOCAL_CONFIG_HELPER="$TEST_REPOSITORY/scripts/local-config.sh"
 CALL_LOG="$TEST_DIRECTORY/calls.log"
@@ -205,6 +206,15 @@ git -C "$TEST_REPOSITORY" \
   -c user.email="live-runner@example.invalid" \
   commit -qm "test fixture"
 HEAD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+mkdir -p "$POISON_REPOSITORY"
+git -C "$POISON_REPOSITORY" init -q
+printf '%s\n' foreign > "$POISON_REPOSITORY/foreign.txt"
+git -C "$POISON_REPOSITORY" add foreign.txt
+git -C "$POISON_REPOSITORY" \
+  -c user.name="Live Runner Test" \
+  -c user.email="live-runner@example.invalid" \
+  commit -qm "foreign fixture"
 
 expect_failure() {
   local expected_message="$1"
@@ -490,6 +500,27 @@ fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
   ! grep -Fq "model=$MODEL" "$OUTPUT"; then
   echo "Successful live runner output omitted bounded evidence metadata." >&2
+  exit 1
+fi
+
+# Ambient Git variables cannot redirect clean-state or exact-head evidence to another repository.
+: > "$CALL_LOG"
+env \
+  GIT_DIR="$POISON_REPOSITORY/.git" \
+  GIT_WORK_TREE="$POISON_REPOSITORY" \
+  OPENAI_API_KEY="$SYNTHETIC_KEY" \
+  OPENAI_LIVE_MODEL="$MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" openai > "$OUTPUT" 2>&1
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      -n "$(sed -n '3p' "$CALL_LOG")" ]] ||
+  ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT"; then
+  echo "Ambient Git variables redirected live verification evidence." >&2
   exit 1
 fi
 

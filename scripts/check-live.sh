@@ -72,7 +72,7 @@ CHECKOUT_STATUS_FILE="$(mktemp)"
 trap 'rm -f "$CHECKOUT_STATUS_FILE"' EXIT
 
 require_clean_checkout() {
-  if ! git -C "$ROOT" status \
+  if ! uac_git -C "$ROOT" status \
     --porcelain=v1 \
     -z \
     --untracked-files=all > "$CHECKOUT_STATUS_FILE"; then
@@ -170,7 +170,7 @@ if [[ "$NEEDS_LOCAL_CONFIG" == "true" || -n "${UAC_LIVE_ENV_FILE:-}" ]]; then
   esac
 fi
 
-HEAD_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+HEAD_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification requires a Git checkout with a committed HEAD."
 
 if [[ ! "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -287,7 +287,7 @@ env \
   -u UAC_LIVE_EXPECTED_SHA \
   "$ROOT/gradlew" :bridge:jvmTest
 
-POST_DETERMINISTIC_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+POST_DETERMINISTIC_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after deterministic tests."
 if [[ "$POST_DETERMINISTIC_SHA" != "$HEAD_SHA" ]]; then
   fail "Live verification HEAD changed during deterministic tests."
@@ -323,7 +323,7 @@ env \
     --no-configuration-cache \
     "-PuacLiveExpectedSha=$HEAD_SHA"
 
-POST_LIVE_SHA="$(git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
+POST_LIVE_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after provider tests."
 if [[ "$POST_LIVE_SHA" != "$HEAD_SHA" ]]; then
   fail "Live verification HEAD changed during provider tests."

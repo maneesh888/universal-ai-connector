@@ -7,6 +7,29 @@ uac_local_config_error() {
   printf '%s\n' "$1" >&2
 }
 
+uac_git() {
+  env \
+    -u GIT_ALTERNATE_OBJECT_DIRECTORIES \
+    -u GIT_CEILING_DIRECTORIES \
+    -u GIT_COMMON_DIR \
+    -u GIT_CONFIG \
+    -u GIT_CONFIG_COUNT \
+    -u GIT_CONFIG_PARAMETERS \
+    -u GIT_DIR \
+    -u GIT_DISCOVERY_ACROSS_FILESYSTEM \
+    -u GIT_GRAFT_FILE \
+    -u GIT_IMPLICIT_WORK_TREE \
+    -u GIT_INDEX_FILE \
+    -u GIT_INTERNAL_SUPER_PREFIX \
+    -u GIT_NO_REPLACE_OBJECTS \
+    -u GIT_OBJECT_DIRECTORY \
+    -u GIT_PREFIX \
+    -u GIT_REPLACE_REF_BASE \
+    -u GIT_SHALLOW_FILE \
+    -u GIT_WORK_TREE \
+    git "$@"
+}
+
 uac_primary_checkout() {
   local repository_root="$1"
   local common_directory
@@ -19,7 +42,8 @@ uac_primary_checkout() {
   local primary_common_physical
 
   common_directory="$(
-    git -C "$repository_root" rev-parse --path-format=absolute --git-common-dir 2>/dev/null
+    uac_git -C "$repository_root" \
+      rev-parse --path-format=absolute --git-common-dir 2>/dev/null
   )" || {
     uac_local_config_error "Could not resolve the Git common directory for local configuration."
     return 2
@@ -34,7 +58,7 @@ uac_primary_checkout() {
   }
 
   worktree_listing="$(
-    git --git-dir="$common_physical" worktree list --porcelain 2>/dev/null
+    uac_git --git-dir="$common_physical" worktree list --porcelain 2>/dev/null
   )" || {
     uac_local_config_error "Could not enumerate Git worktrees for local configuration."
     return 2
@@ -55,7 +79,8 @@ uac_primary_checkout() {
     return 2
   }
   primary_common="$(
-    git -C "$primary_physical" rev-parse --path-format=absolute --git-common-dir 2>/dev/null
+    uac_git -C "$primary_physical" \
+      rev-parse --path-format=absolute --git-common-dir 2>/dev/null
   )" || {
     uac_local_config_error "Could not validate the primary Git checkout."
     return 2
@@ -169,19 +194,19 @@ uac_validate_live_env_file() {
     uac_local_config_error "Local live configuration must be a readable regular file: $file_path"
     return 2
   fi
-  if git -C "$primary_checkout" ls-files --error-unmatch -- "$file_name" \
+  if uac_git -C "$primary_checkout" ls-files --error-unmatch -- "$file_name" \
     >/dev/null 2>&1; then
     uac_local_config_error "Local live configuration must not be tracked by Git: $file_path"
     return 2
   fi
   if [[ "$(cd "$repository_root" && pwd -P)" != "$primary_checkout" ]] &&
-    git -C "$repository_root" ls-files --error-unmatch -- "$file_name" \
+    uac_git -C "$repository_root" ls-files --error-unmatch -- "$file_name" \
       >/dev/null 2>&1; then
     uac_local_config_error \
       "Local live configuration name must not be tracked in the active worktree: $file_name"
     return 2
   fi
-  if ! git -C "$primary_checkout" check-ignore -q -- "$file_name"; then
+  if ! uac_git -C "$primary_checkout" check-ignore -q -- "$file_name"; then
     uac_local_config_error "Local live configuration must be ignored by Git: $file_path"
     return 2
   fi

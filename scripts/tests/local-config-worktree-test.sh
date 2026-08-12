@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 TEST_DIRECTORY="$(mktemp -d)"
 PRIMARY_REPOSITORY="$TEST_DIRECTORY/machine one/checkout with spaces"
 SECOND_REPOSITORY="$TEST_DIRECTORY/another machine/different clone location"
+POISON_REPOSITORY="$TEST_DIRECTORY/ambient git redirect/foreign checkout"
 LINKED_WORKTREE="$TEST_DIRECTORY/disposable worktrees/linked checkout"
 REPLACEMENT_WORKTREE="$TEST_DIRECTORY/disposable worktrees/replacement checkout"
 OUTSIDE_DIRECTORY="$TEST_DIRECTORY/outside trusted directory"
@@ -170,6 +171,30 @@ if [[ -e "$LINKED_WORKTREE/.env.live" ]]; then
   exit 1
 fi
 
+# Ambient repository-local Git variables cannot redirect the trusted configuration root.
+create_repository "$POISON_REPOSITORY"
+POISON_PHYSICAL="$(cd "$POISON_REPOSITORY" && pwd -P)"
+if [[ "$(
+        env \
+          GIT_DIR="$POISON_PHYSICAL/.git" \
+          GIT_WORK_TREE="$POISON_PHYSICAL" \
+          "$LINKED_WORKTREE/scripts/local-config.sh" primary-checkout
+      )" != "$PRIMARY_PHYSICAL" ||
+      "$(
+        env \
+          GIT_DIR="$POISON_PHYSICAL/.git" \
+          GIT_WORK_TREE="$POISON_PHYSICAL" \
+          "$LINKED_WORKTREE/scripts/local-config.sh" live-env-path
+      )" != "$PRIMARY_CONFIG" ]]; then
+  echo "Ambient Git variables redirected canonical local configuration." >&2
+  exit 1
+fi
+env \
+  GIT_DIR="$POISON_PHYSICAL/.git" \
+  GIT_WORK_TREE="$POISON_PHYSICAL" \
+  "$LINKED_WORKTREE/scripts/local-config.sh" validate-live-env > "$OUTPUT" 2>&1
+assert_secret_absent
+
 # Relative and absolute file-path overrides remain direct children of the trusted directory.
 OVERRIDE_CONFIG="$PRIMARY_PHYSICAL/.env.live.gateway"
 write_valid_config "$OVERRIDE_CONFIG"
@@ -204,6 +229,7 @@ if [[ "$("$SECOND_REPOSITORY/scripts/local-config.sh" live-env-path)" != \
   echo "Independent clone locations did not resolve independent canonical configuration." >&2
   exit 1
 fi
+
 expect_failure \
   "Local live configuration is missing: $SECOND_CONFIG" \
   "$SECOND_REPOSITORY/scripts/local-config.sh" validate-live-env

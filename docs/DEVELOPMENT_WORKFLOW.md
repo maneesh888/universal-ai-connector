@@ -83,9 +83,10 @@ untracked files are not synchronized by Git: each clone on each machine needs it
 trusted secret manager to materialize a mode-`600` regular file at the resolved path when
 cross-machine synchronization is needed; never copy credentials into disposable worktrees.
 
-`./scripts/check-live.sh` is the only repository command that parses this file. It accepts only the
-documented `.env.live` literal-assignment format and variable allowlist; direct Gradle live tasks
-continue to accept process environment only. Non-empty process values override file values, and
+`./scripts/local-config.sh validate-live-env` parses the file only to validate its syntax, while
+`./scripts/check-live.sh` is the only repository command that loads selected values. Both accept
+only the documented `.env.live` literal-assignment format and variable allowlist; direct Gradle live
+tasks continue to accept process environment only. Non-empty process values override file values, and
 `UAC_LIVE_ENV_FILE` may select only `.env.live` or `.env.live.<name>` in the same canonical trusted
 directory. The quick/full deterministic gates and ordinary CI never require or load local live
 configuration.
