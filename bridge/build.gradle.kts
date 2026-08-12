@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     val xcframework = XCFramework("UniversalAiConnectorBridge")
-    val ktorVersion = "3.5.1"
+    val ktorVersion = "3.5.2"
 
     jvm()
 
