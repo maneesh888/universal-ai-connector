@@ -13,7 +13,7 @@ Kotlin runtime constant and derive host metadata from those properties.
 | Git tag | `v0.1.0-0.p8.1` |
 | POM name | `Universal AI Connector` |
 | Project and SCM URL | `https://github.com/maneesh888/universal-ai-connector` |
-| License | Apache License 2.0 |
+| License | MIT License |
 | Developer identity | `maneesh888` / `https://github.com/maneesh888` |
 | Swift product | `UniversalAiConnector` |
 | Swift binary target | `UniversalAiConnectorBridge` |
@@ -80,16 +80,23 @@ This command checks canonical version derivation, the P8 SemVer boundary, POM an
 toolchain pins, version expectations, CI host pins, and the absence of credential-bearing public
 metadata. It performs no publication, signing, notarization, or remote mutation.
 
-After the authenticated external prerequisites exist, run the separate read-only readiness probe:
+After the authenticated external prerequisites exist, run the separate read-only prerequisite
+probe:
 
 ```bash
 ./scripts/check-distribution-readiness.sh
 ```
 
-It verifies the unused tag and Maven path, authenticated GitHub session, PGP key fingerprint,
-installed Developer ID Application identity, and notarization profile. It identifies missing input
-names but never prints their values. Central namespace ownership must first be inspected in the
-authenticated Portal and supplied as `UAC_CENTRAL_NAMESPACE=io.github.maneesh888`.
+It authenticates the Central Portal token without uploading, verifies the unused tag and Maven
+path, checks GitHub repository write permission, proves that the expected PGP private key can sign
+with the supplied passphrase, and validates the installed Developer ID Application identity and
+notarization profile. It identifies missing input names but never prints their values.
+
+The Portal exposes no documented read-only API that proves namespace ownership. The probe
+therefore exits blocked even after its locally verifiable checks pass. A release owner must inspect
+the authenticated Portal namespace page, record the resulting evidence in the P8-A review packet,
+and obtain independent review before P8-A can complete. Supplying the group name as an environment
+variable is not accepted as ownership proof.
 
 On August 12, 2026, the candidate tag and Maven path were both unused. Central namespace ownership,
 PGP signing readiness, a Developer ID Application identity, and a notarization profile still require

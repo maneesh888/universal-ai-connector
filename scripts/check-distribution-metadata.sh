@@ -88,8 +88,8 @@ require_exact_release_property MAVEN_ARTIFACT_ID universal-ai-connector
 require_exact_release_property POM_NAME "Universal AI Connector"
 require_exact_release_property POM_DESCRIPTION "Provider-neutral Kotlin Multiplatform AI client with a Swift-native facade"
 require_exact_release_property POM_URL https://github.com/maneesh888/universal-ai-connector
-require_exact_release_property POM_LICENSE_NAME "Apache License, Version 2.0"
-require_exact_release_property POM_LICENSE_URL https://www.apache.org/licenses/LICENSE-2.0.txt
+require_exact_release_property POM_LICENSE_NAME "MIT License"
+require_exact_release_property POM_LICENSE_URL https://opensource.org/license/mit/
 require_exact_release_property POM_SCM_URL https://github.com/maneesh888/universal-ai-connector
 require_exact_release_property POM_SCM_CONNECTION scm:git:https://github.com/maneesh888/universal-ai-connector.git
 require_exact_release_property POM_SCM_DEVELOPER_CONNECTION scm:git:ssh://git@github.com/maneesh888/universal-ai-connector.git
@@ -158,5 +158,7 @@ require_literal "$GUIDE" "$coordinate"
 require_literal "$GUIDE" "v$version"
 require_literal "$PLAN" '`gradle.properties` owns one canonical SemVer value'
 require_literal "$ROADMAP" '| P8 | Production distribution and host integration | In progress |'
+require_literal "$ROADMAP" 'P8 is active at P8-A;'
+require_literal "$ROOT/README.md" '**Current phase:** P8-A is active'
 
 echo "Distribution metadata is internally consistent for $coordinate."
