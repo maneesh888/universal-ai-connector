@@ -71,20 +71,11 @@ if ! gh auth status >/dev/null 2>&1; then
   echo "Distribution readiness requires an authenticated gh session." >&2
   exit 1
 fi
-github_permission="$(
-  gh api graphql \
-    -f owner="$github_owner" \
-    -f name="$github_name" \
-    -f query='query($owner:String!,$name:String!){repository(owner:$owner,name:$name){viewerPermission}}' \
-    --jq '.data.repository.viewerPermission'
-)"
-case "$github_permission" in
-  ADMIN | MAINTAIN | WRITE) ;;
-  *)
-    echo "Distribution readiness requires GitHub release-capable repository permission." >&2
-    exit 1
-    ;;
-esac
+github_full_name="$(gh api "repos/$github_owner/$github_name" --jq '.full_name')"
+if [[ "$github_full_name" != "$github_owner/$github_name" ]]; then
+  echo "Distribution readiness requires authenticated access to the target GitHub repository." >&2
+  exit 1
+fi
 
 if [[ -n "$(git -C "$ROOT" ls-remote --tags origin "refs/tags/v$version")" ]]; then
   echo "The immutable release tag v$version already exists." >&2
@@ -92,7 +83,7 @@ if [[ -n "$(git -C "$ROOT" ls-remote --tags origin "refs/tags/v$version")" ]]; t
 fi
 
 maven_status="$(
-  curl \
+  curl -q \
     --silent \
     --show-error \
     --location \
@@ -116,7 +107,7 @@ printf 'header = "Authorization: Bearer %s"\n' "$central_token" > "$central_conf
 chmod 600 "$central_config"
 unset central_token
 central_status="$(
-  curl \
+  curl -q \
     --silent \
     --show-error \
     --config "$central_config" \

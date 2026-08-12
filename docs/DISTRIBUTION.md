@@ -61,7 +61,7 @@ printing values. Ordinary CI and pull requests remain secretless.
 | Expected PGP fingerprint | `UAC_PGP_SIGNING_KEY_FINGERPRINT` |
 | macOS signing identity | `UAC_MACOS_SIGNING_IDENTITY` matching a Developer ID Application certificate |
 | Apple notarization credentials | `UAC_NOTARY_KEYCHAIN_PROFILE` referencing a local Keychain profile |
-| GitHub release authority | An authenticated `gh` session with release permission |
+| GitHub session | An authenticated `gh` session that can access the target repository |
 
 The Central account must show verified namespace `io.github.maneesh888`. macOS downloadable
 artifacts require a Developer ID Application identity and a working `notarytool` Keychain profile.
@@ -88,9 +88,11 @@ probe:
 ```
 
 It authenticates the Central Portal token without uploading, verifies the unused tag and Maven
-path, checks GitHub repository write permission, proves that the expected PGP private key can sign
-with the supplied passphrase, and validates the installed Developer ID Application identity and
-notarization profile. It identifies missing input names but never prints their values.
+path, confirms that the active GitHub session can read the target repository, proves that the
+expected PGP private key can sign with the supplied passphrase, and validates the installed
+Developer ID Application identity and notarization profile. It identifies missing input names but
+never prints their values. Authenticated repository access does not prove that the active GitHub
+token has `contents:write`; P8-F must validate that capability immediately before release creation.
 
 The Portal exposes no documented read-only API that proves namespace ownership. The probe
 therefore exits blocked even after its locally verifiable checks pass. A release owner must inspect

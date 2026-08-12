@@ -41,7 +41,7 @@
 - P8-A progress: disposable candidate `0.1.0-0.p8.1`, Maven/POM/asset/package identities, generated runtime versioning, minimum toolchain and host baselines, and credential-free consistency checks are frozen; Central namespace, PGP, Developer ID Application, and notarization readiness remain external blockers
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
-- OpenAI-compatible Gateway validation is completed in this candidate; OpenKeyboard integration remains deferred
+- OpenAI-compatible Gateway validation is completed authoritatively; OpenKeyboard integration remains deferred
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
@@ -143,7 +143,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P7 | OpenAI-compatible Gateway validation | Completed | P7-A and P7-B are authoritative; P7-C lifecycle and acceptance complete the milestone in this closing candidate; see `openai-compatible-gateway-validation.md` |
+| P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; see `openai-compatible-gateway-validation.md` and the P7 closeout evidence above |
 | P8 | Production distribution and host integration | In progress | P8-A distribution contract is frozen; authenticated namespace and signing/notarization readiness remain blockers |
 | P9 | Release hardening and internal alpha | Not started | |
 

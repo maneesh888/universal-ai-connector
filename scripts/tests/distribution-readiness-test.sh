@@ -45,7 +45,8 @@ fi
 
 for required_literal in \
   'api/v1/publisher/status' \
-  "--jq '.data.repository.viewerPermission'" \
+  'curl -q' \
+  'gh api "repos/$github_owner/$github_name"' \
   '--list-secret-keys' \
   '--pinentry-mode loopback' \
   'P8-A remains blocked until authenticated Central Portal namespace ownership is recorded'; do
@@ -72,10 +73,12 @@ write_stub() {
 }
 
 write_stub git 'exit 0'
-write_stub curl "printf '404'"
+write_stub curl \
+  'if [[ "${1:-}" != "-q" ]]; then exit 64; fi' \
+  "printf '404'"
 write_stub gh \
   'if [[ "${1:-} ${2:-}" == "auth status" ]]; then exit 0; fi' \
-  'if [[ "${1:-} ${2:-}" == "api graphql" ]]; then printf "WRITE\n"; exit 0; fi' \
+  'if [[ "${1:-}" == "api" ]]; then printf "maneesh888/universal-ai-connector\n"; exit 0; fi' \
   'exit 1'
 write_stub gpg \
   'if [[ " $* " == *" --list-secret-keys "* ]]; then' \
