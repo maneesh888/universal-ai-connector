@@ -41,7 +41,7 @@ class JvmConsoleSampleTests {
 
         assertEquals(
             listOf(
-                "Version: 0.1.0-alpha.1",
+                "Version: 0.1.0-0.p8.1",
                 "Response: Kotlin echo: hello from JVM",
                 "Stream: 1:response.started | 2:output.started | " +
                     "3:output.delta:delta=Kotlin echo:  | " +

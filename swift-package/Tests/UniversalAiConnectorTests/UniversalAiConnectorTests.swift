@@ -7,7 +7,7 @@ final class UniversalAiConnectorTests: XCTestCase {
     func testProductFrameworkImportsAndReportsVersion() {
         let connector = UniversalAiConnector()
 
-        XCTAssertEqual(connector.version, "0.1.0-alpha.1")
+        XCTAssertEqual(connector.version, "0.1.0-0.p8.1")
     }
 
     func testConfiguredConnectorKeepsCredentialSupplierLazyForDeterministicUse()
@@ -1494,7 +1494,7 @@ final class UniversalAiConnectorTests: XCTestCase {
         connector.close()
         connector.close()
 
-        XCTAssertEqual(connector.version, "0.1.0-alpha.1")
+        XCTAssertEqual(connector.version, "0.1.0-0.p8.1")
         do {
             _ = try await connector.respond(to: request("closed response"))
             XCTFail("Expected a closed-state response error.")
