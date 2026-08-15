@@ -145,6 +145,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P7 | OpenAI-compatible Gateway validation | Completed | P7-A and P7-B are authoritative; P7-C lifecycle and acceptance complete the milestone in this closing candidate; see `openai-compatible-gateway-validation.md` |
 | P8 | Production distribution and host integration | Not started | |
 | P9 | Release hardening and internal alpha | Not started | |
+| P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
 
 Only one row may be `In progress` at a time.
 
@@ -290,6 +291,30 @@ Release `0.1.0-alpha.1` only after:
 - API compatibility and secret scans pass;
 - public API documentation and known limitations are published.
 
+## P10: Multimodal inputs
+
+Use the bounded work packages in `multimodal-inputs.md`. P10 remains `Not started` until a
+separate P10-A change activates it as the sole milestone marked `In progress`. P10 is deliberately
+post-alpha work: it changes the text-only canonical request contract and is not part of P8
+distribution or P9 alpha-release acceptance.
+
+The initial P10 acceptance scope is provider-neutral image and audio input. Images and audio must
+be represented as typed, bounded media parts alongside ordered text, with stable MIME-type,
+size, and reference/byte-source validation. Each delivered adapter must declare its media support
+conservatively and reject unsupported media before network dispatch. Implementations must preserve
+host-owned media lifecycle, cancellation, cleanup, and redaction; media bytes, local paths, and
+provider file references must not appear in errors, diagnostics, or retained proof artifacts.
+
+P10 does not require every provider/model to accept every medium. The first delivered adapter for
+each medium must receive deterministic translation, capability, rejection, cancellation, and
+cleanup coverage plus targeted live proof. Text-only use remains the baseline and must retain its
+existing API and behavior.
+
+Documents (including PDF and office formats), video, generated media output, realtime media
+sessions, local transcoding/DSP, and media storage are not initial P10 acceptance. They remain
+separate future extensions and require their own provider-intersection, extraction, lifecycle, and
+proof decisions before activation.
+
 ## Deferred work
 
 The following remain outside this package roadmap until explicitly activated:
@@ -298,6 +323,9 @@ The following remain outside this package roadmap until explicitly activated:
 - OpenKeyboard application and keyboard-extension migration
 - provider-selection UI and credential storage
 - Gateway administration, billing, quotas, internal backend routing, and model allowlists
-- agent frameworks, tool execution, RAG, and multimodal inputs
+- agent frameworks, tool execution, and RAG
+- documents (including PDF and office formats), video, generated media output, realtime media
+  sessions, local transcoding/DSP, and media storage; P10 reserves only provider-neutral image and
+  audio input as its initial scope
 - native desktop library targets without a demonstrated no-JVM or native-language consumer requirement; the planned P8 graphical desktop demo uses Kotlin/JVM
 - Java-specific, JavaScript, and Wasm façades until their consumer demand and maintenance cost are approved
