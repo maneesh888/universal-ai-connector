@@ -132,17 +132,59 @@ class ChatCompletionsP6EStreamingTests {
     @Test
     fun bothAdaptersIgnoreReasoningMetadataAndEmitOnlyFinalAssistantText(): Unit = runTest {
         providerIds.forEach { providerId ->
-            val stream =
+            val reasoningPrelude =
                 reasoningChunk("reasoning", "hidden") +
                     reasoningChunk("reasoning_content", "hidden") +
-                    reasoningDetailsChunk() +
-                    startChunk() +
+                    reasoningDetailsChunk()
+            val finalAssistantStream =
+                startChunk() +
                     contentChunk("ready") +
                     finishChunk() +
                     sseData("[DONE]")
-            val connector = connector(providerId, ReaderTransport(singleChunkReader(stream)))
+            val finalAssistantReadStarted = CompletableDeferred<Unit>()
+            val releaseFinalAssistantStream = CompletableDeferred<Unit>()
+            var reads = 0
+            val reader =
+                ConnectorTransportChunkReader {
+                    when (reads++) {
+                        0 -> reasoningPrelude.encodeToByteArray()
+                        1 -> {
+                            finalAssistantReadStarted.complete(Unit)
+                            releaseFinalAssistantStream.await()
+                            finalAssistantStream.encodeToByteArray()
+                        }
+                        else -> null
+                    }
+                }
+            val connector = connector(providerId, ReaderTransport(reader))
+            val events = mutableListOf<UniversalAiStreamEvent>()
             try {
-                val events = connector.stream(request(providerId)).toList()
+                val operation =
+                    async {
+                        connector
+                            .stream(request(providerId))
+                            .onEach(events::add)
+                            .collect()
+                    }
+                finalAssistantReadStarted.await()
+                assertTrue(
+                    events.isEmpty(),
+                    "Reasoning-only deltas must not start canonical output for ${providerId.rawValue}.",
+                )
+                releaseFinalAssistantStream.complete(Unit)
+                operation.await()
+                assertEquals(
+                    listOf(
+                        UniversalAiStreamEventType.ResponseStarted,
+                        UniversalAiStreamEventType.OutputStarted,
+                        UniversalAiStreamEventType.OutputDelta,
+                        UniversalAiStreamEventType.OutputCompleted,
+                        UniversalAiStreamEventType.UsageUpdated,
+                        UniversalAiStreamEventType.ResponseCompleted,
+                    ),
+                    events.map(UniversalAiStreamEvent::type),
+                    providerId.rawValue,
+                )
                 assertEquals(listOf("ready"), events.mapNotNull(UniversalAiStreamEvent::delta))
                 assertEquals("ready", events.last().response?.outputs?.single()?.text)
                 assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
