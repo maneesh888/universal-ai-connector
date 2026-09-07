@@ -193,6 +193,43 @@ class UniversalAiModelDiscoveryTests {
     }
 
     @Test
+    fun openRouterKeepsModelsWhoseOptionalOutputLimitExceedsTheCanonicalCeiling() = runTest {
+        val engine =
+            MockEngine {
+                respond(
+                    """
+                    {
+                      "data":[
+                        {
+                          "id":"provider/large-output-model",
+                          "name":"Large output model",
+                          "context_length":2097152,
+                          "supported_parameters":["temperature"],
+                          "top_provider":{"max_completion_tokens":1048577}
+                        }
+                      ]
+                    }
+                    """.trimIndent(),
+                )
+            }
+        configuredConnector(
+            providerId = "openrouter",
+            engine = engine,
+            baseUrl = "https://openrouter.example.invalid/api/v1",
+        ).use { connector ->
+            val result =
+                assertIs<UniversalAiModelListResult.Supported>(
+                    connector.listModels(ProviderId.of("openrouter")),
+                )
+
+            assertEquals(listOf("provider/large-output-model"), result.modelIds())
+            assertEquals(2_097_152, result.models.single().limits?.contextWindowTokens)
+            assertNull(result.models.single().limits?.maxOutputTokens)
+        }
+        engine.close()
+    }
+
+    @Test
     fun openAiCompatibleGatewaySupportsConservativeListShapeOrExplicitUnsupported() = runTest {
         listOf(HttpStatusCode.NotFound, HttpStatusCode.MethodNotAllowed, HttpStatusCode.NotImplemented)
             .forEach { status ->

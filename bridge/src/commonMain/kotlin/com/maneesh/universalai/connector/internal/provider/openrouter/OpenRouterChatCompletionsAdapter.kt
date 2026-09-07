@@ -2,6 +2,7 @@ package com.maneesh.universalai.connector.internal.provider.openrouter
 
 import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
 import com.maneesh.universalai.connector.contract.ModelId
+import com.maneesh.universalai.connector.contract.MAX_OUTPUT_TOKENS
 import com.maneesh.universalai.connector.contract.OutputId
 import com.maneesh.universalai.connector.contract.RequestId
 import com.maneesh.universalai.connector.contract.ResponseId
@@ -300,11 +301,15 @@ internal class OpenRouterChatCompletionsAdapter(
             },
         )
         contextLength?.let { value -> requireWire(value > 0) }
-        val maxOutputTokens = topProvider?.maxCompletionTokens
-        maxOutputTokens?.let { value -> requireWire(value > 0) }
-        if (contextLength != null && maxOutputTokens != null) {
-            requireWire(maxOutputTokens <= contextLength)
+        val advertisedMaxOutputTokens = topProvider?.maxCompletionTokens
+        advertisedMaxOutputTokens?.let { value -> requireWire(value > 0) }
+        if (contextLength != null && advertisedMaxOutputTokens != null) {
+            requireWire(advertisedMaxOutputTokens <= contextLength)
         }
+        // Some catalog entries advertise limits above the canonical request ceiling. Preserve the
+        // model and its other metadata, but do not publish an optional limit consumers cannot use.
+        val maxOutputTokens =
+            advertisedMaxOutputTokens?.takeIf { value -> value <= MAX_OUTPUT_TOKENS.toLong() }
         val target =
             UniversalAiTarget(
                 providerId = OPENROUTER_PROVIDER_ID,
