@@ -10,7 +10,7 @@ Usage: ./scripts/check.sh [--hygiene|--quick|--full]
 
   --hygiene  Validate shell syntax, secrets, and whitespace, including untracked files.
   --quick    Run hygiene plus deterministic JVM, Android, iOS Simulator, and consumer checks.
-  --full     Run quick coverage plus XCFramework, Swift Package, and iOS simulator/device sample checks.
+  --full     Run quick coverage plus XCFramework, Swift Package, iOS app-extension, and simulator/device sample checks.
              This is the default.
 EOF
 }
@@ -255,9 +255,10 @@ run_full() {
   run_script_tests
   run_cross_platform_gradle_checks
 
-  # Build once, then reuse the artifact for package tests and both sample destinations.
+  # Build once, then reuse the artifact for package and consumer checks.
   "$ROOT/scripts/build-xcframework.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-swift-package.sh"
+  UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-app-extension-consumer.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"
 

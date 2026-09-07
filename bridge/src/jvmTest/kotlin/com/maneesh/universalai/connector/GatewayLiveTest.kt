@@ -45,6 +45,23 @@ import kotlin.test.assertTrue
  */
 class GatewayLiveTest {
     @Test
+    fun configuredModelIsDiscoverableOrExplicitlyUnsupportedWithoutSubstitution(): Unit = runBlocking {
+        val configuredModel = ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL"))
+        connector().use { connector ->
+            when (val discovery = connector.listModels(OPENAI_COMPATIBLE_PROVIDER_ID)) {
+                is UniversalAiModelListResult.Supported ->
+                    assertTrue(
+                        discovery.models.any { descriptor ->
+                            descriptor.target.modelId == configuredModel
+                        },
+                    )
+                is UniversalAiModelListResult.Unsupported ->
+                    assertEquals(OPENAI_COMPATIBLE_PROVIDER_ID, discovery.providerId)
+            }
+        }
+    }
+
+    @Test
     fun minimalNonStreamingResponseAcceptsOptionalUsage(): Unit = runBlocking {
         connector().use { connector ->
             val response =
@@ -55,6 +72,10 @@ class GatewayLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertEquals(OPENAI_COMPATIBLE_PROVIDER_ID, response.target.providerId)
+            assertEquals(
+                ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL")),
+                response.target.modelId,
+            )
             response.usage?.let { usage ->
                 assertTrue(usage.inputTokens >= 0)
                 assertTrue(usage.outputTokens >= 0)
@@ -116,6 +137,10 @@ class GatewayLiveTest {
             assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
             assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
             assertEquals(OPENAI_COMPATIBLE_PROVIDER_ID, events.last().response?.target?.providerId)
+            assertEquals(
+                ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL")),
+                events.last().response?.target?.modelId,
+            )
         }
     }
 

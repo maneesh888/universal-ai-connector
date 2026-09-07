@@ -1,5 +1,6 @@
 package com.maneesh.universalai.connector.internal.transport
 
+import com.maneesh.universalai.connector.UniversalAiConnectorConfiguration
 import com.maneesh.universalai.connector.contract.UniversalAiError
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
@@ -88,22 +89,18 @@ internal class ConnectorBaseUrl private constructor(
  * Connect and whole-request timeout policy applied to every request on one transport.
  */
 internal data class ConnectorTransportTimeouts(
-    val connectTimeoutMillis: Long = DEFAULT_CONNECT_TIMEOUT_MILLIS,
-    val requestTimeoutMillis: Long = DEFAULT_REQUEST_TIMEOUT_MILLIS,
+    val connectTimeoutMillis: Long =
+        UniversalAiConnectorConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+    val requestTimeoutMillis: Long =
+        UniversalAiConnectorConfiguration.DEFAULT_REQUEST_TIMEOUT_MILLIS,
 ) {
     init {
         if (
-            connectTimeoutMillis !in 1..MAX_TIMEOUT_MILLIS ||
-            requestTimeoutMillis !in 1..MAX_TIMEOUT_MILLIS
+            connectTimeoutMillis !in 1..UniversalAiConnectorConfiguration.MAX_TIMEOUT_MILLIS ||
+            requestTimeoutMillis !in 1..UniversalAiConnectorConfiguration.MAX_TIMEOUT_MILLIS
         ) {
             throw invalidTimeoutConfiguration()
         }
-    }
-
-    private companion object {
-        const val DEFAULT_CONNECT_TIMEOUT_MILLIS: Long = 10_000
-        const val DEFAULT_REQUEST_TIMEOUT_MILLIS: Long = 60_000
-        const val MAX_TIMEOUT_MILLIS: Long = 86_400_000
     }
 }
 

@@ -51,7 +51,8 @@ Use the smallest commands that exercise the changed surface:
 | Kotlin Apple bridge | `./gradlew :bridge:iosSimulatorArm64Test` |
 | Swift façade | `./scripts/test-swift-package.sh` |
 | XCFramework or Apple package boundary | `./scripts/build-xcframework.sh` |
-| iOS sample integration | `./scripts/build-sample.sh`; add `./scripts/build-sample-device.sh` for device-slice link changes |
+| iOS application integration | `./scripts/build-sample.sh`; add `./scripts/build-sample-device.sh` for device-slice link changes |
+| iOS app-extension integration | `./scripts/build-app-extension-consumer.sh` |
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Documentation or plans | `./scripts/check.sh --hygiene` |

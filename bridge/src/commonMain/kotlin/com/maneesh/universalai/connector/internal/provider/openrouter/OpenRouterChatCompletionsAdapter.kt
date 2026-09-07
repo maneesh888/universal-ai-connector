@@ -5,12 +5,18 @@ import com.maneesh.universalai.connector.contract.ModelId
 import com.maneesh.universalai.connector.contract.OutputId
 import com.maneesh.universalai.connector.contract.RequestId
 import com.maneesh.universalai.connector.contract.ResponseId
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityDeclaration
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityName
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySupport
 import com.maneesh.universalai.connector.contract.UniversalAiCompletionReason
 import com.maneesh.universalai.connector.contract.UniversalAiError
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
+import com.maneesh.universalai.connector.contract.UniversalAiModelTokenLimits
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -22,6 +28,9 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENROUTER_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.OPENROUTER_PROVIDER_CAPABILITY_PROFILE
+import com.maneesh.universalai.connector.internal.provider.ProviderModelDiscovery
+import com.maneesh.universalai.connector.internal.provider.ProviderModelListResult
 import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamSignal
 import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamTranslator
 import com.maneesh.universalai.connector.internal.provider.chatcompletions.hasChatCompletionsEventStreamContentType
@@ -51,7 +60,34 @@ import kotlinx.serialization.json.intOrNull
 internal class OpenRouterChatCompletionsAdapter(
     private val configuration: UniversalAiProviderConfiguration,
     private val transport: ConnectorTransport,
-) : ConnectorEngine {
+) : ConnectorEngine, ProviderModelDiscovery {
+    override suspend fun listModels(): ProviderModelListResult {
+        val credential = resolveCredential()
+        val request =
+            ConnectorTransportRequest(
+                method = "GET",
+                baseUrl = configuration.validatedBaseUrl,
+                endpoint = MODELS_ENDPOINT,
+                adapterHeaders =
+                    listOf(
+                        ConnectorTransportHeader(
+                            name = "authorization",
+                            value = "Bearer $credential",
+                        ),
+                        ConnectorTransportHeader(
+                            name = "accept",
+                            value = JSON_CONTENT_TYPE,
+                        ),
+                    ),
+            )
+        return transport.execute(request) { response ->
+            if (response.statusCode !in 200..299) {
+                throw providerFailure(response)
+            }
+            ProviderModelListResult.Supported(translateModelList(response))
+        }
+    }
+
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
         val transportRequest = transportRequest(request, stream = false)
@@ -228,6 +264,86 @@ internal class OpenRouterChatCompletionsAdapter(
         } catch (_: Throwable) {
             throw malformedResponse()
         }
+    }
+
+    private suspend fun translateModelList(
+        response: ConnectorTransportResponse,
+    ): List<UniversalAiModelDescriptor> {
+        val bytes = readBoundedBody(response.body)
+        return try {
+            val wire =
+                OPENROUTER_WIRE_JSON.decodeFromString<OpenRouterModelListWire>(
+                    bytes.decodeToString(throwOnInvalidSequence = true),
+                )
+            val wireModels = requireWireValue(wire.data)
+            requireWire(wireModels.size <= MAX_DISCOVERED_MODELS)
+            wireModels
+                .map { model -> model.toCanonicalDescriptor() }
+                .distinctBy { descriptor -> descriptor.target.modelId }
+                .sortedBy { descriptor -> descriptor.target.modelId.rawValue }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: UniversalAiException) {
+            throw failure
+        } catch (_: Throwable) {
+            throw malformedResponse()
+        }
+    }
+
+    private fun OpenRouterModelWire.toCanonicalDescriptor(): UniversalAiModelDescriptor {
+        val parameters = requireWireValue(supportedParameters)
+        requireWire(parameters.size <= MAX_DISCOVERED_PARAMETERS)
+        requireWire(
+            parameters.all { parameter ->
+                parameter.length in 1..MAX_DISCOVERED_PARAMETER_CHARACTERS &&
+                    parameter.none { character -> character.isISOControl() }
+            },
+        )
+        contextLength?.let { value -> requireWire(value > 0) }
+        val maxOutputTokens = topProvider?.maxCompletionTokens
+        maxOutputTokens?.let { value -> requireWire(value > 0) }
+        if (contextLength != null && maxOutputTokens != null) {
+            requireWire(maxOutputTokens <= contextLength)
+        }
+        val target =
+            UniversalAiTarget(
+                providerId = OPENROUTER_PROVIDER_ID,
+                modelId = ModelId.of(requireWireValue(id)),
+            )
+        val modelOverrides =
+            UniversalAiCapabilitySet.of(
+                UniversalAiCapabilityName.StructuredOutput to
+                    UniversalAiCapabilityDeclaration(
+                        support =
+                            if (
+                                "structured_outputs" in parameters ||
+                                "response_format" in parameters
+                            ) {
+                                UniversalAiCapabilitySupport.Supported
+                            } else {
+                                UniversalAiCapabilitySupport.Unsupported
+                            },
+                    ),
+            )
+        return UniversalAiModelDescriptor(
+            target = target,
+            displayName = requireWireValue(name),
+            limits =
+                if (contextLength == null && maxOutputTokens == null) {
+                    null
+                } else {
+                    UniversalAiModelTokenLimits(
+                        contextWindowTokens = contextLength,
+                        maxOutputTokens = maxOutputTokens,
+                    )
+                },
+            capabilities =
+                UniversalAiCapabilitySet.resolve(
+                    providerProfile = OPENROUTER_PROVIDER_CAPABILITY_PROFILE,
+                    modelTarget = target,
+                    modelOverrides = modelOverrides,
+                ),
+        )
     }
 }
 
@@ -749,6 +865,7 @@ internal const val OPENROUTER_UNAVAILABLE_MESSAGE: String =
     "OpenRouter is temporarily unavailable."
 
 private const val CHAT_COMPLETIONS_ENDPOINT: String = "chat/completions"
+private const val MODELS_ENDPOINT: String = "models"
 private const val JSON_CONTENT_TYPE: String = "application/json"
 private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
@@ -756,6 +873,9 @@ private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
 private const val MAX_RESPONSE_BODY_CHUNKS: Int = 4 * 1_024
 private const val SUCCESS_STATUS_CODE: Int = 200
+private const val MAX_DISCOVERED_MODELS: Int = 2_048
+private const val MAX_DISCOVERED_PARAMETERS: Int = 128
+private const val MAX_DISCOVERED_PARAMETER_CHARACTERS: Int = 128
 private const val OPENROUTER_STRUCTURED_OUTPUT_NAME: String = "universal_ai_response"
 
 private val PROVIDER_FAILURE_MAPPING =

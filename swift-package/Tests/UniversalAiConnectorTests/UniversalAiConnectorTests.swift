@@ -4,6 +4,47 @@ import XCTest
 @testable import UniversalAiConnector
 
 final class UniversalAiConnectorTests: XCTestCase {
+    func testPublicTimeoutDefaultsAndInvalidValuesReachTypedConstructionFailure() {
+        let defaults = UniversalAiConnectorConfiguration()
+        XCTAssertEqual(defaults.connectTimeoutMillis, 10_000)
+        XCTAssertEqual(defaults.requestTimeoutMillis, 60_000)
+
+        XCTAssertThrowsError(
+            try UniversalAiConnector(
+                configuration: UniversalAiConnectorConfiguration(
+                    connectTimeoutMillis: 0,
+                    requestTimeoutMillis: 60_000
+                )
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? UniversalAiContractValidationError,
+                UniversalAiContractValidationError(
+                    code: "invalid_connector_configuration",
+                    path: "/providers",
+                    message: "Connector configuration is invalid."
+                )
+            )
+        }
+    }
+
+    func testModelListReturnsExplicitUnsupportedAndHonorsClose() async throws {
+        let connector = UniversalAiConnector()
+        let providerId = UniversalAiProviderId(rawValue: "deterministic")
+
+        let result = try await connector.listModels(providerId: providerId)
+        XCTAssertEqual(result, .unsupported(providerId: providerId))
+        connector.close()
+
+        do {
+            _ = try await connector.listModels(providerId: providerId)
+            XCTFail("Expected closed model-list failure.")
+        } catch let error as UniversalAiConnectorError {
+            XCTAssertEqual(error.category, .validation)
+            XCTAssertEqual(error.code, .invalidRequest)
+        }
+    }
+
     func testProductFrameworkImportsAndReportsVersion() {
         let connector = UniversalAiConnector()
 

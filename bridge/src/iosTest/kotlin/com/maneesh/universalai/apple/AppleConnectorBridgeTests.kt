@@ -1,14 +1,23 @@
 package com.maneesh.universalai.apple
 
 import com.maneesh.universalai.connector.UniversalAiConnector
+import com.maneesh.universalai.connector.UniversalAiModelListResult
+import com.maneesh.universalai.connector.contract.ModelId
 import com.maneesh.universalai.connector.contract.OutputId
+import com.maneesh.universalai.connector.contract.ProviderId
 import com.maneesh.universalai.connector.contract.ResponseId
 import com.maneesh.universalai.connector.contract.StructuredOutputValue
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityDeclaration
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilityName
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet
+import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySupport
 import com.maneesh.universalai.connector.contract.UniversalAiCompletionReason
 import com.maneesh.universalai.connector.contract.UniversalAiError
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
+import com.maneesh.universalai.connector.contract.UniversalAiModelTokenLimits
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -35,6 +44,72 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppleConnectorBridgeTests {
+    @Test
+    fun modelListMapsExplicitUnsupportedAndCompleteSupportedDescriptors() = runTest {
+        val bridge = AppleConnectorBridge(this)
+        val successes = mutableListOf<AppleBridgeModelListResult>()
+        val errors = mutableListOf<AppleBridgeError>()
+
+        bridge.listModels(
+            adapterName = "deterministic",
+            onSuccess = successes::add,
+            onError = errors::add,
+        )
+        advanceUntilIdle()
+
+        val unsupported = successes.single()
+        assertEquals("deterministic", unsupported.adapterName)
+        assertFalse(unsupported.supported)
+        assertTrue(unsupported.models.isEmpty())
+        assertTrue(errors.isEmpty())
+
+        val canonicalTarget =
+            com.maneesh.universalai.connector.contract.UniversalAiTarget(
+                providerId = ProviderId.of("provider"),
+                modelId = ModelId.of("model"),
+            )
+        val supported =
+            UniversalAiModelListResult.Supported(
+                providerId = canonicalTarget.providerId,
+                models =
+                    listOf(
+                        UniversalAiModelDescriptor(
+                            target = canonicalTarget,
+                            displayName = "Display",
+                            limits =
+                                UniversalAiModelTokenLimits(
+                                    contextWindowTokens = 8_192,
+                                    maxOutputTokens = 2_048,
+                                ),
+                            capabilities =
+                                UniversalAiCapabilitySet.of(
+                                    UniversalAiCapabilityName.Streaming to
+                                        UniversalAiCapabilityDeclaration(
+                                            support = UniversalAiCapabilitySupport.Supported,
+                                        ),
+                                ),
+                        ),
+                    ),
+            ).toAppleBridgeModelListResult()
+
+        assertTrue(supported.supported)
+        with(supported.models.single()) {
+            assertEquals("1", contractVersion)
+            assertEquals("provider", target.providerRawValue)
+            assertEquals("model", target.modelRawValue)
+            assertEquals("Display", displayName)
+            val modelLimits = checkNotNull(limits)
+            assertEquals(8_192, modelLimits.contextWindowTokens)
+            assertFalse(modelLimits.hasMaxInputTokens)
+            assertEquals(2_048, modelLimits.maxOutputTokens)
+            with(capabilities.single()) {
+                assertEquals("streaming", name)
+                assertEquals("supported", support)
+                assertTrue(limits.isEmpty())
+            }
+        }
+    }
+
     @Test
     fun versionAndResponseUseCanonicalAppleValues() = runTest {
         val bridge = AppleConnectorBridge(this)

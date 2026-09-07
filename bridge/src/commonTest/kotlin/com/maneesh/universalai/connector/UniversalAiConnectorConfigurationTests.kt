@@ -2,20 +2,77 @@ package com.maneesh.universalai.connector
 
 import com.maneesh.universalai.connector.contract.ModelId
 import com.maneesh.universalai.connector.contract.ProviderId
+import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
+import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
+import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiInputRole
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
-import com.maneesh.universalai.connector.contract.UniversalAiException
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.HttpTimeoutCapability
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class UniversalAiConnectorConfigurationTests {
+    @Test
+    fun publicTimeoutsPreserveDefaultsValidateBoundsAndReachEveryRequest() = runTest {
+        val defaults = UniversalAiConnectorConfiguration(emptyList())
+        assertEquals(10_000, defaults.connectTimeoutMillis)
+        assertEquals(60_000, defaults.requestTimeoutMillis)
+
+        listOf(
+            0L to 60_000L,
+            10_000L to 0L,
+            (UniversalAiConnectorConfiguration.MAX_TIMEOUT_MILLIS + 1L) to 60_000L,
+            10_000L to (UniversalAiConnectorConfiguration.MAX_TIMEOUT_MILLIS + 1L),
+        ).forEach { (connectTimeout, requestTimeout) ->
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    UniversalAiConnectorConfiguration(
+                        providers = emptyList(),
+                        connectTimeoutMillis = connectTimeout,
+                        requestTimeoutMillis = requestTimeout,
+                    )
+                }
+            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+            assertEquals(UniversalAiErrorCode.InvalidRequest, failure.error.code)
+            assertEquals("The configured HTTP timeouts are invalid.", failure.error.message)
+        }
+
+        val engine =
+            MockEngine { request ->
+                val timeouts = request.getCapabilityOrNull(HttpTimeoutCapability)
+                assertEquals(1_234, timeouts?.connectTimeoutMillis)
+                assertEquals(5_678, timeouts?.requestTimeoutMillis)
+                respond("{\"object\":\"list\",\"data\":[]}")
+            }
+        val connector =
+            UniversalAiConnector(
+                configuration =
+                    UniversalAiConnectorConfiguration(
+                        providers = listOf(provider("openai")),
+                        connectTimeoutMillis = 1_234,
+                        requestTimeoutMillis = 5_678,
+                    ),
+                httpEngine = engine,
+            )
+        try {
+            assertTrue(
+                connector.listModels(ProviderId.of("openai")) is
+                    UniversalAiModelListResult.Supported,
+            )
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
     @Test
     fun configurationIsValidatedSortedAndDefensivelyCopied() {
         val providers =

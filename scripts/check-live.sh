@@ -332,7 +332,7 @@ require_clean_checkout
 
 echo "$PROVIDER_LABEL live verification passed."
 echo "provider=$PROVIDER"
-echo "model=$MODEL_VALUE"
+echo "model_identity=verified"
 if [[ "$PROVIDER" == "gateway" ]]; then
   echo "structured_output=$STRUCTURED_OUTPUT_VALUE"
 fi

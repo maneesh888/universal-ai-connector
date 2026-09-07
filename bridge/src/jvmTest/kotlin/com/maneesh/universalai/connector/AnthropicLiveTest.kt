@@ -29,6 +29,7 @@ import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -40,6 +41,23 @@ import kotlin.test.assertTrue
  */
 class AnthropicLiveTest {
     @Test
+    fun configuredModelIsDiscoverableWithoutIdentifierSubstitution(): Unit = runBlocking {
+        val configuredModel = ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL"))
+        connector().use { connector ->
+            val supported =
+                assertIs<UniversalAiModelListResult.Supported>(
+                    connector.listModels(ANTHROPIC_PROVIDER_ID),
+                )
+
+            assertTrue(
+                supported.models.any { descriptor ->
+                    descriptor.target.modelId == configuredModel
+                },
+            )
+        }
+    }
+
+    @Test
     fun minimalNonStreamingResponseTranslatesToCanonicalOutput(): Unit = runBlocking {
         connector().use { connector ->
             val response =
@@ -50,6 +68,10 @@ class AnthropicLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == ANTHROPIC_PROVIDER_ID)
+            assertEquals(
+                ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL")),
+                response.target.modelId,
+            )
             assertNotNull(response.requestId)
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
@@ -119,6 +141,10 @@ class AnthropicLiveTest {
             assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
             assertTrue(events.last().terminal)
             assertEquals(completedOutput, events.last().response?.outputs?.single())
+            assertEquals(
+                ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL")),
+                events.last().response?.target?.modelId,
+            )
         }
     }
 
