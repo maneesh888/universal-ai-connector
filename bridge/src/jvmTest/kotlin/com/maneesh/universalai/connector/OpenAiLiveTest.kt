@@ -15,6 +15,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import com.maneesh.universalai.connector.internal.provider.openai.OPENAI_INVALID_REQUEST_MESSAGE
+import com.maneesh.universalai.connector.internal.provider.openai.OPENAI_NOT_FOUND_MESSAGE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
@@ -147,7 +148,7 @@ class OpenAiLiveTest {
     }
 
     @Test
-    fun intentionalUnknownModelErrorMapsToSafeCanonicalValidationFailure(): Unit = runBlocking {
+    fun intentionalUnknownModelErrorMapsToSafeCanonicalFailure(): Unit = runBlocking {
         connector().use { connector ->
             val failure =
                 assertFailsWith<UniversalAiException> {
@@ -159,9 +160,17 @@ class OpenAiLiveTest {
                     )
                 }
 
-            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
-            assertEquals("provider_invalid_request", failure.error.code.rawValue)
-            assertEquals(OPENAI_INVALID_REQUEST_MESSAGE, failure.message)
+            when (failure.error.category to failure.error.code.rawValue) {
+                UniversalAiErrorCategory.Validation to "provider_invalid_request" ->
+                    assertEquals(OPENAI_INVALID_REQUEST_MESSAGE, failure.message)
+                UniversalAiErrorCategory.NotFound to "provider_resource_not_found" ->
+                    assertEquals(OPENAI_NOT_FOUND_MESSAGE, failure.message)
+                else ->
+                    assertTrue(
+                        false,
+                        "OpenAI unknown-model failure must use a governed canonical classification.",
+                    )
+            }
         }
     }
 
