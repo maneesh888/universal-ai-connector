@@ -279,12 +279,12 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
                 OPENAI_COMPATIBLE_WIRE_JSON.decodeFromString<OpenAiCompatibleModelListWire>(
                     bytes.decodeToString(throwOnInvalidSequence = true),
                 )
-            requireWire(wire.objectType == "list")
+            requireWire(wire.objectType == null || wire.objectType == "list")
             val wireModels = requireWireValue(wire.data)
             requireWire(wireModels.size <= MAX_DISCOVERED_MODELS)
             wireModels
                 .map { model ->
-                    requireWire(model.objectType == "model")
+                    requireWire(model.objectType == null || model.objectType == "model")
                     val target =
                         UniversalAiTarget(
                             providerId = OPENAI_COMPATIBLE_PROVIDER_ID,

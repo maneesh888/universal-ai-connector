@@ -263,6 +263,44 @@ class UniversalAiModelDiscoveryTests {
             assertEquals(listOf("gateway-a", "gateway-b"), result.modelIds())
         }
         engine.close()
+
+        val markerlessEngine =
+            MockEngine {
+                respond(
+                    """
+                    {
+                      "data":[
+                        {"id":"compatible-b","name":"Compatible B"},
+                        {"id":"compatible-a","name":"Compatible A"}
+                      ]
+                    }
+                    """.trimIndent(),
+                )
+            }
+        configuredConnector("openai-compatible", markerlessEngine).use { connector ->
+            val result =
+                assertIs<UniversalAiModelListResult.Supported>(
+                    connector.listModels(ProviderId.of("openai-compatible")),
+                )
+            assertEquals(listOf("compatible-a", "compatible-b"), result.modelIds())
+        }
+        markerlessEngine.close()
+
+        listOf(
+            """{"object":"unexpected","data":[]}""",
+            """{"data":[{"id":"model-a","object":"unexpected"}]}""",
+        ).forEach { body ->
+            val invalidMarkerEngine = MockEngine { respond(body) }
+            configuredConnector("openai-compatible", invalidMarkerEngine).use { connector ->
+                val failure =
+                    assertFailsWith<UniversalAiException> {
+                        connector.listModels(ProviderId.of("openai-compatible"))
+                    }
+                assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+                assertEquals("malformed_provider_response", failure.error.code.rawValue)
+            }
+            invalidMarkerEngine.close()
+        }
     }
 
     @Test
