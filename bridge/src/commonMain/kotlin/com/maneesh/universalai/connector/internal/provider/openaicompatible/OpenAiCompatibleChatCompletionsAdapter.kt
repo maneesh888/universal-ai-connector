@@ -11,6 +11,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -22,6 +23,10 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_PROVIDER_CAPABILITY_PROFILE
+import com.maneesh.universalai.connector.internal.provider.OPENAI_COMPATIBLE_UNKNOWN_MODEL_CAPABILITIES
+import com.maneesh.universalai.connector.internal.provider.ProviderModelDiscovery
+import com.maneesh.universalai.connector.internal.provider.ProviderModelListResult
 import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamSignal
 import com.maneesh.universalai.connector.internal.provider.chatcompletions.ChatCompletionsStreamTranslator
 import com.maneesh.universalai.connector.internal.provider.chatcompletions.hasChatCompletionsEventStreamContentType
@@ -42,6 +47,7 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -50,7 +56,37 @@ import kotlinx.serialization.json.decodeFromJsonElement
 internal class OpenAiCompatibleChatCompletionsAdapter(
     private val configuration: UniversalAiProviderConfiguration,
     private val transport: ConnectorTransport,
-) : ConnectorEngine {
+) : ConnectorEngine, ProviderModelDiscovery {
+    override suspend fun listModels(): ProviderModelListResult {
+        val credential = resolveCredential()
+        val request =
+            ConnectorTransportRequest(
+                method = "GET",
+                baseUrl = configuration.validatedBaseUrl,
+                endpoint = MODELS_ENDPOINT,
+                adapterHeaders =
+                    listOf(
+                        ConnectorTransportHeader(
+                            name = "authorization",
+                            value = "Bearer $credential",
+                        ),
+                        ConnectorTransportHeader(
+                            name = "accept",
+                            value = JSON_CONTENT_TYPE,
+                        ),
+                    ),
+            )
+        return transport.execute(request) { response ->
+            when {
+                response.statusCode in 200..299 ->
+                    ProviderModelListResult.Supported(translateModelList(response))
+                response.statusCode in UNSUPPORTED_DISCOVERY_STATUS_CODES ->
+                    ProviderModelListResult.Unsupported
+                else -> throw providerFailure(response)
+            }
+        }
+    }
+
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
         val transportRequest = transportRequest(request, stream = false)
@@ -234,6 +270,59 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
             throw malformedResponse()
         }
     }
+
+    private suspend fun translateModelList(
+        response: ConnectorTransportResponse,
+    ): List<UniversalAiModelDescriptor> {
+        val bytes = readBoundedBody(response.body)
+        return try {
+            val document =
+                requireWireValue(
+                    OPENAI_COMPATIBLE_WIRE_JSON.parseToJsonElement(
+                        bytes.decodeToString(throwOnInvalidSequence = true),
+                    ) as? JsonObject,
+                )
+            requireWire(document["object"] != JsonNull)
+            val modelDocuments = requireWireValue(document["data"] as? JsonArray)
+            requireWire(
+                modelDocuments.all { modelDocument ->
+                    modelDocument is JsonObject && modelDocument["object"] != JsonNull
+                },
+            )
+            val wire =
+                OPENAI_COMPATIBLE_WIRE_JSON.decodeFromJsonElement<OpenAiCompatibleModelListWire>(
+                    document,
+                )
+            requireWire(wire.objectType == null || wire.objectType == "list")
+            val wireModels = requireWireValue(wire.data)
+            requireWire(wireModels.size <= MAX_DISCOVERED_MODELS)
+            wireModels
+                .map { model ->
+                    requireWire(model.objectType == null || model.objectType == "model")
+                    val target =
+                        UniversalAiTarget(
+                            providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
+                            modelId = ModelId.of(requireWireValue(model.id)),
+                        )
+                    UniversalAiModelDescriptor(
+                        target = target,
+                        capabilities =
+                            com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet.resolve(
+                                providerProfile = OPENAI_COMPATIBLE_PROVIDER_CAPABILITY_PROFILE,
+                                modelTarget = target,
+                                modelOverrides = OPENAI_COMPATIBLE_UNKNOWN_MODEL_CAPABILITIES,
+                            ),
+                    )
+                }.distinctBy { descriptor -> descriptor.target.modelId }
+                .sortedBy { descriptor -> descriptor.target.modelId.rawValue }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: UniversalAiException) {
+            throw failure
+        } catch (_: Throwable) {
+            throw malformedResponse()
+        }
+    }
 }
 
 private fun UniversalAiRequest.toOpenAiCompatibleWire(
@@ -282,6 +371,7 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
     requireWire(objectType == "chat.completion")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val choice = requireWireValue(choices).singleOrNull() ?: throw malformedResponse()
     if (choice.error != null) {
         throw providerResponseFailure(metadata)
@@ -307,11 +397,7 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = listOf(text.toCanonicalOutput(request, responseId)),
         usage = usage?.toCanonical(),
         completionReason = requireWireValue(choice.finishReason).toCanonicalCompletionReason(),
@@ -607,6 +693,7 @@ internal const val OPENAI_COMPATIBLE_SERVER_ERROR_MESSAGE: String =
     "The OpenAI-compatible endpoint encountered a server error."
 
 private const val CHAT_COMPLETIONS_ENDPOINT: String = "chat/completions"
+private const val MODELS_ENDPOINT: String = "models"
 private const val JSON_CONTENT_TYPE: String = "application/json"
 private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val MAX_CREDENTIAL_CHARACTERS: Int = 8_192
@@ -614,6 +701,7 @@ private const val MAX_RESPONSE_BODY_BYTES: Int = 8 * 1_024 * 1_024
 private const val INITIAL_RESPONSE_BODY_CAPACITY: Int = 8 * 1_024
 private const val MAX_RESPONSE_BODY_CHUNKS: Int = 4 * 1_024
 private const val SUCCESS_STATUS_CODE: Int = 200
+private const val MAX_DISCOVERED_MODELS: Int = 2_048
 private const val OPENAI_COMPATIBLE_STRUCTURED_OUTPUT_NAME: String = "universal_ai_response"
 
 private val PROVIDER_FAILURE_MAPPING =
@@ -622,6 +710,8 @@ private val PROVIDER_FAILURE_MAPPING =
         code = "provider_request_failed",
         message = OPENAI_COMPATIBLE_PROVIDER_FAILURE_MESSAGE,
     )
+
+private val UNSUPPORTED_DISCOVERY_STATUS_CODES: Set<Int> = setOf(404, 405, 501)
 
 internal val OPENAI_COMPATIBLE_WIRE_JSON =
     Json {

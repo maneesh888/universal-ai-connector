@@ -67,7 +67,7 @@ class OpenRouterChatCompletionsAdapterTests {
                         ByteReadChannel(
                             successResponse(
                                 id = "chatcmpl_test",
-                                model = "resolved/provider-model",
+                                model = "requested/provider-model",
                                 text = "ready",
                                 finishReason = "stop",
                             ),
@@ -107,7 +107,7 @@ class OpenRouterChatCompletionsAdapterTests {
             assertEquals("chatcmpl_test", response.id.rawValue)
             assertEquals("req_openrouter", response.requestId?.rawValue)
             assertEquals("openrouter", response.target.providerId.rawValue)
-            assertEquals("resolved/provider-model", response.target.modelId.rawValue)
+            assertEquals("requested/provider-model", response.target.modelId.rawValue)
             assertEquals(UniversalAiCompletionReason.Stop, response.completionReason)
             with(response.outputs.single()) {
                 assertEquals("chatcmpl_test", id.rawValue)
@@ -648,6 +648,7 @@ class OpenRouterChatCompletionsAdapterTests {
         val malformedPayloads =
             listOf(
                 """{"not_json":""",
+                successResponse(model = "provider-substitution"),
                 successResponse(objectType = "response"),
                 successResponse(choices = "[]"),
                 successResponse(
@@ -827,7 +828,7 @@ class OpenRouterChatCompletionsAdapterTests {
     private fun successResponse(
         id: String = "chatcmpl_test",
         objectType: String = "chat.completion",
-        model: String = "resolved/provider-model",
+        model: String = "requested/provider-model",
         text: String = "ready",
         role: String = "assistant",
         finishReason: String = "stop",

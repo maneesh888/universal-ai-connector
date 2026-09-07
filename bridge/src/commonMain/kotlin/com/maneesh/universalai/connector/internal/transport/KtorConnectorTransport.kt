@@ -24,8 +24,13 @@ import kotlinx.io.IOException
 internal expect fun createDefaultHttpClient(): HttpClient
 
 /** Creates a transport that owns both its Ktor client and the platform-default engine. */
-internal fun createDefaultKtorTransport(): ConnectorTransport =
-    KtorConnectorTransport(createDefaultHttpClient())
+internal fun createDefaultKtorTransport(
+    timeouts: ConnectorTransportTimeouts = ConnectorTransportTimeouts(),
+): ConnectorTransport =
+    KtorConnectorTransport(
+        httpClient = createDefaultHttpClient(),
+        timeouts = timeouts,
+    )
 
 /**
  * Creates a transport that owns its Ktor client wrapper but does not own [httpEngine].

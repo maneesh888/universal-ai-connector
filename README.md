@@ -54,7 +54,8 @@ package-boundary acceptance without another runtime adapter.
 >
 > **Accepted bounded proof:** The P2 Apple path covers 36 Swift integration tests, the two-slice XCFramework, simulator sample compilation, and generic iOS-device linking. The Android application passed installation, launch, rerun, and deterministic UI inspection on a local API 36 emulator. Physical iOS-device execution has not been performed.
 >
-> **Production status:** Architecture validation only—not a production AI client yet.
+> **Production status:** Source-pinned production-consumption contract; remote P8 distribution and
+> an immutable alpha release remain planned and are not claimed here.
 
 ## Integration goal
 
@@ -86,6 +87,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Kotlin/Native iOS ARM64 device and simulator frameworks | ✅ Locally verified |
 | Combined device-and-simulator XCFramework | ✅ Locally verified |
 | Product-facing local Swift Package façade | ✅ Locally verified |
+| iOS app-extension consumer boundary | ✅ Simulator compilation/linking with extension-safe APIs |
 | Swift synchronous and async calls into Kotlin | ✅ Verified |
 | Kotlin `Flow` to Swift `AsyncThrowingStream` | ✅ Verified |
 | Stable Kotlin-to-Swift error mapping | ✅ Verified |
@@ -104,6 +106,8 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
+| Configurable connect/request timeouts | ✅ Public Kotlin and Swift construction boundary |
+| Provider-neutral model discovery | ✅ OpenAI, Anthropic, OpenRouter, and conservative compatible endpoints |
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | OpenRouter and compatible adapters | ✅ P6 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
@@ -197,7 +201,7 @@ Native Linux, Windows, and macOS artifacts are demand-driven. The initial deskto
 
 P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. The JVM console remains the headless and server-oriented verification path.
 
-The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes.
+The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond`, `listModels`, and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes. The complete source-revision integration contract is in [`docs/PRODUCTION_CONSUMPTION.md`](docs/PRODUCTION_CONSUMPTION.md).
 
 Provider configuration is immutable and provider-neutral. Applications supply a synchronous
 credential loader owned by the host; the connector invokes it once per network request and does
@@ -218,6 +222,8 @@ fun openAiConnector(loadCredential: () -> String): UniversalAiConnector =
                         credentialSupplier = loadCredential,
                     ),
                 ),
+            connectTimeoutMillis = 10_000,
+            requestTimeoutMillis = 60_000,
         ),
     )
 ```
@@ -235,7 +241,9 @@ func openAiConnector(
     )
     return try UniversalAiConnector(
         configuration: UniversalAiConnectorConfiguration(
-            providers: [provider]
+            providers: [provider],
+            connectTimeoutMillis: 10_000,
+            requestTimeoutMillis: 60_000
         )
     )
 }
@@ -309,11 +317,12 @@ func gatewayRequest(model: String, content: String) -> UniversalAiRequest {
 ```
 
 Use HTTPS except for an exact loopback development endpoint. The connector sends standard bearer
-authentication to `POST <gateway-base-url>/chat/completions`; it does not discover models, manage
-Gateway keys, or know which backend a model uses. Structured output remains selected-model
-dependent, and absent non-streaming usage is accepted while null, incomplete, or negative present
-usage is rejected. Close the connector at the host lifecycle boundary, and never persist or log a
-credential returned by the supplier.
+authentication to `POST <gateway-base-url>/chat/completions`. `listModels` attempts the conservative
+standard `GET <gateway-base-url>/models` shape and returns explicit unsupported discovery for 404,
+405, or 501; it does not manage Gateway keys or know which backend a model uses. Structured output
+remains selected-model dependent, and absent non-streaming usage is accepted while null,
+incomplete, or negative present usage is rejected. Close the connector at the host lifecycle
+boundary, and never persist or log a credential returned by the supplier.
 
 ## Quick start
 
@@ -405,6 +414,7 @@ On macOS, the full check covers:
 - product-facing shared and Apple-adapter tests on iOS Simulator
 - device-and-simulator XCFramework generation and slice validation
 - product-facing Swift Package integration tests
+- iOS Simulator app-extension compilation and linking with extension-safe APIs enforced
 - iOS simulator sample build
 - generic iOS-device sample link/build
 - secret scanning
@@ -434,6 +444,7 @@ Run individual checks when needed:
 ./gradlew :bridge:iosSimulatorArm64Test
 ./scripts/build-xcframework.sh
 ./scripts/test-swift-package.sh
+./scripts/build-app-extension-consumer.sh
 ./scripts/build-sample.sh
 ./scripts/build-sample-device.sh
 ./scripts/check-contracts.sh --all
@@ -633,6 +644,13 @@ Verify the sample for both supported build destinations:
 ./scripts/build-sample-device.sh
 ```
 
+The same Swift product is also compiled and linked by a minimal iOS app-extension consumer with
+`APPLICATION_EXTENSION_API_ONLY=YES`:
+
+```bash
+./scripts/build-app-extension-consumer.sh
+```
+
 The second command compiles and links against the `ios-arm64` framework slice using Xcode's generic iOS-device destination with code signing disabled. It is not physical-device execution proof.
 
 ## Repository layout
@@ -641,7 +659,7 @@ The second command compiles and links against the `ios-arm64` framework slice us
 bridge/                 Kotlin Multiplatform bridge and tests
 contracts/              Versioned JSON Schemas and compatibility fixtures
 swift-package/          Supported Swift façade and Swift tests
-samples/ios/            Standalone iOS SwiftUI sample
+samples/ios/            Standalone iOS SwiftUI and app-extension consumers
 samples/android/        Jetpack Compose public-module Android consumer
 samples/jvm-console/    Non-interactive public-module Kotlin/JVM consumer
 scripts/                Deterministic verification commands

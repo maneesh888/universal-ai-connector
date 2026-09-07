@@ -498,7 +498,8 @@ if grep -Fq "$GATEWAY_SYNTHETIC_KEY" "$OUTPUT" || grep -Fq "$GATEWAY_BASE_URL" "
   exit 1
 fi
 if ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
-  ! grep -Fq "model=$MODEL" "$OUTPUT"; then
+  ! grep -Fq "model_identity=verified" "$OUTPUT" ||
+  grep -Fq "$MODEL" "$OUTPUT"; then
   echo "Successful live runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
@@ -559,7 +560,8 @@ if grep -Fq "$ANTHROPIC_SYNTHETIC_KEY" "$OUTPUT" ||
 fi
 if ! grep -Fq "provider=anthropic" "$OUTPUT" ||
   ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
-  ! grep -Fq "model=$ANTHROPIC_MODEL" "$OUTPUT"; then
+  ! grep -Fq "model_identity=verified" "$OUTPUT" ||
+  grep -Fq "$ANTHROPIC_MODEL" "$OUTPUT"; then
   echo "Successful Anthropic runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
@@ -599,7 +601,8 @@ if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
 fi
 if ! grep -Fq "provider=openrouter" "$OUTPUT" ||
   ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
-  ! grep -Fq "model=$OPENROUTER_MODEL" "$OUTPUT"; then
+  ! grep -Fq "model_identity=verified" "$OUTPUT" ||
+  grep -Fq "$OPENROUTER_MODEL" "$OUTPUT"; then
   echo "Successful OpenRouter runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
@@ -644,7 +647,8 @@ if grep -Fq "$GATEWAY_BASE_URL" "$OUTPUT"; then
 fi
 if ! grep -Fq "provider=gateway" "$OUTPUT" ||
   ! grep -Fq "head_sha=$HEAD_SHA" "$OUTPUT" ||
-  ! grep -Fq "model=$GATEWAY_MODEL" "$OUTPUT" ||
+  ! grep -Fq "model_identity=verified" "$OUTPUT" ||
+  grep -Fq "$GATEWAY_MODEL" "$OUTPUT" ||
   ! grep -Fq "structured_output=$GATEWAY_STRUCTURED_OUTPUT" "$OUTPUT"; then
   echo "Successful Gateway runner output omitted bounded evidence metadata." >&2
   exit 1

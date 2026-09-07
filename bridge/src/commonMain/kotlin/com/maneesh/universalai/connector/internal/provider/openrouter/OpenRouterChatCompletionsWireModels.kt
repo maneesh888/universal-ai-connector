@@ -5,6 +5,29 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
+internal data class OpenRouterModelListWire(
+    val data: List<OpenRouterModelWire>? = null,
+)
+
+@Serializable
+internal data class OpenRouterModelWire(
+    val id: String? = null,
+    val name: String? = null,
+    @SerialName("context_length")
+    val contextLength: Long? = null,
+    @SerialName("supported_parameters")
+    val supportedParameters: List<String>? = null,
+    @SerialName("top_provider")
+    val topProvider: OpenRouterModelTopProviderWire? = null,
+)
+
+@Serializable
+internal data class OpenRouterModelTopProviderWire(
+    @SerialName("max_completion_tokens")
+    val maxCompletionTokens: Long? = null,
+)
+
+@Serializable
 internal data class OpenRouterChatCompletionRequestWire(
     val model: String,
     val messages: List<OpenRouterMessageWire>,

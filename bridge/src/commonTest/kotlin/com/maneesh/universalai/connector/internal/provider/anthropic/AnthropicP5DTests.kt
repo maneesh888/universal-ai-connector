@@ -100,6 +100,7 @@ class AnthropicP5DTests {
             assertEquals("Héllo", events[4].output?.text)
             assertEquals(8L, events[5].usage?.totalTokens)
             assertEquals("Héllo", events.last().response?.outputs?.single()?.text)
+            assertEquals("requested-model", events.last().response?.target?.modelId?.rawValue)
             assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
             assertTrue(events.last().terminal)
         } finally {
@@ -332,6 +333,10 @@ class AnthropicP5DTests {
                         "{\"type\":\"message_start\"}",
                     ),
                     incompleteAnthropicStream("future_stop_reason"),
+                    messageStartEvent().replace(
+                        "\"model\":\"requested-model\"",
+                        "\"model\":\"provider-substitution\"",
+                    ),
                 )
 
             malformedStreams.forEachIndexed { index, stream ->
@@ -885,7 +890,7 @@ private fun messageStartEvent(lineEnding: String = "\n"): String =
             "type":"message",
             "role":"assistant",
             "content":[],
-            "model":"resolved-model",
+            "model":"requested-model",
             "stop_reason":null,
             "stop_sequence":null,
             "usage":{

@@ -7,6 +7,7 @@ package com.maneesh.universalai.apple
 
 import com.maneesh.universalai.connector.UniversalAiConnector
 import com.maneesh.universalai.connector.UniversalAiConnectorConfiguration
+import com.maneesh.universalai.connector.UniversalAiModelListResult
 import com.maneesh.universalai.connector.UniversalAiProviderConfiguration
 import com.maneesh.universalai.connector.contract.ContractSemanticException
 import com.maneesh.universalai.connector.contract.ModelId
@@ -18,6 +19,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiGenerationParameters
 import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -79,12 +81,18 @@ class AppleConnectorBridge internal constructor(
     constructor(
         adapterNames: List<String>,
         adapterBaseUrls: List<String>,
+        connectTimeoutMillis: Long =
+            UniversalAiConnectorConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+        requestTimeoutMillis: Long =
+            UniversalAiConnectorConfiguration.DEFAULT_REQUEST_TIMEOUT_MILLIS,
         hostValueResolver: (String, (String) -> Unit, () -> Unit) -> Unit,
     ) : this(
         connector =
             createConfiguredConnector(
                 adapterNames = adapterNames,
                 adapterBaseUrls = adapterBaseUrls,
+                connectTimeoutMillis = connectTimeoutMillis,
+                requestTimeoutMillis = requestTimeoutMillis,
                 hostValueResolver = hostValueResolver,
             ),
         injectedScope = null,
@@ -138,6 +146,40 @@ class AppleConnectorBridge internal constructor(
         job.invokeOnCompletion { cause ->
             if (cause is CancellationException) {
                 instrumentation.recordResponseCancellation()
+                onCancelled()
+            }
+        }
+        return AppleCancellationHandle(job)
+    }
+
+    fun listModels(
+        adapterName: String,
+        onSuccess: (AppleBridgeModelListResult) -> Unit,
+        onError: (AppleBridgeError) -> Unit,
+        onCancelled: () -> Unit = {},
+    ): AppleCancellationHandle {
+        val canonicalProviderId =
+            try {
+                ProviderId.of(adapterName)
+            } catch (failure: Throwable) {
+                onError(failure.toAppleBridgeError())
+                return completedCancellationHandle()
+            }
+        val job = launchOperation {
+            val result =
+                try {
+                    connector.listModels(canonicalProviderId).toAppleBridgeModelListResult()
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (failure: Throwable) {
+                    onError(failure.toAppleBridgeError())
+                    return@launchOperation
+                }
+            ensureActive()
+            onSuccess(result)
+        }
+        job.invokeOnCompletion { cause ->
+            if (cause is CancellationException) {
                 onCancelled()
             }
         }
@@ -216,6 +258,8 @@ class AppleConnectorBridge internal constructor(
 private fun createConfiguredConnector(
     adapterNames: List<String>,
     adapterBaseUrls: List<String>,
+    connectTimeoutMillis: Long,
+    requestTimeoutMillis: Long,
     hostValueResolver: (String, (String) -> Unit, () -> Unit) -> Unit,
 ): UniversalAiConnector {
     require(adapterNames.size == adapterBaseUrls.size) {
@@ -223,26 +267,29 @@ private fun createConfiguredConnector(
     }
     return UniversalAiConnector(
         UniversalAiConnectorConfiguration(
-            adapterNames.indices.map { index ->
-                val adapterName = adapterNames[index]
-                UniversalAiProviderConfiguration(
-                    providerId = ProviderId.of(adapterName),
-                    baseUrl = adapterBaseUrls[index],
-                    credentialSupplier = {
-                        var value = ""
-                        var cancelled = false
-                        hostValueResolver(
-                            adapterName,
-                            { resolvedValue -> value = resolvedValue },
-                            { cancelled = true },
-                        )
-                        if (cancelled) {
-                            throw CancellationException("Host value resolution was cancelled.")
-                        }
-                        value
-                    },
-                )
-            },
+            providers =
+                adapterNames.indices.map { index ->
+                    val adapterName = adapterNames[index]
+                    UniversalAiProviderConfiguration(
+                        providerId = ProviderId.of(adapterName),
+                        baseUrl = adapterBaseUrls[index],
+                        credentialSupplier = {
+                            var value = ""
+                            var cancelled = false
+                            hostValueResolver(
+                                adapterName,
+                                { resolvedValue -> value = resolvedValue },
+                                { cancelled = true },
+                            )
+                            if (cancelled) {
+                                throw CancellationException("Host value resolution was cancelled.")
+                            }
+                            value
+                        },
+                    )
+                },
+            connectTimeoutMillis = connectTimeoutMillis,
+            requestTimeoutMillis = requestTimeoutMillis,
         ),
     )
 }
@@ -380,6 +427,58 @@ internal fun UniversalAiResponse.toAppleBridgeResponse(): AppleBridgeResponse =
         outputs = outputs.map(UniversalAiOutput::toAppleBridgeOutput),
         usage = usage?.toAppleBridgeUsage(),
         completionReason = completionReason.rawValue,
+        extensions = extensions.toAppleBridgeExtensions(),
+    )
+
+@HiddenFromObjC
+internal fun UniversalAiModelListResult.toAppleBridgeModelListResult(): AppleBridgeModelListResult =
+    when (this) {
+        is UniversalAiModelListResult.Supported ->
+            AppleBridgeModelListResult(
+                adapterName = providerId.rawValue,
+                supported = true,
+                models = models.map(UniversalAiModelDescriptor::toAppleBridgeModelDescriptor),
+            )
+        is UniversalAiModelListResult.Unsupported ->
+            AppleBridgeModelListResult(
+                adapterName = providerId.rawValue,
+                supported = false,
+                models = emptyList(),
+            )
+    }
+
+private fun UniversalAiModelDescriptor.toAppleBridgeModelDescriptor(): AppleBridgeModelDescriptor =
+    AppleBridgeModelDescriptor(
+        contractVersion = contractVersion,
+        target = target.toAppleBridgeTarget(),
+        displayName = displayName,
+        limits =
+            limits?.let { value ->
+                AppleBridgeModelTokenLimits(
+                    hasContextWindowTokens = value.contextWindowTokens != null,
+                    contextWindowTokens = value.contextWindowTokens ?: 0,
+                    hasMaxInputTokens = value.maxInputTokens != null,
+                    maxInputTokens = value.maxInputTokens ?: 0,
+                    hasMaxOutputTokens = value.maxOutputTokens != null,
+                    maxOutputTokens = value.maxOutputTokens ?: 0,
+                )
+            },
+        capabilities =
+            capabilities.declarations.entries
+                .sortedBy { entry -> entry.key.rawValue }
+                .map { (name, declaration) ->
+                    AppleBridgeCapabilityDeclaration(
+                        name = name.rawValue,
+                        support = declaration.support.rawValue,
+                        limits =
+                            declaration.limits.entries
+                                .sortedBy { entry -> entry.key.rawValue }
+                                .map { entry ->
+                                    AppleBridgeLongEntry(entry.key.rawValue, entry.value)
+                                },
+                        extensions = declaration.extensions.toAppleBridgeExtensions(),
+                    )
+                },
         extensions = extensions.toAppleBridgeExtensions(),
     )
 

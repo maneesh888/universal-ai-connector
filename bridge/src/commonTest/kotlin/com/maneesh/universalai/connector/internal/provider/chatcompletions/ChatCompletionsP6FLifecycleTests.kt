@@ -606,7 +606,7 @@ private fun p6fSuccessfulResponse(text: String): String =
     {
       "id":"chatcmpl_lifecycle",
       "object":"chat.completion",
-      "model":"resolved/provider-model",
+      "model":"requested/provider-model",
       "choices":[{
         "index":0,
         "message":{"role":"assistant","content":${JsonPrimitive(text)}},
@@ -627,17 +627,17 @@ private fun p6fStreamBeforeTerminal(): String =
 
 private fun p6fFirstStreamRecord(): String =
     p6fSse(
-        """{"id":"chatcmpl_lifecycle","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}""",
+        """{"id":"chatcmpl_lifecycle","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}""",
     )
 
 private fun p6fContentStreamRecord(text: String): String =
     p6fSse(
-        """{"id":"chatcmpl_lifecycle","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","choices":[{"index":0,"delta":{"content":${JsonPrimitive(text)}}}]}""",
+        """{"id":"chatcmpl_lifecycle","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"content":${JsonPrimitive(text)}}}]}""",
     )
 
 private fun p6fFinishStreamRecord(): String =
     p6fSse(
-        """{"id":"chatcmpl_lifecycle","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}}""",
+        """{"id":"chatcmpl_lifecycle","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":"stop"}],"usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}}""",
     )
 
 private fun p6fSse(data: String): String = "data: $data\n\n"

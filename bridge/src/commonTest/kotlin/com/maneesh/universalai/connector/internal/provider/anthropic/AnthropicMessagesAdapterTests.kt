@@ -63,7 +63,7 @@ class AnthropicMessagesAdapterTests {
                                 {"type": "text", "text": "first"},
                                 {"type": "text", "text": " response"}
                               ],
-                              "model": "resolved-claude-model",
+                              "model": "requested-claude-model",
                               "stop_reason": "stop_sequence",
                               "stop_sequence": "DONE",
                               "usage": {
@@ -106,7 +106,7 @@ class AnthropicMessagesAdapterTests {
             assertEquals("msg_test", response.id.rawValue)
             assertEquals("req_anthropic_test", response.requestId?.rawValue)
             assertEquals("anthropic", response.target.providerId.rawValue)
-            assertEquals("resolved-claude-model", response.target.modelId.rawValue)
+            assertEquals("requested-claude-model", response.target.modelId.rawValue)
             assertEquals(UniversalAiCompletionReason.Stop, response.completionReason)
             val output = response.outputs.single()
             assertEquals("msg_test", output.id.rawValue)
@@ -416,6 +416,10 @@ class AnthropicMessagesAdapterTests {
         val malformedPayloads =
             listOf(
                 """{"not_json":""",
+                successResponse(
+                    responseId = "msg_substituted",
+                    model = "provider-substitution",
+                ),
                 """
                 {
                   "id":"msg_0",
@@ -665,14 +669,17 @@ class AnthropicMessagesAdapterTests {
             content = content,
         )
 
-    private fun successResponse(responseId: String): String =
+    private fun successResponse(
+        responseId: String,
+        model: String = "requested-claude-model",
+    ): String =
         """
         {
           "id":"$responseId",
           "type":"message",
           "role":"assistant",
           "content":[{"type":"text","text":"ok"}],
-          "model":"resolved-claude-model",
+          "model":"$model",
           "stop_reason":"end_turn",
           "stop_sequence":null,
           "usage":{"input_tokens":1,"output_tokens":1}

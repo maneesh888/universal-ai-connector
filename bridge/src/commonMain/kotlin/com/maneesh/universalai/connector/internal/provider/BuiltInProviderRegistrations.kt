@@ -47,7 +47,7 @@ internal val OPENAI_PROVIDER_CAPABILITY_PROFILE =
             ),
     )
 
-private val OPENAI_UNKNOWN_MODEL_CAPABILITIES =
+internal val OPENAI_UNKNOWN_MODEL_CAPABILITIES =
     UniversalAiCapabilitySet.of(
         UniversalAiCapabilityName.StructuredOutput to
             UniversalAiCapabilityDeclaration(
@@ -99,7 +99,7 @@ internal val OPENROUTER_PROVIDER_CAPABILITY_PROFILE =
             ),
     )
 
-private val OPENROUTER_UNKNOWN_MODEL_CAPABILITIES =
+internal val OPENROUTER_UNKNOWN_MODEL_CAPABILITIES =
     UniversalAiCapabilitySet.of(
         UniversalAiCapabilityName.StructuredOutput to
             UniversalAiCapabilityDeclaration(
@@ -123,7 +123,7 @@ internal val OPENAI_COMPATIBLE_PROVIDER_CAPABILITY_PROFILE =
             ),
     )
 
-private val OPENAI_COMPATIBLE_UNKNOWN_MODEL_CAPABILITIES =
+internal val OPENAI_COMPATIBLE_UNKNOWN_MODEL_CAPABILITIES =
     UniversalAiCapabilitySet.of(
         UniversalAiCapabilityName.StructuredOutput to
             UniversalAiCapabilityDeclaration(
@@ -131,7 +131,7 @@ private val OPENAI_COMPATIBLE_UNKNOWN_MODEL_CAPABILITIES =
             ),
     )
 
-private val ANTHROPIC_UNKNOWN_MODEL_CAPABILITIES =
+internal val ANTHROPIC_UNKNOWN_MODEL_CAPABILITIES =
     UniversalAiCapabilitySet.of(
         UniversalAiCapabilityName.StructuredOutput to
             UniversalAiCapabilityDeclaration(

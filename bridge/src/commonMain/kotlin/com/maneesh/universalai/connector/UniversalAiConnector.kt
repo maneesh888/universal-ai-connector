@@ -2,6 +2,7 @@
 
 package com.maneesh.universalai.connector
 
+import com.maneesh.universalai.connector.contract.ProviderId
 import com.maneesh.universalai.connector.contract.UniversalAiError
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
@@ -110,6 +111,19 @@ class UniversalAiConnector private constructor(
         try {
             runWhileOpen {
                 engine.respond(request)
+            }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: Throwable) {
+            throw failure.toUniversalAiException()
+        }
+
+    /** Lists a bounded model snapshot for one configured provider. */
+    suspend fun listModels(providerId: ProviderId): UniversalAiModelListResult =
+        try {
+            runWhileOpen {
+                (engine as? ProviderRoutingConnectorEngine)?.listModels(providerId)
+                    ?: UniversalAiModelListResult.Unsupported(providerId)
             }
         } catch (cancellation: CancellationException) {
             throw cancellation
@@ -251,7 +265,9 @@ class UniversalAiConnector private constructor(
                 UniversalAiConnectorConfiguration.Empty,
         ): ConnectorComponents =
             connectorComponents(
-                transportFactory = ::createDefaultKtorTransport,
+                transportFactory = {
+                    createDefaultKtorTransport(configuration.transportTimeouts)
+                },
                 transportOwnership = ConnectorResourceOwnership.Owned,
                 providerRegistrations =
                     configuration.providersForRegistration().map(::builtInProviderRegistration),
@@ -263,7 +279,9 @@ class UniversalAiConnector private constructor(
                 UniversalAiConnectorConfiguration.Empty,
         ): ConnectorComponents =
             connectorComponents(
-                transportFactory = { createKtorTransport(httpEngine) },
+                transportFactory = {
+                    createKtorTransport(httpEngine, configuration.transportTimeouts)
+                },
                 transportOwnership = ConnectorResourceOwnership.Owned,
                 providerRegistrations =
                     configuration.providersForRegistration().map(::builtInProviderRegistration),

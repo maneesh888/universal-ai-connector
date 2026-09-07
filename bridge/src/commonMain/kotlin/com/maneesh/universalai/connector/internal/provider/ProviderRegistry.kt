@@ -1,11 +1,13 @@
 package com.maneesh.universalai.connector.internal.provider
 
+import com.maneesh.universalai.connector.UniversalAiModelListResult
 import com.maneesh.universalai.connector.contract.ProviderId
 import com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet
 import com.maneesh.universalai.connector.contract.UniversalAiError
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
 import com.maneesh.universalai.connector.contract.UniversalAiProviderCapabilityProfile
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -102,6 +104,21 @@ internal class ProviderRegistry(
     fun adapterOrNull(providerId: ProviderId): ConnectorEngine? =
         adaptersById[providerId]
 
+    suspend fun listModels(providerId: ProviderId): UniversalAiModelListResult {
+        if (providerId == DETERMINISTIC_PROVIDER_ID) {
+            return UniversalAiModelListResult.Unsupported(providerId)
+        }
+        val adapter = adaptersById[providerId] ?: throw unregisteredProvider()
+        val discovery = adapter as? ProviderModelDiscovery
+            ?: return UniversalAiModelListResult.Unsupported(providerId)
+        return when (val result = discovery.listModels()) {
+            is ProviderModelListResult.Supported ->
+                UniversalAiModelListResult.Supported(providerId, result.models)
+            ProviderModelListResult.Unsupported ->
+                UniversalAiModelListResult.Unsupported(providerId)
+        }
+    }
+
     fun capabilityProfileOrNull(
         providerId: ProviderId,
     ): UniversalAiProviderCapabilityProfile? =
@@ -129,10 +146,28 @@ internal class ProviderRoutingConnectorEngine(
             emitAll(adapterFor(request.target.providerId).stream(request))
         }
 
+    suspend fun listModels(providerId: ProviderId): UniversalAiModelListResult =
+        registry.listModels(providerId)
+
     private fun adapterFor(providerId: ProviderId): ConnectorEngine =
         registry.adapterOrNull(providerId)
             ?: deterministicEngine.takeIf { providerId == DETERMINISTIC_PROVIDER_ID }
             ?: throw unregisteredProvider()
+}
+
+/** Optional provider behavior for a bounded, adapter-owned model-list operation. */
+internal interface ProviderModelDiscovery {
+    suspend fun listModels(): ProviderModelListResult
+}
+
+internal sealed interface ProviderModelListResult {
+    class Supported(
+        models: List<UniversalAiModelDescriptor>,
+    ) : ProviderModelListResult {
+        val models: List<UniversalAiModelDescriptor> = models.toList()
+    }
+
+    data object Unsupported : ProviderModelListResult
 }
 
 private fun unregisteredProvider(): UniversalAiException =
