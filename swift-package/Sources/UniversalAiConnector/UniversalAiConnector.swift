@@ -9,6 +9,7 @@ import UniversalAiConnectorBridge
 /// operations, and is also performed automatically during deinitialization.
 public final class UniversalAiConnector: @unchecked Sendable {
     private let bridge: AppleConnectorBridge
+    private let modelListOperation: any UniversalAiModelListOperation
     private let lifecycle = LockedConnectorLifecycle()
     private let testingHooks: UniversalAiConnectorTestingHooks
 
@@ -67,9 +68,12 @@ public final class UniversalAiConnector: @unchecked Sendable {
 
     init(
         bridge: AppleConnectorBridge = AppleConnectorBridge(),
-        testingHooks: UniversalAiConnectorTestingHooks
+        testingHooks: UniversalAiConnectorTestingHooks,
+        modelListOperation: (any UniversalAiModelListOperation)? = nil
     ) {
         self.bridge = bridge
+        self.modelListOperation =
+            modelListOperation ?? AppleBridgeModelListOperation(bridge: bridge)
         self.testingHooks = testingHooks
     }
 
@@ -196,7 +200,7 @@ public final class UniversalAiConnector: @unchecked Sendable {
                     return
                 }
 
-                let handle = bridge.listModels(
+                let cancellation = modelListOperation.start(
                     adapterName: providerId.rawValue,
                     onSuccess: { result in
                         state.succeed(Self.map(result))
@@ -208,9 +212,8 @@ public final class UniversalAiConnector: @unchecked Sendable {
                         state.cancel()
                     }
                 )
-                let handleBox = AppleCancellationHandleBox(handle)
                 state.installCancellation {
-                    handleBox.cancel()
+                    cancellation.cancel()
                 }
             }
         } onCancel: {

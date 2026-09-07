@@ -1,5 +1,6 @@
 import Dispatch
 import Foundation
+import UniversalAiConnectorBridge
 import XCTest
 @testable import UniversalAiConnector
 
@@ -43,6 +44,141 @@ final class UniversalAiConnectorTests: XCTestCase {
             XCTAssertEqual(error.category, .validation)
             XCTAssertEqual(error.code, .invalidRequest)
         }
+    }
+
+    func testModelListSupportedResultMapsNativeDescriptorAndCapabilities()
+        async throws
+    {
+        let emptyExtensions = AppleBridgeExtensions(entries: [])
+        let providerId = UniversalAiProviderId(rawValue: "openrouter")
+        let operation = SupportedModelListOperation(
+            result: AppleBridgeModelListResult(
+                adapterName: providerId.rawValue,
+                supported: true,
+                models: [
+                    AppleBridgeModelDescriptor(
+                        contractVersion: "1",
+                        target: AppleBridgeTarget(
+                            providerRawValue: providerId.rawValue,
+                            modelRawValue: "vendor/model-v1"
+                        ),
+                        displayName: "Vendor Model V1",
+                        limits: AppleBridgeModelTokenLimits(
+                            hasContextWindowTokens: true,
+                            contextWindowTokens: 131_072,
+                            hasMaxInputTokens: false,
+                            maxInputTokens: 0,
+                            hasMaxOutputTokens: true,
+                            maxOutputTokens: 16_384
+                        ),
+                        capabilities: [
+                            AppleBridgeCapabilityDeclaration(
+                                name: "structured_output",
+                                support: "supported",
+                                limits: [
+                                    AppleBridgeLongEntry(
+                                        name: "max_schema_bytes",
+                                        value: 65_536
+                                    ),
+                                ],
+                                extensions: emptyExtensions
+                            ),
+                        ],
+                        extensions: emptyExtensions
+                    ),
+                ]
+            )
+        )
+        let connector = UniversalAiConnector(
+            testingHooks: UniversalAiConnectorTestingHooks(),
+            modelListOperation: operation
+        )
+        defer { connector.close() }
+
+        let result = try await connector.listModels(providerId: providerId)
+        guard case let .supported(resultProviderId, models) = result else {
+            return XCTFail("Expected a supported model snapshot.")
+        }
+        XCTAssertEqual(resultProviderId, providerId)
+        XCTAssertEqual(models.count, 1)
+        let model = try XCTUnwrap(models.first)
+        XCTAssertEqual(model.contractVersion, "1")
+        XCTAssertEqual(model.target.providerId, providerId)
+        XCTAssertEqual(model.target.modelId.rawValue, "vendor/model-v1")
+        XCTAssertEqual(model.displayName, "Vendor Model V1")
+        XCTAssertEqual(model.limits?.contextWindowTokens, 131_072)
+        XCTAssertNil(model.limits?.maxInputTokens)
+        XCTAssertEqual(model.limits?.maxOutputTokens, 16_384)
+        XCTAssertEqual(
+            model.capabilities.supportState(for: .structuredOutput),
+            .supported
+        )
+        XCTAssertEqual(
+            model.capabilities[.structuredOutput]?.limits[.maxSchemaBytes],
+            65_536
+        )
+    }
+
+    func testModelListTaskCancellationBeforeHandleInstallationCancelsOnce()
+        async
+    {
+        let operation = BlockingModelListOperation()
+        let connector = UniversalAiConnector(
+            testingHooks: UniversalAiConnectorTestingHooks(),
+            modelListOperation: operation
+        )
+        let task = Task {
+            try await connector.listModels(
+                providerId: UniversalAiProviderId(rawValue: "openai")
+            )
+        }
+
+        await operation.started.wait()
+        task.cancel()
+        operation.releaseStart.signal()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected model-list cancellation.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+        await operation.cancellationRequested.wait()
+        XCTAssertEqual(operation.cancellationCount.value, 1)
+        connector.close()
+    }
+
+    func testCloseCancelsModelListBeforeHandleInstallationExactlyOnce()
+        async
+    {
+        let operation = BlockingModelListOperation()
+        let connector = UniversalAiConnector(
+            testingHooks: UniversalAiConnectorTestingHooks(),
+            modelListOperation: operation
+        )
+        let task = Task {
+            try await connector.listModels(
+                providerId: UniversalAiProviderId(rawValue: "openai")
+            )
+        }
+
+        await operation.started.wait()
+        connector.close()
+        connector.close()
+        operation.releaseStart.signal()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected close to cancel the active model list.")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+        await operation.cancellationRequested.wait()
+        XCTAssertEqual(operation.cancellationCount.value, 1)
     }
 
     func testProductFrameworkImportsAndReportsVersion() {
@@ -2178,6 +2314,52 @@ private func lateFailure() -> UniversalAiConnectorError {
 }
 
 private func requireSendable<Value: Sendable>(_: Value) {}
+
+private final class SupportedModelListOperation:
+    UniversalAiModelListOperation,
+    @unchecked Sendable
+{
+    private let result: AppleBridgeModelListResult
+
+    init(result: AppleBridgeModelListResult) {
+        self.result = result
+    }
+
+    func start(
+        adapterName: String,
+        onSuccess: @escaping (AppleBridgeModelListResult) -> Void,
+        onError: @escaping (AppleBridgeError) -> Void,
+        onCancelled: @escaping () -> Void
+    ) -> UniversalAiModelListCancellation {
+        onSuccess(result)
+        return UniversalAiModelListCancellation {}
+    }
+}
+
+private final class BlockingModelListOperation:
+    UniversalAiModelListOperation,
+    @unchecked Sendable
+{
+    let started = AsyncSignal()
+    let releaseStart = DispatchSemaphore(value: 0)
+    let cancellationRequested = AsyncSignal()
+    let cancellationCount = LockedCounter()
+
+    func start(
+        adapterName: String,
+        onSuccess: @escaping (AppleBridgeModelListResult) -> Void,
+        onError: @escaping (AppleBridgeError) -> Void,
+        onCancelled: @escaping () -> Void
+    ) -> UniversalAiModelListCancellation {
+        started.signal()
+        releaseStart.wait()
+        return UniversalAiModelListCancellation { [self] in
+            cancellationCount.increment()
+            cancellationRequested.signal()
+            onCancelled()
+        }
+    }
+}
 
 private final class LockedCounter: @unchecked Sendable {
     private let lock = NSLock()

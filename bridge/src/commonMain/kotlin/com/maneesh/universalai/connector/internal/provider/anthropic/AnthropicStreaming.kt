@@ -14,7 +14,6 @@ import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
-import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.internal.provider.ANTHROPIC_PROVIDER_ID
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
@@ -118,6 +117,7 @@ internal class AnthropicStreamTranslator(
         streamRequire(message.stopReason == null && message.stopSequence == null)
         responseId = ResponseId.of(streamValue(message.id))
         responseModel = ModelId.of(streamValue(message.model))
+        streamRequire(responseModel == request.target.modelId)
         val usage = streamValue(message.usage).toStreamStartUsage()
         startUsage = usage
         lastOutputTokens = usage.initialOutputTokens
@@ -325,11 +325,7 @@ internal class AnthropicStreamTranslator(
             UniversalAiResponse(
                 id = streamValue(responseId),
                 requestId = metadata.requestId.toStreamRequestIdOrNull(),
-                target =
-                    UniversalAiTarget(
-                        providerId = ANTHROPIC_PROVIDER_ID,
-                        modelId = streamValue(responseModel),
-                    ),
+                target = request.target,
                 outputs = listOf(output),
                 usage = usage,
                 completionReason = UniversalAiCompletionReason.Stop,

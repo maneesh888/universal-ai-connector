@@ -116,6 +116,10 @@ class ChatCompletionsP6EStreamingTests {
                 assertEquals("Héllo!", events[5].output?.text)
                 assertEquals(17L, events[6].usage?.totalTokens)
                 assertEquals(providerId, events.last().response?.target?.providerId)
+                assertEquals(
+                    "requested/provider-model",
+                    events.last().response?.target?.modelId?.rawValue,
+                )
                 assertEquals("Héllo!", events.last().response?.outputs?.single()?.text)
                 assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
             } finally {
@@ -187,6 +191,10 @@ class ChatCompletionsP6EStreamingTests {
                 startChunk() + finishChunk(finishReason = "tool_calls") + sseData("[DONE]"),
                 startChunk() + semanticIntrusionChunk(sensitive) + finishChunk() + sseData("[DONE]"),
                 "data: {\"not_json\":\"$sensitive\"\n\n",
+                startChunk().replace(
+                    "\"model\":\"requested/provider-model\"",
+                    "\"model\":\"provider-substitution\"",
+                ),
             )
 
         providerIds.forEach { providerId ->
@@ -508,7 +516,7 @@ private fun successfulStream(
 
 private fun startChunk(lineEnding: String = "\n"): String =
     sseData(
-        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}""",
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}""",
         lineEnding,
     )
 
@@ -518,7 +526,7 @@ private fun contentChunk(
     lineEnding: String = "\n",
 ): String =
     sseData(
-        """{"id":"$id","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","choices":[{"index":0,"delta":{"content":${JsonPrimitive(content)}}}]}""",
+        """{"id":"$id","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"content":${JsonPrimitive(content)}}}]}""",
         lineEnding,
     )
 
@@ -534,7 +542,7 @@ private fun finishChunk(
           "id":"chatcmpl_stream",
           "object":"chat.completion.chunk",
           "created":123,
-          "model":"resolved/provider-model",
+          "model":"requested/provider-model",
           "choices":[{"index":0,"delta":{"role":"assistant"${content?.let { value -> ",\"content\":${JsonPrimitive(value)}" } ?: ""}},"finish_reason":"$finishReason"}]
           ${if (includeUsage) ",\"usage\":${usageJson()}" else ""}
         }
@@ -544,12 +552,12 @@ private fun finishChunk(
 
 private fun semanticIntrusionChunk(sensitive: String): String =
     sseData(
-        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","choices":[{"index":0,"delta":{"tool_calls":[{"id":"$sensitive"}]}}]}""",
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"tool_calls":[{"id":"$sensitive"}]}}]}""",
     )
 
 private fun errorChunk(error: String): String =
     sseData(
-        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"resolved/provider-model","error":$error,"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}""",
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","error":$error,"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}""",
     )
 
 private fun usageJson(): String =

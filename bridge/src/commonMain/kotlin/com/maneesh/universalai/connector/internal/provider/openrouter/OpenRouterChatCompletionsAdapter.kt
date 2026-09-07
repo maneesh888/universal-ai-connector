@@ -400,6 +400,7 @@ internal fun OpenRouterChatCompletionResponseWire.toCanonical(
     requireWire(objectType == "chat.completion")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val choice = requireWireValue(choices).singleOrNull() ?: throw malformedResponse()
     choice.error?.let { error -> throw openRouterProviderResponseFailure(error, metadata) }
     requireWire(choice.delta == null)
@@ -423,11 +424,7 @@ internal fun OpenRouterChatCompletionResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = OPENROUTER_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = listOf(text.toCanonicalOutput(request, responseId)),
         usage = requireWireValue(usage).toCanonical(),
         completionReason = requireWireValue(choice.finishReason).toCanonicalCompletionReason(),

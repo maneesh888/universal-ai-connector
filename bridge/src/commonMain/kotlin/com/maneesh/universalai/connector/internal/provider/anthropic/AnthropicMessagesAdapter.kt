@@ -465,6 +465,7 @@ private fun AnthropicMessageResponseWire.toCanonical(
     requireWire(role == "assistant")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val completionReason =
         when (stopReason) {
             "end_turn" -> {
@@ -521,11 +522,7 @@ private fun AnthropicMessageResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = ANTHROPIC_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = listOf(output),
         usage = requireWireValue(usage).toCanonical(),
         completionReason = completionReason,

@@ -121,7 +121,8 @@ Discovery is an explicit, read-only network operation. A supported result is a d
 sorted by exact model identifier after first-occurrence de-duplication. The connector does not
 cache it, choose a model, or rewrite an identifier. Every generation request uses the exact model
 identifier supplied by the caller, and its canonical response and terminal stream response retain
-that target identity.
+that target identity. A provider response or stream that reports a different model identifier is
+rejected as malformed instead of being accepted as a silent model substitution.
 
 Direct OpenAI, OpenRouter, and conservative OpenAI-compatible listing accept at most 2,048 models.
 Anthropic requests at most 1,000 models per page, accepts at most 2,048 total models over at most

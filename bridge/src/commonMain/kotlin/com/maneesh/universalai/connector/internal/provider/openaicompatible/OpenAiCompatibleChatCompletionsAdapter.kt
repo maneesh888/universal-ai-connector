@@ -371,6 +371,7 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
     requireWire(objectType == "chat.completion")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val choice = requireWireValue(choices).singleOrNull() ?: throw malformedResponse()
     if (choice.error != null) {
         throw providerResponseFailure(metadata)
@@ -396,11 +397,7 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = listOf(text.toCanonicalOutput(request, responseId)),
         usage = usage?.toCanonical(),
         completionReason = requireWireValue(choice.finishReason).toCanonicalCompletionReason(),

@@ -370,6 +370,7 @@ internal fun OpenAiResponseWire.toCanonical(
 
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val providerOutput = requireWireValue(output)
     val canonicalOutputs = mutableListOf<UniversalAiOutput>()
     providerOutput.forEach { item ->
@@ -385,11 +386,7 @@ internal fun OpenAiResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = OPENAI_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = canonicalOutputs,
         usage = requireWireValue(usage).toCanonical(),
         completionReason = UniversalAiCompletionReason.Stop,
