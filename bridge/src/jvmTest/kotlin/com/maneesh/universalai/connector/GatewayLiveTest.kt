@@ -72,9 +72,9 @@ class GatewayLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertEquals(OPENAI_COMPATIBLE_PROVIDER_ID, response.target.providerId)
-            assertEquals(
-                ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL")),
-                response.target.modelId,
+            assertTrue(
+                response.target.modelId ==
+                    ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL")),
             )
             response.usage?.let { usage ->
                 assertTrue(usage.inputTokens >= 0)
@@ -137,9 +137,9 @@ class GatewayLiveTest {
             assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
             assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
             assertEquals(OPENAI_COMPATIBLE_PROVIDER_ID, events.last().response?.target?.providerId)
-            assertEquals(
-                ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL")),
-                events.last().response?.target?.modelId,
+            assertTrue(
+                events.last().response?.target?.modelId ==
+                    ModelId.of(requiredEnvironment("GATEWAY_LIVE_MODEL")),
             )
         }
     }

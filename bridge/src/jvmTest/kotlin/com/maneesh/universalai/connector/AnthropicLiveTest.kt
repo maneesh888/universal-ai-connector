@@ -68,9 +68,9 @@ class AnthropicLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == ANTHROPIC_PROVIDER_ID)
-            assertEquals(
-                ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL")),
-                response.target.modelId,
+            assertTrue(
+                response.target.modelId ==
+                    ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL")),
             )
             assertNotNull(response.requestId)
             with(assertNotNull(response.usage)) {
@@ -141,9 +141,9 @@ class AnthropicLiveTest {
             assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
             assertTrue(events.last().terminal)
             assertEquals(completedOutput, events.last().response?.outputs?.single())
-            assertEquals(
-                ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL")),
-                events.last().response?.target?.modelId,
+            assertTrue(
+                events.last().response?.target?.modelId ==
+                    ModelId.of(requiredEnvironment("ANTHROPIC_LIVE_MODEL")),
             )
         }
     }

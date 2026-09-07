@@ -69,9 +69,9 @@ class OpenRouterLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == OPENROUTER_PROVIDER_ID)
-            assertEquals(
-                ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
-                response.target.modelId,
+            assertTrue(
+                response.target.modelId ==
+                    ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
             )
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
@@ -95,9 +95,9 @@ class OpenRouterLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == OPENAI_COMPATIBLE_PROVIDER_ID)
-            assertEquals(
-                ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
-                response.target.modelId,
+            assertTrue(
+                response.target.modelId ==
+                    ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
             )
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
@@ -156,9 +156,9 @@ class OpenRouterLiveTest {
                 assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
                 assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
                 assertEquals(providerId, events.last().response?.target?.providerId)
-                assertEquals(
-                    ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
-                    events.last().response?.target?.modelId,
+                assertTrue(
+                    events.last().response?.target?.modelId ==
+                        ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
                 )
                 assertEquals(completedOutput, events.last().response?.outputs?.single())
             }
