@@ -644,6 +644,27 @@ class OpenRouterChatCompletionsAdapterTests {
     }
 
     @Test
+    fun reasoningMetadataAlongsideValidAssistantTextIsIgnored() = runTest {
+        listOf(
+            successResponse(extraMessageMembers = ""","reasoning":"hidden""""),
+            successResponse(extraMessageMembers = ""","reasoning_content":"hidden""""),
+            successResponse(
+                extraMessageMembers =
+                    ""","reasoning_details":[{"type":"reasoning.text","text":"hidden"}]""",
+            ),
+        ).forEach { payload ->
+            val engine = MockEngine { respond(payload) }
+            val connector = connector(engine) { "credential" }
+            try {
+                assertEquals("ready", connector.respond(request()).outputs.single().text)
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
     fun malformedIncompleteOrUnsupportedSuccessPayloadsUseOneFixedSafeError() = runTest {
         val malformedPayloads =
             listOf(
@@ -672,15 +693,13 @@ class OpenRouterChatCompletionsAdapterTests {
                 successResponse(role = "tool"),
                 successResponse(text = ""),
                 successResponse(text = "   "),
+                successResponse(
+                    text = "",
+                    extraMessageMembers = ""","reasoning_content":"hidden"""",
+                ),
                 successResponse(finishReason = "tool_calls"),
                 successResponse(
                     extraMessageMembers = ""","tool_calls":[{"id":"call_1"}]""",
-                ),
-                successResponse(
-                    extraMessageMembers = ""","reasoning_details":[{"type":"reasoning.text"}]""",
-                ),
-                successResponse(
-                    extraMessageMembers = ""","reasoning_content":"hidden"""",
                 ),
                 successResponse(
                     extraMessageMembers = ""","function_call":{"name":"tool"}""",

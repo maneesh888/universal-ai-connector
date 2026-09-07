@@ -166,7 +166,10 @@ Normal response and stream translators enforce bounded provider bodies, ordered 
 one terminal outcome, governed structured JSON, and typed authentication, authorization,
 rate-limit, unavailable, transport, protocol, and truncation/incomplete-stream failures. Provider
 bodies, credentials, authorization headers, and configured model identifiers are not retained in
-verification output.
+verification output. Direct OpenRouter and generic OpenAI-compatible responses may include provider
+reasoning metadata alongside an independently valid final assistant text result. The connector
+discards that metadata and exposes only the final text; reasoning-only, blank, refused, tool-call,
+or otherwise unsupported results still fail closed.
 
 ## Verification and proof limits
 

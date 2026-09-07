@@ -130,6 +130,29 @@ class ChatCompletionsP6EStreamingTests {
     }
 
     @Test
+    fun bothAdaptersIgnoreReasoningMetadataAndEmitOnlyFinalAssistantText(): Unit = runTest {
+        providerIds.forEach { providerId ->
+            val stream =
+                reasoningChunk("reasoning", "hidden") +
+                    reasoningChunk("reasoning_content", "hidden") +
+                    reasoningDetailsChunk() +
+                    startChunk() +
+                    contentChunk("ready") +
+                    finishChunk() +
+                    sseData("[DONE]")
+            val connector = connector(providerId, ReaderTransport(singleChunkReader(stream)))
+            try {
+                val events = connector.stream(request(providerId)).toList()
+                assertEquals(listOf("ready"), events.mapNotNull(UniversalAiStreamEvent::delta))
+                assertEquals("ready", events.last().response?.outputs?.single()?.text)
+                assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
+            } finally {
+                connector.close()
+            }
+        }
+    }
+
+    @Test
     fun structuredStreamsSuppressRawFragmentsAndEmitOneRevalidatedCanonicalDelta(): Unit = runTest {
         providerIds.forEach { providerId ->
             val connector =
@@ -190,6 +213,8 @@ class ChatCompletionsP6EStreamingTests {
                 startChunk() + contentChunk("ready", id = "changed") + finishChunk() + sseData("[DONE]"),
                 startChunk() + finishChunk(finishReason = "tool_calls") + sseData("[DONE]"),
                 startChunk() + semanticIntrusionChunk(sensitive) + finishChunk() + sseData("[DONE]"),
+                startChunk() + reasoningChunk("reasoning_content", sensitive) + finishChunk() +
+                    sseData("[DONE]"),
                 "data: {\"not_json\":\"$sensitive\"\n\n",
                 startChunk().replace(
                     "\"model\":\"requested/provider-model\"",
@@ -553,6 +578,19 @@ private fun finishChunk(
 private fun semanticIntrusionChunk(sensitive: String): String =
     sseData(
         """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"tool_calls":[{"id":"$sensitive"}]}}]}""",
+    )
+
+private fun reasoningChunk(
+    field: String,
+    value: String,
+): String =
+    sseData(
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"$field":${JsonPrimitive(value)}}}]}""",
+    )
+
+private fun reasoningDetailsChunk(): String =
+    sseData(
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"reasoning_details":[{"type":"reasoning.text","text":"hidden"}]}}]}""",
     )
 
 private fun errorChunk(error: String): String =

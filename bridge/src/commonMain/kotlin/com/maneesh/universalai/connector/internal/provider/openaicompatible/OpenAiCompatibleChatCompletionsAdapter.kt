@@ -382,9 +382,6 @@ internal fun OpenAiCompatibleChatCompletionResponseWire.toCanonical(
     requireWire(message.role == "assistant")
     requireWire(
         message.refusal == null &&
-            message.reasoning == null &&
-            message.reasoningContent == null &&
-            message.reasoningDetails == null &&
             message.annotations == null &&
             message.images == null &&
             message.audio == null &&

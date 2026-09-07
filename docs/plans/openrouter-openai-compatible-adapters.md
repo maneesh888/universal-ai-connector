@@ -105,6 +105,7 @@ P6-D and P6-E on August 10, 2026; they govern the P6 subset:
 - [model identifiers and supported-parameter metadata](https://openrouter.ai/docs/guides/overview/models)
 - [structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs)
 - [streaming and SSE keep-alive behavior](https://openrouter.ai/docs/api/reference/streaming)
+- [reasoning-token response metadata](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens)
 - [errors, typed error codes, and mid-generation failures](https://openrouter.ai/docs/api/reference/errors-and-debugging)
 - [provider routing](https://openrouter.ai/docs/guides/routing/provider-selection)
 - [optional application-attribution headers](https://openrouter.ai/docs/app-attribution)
@@ -134,9 +135,11 @@ The accepted initial request subset is text-only:
 - the generic adapter sends no OpenRouter-only routing field.
 
 The response subset accepts one successful choice with ordered text, a supported finish reason,
-model identifier, usage, and bounded response metadata. Multiple choices, tool calls, reasoning,
-images, audio, unknown required content, empty or incomplete results, and provider errors embedded
-in a nominally successful response do not become canonical success.
+model identifier, usage, and bounded response metadata. Reasoning metadata that accompanies an
+independently valid final assistant text result is discarded and never becomes canonical output;
+reasoning-only results remain malformed. Multiple choices, tool calls, images, audio, unknown
+required content, empty or incomplete results, and provider errors embedded in a nominally
+successful response do not become canonical success.
 
 Structured output uses `response_format.type = json_schema` only for the faithfully representable
 intersection of the governed canonical schema subset and the selected model/endpoint capability.
