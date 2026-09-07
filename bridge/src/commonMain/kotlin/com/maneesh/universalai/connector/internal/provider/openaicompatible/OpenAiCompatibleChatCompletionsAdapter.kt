@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -275,9 +276,22 @@ internal class OpenAiCompatibleChatCompletionsAdapter(
     ): List<UniversalAiModelDescriptor> {
         val bytes = readBoundedBody(response.body)
         return try {
+            val document =
+                requireWireValue(
+                    OPENAI_COMPATIBLE_WIRE_JSON.parseToJsonElement(
+                        bytes.decodeToString(throwOnInvalidSequence = true),
+                    ) as? JsonObject,
+                )
+            requireWire(document["object"] != JsonNull)
+            val modelDocuments = requireWireValue(document["data"] as? JsonArray)
+            requireWire(
+                modelDocuments.all { modelDocument ->
+                    modelDocument is JsonObject && modelDocument["object"] != JsonNull
+                },
+            )
             val wire =
-                OPENAI_COMPATIBLE_WIRE_JSON.decodeFromString<OpenAiCompatibleModelListWire>(
-                    bytes.decodeToString(throwOnInvalidSequence = true),
+                OPENAI_COMPATIBLE_WIRE_JSON.decodeFromJsonElement<OpenAiCompatibleModelListWire>(
+                    document,
                 )
             requireWire(wire.objectType == null || wire.objectType == "list")
             val wireModels = requireWireValue(wire.data)

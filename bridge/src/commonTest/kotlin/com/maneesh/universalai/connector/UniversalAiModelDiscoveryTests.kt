@@ -288,7 +288,9 @@ class UniversalAiModelDiscoveryTests {
 
         listOf(
             """{"object":"unexpected","data":[]}""",
+            """{"object":null,"data":[]}""",
             """{"data":[{"id":"model-a","object":"unexpected"}]}""",
+            """{"data":[{"id":"model-a","object":null}]}""",
         ).forEach { body ->
             val invalidMarkerEngine = MockEngine { respond(body) }
             configuredConnector("openai-compatible", invalidMarkerEngine).use { connector ->
