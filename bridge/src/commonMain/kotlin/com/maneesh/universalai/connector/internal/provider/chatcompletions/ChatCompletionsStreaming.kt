@@ -143,11 +143,12 @@ internal class ChatCompletionsStreamTranslator(
         streamRequire(choice.index == CANONICAL_OUTPUT_INDEX)
         streamRequire(choice.message == null && choice.logprobs == null)
         val delta = streamValue(choice.delta)
+        val hasReasoningMetadata =
+            delta.reasoning != null ||
+                delta.reasoningContent != null ||
+                delta.reasoningDetails != null
         streamRequire(
             delta.refusal == null &&
-                delta.reasoning == null &&
-                delta.reasoningContent == null &&
-                delta.reasoningDetails == null &&
                 delta.annotations == null &&
                 delta.images == null &&
                 delta.audio == null &&
@@ -169,7 +170,15 @@ internal class ChatCompletionsStreamTranslator(
         }
         val finishReason = choice.finishReason
         val content = delta.content
-        streamRequire(delta.role != null || content != null || finishReason != null)
+        streamRequire(
+            delta.role != null ||
+                content != null ||
+                finishReason != null ||
+                hasReasoningMetadata,
+        )
+        if (content == null && finishReason == null && hasReasoningMetadata) {
+            return emptyList()
+        }
         val events = mutableListOf<UniversalAiStreamEvent>()
         if (!outputStarted) {
             outputStarted = true
@@ -210,9 +219,6 @@ internal class ChatCompletionsStreamTranslator(
         streamRequire(delta.content == null || delta.content.isEmpty())
         streamRequire(
             delta.refusal == null &&
-                delta.reasoning == null &&
-                delta.reasoningContent == null &&
-                delta.reasoningDetails == null &&
                 delta.annotations == null &&
                 delta.images == null &&
                 delta.audio == null &&

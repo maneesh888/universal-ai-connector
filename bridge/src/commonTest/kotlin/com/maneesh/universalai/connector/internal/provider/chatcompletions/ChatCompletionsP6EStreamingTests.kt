@@ -130,6 +130,71 @@ class ChatCompletionsP6EStreamingTests {
     }
 
     @Test
+    fun bothAdaptersIgnoreReasoningMetadataAndEmitOnlyFinalAssistantText(): Unit = runTest {
+        providerIds.forEach { providerId ->
+            val reasoningPrelude =
+                reasoningChunk("reasoning", "hidden") +
+                    reasoningChunk("reasoning_content", "hidden") +
+                    reasoningDetailsChunk()
+            val finalAssistantStream =
+                startChunk() +
+                    contentChunk("ready") +
+                    finishChunk() +
+                    sseData("[DONE]")
+            val finalAssistantReadStarted = CompletableDeferred<Unit>()
+            val releaseFinalAssistantStream = CompletableDeferred<Unit>()
+            var reads = 0
+            val reader =
+                ConnectorTransportChunkReader {
+                    when (reads++) {
+                        0 -> reasoningPrelude.encodeToByteArray()
+                        1 -> {
+                            finalAssistantReadStarted.complete(Unit)
+                            releaseFinalAssistantStream.await()
+                            finalAssistantStream.encodeToByteArray()
+                        }
+                        else -> null
+                    }
+                }
+            val connector = connector(providerId, ReaderTransport(reader))
+            val events = mutableListOf<UniversalAiStreamEvent>()
+            try {
+                val operation =
+                    async {
+                        connector
+                            .stream(request(providerId))
+                            .onEach(events::add)
+                            .collect()
+                    }
+                finalAssistantReadStarted.await()
+                assertTrue(
+                    events.isEmpty(),
+                    "Reasoning-only deltas must not start canonical output for ${providerId.rawValue}.",
+                )
+                releaseFinalAssistantStream.complete(Unit)
+                operation.await()
+                assertEquals(
+                    listOf(
+                        UniversalAiStreamEventType.ResponseStarted,
+                        UniversalAiStreamEventType.OutputStarted,
+                        UniversalAiStreamEventType.OutputDelta,
+                        UniversalAiStreamEventType.OutputCompleted,
+                        UniversalAiStreamEventType.UsageUpdated,
+                        UniversalAiStreamEventType.ResponseCompleted,
+                    ),
+                    events.map(UniversalAiStreamEvent::type),
+                    providerId.rawValue,
+                )
+                assertEquals(listOf("ready"), events.mapNotNull(UniversalAiStreamEvent::delta))
+                assertEquals("ready", events.last().response?.outputs?.single()?.text)
+                assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
+            } finally {
+                connector.close()
+            }
+        }
+    }
+
+    @Test
     fun structuredStreamsSuppressRawFragmentsAndEmitOneRevalidatedCanonicalDelta(): Unit = runTest {
         providerIds.forEach { providerId ->
             val connector =
@@ -190,6 +255,8 @@ class ChatCompletionsP6EStreamingTests {
                 startChunk() + contentChunk("ready", id = "changed") + finishChunk() + sseData("[DONE]"),
                 startChunk() + finishChunk(finishReason = "tool_calls") + sseData("[DONE]"),
                 startChunk() + semanticIntrusionChunk(sensitive) + finishChunk() + sseData("[DONE]"),
+                startChunk() + reasoningChunk("reasoning_content", sensitive) + finishChunk() +
+                    sseData("[DONE]"),
                 "data: {\"not_json\":\"$sensitive\"\n\n",
                 startChunk().replace(
                     "\"model\":\"requested/provider-model\"",
@@ -553,6 +620,19 @@ private fun finishChunk(
 private fun semanticIntrusionChunk(sensitive: String): String =
     sseData(
         """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"tool_calls":[{"id":"$sensitive"}]}}]}""",
+    )
+
+private fun reasoningChunk(
+    field: String,
+    value: String,
+): String =
+    sseData(
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"$field":${JsonPrimitive(value)}}}]}""",
+    )
+
+private fun reasoningDetailsChunk(): String =
+    sseData(
+        """{"id":"chatcmpl_stream","object":"chat.completion.chunk","created":123,"model":"requested/provider-model","choices":[{"index":0,"delta":{"reasoning_details":[{"type":"reasoning.text","text":"hidden"}]}}]}""",
     )
 
 private fun errorChunk(error: String): String =
