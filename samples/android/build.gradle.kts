@@ -13,7 +13,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1.0-alpha.1"
+        versionName = providers.gradleProperty("VERSION_NAME").get()
     }
 
     buildFeatures {

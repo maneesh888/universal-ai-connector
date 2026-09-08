@@ -60,7 +60,7 @@ class UniversalAiConnectorTests {
 
     @Test
     fun versionAndOneShotResponseUseTheCanonicalShape() = runTest {
-        assertEquals("0.1.0-alpha.1", connector.version)
+        assertEquals("0.1.0-0.p8.1", connector.version)
 
         val request = request(" hello ")
         val response = connector.respond(request)

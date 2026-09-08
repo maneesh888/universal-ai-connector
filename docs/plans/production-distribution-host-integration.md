@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `Planned`; P8 is not active.
+Status: `Active`; P8-A is in progress.
 
-P0-P7 are completed. This plan defines the bounded P8 sequence without activating the milestone.
-P8 may become the sole roadmap milestone marked `In progress` only in the separate P8-A change.
+P0-P7 are completed. P8-A activates P8 as the sole roadmap milestone marked `In progress`, freezes
+the credential-free distribution contract, and records the remaining external-readiness blockers.
 P9 remains inactive until P8 closes authoritatively.
 
 The plan-authoring change has `Milestone effect: none`. It adds no publication task, artifact,
@@ -133,7 +133,7 @@ Execute one package at a time after activation.
 
 ### P8-A: Activation and distribution contract
 
-Status: `Not started`.
+Status: `In progress`.
 
 - Activate P8 as the only `In progress` milestone and freeze the disposable P8 proof version.
 - Add canonical group/version properties and record minimum JDK, Android, Kotlin, Swift, Xcode,
@@ -145,6 +145,14 @@ Status: `Not started`.
   credential to the repository or ordinary CI.
 
 P8-A adds no remote publication, remote Swift binary, desktop application, or release claim.
+
+The disposable version is `0.1.0-0.p8.1`; its Git tag and Maven Central path were unused on
+August 12, 2026. Canonical Gradle properties, generated runtime versioning, public distribution
+metadata, frozen toolchain/host baselines, and credential-free drift checks are present in the
+current candidate. Completion remains blocked on authenticated proof that Central grants the
+`io.github.maneesh888` namespace, a usable PGP signing identity, a Developer ID Application
+certificate, and a working Apple notarization Keychain profile. No credential or secret value may
+be added to satisfy those gates.
 
 ### P8-B: Reproducible Maven publication and Kotlin consumers
 

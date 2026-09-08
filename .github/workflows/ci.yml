@@ -17,7 +17,7 @@ concurrency:
 jobs:
   hygiene:
     name: Repository hygiene
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Check out sources
@@ -35,7 +35,7 @@ jobs:
 
   jvm-android-linux:
     name: JVM + Android (Linux)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Check out sources
@@ -84,7 +84,7 @@ jobs:
 
   jvm-windows:
     name: JVM (Windows)
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 15
     steps:
       - name: Check out sources
@@ -179,7 +179,7 @@ jobs:
   required-checks:
     name: Required checks
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - hygiene
       - jvm-android-linux

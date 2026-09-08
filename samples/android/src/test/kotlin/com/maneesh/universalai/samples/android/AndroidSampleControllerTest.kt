@@ -50,7 +50,7 @@ class AndroidSampleControllerTest {
             advanceUntilIdle()
 
             val state = controller.state.value
-            assertEquals("0.1.0-alpha.1", state.version)
+            assertEquals("0.1.0-0.p8.1", state.version)
             assertEquals("All deterministic paths passed", state.headline)
             assertEquals("Kotlin echo: hello from Android", state.response)
             assertEquals(

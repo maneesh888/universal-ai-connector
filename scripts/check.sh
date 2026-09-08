@@ -30,6 +30,9 @@ run_hygiene() {
   "$ROOT/scripts/tests/local-config-worktree-test.sh"
   "$ROOT/scripts/tests/gradle-wrapper-policy-test.sh"
   "$ROOT/scripts/tests/dependabot-policy-test.sh"
+  "$ROOT/scripts/check-distribution-metadata.sh"
+  "$ROOT/scripts/tests/distribution-metadata-test.sh"
+  "$ROOT/scripts/tests/distribution-readiness-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
   git -C "$ROOT" diff --check
 
@@ -83,7 +86,8 @@ run_cross_platform_gradle_checks() {
 }
 
 verify_platform_packaging_boundaries() {
-  local jvm_jar="$ROOT/bridge/build/libs/bridge-jvm.jar"
+  local library_version
+  local jvm_jar
   local android_aar="$ROOT/bridge/build/outputs/aar/bridge.aar"
   local temp_artifact_directory
   local jvm_listing
@@ -92,6 +96,20 @@ verify_platform_packaging_boundaries() {
   local jar_command
   local javap_command
   local scan_status
+
+  library_version="$(
+    awk -F= '
+      $1 == "VERSION_NAME" {
+        sub(/^[^=]*=/, "")
+        print
+      }
+    ' "$ROOT/gradle.properties"
+  )"
+  if [[ -z "$library_version" ]]; then
+    echo "Could not resolve VERSION_NAME for the JVM packaging boundary check." >&2
+    return 1
+  fi
+  jvm_jar="$ROOT/bridge/build/libs/bridge-jvm-$library_version.jar"
 
   jar_command="$("$ROOT/scripts/resolve-jdk-tool.sh" jar)" || return 1
   javap_command="$("$ROOT/scripts/resolve-jdk-tool.sh" javap)" || return 1
