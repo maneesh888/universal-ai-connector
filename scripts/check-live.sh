@@ -302,33 +302,34 @@ fi
 require_clean_checkout
 
 echo "Running local $PROVIDER_LABEL live smoke tests for exact HEAD."
-LIVE_ENVIRONMENT=(
-  "$KEY_NAME=$KEY_VALUE"
-  "$MODEL_NAME=$MODEL_VALUE"
-)
-if [[ -n "$BASE_URL_NAME" ]]; then
-  LIVE_ENVIRONMENT+=("$BASE_URL_NAME=$BASE_URL_VALUE")
-  LIVE_ENVIRONMENT+=("GATEWAY_LIVE_STRUCTURED_OUTPUT=$STRUCTURED_OUTPUT_VALUE")
-fi
-env \
-  -u OPENAI_API_KEY \
-  -u OPENAI_LIVE_MODEL \
-  -u ANTHROPIC_API_KEY \
-  -u ANTHROPIC_LIVE_MODEL \
-  -u OPENROUTER_API_KEY \
-  -u OPENROUTER_LIVE_MODEL \
-  -u GATEWAY_LIVE_BASE_URL \
-  -u GATEWAY_API_KEY \
-  -u GATEWAY_LIVE_MODEL \
-  -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
-  -u UAC_LIVE_ENV_FILE \
-  "${LIVE_ENVIRONMENT[@]}" \
-  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+(
+  unset \
+    OPENAI_API_KEY \
+    OPENAI_LIVE_MODEL \
+    ANTHROPIC_API_KEY \
+    ANTHROPIC_LIVE_MODEL \
+    OPENROUTER_API_KEY \
+    OPENROUTER_LIVE_MODEL \
+    GATEWAY_LIVE_BASE_URL \
+    GATEWAY_API_KEY \
+    GATEWAY_LIVE_MODEL \
+    GATEWAY_LIVE_STRUCTURED_OUTPUT \
+    UAC_LIVE_ENV_FILE
+  printf -v "$KEY_NAME" '%s' "$KEY_VALUE"
+  printf -v "$MODEL_NAME" '%s' "$MODEL_VALUE"
+  export "$KEY_NAME" "$MODEL_NAME"
+  if [[ -n "$BASE_URL_NAME" ]]; then
+    printf -v "$BASE_URL_NAME" '%s' "$BASE_URL_VALUE"
+    GATEWAY_LIVE_STRUCTURED_OUTPUT="$STRUCTURED_OUTPUT_VALUE"
+    export "$BASE_URL_NAME" GATEWAY_LIVE_STRUCTURED_OUTPUT
+  fi
+  export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
   "$ROOT/gradlew" \
     "$LIVE_TASK" \
     --no-daemon \
     --no-configuration-cache \
     "-PuacLiveExpectedSha=$HEAD_SHA"
+)
 
 POST_LIVE_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after provider tests."

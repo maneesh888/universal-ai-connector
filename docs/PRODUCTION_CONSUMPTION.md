@@ -65,10 +65,14 @@ empty supported result remains blocking. **Test Connection** always performs dis
 then sends one minimal request on the same exact selected or explicitly entered identifier. If a
 selected model disappears, the sample stops without selecting another model.
 
-Run its deterministic state suite with `./scripts/test-ios-sample.sh`. The normal full gate also
-retains the Swift façade, combined XCFramework, Simulator application build, and generic-device
-link checks. These commands do not use a credential and do not prove live provider, visible
-Simulator interaction, signing, or physical-device behavior.
+Run its 19-test app-hosted Simulator suite with `./scripts/test-ios-sample.sh`. It covers the
+deterministic interaction states, cancellation races, and a unique-service Keychain
+add/read/update/accessibility/isolation/clear round trip. The test host and normal Simulator sample
+use local ad-hoc signing only so iOS can enforce the app-scoped Keychain entitlement. The normal
+full gate also retains the Swift façade, combined XCFramework, Simulator application build, and
+unsigned generic-device link checks. These commands do not use a provider credential and do not
+prove live provider behavior, visible Simulator interaction, distribution signing, or
+physical-device behavior.
 
 Base URLs are normalized to end in one slash, and the connector appends the relative endpoint.
 They must use HTTPS. Plaintext HTTP is accepted only for exact loopback hosts used by local test

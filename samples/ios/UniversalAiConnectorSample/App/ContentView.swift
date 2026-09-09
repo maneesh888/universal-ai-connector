@@ -85,6 +85,13 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Universal AI Connector")
+            .onChange(of: mode) { _, mode in
+                if mode == .deterministic {
+                    liveViewModel.deactivate()
+                } else {
+                    viewModel.cancelAll()
+                }
+            }
             .onDisappear {
                 viewModel.cancelAll()
                 liveViewModel.cancelAll()

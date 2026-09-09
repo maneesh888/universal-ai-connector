@@ -108,9 +108,12 @@ For P8-A Simulator interaction proof, add the explicit opt-in to a selected exac
 UAC_IOS_SAMPLE_LIVE_PROOF=1 ./scripts/check-live.sh openai
 ```
 
-After the provider gate passes, the command builds, installs, and launches the DEBUG Simulator
-sample with the selected provider credential imported directly into its Keychain service. It does
-not render the credential or retain the model in command output. In the app, choose **Live**, press
+After the provider gate passes, the command forces a clean-head XCFramework rebuild, installs, and
+launches the locally signed DEBUG Simulator sample with the selected provider credential imported
+directly into its app-scoped Keychain service. Git-routing, stale-artifact, and Simulator child
+environment overrides are removed before proof. Credentials stay out of process arguments, and
+the command does not render the credential or retain the model in command output. In the app,
+choose **Live**, press
 **Load Models**, verify the exact configured model is selected only when discovery returns that
 identifier, and press **Test Connection**. Repeat on the same clean exact head with a second
 distinct provider/model configuration for the P8-A multi-model record. Gateway proof uses the

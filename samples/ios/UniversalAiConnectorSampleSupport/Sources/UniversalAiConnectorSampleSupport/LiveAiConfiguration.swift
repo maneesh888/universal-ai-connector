@@ -566,6 +566,7 @@ final class LiveAiConfigurationViewModel: ObservableObject {
                 }
                 let client = try configuredLiveClient()
                 let result = try await client.listModels()
+                try Task.checkCancellation()
                 guard isTaskActive(taskID) else {
                     return
                 }
@@ -610,6 +611,7 @@ final class LiveAiConfigurationViewModel: ObservableObject {
 
                 try Task.checkCancellation()
                 try await client.testConnection(modelID: exactModelID)
+                try Task.checkCancellation()
                 guard isTaskActive(taskID) else {
                     return
                 }
@@ -640,6 +642,11 @@ final class LiveAiConfigurationViewModel: ObservableObject {
         cancelAndDiscardClient()
     }
 
+    func deactivate() {
+        cancelAndDiscardClient()
+        resetInteractionState()
+    }
+
     func waitForCurrentOperationForTesting() async {
         let task = activeTask
         await task?.value
@@ -665,6 +672,7 @@ final class LiveAiConfigurationViewModel: ObservableObject {
                     return
                 }
                 let result = try await configuredLiveClient().listModels()
+                try Task.checkCancellation()
                 guard isTaskActive(taskID) else {
                     return
                 }

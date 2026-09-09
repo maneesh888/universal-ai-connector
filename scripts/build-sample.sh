@@ -50,11 +50,20 @@ if rg --quiet \
   exit 1
 fi
 
-xcodebuild build \
-  -project "$PROJECT" \
-  -scheme UniversalAiConnectorSample \
-  -destination "$DESTINATION" \
-  -derivedDataPath "$DERIVED_DATA" \
-  CODE_SIGN_IDENTITY= \
-  CODE_SIGNING_ALLOWED=NO \
-  CODE_SIGNING_REQUIRED=NO
+build_sample() {
+  xcodebuild build \
+    -project "$PROJECT" \
+    -scheme UniversalAiConnectorSample \
+    -destination "$DESTINATION" \
+    -derivedDataPath "$DERIVED_DATA" \
+    "$@"
+}
+
+if [[ "$DESTINATION" == *"platform=iOS Simulator"* ]]; then
+  build_sample
+else
+  build_sample \
+    CODE_SIGN_IDENTITY= \
+    CODE_SIGNING_ALLOWED=NO \
+    CODE_SIGNING_REQUIRED=NO
+fi

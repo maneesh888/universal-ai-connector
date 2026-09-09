@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import XCTest
 
 @testable import UniversalAiConnectorSampleSupport
@@ -190,6 +191,97 @@ final class LiveAiConfigurationViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.canRetryDiscovery)
     }
 
+    func testDiscoveryCompletionAfterCancellationRemainsCancelled() async {
+        let models = [LiveAiModelOption(id: "late-model", displayName: nil)]
+        let client = FakeLiveAiConnectorClient(
+            discoverySteps: [.waitForRelease(.supported(models))]
+        )
+        let (viewModel, _) = configuredViewModel(client: client)
+
+        viewModel.loadModels()
+        await client.waitUntilDiscoveryIsSuspended()
+        viewModel.cancelCurrentOperation()
+        await client.releaseNextDiscovery()
+        await viewModel.waitForCurrentOperationForTesting()
+
+        XCTAssertEqual(viewModel.discoveryState, .cancelled)
+        XCTAssertEqual(viewModel.models, [])
+    }
+
+    func testConnectionRediscoveryCompletionAfterCancellationRemainsCancelled() async {
+        let models = [LiveAiModelOption(id: "exact-model", displayName: nil)]
+        let client = FakeLiveAiConnectorClient(
+            discoverySteps: [
+                .result(.supported(models)),
+                .waitForRelease(.supported(models)),
+            ]
+        )
+        let (viewModel, _) = configuredViewModel(client: client)
+
+        viewModel.loadModels()
+        await viewModel.waitForCurrentOperationForTesting()
+        viewModel.selectModel("exact-model")
+        viewModel.testConnection()
+        await client.waitUntilDiscoveryIsSuspended()
+        viewModel.cancelCurrentOperation()
+        await client.releaseNextDiscovery()
+        await viewModel.waitForCurrentOperationForTesting()
+
+        XCTAssertEqual(viewModel.discoveryState, .cancelled)
+        XCTAssertEqual(viewModel.connectionState, .cancelled)
+        let testedModelIDs = await client.testedModelIDs()
+        XCTAssertEqual(testedModelIDs, [])
+    }
+
+    func testConnectionResponseCompletionAfterCancellationRemainsCancelled() async {
+        let models = [LiveAiModelOption(id: "exact-model", displayName: nil)]
+        let client = FakeLiveAiConnectorClient(
+            discoverySteps: [
+                .result(.supported(models)),
+                .result(.supported(models)),
+            ],
+            waitForConnectionRelease: true
+        )
+        let (viewModel, _) = configuredViewModel(client: client)
+
+        viewModel.loadModels()
+        await viewModel.waitForCurrentOperationForTesting()
+        viewModel.selectModel("exact-model")
+        viewModel.testConnection()
+        await client.waitUntilConnectionIsSuspended()
+        viewModel.cancelCurrentOperation()
+        await client.releaseConnection()
+        await viewModel.waitForCurrentOperationForTesting()
+
+        XCTAssertEqual(viewModel.discoveryState, .cancelled)
+        XCTAssertEqual(viewModel.connectionState, .cancelled)
+        let testedModelIDs = await client.testedModelIDs()
+        XCTAssertEqual(testedModelIDs, ["exact-model"])
+    }
+
+    func testDeactivationCancelsLiveWorkAndDiscardsInteractionState() async {
+        let models = [LiveAiModelOption(id: "late-model", displayName: nil)]
+        let client = FakeLiveAiConnectorClient(
+            discoverySteps: [.waitForRelease(.supported(models))]
+        )
+        let (viewModel, _) = configuredViewModel(client: client)
+
+        viewModel.loadModels()
+        await client.waitUntilDiscoveryIsSuspended()
+        viewModel.deactivate()
+
+        XCTAssertEqual(viewModel.discoveryState, .idle)
+        XCTAssertEqual(viewModel.connectionState, .idle)
+        XCTAssertFalse(viewModel.isBusy)
+        XCTAssertTrue(viewModel.credentialStored)
+
+        await client.releaseNextDiscovery()
+        try? await Task.sleep(nanoseconds: 10_000_000)
+
+        XCTAssertEqual(viewModel.discoveryState, .idle)
+        XCTAssertEqual(viewModel.connectionState, .idle)
+    }
+
     func testProviderChangePreventsCancelledTaskFromOverwritingResetState() async {
         let client = FakeLiveAiConnectorClient(
             discoverySteps: [.waitForCancellation]
@@ -229,6 +321,49 @@ final class LiveAiConfigurationViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.credentialStored)
         XCTAssertTrue(try store.allCredentials().isEmpty)
         XCTAssertFalse(viewModel.configurationStatus.contains(secret))
+    }
+
+    func testKeychainStoreRoundTripUpdateAttributesIsolationAndClearAll() throws {
+        let service = "com.maneesh.universalai.connector.tests.\(UUID().uuidString)"
+        let isolatedService = "\(service).isolated"
+        let store = KeychainLiveAiCredentialStore(service: service)
+        let isolatedStore = KeychainLiveAiCredentialStore(service: isolatedService)
+        let firstKey = "openai|https://api.openai.com/v1"
+        let secondKey = "anthropic|https://api.anthropic.com/v1"
+
+        defer {
+            try? store.clearAll()
+            try? isolatedStore.clearAll()
+        }
+        try store.clearAll()
+        try isolatedStore.clearAll()
+
+        XCTAssertNil(try store.credential(for: firstKey))
+        try store.saveCredential("first-value", for: firstKey)
+        XCTAssertEqual(try store.credential(for: firstKey), "first-value")
+
+        try store.saveCredential("updated-value", for: firstKey)
+        try store.saveCredential("second-value", for: secondKey)
+        XCTAssertEqual(try store.credential(for: firstKey), "updated-value")
+        XCTAssertEqual(try store.credential(for: secondKey), "second-value")
+
+        let attributes = try keychainAttributes(service: service, account: firstKey)
+        XCTAssertEqual(attributes[kSecAttrService as String] as? String, service)
+        XCTAssertEqual(attributes[kSecAttrAccount as String] as? String, firstKey)
+        XCTAssertEqual(
+            attributes[kSecAttrAccessible as String] as? String,
+            kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String
+        )
+
+        try isolatedStore.saveCredential("isolated-value", for: firstKey)
+        try store.clearAll()
+
+        XCTAssertNil(try store.credential(for: firstKey))
+        XCTAssertNil(try store.credential(for: secondKey))
+        XCTAssertEqual(
+            try isolatedStore.credential(for: firstKey),
+            "isolated-value"
+        )
     }
 
     func testUnknownCredentialFailureIsRedacted() {
@@ -359,6 +494,27 @@ final class LiveAiConfigurationViewModelTests: XCTestCase {
         viewModel.saveCredential()
         return (viewModel, store)
     }
+
+    private func keychainAttributes(
+        service: String,
+        account: String
+    ) throws -> [String: Any] {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecReturnAttributes as String: true,
+        ]
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess,
+            let attributes = result as? [String: Any]
+        else {
+            throw LiveAiSampleError.secureStorage(status)
+        }
+        return attributes
+    }
 }
 
 private struct StubFailure: Error {}
@@ -367,15 +523,23 @@ private enum FakeDiscoveryStep: @unchecked Sendable {
     case result(LiveAiModelDiscoveryResult)
     case failure(any Error)
     case waitForCancellation
+    case waitForRelease(LiveAiModelDiscoveryResult)
 }
 
 private actor FakeLiveAiConnectorClient: LiveAiConnectorClient {
     private var discoverySteps: [FakeDiscoveryStep]
     private var recordedModelIDs: [String] = []
     private var recordedListCallCount = 0
+    private var pendingDiscoveryContinuations: [CheckedContinuation<Void, Never>] = []
+    private var shouldWaitForConnectionRelease: Bool
+    private var pendingConnectionContinuation: CheckedContinuation<Void, Never>?
 
-    init(discoverySteps: [FakeDiscoveryStep]) {
+    init(
+        discoverySteps: [FakeDiscoveryStep],
+        waitForConnectionRelease: Bool = false
+    ) {
         self.discoverySteps = discoverySteps
+        self.shouldWaitForConnectionRelease = waitForConnectionRelease
     }
 
     func listModels() async throws -> LiveAiModelDiscoveryResult {
@@ -392,11 +556,21 @@ private actor FakeLiveAiConnectorClient: LiveAiConnectorClient {
         case .waitForCancellation:
             try await Task.sleep(nanoseconds: UInt64.max)
             throw CancellationError()
+        case .waitForRelease(let result):
+            await withCheckedContinuation { continuation in
+                pendingDiscoveryContinuations.append(continuation)
+            }
+            return result
         }
     }
 
     func testConnection(modelID: String) async throws {
         recordedModelIDs.append(modelID)
+        if shouldWaitForConnectionRelease {
+            await withCheckedContinuation { continuation in
+                pendingConnectionContinuation = continuation
+            }
+        }
     }
 
     nonisolated func close() {}
@@ -407,6 +581,31 @@ private actor FakeLiveAiConnectorClient: LiveAiConnectorClient {
 
     func listCallCount() -> Int {
         recordedListCallCount
+    }
+
+    func waitUntilDiscoveryIsSuspended() async {
+        while pendingDiscoveryContinuations.isEmpty {
+            await Task.yield()
+        }
+    }
+
+    func releaseNextDiscovery() {
+        guard !pendingDiscoveryContinuations.isEmpty else {
+            return
+        }
+        pendingDiscoveryContinuations.removeFirst().resume()
+    }
+
+    func waitUntilConnectionIsSuspended() async {
+        while pendingConnectionContinuation == nil {
+            await Task.yield()
+        }
+    }
+
+    func releaseConnection() {
+        shouldWaitForConnectionRelease = false
+        pendingConnectionContinuation?.resume()
+        pendingConnectionContinuation = nil
     }
 }
 

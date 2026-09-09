@@ -13,6 +13,8 @@
 		A10000000000000000000004 /* LiveAiConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* LiveAiConfiguration.swift */; };
 		C10000000000000000000001 /* ExtensionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000001 /* ExtensionRequestHandler.swift */; };
 		C10000000000000000000002 /* UniversalAiConnector in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* UniversalAiConnector */; };
+		E10000000000000000000001 /* LiveAiConfigurationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* LiveAiConfigurationViewModelTests.swift */; };
+		E10000000000000000000002 /* UniversalAiConnectorSampleSupport in Frameworks */ = {isa = PBXBuildFile; productRef = E90000000000000000000001 /* UniversalAiConnectorSampleSupport */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,8 @@
 		C20000000000000000000001 /* ExtensionRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionRequestHandler.swift; sourceTree = "<group>"; };
 		C20000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C20000000000000000000003 /* UniversalAiConnectorExtensionConsumer.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = UniversalAiConnectorExtensionConsumer.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E20000000000000000000001 /* LiveAiConfigurationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAiConfigurationViewModelTests.swift; sourceTree = "<group>"; };
+		E20000000000000000000002 /* UniversalAiConnectorSampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UniversalAiConnectorSampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,6 +46,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E10000000000000000000002 /* UniversalAiConnectorSampleSupport in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -49,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000002 /* UniversalAiConnectorSample */,
+				E40000000000000000000001 /* UniversalAiConnectorSampleTests */,
 				C40000000000000000000001 /* UniversalAiConnectorExtensionConsumer */,
 				A40000000000000000000004 /* Products */,
 			);
@@ -76,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000003 /* UniversalAiConnectorSample.app */,
+				E20000000000000000000002 /* UniversalAiConnectorSampleTests.xctest */,
 				C20000000000000000000003 /* UniversalAiConnectorExtensionConsumer.appex */,
 			);
 			name = Products;
@@ -90,7 +104,25 @@
 			path = UniversalAiConnectorExtensionConsumer;
 			sourceTree = "<group>";
 		};
+		E40000000000000000000001 /* UniversalAiConnectorSampleTests */ = {
+			isa = PBXGroup;
+			children = (
+				E20000000000000000000001 /* LiveAiConfigurationViewModelTests.swift */,
+			);
+			path = UniversalAiConnectorSampleSupport/Tests/UniversalAiConnectorSampleSupportTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXContainerItemProxy section */
+		E80000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A70000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000000000000000000001;
+			remoteInfo = UniversalAiConnectorSample;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXNativeTarget section */
 		A50000000000000000000001 /* UniversalAiConnectorSample */ = {
@@ -133,6 +165,27 @@
 			productReference = C20000000000000000000003 /* UniversalAiConnectorExtensionConsumer.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		E50000000000000000000001 /* UniversalAiConnectorSampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E80000000000000000000002 /* Build configuration list for PBXNativeTarget "UniversalAiConnectorSampleTests" */;
+			buildPhases = (
+				E60000000000000000000001 /* Sources */,
+				E30000000000000000000001 /* Frameworks */,
+				E60000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E80000000000000000000003 /* PBXTargetDependency */,
+			);
+			name = UniversalAiConnectorSampleTests;
+			packageProductDependencies = (
+				E90000000000000000000001 /* UniversalAiConnectorSampleSupport */,
+			);
+			productName = UniversalAiConnectorSampleTests;
+			productReference = E20000000000000000000002 /* UniversalAiConnectorSampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -149,6 +202,10 @@
 					C50000000000000000000001 = {
 						CreatedOnToolsVersion = 26.3;
 					};
+					E50000000000000000000001 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = A50000000000000000000001;
+					};
 				};
 			};
 			buildConfigurationList = A80000000000000000000001 /* Build configuration list for PBXProject "UniversalAiConnectorSample" */;
@@ -163,6 +220,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				AA0000000000000000000001 /* XCLocalSwiftPackageReference "../../swift-package" */,
+				EA0000000000000000000001 /* XCLocalSwiftPackageReference "UniversalAiConnectorSampleSupport" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A40000000000000000000004 /* Products */;
@@ -170,6 +228,7 @@
 			projectRoot = "";
 			targets = (
 				A50000000000000000000001 /* UniversalAiConnectorSample */,
+				E50000000000000000000001 /* UniversalAiConnectorSampleTests */,
 				C50000000000000000000001 /* UniversalAiConnectorExtensionConsumer */,
 			);
 		};
@@ -184,6 +243,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C60000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E60000000000000000000002 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -211,7 +277,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E60000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E10000000000000000000001 /* LiveAiConfigurationViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E80000000000000000000003 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A50000000000000000000001 /* UniversalAiConnectorSample */;
+			targetProxy = E80000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AB0000000000000000000001 /* Debug */ = {
@@ -249,7 +331,8 @@
 		AB0000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = UniversalAiConnectorSample/App/UniversalAiConnectorSample.entitlements;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -272,7 +355,8 @@
 		AB0000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = UniversalAiConnectorSample/App/UniversalAiConnectorSample.entitlements;
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -344,6 +428,40 @@
 			};
 			name = Release;
 		};
+		EB0000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maneesh.universalai.connector.sample.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UniversalAiConnectorSample.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/UniversalAiConnectorSample";
+			};
+			name = Debug;
+		};
+		EB0000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.maneesh.universalai.connector.sample.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UniversalAiConnectorSample.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/UniversalAiConnectorSample";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -374,12 +492,25 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		E80000000000000000000002 /* Build configuration list for PBXNativeTarget "UniversalAiConnectorSampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB0000000000000000000001 /* Debug */,
+				EB0000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
 		AA0000000000000000000001 /* XCLocalSwiftPackageReference "../../swift-package" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../swift-package;
+		};
+		EA0000000000000000000001 /* XCLocalSwiftPackageReference "UniversalAiConnectorSampleSupport" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = UniversalAiConnectorSampleSupport;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -388,6 +519,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AA0000000000000000000001 /* XCLocalSwiftPackageReference "../../swift-package" */;
 			productName = UniversalAiConnector;
+		};
+		E90000000000000000000001 /* UniversalAiConnectorSampleSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EA0000000000000000000001 /* XCLocalSwiftPackageReference "UniversalAiConnectorSampleSupport" */;
+			productName = UniversalAiConnectorSampleSupport;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

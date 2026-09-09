@@ -57,7 +57,7 @@ Use the smallest commands that exercise the changed surface:
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
-The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, deterministic iOS sample state tests, the simulator sample build, and generic-device link verification.
+The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests, the locally signed simulator sample build, and unsigned generic-device link verification.
 
 When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
 
