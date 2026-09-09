@@ -55,12 +55,13 @@ CHANGED_PATHS_FILE="$(mktemp)"
 trap 'rm -f "$CHANGED_PATHS_FILE"' EXIT
 
 if [[ "$MODE" == "cached" ]]; then
-  if ! git -C "$ROOT" diff --cached --name-only --diff-filter=ACDMRT -z > "$CHANGED_PATHS_FILE"; then
+  if ! git -C "$ROOT" diff --cached --no-renames --name-only --diff-filter=ACDMRT -z > "$CHANGED_PATHS_FILE"; then
     echo "Verification-impact classification could not inspect the staged changes." >&2
     exit 2
   fi
 else
   if ! git -C "$ROOT" diff \
+    --no-renames \
     --name-only \
     --diff-filter=ACDMRT \
     -z \

@@ -51,6 +51,8 @@ printf '%s\n' "readme" > "$TEST_REPOSITORY/README.md"
 printf '%s\n' "license" > "$TEST_REPOSITORY/LICENSE.txt"
 printf '%s\n' "plan" > "$TEST_REPOSITORY/docs/plans/plan.md"
 printf '%s\n' "source" > "$TEST_REPOSITORY/src/source.kt"
+printf '%s\n' "committed rename source" > "$TEST_REPOSITORY/src/committed-rename.kt"
+printf '%s\n' "cached rename source" > "$TEST_REPOSITORY/src/cached-rename.kt"
 printf '%s\n' "workflow" > "$TEST_REPOSITORY/.github/workflows/ci.yml"
 printf '%s\n' "script" > "$TEST_REPOSITORY/scripts/tool.sh"
 printf '%s\n' "plugins {}" > "$TEST_REPOSITORY/build.gradle.kts"
@@ -101,9 +103,15 @@ printf '%s\n' "mixed source" >> "$TEST_REPOSITORY/src/source.kt"
 MIXED_SHA="$(commit_all 'mixed change')"
 expect_committed_impact full "$CONFIG_SHA" "$MIXED_SHA"
 
+git -C "$TEST_REPOSITORY" mv \
+  src/committed-rename.kt \
+  docs/plans/committed-rename.md
+COMMITTED_RENAME_SHA="$(commit_all 'rename source into documentation')"
+expect_committed_impact full "$MIXED_SHA" "$COMMITTED_RENAME_SHA"
+
 chmod +x "$TEST_REPOSITORY/docs/plans/plan.md"
 MODE_SHA="$(commit_all 'executable documentation')"
-expect_committed_impact full "$MIXED_SHA" "$MODE_SHA"
+expect_committed_impact full "$COMMITTED_RENAME_SHA" "$MODE_SHA"
 
 if [[ "$(UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" "$CLASSIFIER" "$MODE_SHA" "$MODE_SHA")" != "full" ]]; then
   echo "An empty committed diff must fail closed to full verification." >&2
@@ -129,6 +137,19 @@ if [[ "$(UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" "$CLASSIFIER" --cached)" != "ful
   exit 1
 fi
 git -C "$TEST_REPOSITORY" restore --staged --worktree src/source.kt
+
+git -C "$TEST_REPOSITORY" mv \
+  src/cached-rename.kt \
+  docs/plans/cached-rename.md
+if [[ "$(UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" "$CLASSIFIER" --cached)" != "full" ]]; then
+  echo "A staged source rename into documentation must require full verification." >&2
+  exit 1
+fi
+git -C "$TEST_REPOSITORY" restore \
+  --staged \
+  --worktree \
+  src/cached-rename.kt \
+  docs/plans/cached-rename.md
 
 if UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" \
   "$CLASSIFIER" missing/revision "$MODE_SHA" >/dev/null 2>&1; then
