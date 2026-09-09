@@ -258,6 +258,7 @@ run_full() {
   # Build once, then reuse the artifact for package and consumer checks.
   "$ROOT/scripts/build-xcframework.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-swift-package.sh"
+  UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-ios-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-app-extension-consumer.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"

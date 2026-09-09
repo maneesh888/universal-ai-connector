@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT="$ROOT/samples/ios/UniversalAiConnectorSample.xcodeproj"
 APP_SOURCES="$ROOT/samples/ios/UniversalAiConnectorSample/App"
+SAMPLE_SUPPORT_SOURCES="$ROOT/samples/ios/UniversalAiConnectorSampleSupport/Sources"
 DESTINATION="${UAC_SAMPLE_DESTINATION:-}"
 DERIVED_DATA="${UAC_SAMPLE_DERIVED_DATA:-${TMPDIR:-/tmp}/universal-ai-connector-sample-derived}"
 
@@ -19,10 +20,11 @@ UNSUPPORTED_IMPORTS="$(
   rg --no-filename --only-matching \
     '^[[:space:]]*import[[:space:]]+[A-Za-z_][A-Za-z0-9_]*' \
     "$APP_SOURCES" \
+    "$SAMPLE_SUPPORT_SOURCES" \
     --glob '*.swift' |
     awk '{print $2}' |
     LC_ALL=C sort -u |
-    grep -Ev '^(SwiftUI|UniversalAiConnector)$' || true
+    grep -Ev '^(Combine|Darwin|Foundation|Security|SwiftUI|UniversalAiConnector)$' || true
 )"
 if [[ -n "$UNSUPPORTED_IMPORTS" ]]; then
   echo "The iOS application imports unsupported modules:" >&2
@@ -32,6 +34,7 @@ fi
 if ! rg --quiet \
   '^[[:space:]]*import[[:space:]]+UniversalAiConnector[[:space:]]*$' \
   "$APP_SOURCES" \
+  "$SAMPLE_SUPPORT_SOURCES" \
   --glob '*.swift'; then
   echo "The iOS application must import the UniversalAiConnector Swift Package product." >&2
   exit 1

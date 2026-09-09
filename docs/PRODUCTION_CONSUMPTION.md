@@ -51,6 +51,25 @@ deterministic operations, and an unused provider do not resolve credentials.
 | `openrouter` | `https://openrouter.ai/api/v1` | `chat/completions` | GET `models`; one bounded list |
 | `openai-compatible` | Deployment base URL ending in `/v1` | `chat/completions` | GET `models`; `.unsupported` only for 404, 405, or 501 |
 
+### iOS sample live workflow
+
+The iOS SwiftUI sample starts in its unchanged deterministic mode with no credential, account, or
+network requirement. Its explicit **Live** mode owns provider and base-URL configuration, masked
+credential entry, and retained credential storage through an iOS Keychain service. Clearing live
+configuration deletes every credential owned by that sample service.
+
+The sample renders loading, retrying, loaded, supported-empty, unsupported, failed, and cancelled
+discovery states. A non-empty supported result requires an explicit exact-model selection. Manual
+model entry is present only after the public discovery result is explicitly `.unsupported`; an
+empty supported result remains blocking. **Test Connection** always performs discovery again and
+then sends one minimal request on the same exact selected or explicitly entered identifier. If a
+selected model disappears, the sample stops without selecting another model.
+
+Run its deterministic state suite with `./scripts/test-ios-sample.sh`. The normal full gate also
+retains the Swift façade, combined XCFramework, Simulator application build, and generic-device
+link checks. These commands do not use a credential and do not prove live provider, visible
+Simulator interaction, signing, or physical-device behavior.
+
 Base URLs are normalized to end in one slash, and the connector appends the relative endpoint.
 They must use HTTPS. Plaintext HTTP is accepted only for exact loopback hosts used by local test
 servers. Do not include credentials, a query, or a fragment in a base URL.

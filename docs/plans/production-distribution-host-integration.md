@@ -2,14 +2,15 @@
 
 ## Status and activation gate
 
-Status: `Planned`; P8 is not active.
+Status: `In progress`; P8-A is active.
 
-P0-P7 are completed. This plan defines the bounded P8 sequence without activating the milestone.
-P8 may become the sole roadmap milestone marked `In progress` only in the separate P8-A change.
-P9 remains inactive until P8 closes authoritatively.
+P0-P7 are completed. P8-A activates P8 as the sole roadmap milestone marked `In progress`.
+Every later P8 package remains `Not started`, and P9 remains inactive until P8 closes
+authoritatively.
 
-The plan-authoring change has `Milestone effect: none`. It adds no sample-host runtime behavior,
-publication task, artifact, release tag, or supported distribution claim.
+The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
+iOS sample-host workflow but adds no publication task, remote artifact, release tag, or supported
+distribution claim.
 
 ## Objective
 
@@ -185,7 +186,7 @@ Execute one package at a time after activation.
 
 ### P8-A: iOS live sample and model discovery
 
-Status: `Not started`.
+Status: `In progress`.
 
 - Activate P8 as the only `In progress` milestone while keeping every later P8 package
   `Not started`.

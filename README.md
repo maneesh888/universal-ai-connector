@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P7%20complete-16a34a)
+![Project stage](https://img.shields.io/badge/stage-P8--A%20in%20progress-f59e0b)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -26,7 +26,10 @@ this milestone-closing candidate: P7-A
 authoritatively froze the external Gateway contract and deterministic compatibility fixtures, and
 P7-B added the demonstrated compatibility correction plus a dedicated local Gateway live gate.
 P7-C completes Gateway-representative concurrent lifecycle, cleanup, host-configuration, and
-package-boundary acceptance without another runtime adapter.
+package-boundary acceptance without another runtime adapter. P8-A is now active and upgrades the
+iOS sample with explicit live configuration, Keychain-backed credential storage, model discovery,
+exact selection, and no-substitution connection testing while retaining the original
+credential-free deterministic mode.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
@@ -35,7 +38,8 @@ package-boundary acceptance without another runtime adapter.
 > P6 is completed authoritatively. P7 remains scoped as validation of the existing
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
 > a proprietary Gateway protocol. P7-A and P7-B are authoritative, and P7-C lifecycle integration
-> and acceptance complete P7 in this milestone-closing candidate.
+> and acceptance complete P7. P8-A is the sole active package and is bounded to the iOS sample;
+> Android, JVM/desktop, parity, and distribution work remain sequential later packages.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -74,7 +78,7 @@ Canonical AI contracts    ██████████████████
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
 Gateway compatibility     ████████████████████ 100%  ✅ Complete
-Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P8-A active
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
 
@@ -93,6 +97,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Stable Kotlin-to-Swift error mapping | ✅ Verified |
 | Swift-to-Kotlin cancellation | ✅ Verified |
 | SwiftUI simulator sample compilation | ✅ Locally verified |
+| iOS live configuration and model-discovery sample | 🚧 P8-A candidate; deterministic tests and acceptance proof required |
 | Generic iOS-device sample link/build | ✅ Locally verified; no device execution |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
@@ -127,7 +132,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
 | P7 | OpenAI-compatible Gateway validation | ✅ Completed in the milestone-closing candidate |
-| P8 | Production distribution and host integration | ⏳ Planned |
+| P8 | Production distribution and host integration | 🚧 P8-A in progress |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion

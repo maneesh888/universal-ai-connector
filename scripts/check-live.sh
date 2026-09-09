@@ -32,6 +32,8 @@ Supported providers and required live inputs:
 Optional:
   UAC_LIVE_EXPECTED_SHA  Exact 40-character commit SHA expected by the caller.
   UAC_LIVE_ENV_FILE      .env.live or .env.live.<name> in the primary checkout.
+  UAC_IOS_SAMPLE_LIVE_PROOF=1
+                         Build, install, and seed the Simulator sample for visible proof.
 
 Non-empty process environment values override the canonical ignored local file.
 EOF
@@ -87,6 +89,11 @@ require_clean_checkout() {
 if [[ "$#" -ne 1 ]]; then
   usage >&2
   exit 2
+fi
+
+if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "0" &&
+      "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
+  fail "UAC_IOS_SAMPLE_LIVE_PROOF must be 0 or 1."
 fi
 
 case "$PROVIDER" in
@@ -329,6 +336,40 @@ if [[ "$POST_LIVE_SHA" != "$HEAD_SHA" ]]; then
   fail "Live verification HEAD changed during provider tests."
 fi
 require_clean_checkout
+
+if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+  IOS_SAMPLE_LAUNCHER="$ROOT/scripts/launch-ios-live-sample.sh"
+  if [[ ! -x "$IOS_SAMPLE_LAUNCHER" ]]; then
+    fail "The iOS Simulator live-sample launcher is required for requested proof."
+  fi
+  IOS_SAMPLE_ENVIRONMENT=(
+    "UAC_IOS_SAMPLE_PROOF_CREDENTIAL=$KEY_VALUE"
+    "UAC_IOS_SAMPLE_PROOF_MODEL=$MODEL_VALUE"
+  )
+  if [[ -n "$BASE_URL_VALUE" ]]; then
+    IOS_SAMPLE_ENVIRONMENT+=(
+      "UAC_IOS_SAMPLE_PROOF_BASE_URL=$BASE_URL_VALUE"
+    )
+  fi
+  env \
+    -u OPENAI_API_KEY \
+    -u OPENAI_LIVE_MODEL \
+    -u ANTHROPIC_API_KEY \
+    -u ANTHROPIC_LIVE_MODEL \
+    -u OPENROUTER_API_KEY \
+    -u OPENROUTER_LIVE_MODEL \
+    -u GATEWAY_LIVE_BASE_URL \
+    -u GATEWAY_API_KEY \
+    -u GATEWAY_LIVE_MODEL \
+    -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
+    -u UAC_LIVE_ENV_FILE \
+    -u UAC_IOS_SAMPLE_PROOF_CREDENTIAL \
+    -u UAC_IOS_SAMPLE_PROOF_MODEL \
+    -u UAC_IOS_SAMPLE_PROOF_BASE_URL \
+    "${IOS_SAMPLE_ENVIRONMENT[@]}" \
+    UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+    "$IOS_SAMPLE_LAUNCHER" "$PROVIDER"
+fi
 
 echo "$PROVIDER_LABEL live verification passed."
 echo "provider=$PROVIDER"
