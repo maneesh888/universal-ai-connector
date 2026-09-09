@@ -151,6 +151,17 @@ git -C "$TEST_REPOSITORY" restore \
   src/cached-rename.kt \
   docs/plans/cached-rename.md
 
+printf '%s\n' "regular document" > "$TEST_REPOSITORY/docs/z!.md"
+LITERAL_PATH_BASE_SHA="$(commit_all 'literal path base')"
+ln -s ../README.md "$TEST_REPOSITORY/docs/z[!a].md"
+git -C "$TEST_REPOSITORY" add -- ':(literal)docs/z[!a].md'
+if [[ "$(UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" "$CLASSIFIER" --cached)" != "full" ]]; then
+  echo "A cached Markdown symlink with pathspec metacharacters must require full verification." >&2
+  exit 1
+fi
+LITERAL_PATH_HEAD_SHA="$(commit_all 'literal path symlink')"
+expect_committed_impact full "$LITERAL_PATH_BASE_SHA" "$LITERAL_PATH_HEAD_SHA"
+
 if UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" \
   "$CLASSIFIER" missing/revision "$MODE_SHA" >/dev/null 2>&1; then
   echo "Invalid revisions must fail closed." >&2
