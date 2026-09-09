@@ -31,7 +31,6 @@ CHANGED_PATHS_FILE="$(mktemp)"
 trap 'rm -f "$CHANGED_PATHS_FILE"' EXIT
 
 if ! git -C "$ROOT" diff \
-  --no-renames \
   --name-only \
   --diff-filter=ACDMRT \
   -z \

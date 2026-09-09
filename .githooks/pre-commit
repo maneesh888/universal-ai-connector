@@ -18,17 +18,4 @@ if [[ -n "$(git -C "$ROOT" ls-files --others --exclude-standard)" ]]; then
 fi
 
 echo "Running Universal AI Connector pre-commit checks..."
-VERIFICATION_IMPACT="$("$ROOT/scripts/verification-impact.sh" --cached)"
-case "$VERIFICATION_IMPACT" in
-  docs-only)
-    echo "Staged changes are plain documentation; running lightweight hygiene and policy checks."
-    "$ROOT/scripts/check.sh" --hygiene
-    ;;
-  full)
-    "$ROOT/scripts/check.sh" --quick
-    ;;
-  *)
-    echo "Verification-impact classification returned an invalid result." >&2
-    exit 1
-    ;;
-esac
+"$ROOT/scripts/check.sh" --quick

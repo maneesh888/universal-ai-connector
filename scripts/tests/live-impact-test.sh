@@ -116,29 +116,6 @@ if [[ "$("$CLASSIFIER" "$SWIFT_SHA" "$ADAPTER_SHA")" != "openai" ]]; then
   exit 1
 fi
 
-printf '%s\n' "rename adapter marker" > "$OPENAI_DIRECTORY/RenameAdapter.kt"
-git -C "$TEST_REPOSITORY" add .
-git -C "$TEST_REPOSITORY" \
-  -c user.name="Live Impact Test" \
-  -c user.email="live-impact@example.invalid" \
-  commit -qm "add rename adapter"
-RENAME_BASE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
-mkdir -p "$TEST_REPOSITORY/docs"
-git -C "$TEST_REPOSITORY" mv \
-  -- \
-  "${OPENAI_DIRECTORY#"$TEST_REPOSITORY/"}/RenameAdapter.kt" \
-  docs/RenamedAdapter.md
-git -C "$TEST_REPOSITORY" \
-  -c user.name="Live Impact Test" \
-  -c user.email="live-impact@example.invalid" \
-  commit -qm "rename adapter into documentation"
-RENAME_HEAD_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
-
-if [[ "$("$CLASSIFIER" "$RENAME_BASE_SHA" "$RENAME_HEAD_SHA")" != "openai" ]]; then
-  echo "Renaming an adapter into documentation must retain provider live verification." >&2
-  exit 1
-fi
-
 printf '%s\n' "documentation" >> "$TEST_REPOSITORY/README.md"
 git -C "$TEST_REPOSITORY" add .
 git -C "$TEST_REPOSITORY" \
@@ -147,7 +124,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "docs only"
 DOCS_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$RENAME_HEAD_SHA" "$DOCS_SHA")" != "none" ]]; then
+if [[ "$("$CLASSIFIER" "$ADAPTER_SHA" "$DOCS_SHA")" != "none" ]]; then
   echo "Documentation-only changes must not require live credentials." >&2
   exit 1
 fi

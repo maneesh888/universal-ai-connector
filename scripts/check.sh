@@ -8,7 +8,7 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/check.sh [--hygiene|--quick|--full]
 
-  --hygiene  Validate shell syntax, secrets, whitespace, and lightweight policy regressions.
+  --hygiene  Validate shell syntax, secrets, and whitespace, including untracked files.
   --quick    Run hygiene plus deterministic JVM, Android, iOS Simulator, and consumer checks.
   --full     Run quick coverage plus XCFramework, Swift Package, iOS app-extension, and simulator/device sample checks.
              This is the default.
@@ -57,13 +57,10 @@ run_hygiene() {
     git -C "$ROOT" diff --check
   rm -rf "$temp_index_directory"
 
-  run_script_tests
   echo "Universal AI Connector hygiene checks passed."
 }
 
 run_script_tests() {
-  "$ROOT/scripts/tests/verification-impact-test.sh"
-  "$ROOT/scripts/tests/pre-commit-verification-test.sh"
   "$ROOT/scripts/tests/check-live-test.sh"
   "$ROOT/scripts/tests/live-impact-test.sh"
   "$ROOT/scripts/tests/pre-push-live-test.sh"
@@ -248,12 +245,14 @@ verify_public_artifact_signatures() {
 
 run_quick() {
   run_hygiene --quick
+  run_script_tests
   run_cross_platform_gradle_checks
   echo "Universal AI Connector quick checks passed."
 }
 
 run_full() {
   run_hygiene --full
+  run_script_tests
   run_cross_platform_gradle_checks
 
   # Build once, then reuse the artifact for package and consumer checks.

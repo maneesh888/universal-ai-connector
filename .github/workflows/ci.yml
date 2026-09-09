@@ -15,68 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  impact:
-    name: Classify verification impact
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      full_required: ${{ steps.classify.outputs.full_required }}
-    steps:
-      - name: Check out sources and history
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 0
-
-      - name: Classify exact-head verification impact
-        id: classify
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PUSH_BASE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            base_sha="$PR_BASE_SHA"
-          elif [[ "$EVENT_NAME" == "push" ]]; then
-            base_sha="$PUSH_BASE_SHA"
-          else
-            echo "full_required=true" >> "$GITHUB_OUTPUT"
-            echo "Manual CI runs always select complete verification."
-            exit 0
-          fi
-
-          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]] ||
-            ! git cat-file -e "$base_sha^{commit}" 2>/dev/null; then
-            echo "full_required=true" >> "$GITHUB_OUTPUT"
-            echo "A trustworthy base commit is unavailable; selecting complete verification."
-            exit 0
-          fi
-
-          if ! git cat-file -e "$base_sha:scripts/verification-impact.sh" 2>/dev/null; then
-            echo "full_required=true" >> "$GITHUB_OUTPUT"
-            echo "The trusted base has no verification classifier; selecting complete verification."
-            exit 0
-          fi
-
-          trusted_classifier="$RUNNER_TEMP/verification-impact.sh"
-          git show "$base_sha:scripts/verification-impact.sh" > "$trusted_classifier"
-          chmod +x "$trusted_classifier"
-          impact="$(UAC_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
-            "$trusted_classifier" "$base_sha" "$HEAD_SHA")"
-          case "$impact" in
-            docs-only)
-              echo "full_required=false" >> "$GITHUB_OUTPUT"
-              ;;
-            full)
-              echo "full_required=true" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "Verification-impact classification returned an invalid result."
-              exit 1
-              ;;
-          esac
-
   hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest
@@ -91,12 +29,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --yes ripgrep
 
       - name: Run repository hygiene and script tests
-        run: ./scripts/check.sh --hygiene
+        run: |
+          ./scripts/check.sh --hygiene
+          ./scripts/tests/run-android-sample-test.sh
 
   jvm-android-linux:
     name: JVM + Android (Linux)
-    needs: impact
-    if: ${{ needs.impact.outputs.full_required == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -146,8 +84,6 @@ jobs:
 
   jvm-windows:
     name: JVM (Windows)
-    needs: impact
-    if: ${{ needs.impact.outputs.full_required == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -184,8 +120,6 @@ jobs:
 
   apple-jvm:
     name: Apple + JVM (macOS)
-    needs: impact
-    if: ${{ needs.impact.outputs.full_required == 'true' }}
     runs-on: macos-15
     timeout-minutes: 45
     steps:
@@ -247,7 +181,6 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     needs:
-      - impact
       - hygiene
       - jvm-android-linux
       - jvm-windows
@@ -256,49 +189,20 @@ jobs:
       - name: Confirm required jobs passed
         env:
           HYGIENE_RESULT: ${{ needs.hygiene.result }}
-          IMPACT_RESULT: ${{ needs.impact.result }}
-          FULL_REQUIRED: ${{ needs.impact.outputs.full_required }}
           JVM_ANDROID_LINUX_RESULT: ${{ needs.jvm-android-linux.result }}
           JVM_WINDOWS_RESULT: ${{ needs.jvm-windows.result }}
           APPLE_JVM_RESULT: ${{ needs.apple-jvm.result }}
         run: |
-          if [[ "$IMPACT_RESULT" != "success" || "$HYGIENE_RESULT" != "success" ]]; then
+          if [[ "$HYGIENE_RESULT" != "success" ||
+                "$JVM_ANDROID_LINUX_RESULT" != "success" ||
+                "$JVM_WINDOWS_RESULT" != "success" ||
+                "$APPLE_JVM_RESULT" != "success" ]]; then
             echo "Required checks did not pass."
-            echo "impact=$IMPACT_RESULT"
             echo "hygiene=$HYGIENE_RESULT"
-            exit 1
-          fi
-
-          if [[ "$FULL_REQUIRED" == "true" ]]; then
-            if [[ "$JVM_ANDROID_LINUX_RESULT" != "success" ||
-                  "$JVM_WINDOWS_RESULT" != "success" ||
-                  "$APPLE_JVM_RESULT" != "success" ]]; then
-              echo "Complete verification was required but a heavy job did not pass."
-              echo "jvm-android-linux=$JVM_ANDROID_LINUX_RESULT"
-              echo "jvm-windows=$JVM_WINDOWS_RESULT"
-              echo "apple-jvm=$APPLE_JVM_RESULT"
-              exit 1
-            fi
-          elif [[ "$FULL_REQUIRED" == "false" ]]; then
-            if [[ "$JVM_ANDROID_LINUX_RESULT" != "skipped" ||
-                  "$JVM_WINDOWS_RESULT" != "skipped" ||
-                  "$APPLE_JVM_RESULT" != "skipped" ]]; then
-              echo "Documentation-only verification expected every heavy job to be skipped."
-              echo "jvm-android-linux=$JVM_ANDROID_LINUX_RESULT"
-              echo "jvm-windows=$JVM_WINDOWS_RESULT"
-              echo "apple-jvm=$APPLE_JVM_RESULT"
-              exit 1
-            fi
-          else
-            echo "Verification-impact classification did not produce a valid full_required value."
-            exit 1
-          fi
-
-          if [[ "$FULL_REQUIRED" == "false" ]]; then
-            echo "Required lightweight Universal AI Connector checks passed."
-          else
             echo "jvm-android-linux=$JVM_ANDROID_LINUX_RESULT"
             echo "jvm-windows=$JVM_WINDOWS_RESULT"
             echo "apple-jvm=$APPLE_JVM_RESULT"
-            echo "All required Universal AI Connector checks passed."
+            exit 1
           fi
+
+          echo "All required Universal AI Connector checks passed."
