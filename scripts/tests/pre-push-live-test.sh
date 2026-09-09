@@ -23,6 +23,8 @@ mkdir -p \
   "$TEST_REPOSITORY/scripts" \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin"
 cp "$ROOT/.githooks/pre-push" "$TEST_REPOSITORY/.githooks/pre-push"
+cp "$ROOT/scripts/verification-impact.sh" \
+  "$TEST_REPOSITORY/scripts/verification-impact.sh"
 awk '
   $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\" \"gateway\")" {
     print "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\" \"gateway\")"
@@ -32,15 +34,24 @@ awk '
 ' "$ROOT/scripts/live-impact.sh" > "$TEST_REPOSITORY/scripts/live-impact.sh"
 chmod +x \
   "$TEST_REPOSITORY/.githooks/pre-push" \
-  "$TEST_REPOSITORY/scripts/live-impact.sh"
+  "$TEST_REPOSITORY/scripts/live-impact.sh" \
+  "$TEST_REPOSITORY/scripts/verification-impact.sh"
 
 cat > "$TEST_REPOSITORY/scripts/check.sh" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-if [[ "$*" != "--full" ]]; then
-  echo "Pre-push did not request the full deterministic gate." >&2
-  exit 10
-fi
+case "$*" in
+  --hygiene)
+    selected_gate="hygiene"
+    ;;
+  --full)
+    selected_gate="full"
+    ;;
+  *)
+    echo "Pre-push requested an invalid deterministic gate." >&2
+    exit 10
+    ;;
+esac
 if [[ -n "${OPENAI_API_KEY:-}" ||
       -n "${OPENAI_LIVE_MODEL:-}" ||
       -n "${ANTHROPIC_API_KEY:-}" ||
@@ -55,7 +66,7 @@ if [[ -n "${OPENAI_API_KEY:-}" ||
   echo "Pre-push exposed live inputs to the deterministic gate." >&2
   exit 12
 fi
-echo "full" >> "$UAC_TEST_CALL_LOG"
+echo "$selected_gate" >> "$UAC_TEST_CALL_LOG"
 EOF
 
 cat > "$TEST_REPOSITORY/scripts/check-live.sh" <<'EOF'
@@ -178,9 +189,9 @@ DOCS_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
 : > "$CALL_LOG"
 run_hook "$DOCS_SHA"
-if [[ "$(sed -n '1p' "$CALL_LOG")" != "full" ||
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "hygiene" ||
       -n "$(sed -n '2p' "$CALL_LOG")" ]]; then
-  echo "Documentation-only push unexpectedly ran live verification." >&2
+  echo "Documentation-only push did not run only the lightweight hygiene gate." >&2
   exit 1
 fi
 
@@ -294,8 +305,8 @@ if UAC_TEST_CALL_LOG="$CALL_LOG" \
   echo "Missing live base unexpectedly passed pre-push verification." >&2
   exit 1
 fi
-if ! grep -Fq "Provider-impact classification could not resolve missing/base." "$OUTPUT"; then
-  echo "Missing live base did not fail with actionable guidance." >&2
+if ! grep -Fq "Verification-impact classification could not resolve missing/base." "$OUTPUT"; then
+  echo "Missing verification base did not fail with actionable guidance." >&2
   exit 1
 fi
 
