@@ -29,11 +29,19 @@ Run targeted checks while editing, then run only the highest final gate required
 
 | Mode | Final gate | Additional proof |
 |---|---|---|
-| Fast | Affected tests; `./scripts/check.sh --hygiene` before handoff when files changed | Only the changed surface |
+| Fast | Affected tests; `./scripts/check.sh --hygiene` before handoff when files changed | Only the changed surface; plain documentation may use the docs-only hook/CI path |
 | Standard | `./scripts/check.sh --quick` | Affected consumer check for public API or package-boundary changes |
 | Release | `./scripts/check.sh --full` on exact `HEAD` | Exact-head CI, independent review, merge checks, and active-plan-specific proof |
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
+
+`./scripts/verification-impact.sh` is the fail-closed hook and ordinary-CI classifier. Only a
+non-empty diff containing regular `README.md`, top-level `LICENSE*`, and/or `docs/**/*.md` files
+returns `docs-only`.
+Source, test, script, hook, workflow, configuration, dependency, build, generated-input, mixed,
+empty, non-regular, or unclassifiable changes return `full` or fail. The docs-only route still runs
+`./scripts/check.sh --hygiene`, including lightweight script and workflow-policy regressions,
+secret scanning, contract layout, wrapper/dependency policy, and whitespace checks.
 
 Mandatory hooks may execute a higher cumulative gate at commit or push. Do not manually repeat the same gate immediately before the hook unless the intervening state changed.
 
@@ -123,8 +131,14 @@ git config --local --get core.hooksPath
 
 The path must be `.githooks`.
 
-- Pre-commit rejects unstaged tracked changes and untracked files, then runs `./scripts/check.sh --quick` against the proposed contents.
-- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`. It then runs every exact-head provider gate selected relative to `origin/main` and fails closed when any selected gate, task, or required process input is absent.
+- Pre-commit rejects unstaged tracked changes and untracked files, classifies the exact staged
+  contents, and runs `./scripts/check.sh --hygiene` for docs-only changes or `--quick` for every
+  other change.
+- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and
+  after verification, and classifies exact `HEAD` relative to `origin/main`. Docs-only pushes run
+  `./scripts/check.sh --hygiene` and skip JVM/Android/Apple and live-provider gates. Every other
+  push runs `./scripts/check.sh --full`, then every selected exact-head provider gate, and fails
+  closed when the base, classifier, selected gate, task, or required process input is unavailable.
 - Never use `--no-verify`. Missing toolchains and failed checks are blockers.
 
 These hook requirements are safety gates; they do not make every task a Release analysis task.
@@ -133,11 +147,16 @@ These hook requirements are safety gates; they do not make every task a Release 
 
 `.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch:
 
+- `Classify verification impact` executes the classifier from the trusted base commit. A missing
+  trusted classifier/base, manual dispatch, invalid result, or any non-documentation change selects
+  complete verification.
 - `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
-- `JVM + Android (Linux)` runs shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer check with Java 21.
-- `JVM (Windows)` runs JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
-- `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
-- `Required checks` provides one stable branch-protection status.
+- For docs-only changes, the JVM/Android Linux, JVM Windows, and Apple/JVM macOS jobs are
+  intentionally skipped. Otherwise they run the unchanged shared, consumer, packaging, and full
+  Apple checks.
+- `Required checks` provides one stable branch-protection status. It accepts skipped heavy jobs
+  only when trusted impact classification selected docs-only and the classifier plus hygiene jobs
+  passed; complete verification still requires every heavy job to succeed.
 
 Pull-request jobs check out the exact PR head. Third-party actions remain pinned, workflow permissions remain read-only, and ordinary CI remains secretless. CI does not prove emulator/device execution, live providers, gateways, distribution, or release behavior without matching evidence.
 

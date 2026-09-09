@@ -41,7 +41,30 @@ require_pushed_refs_match_head() {
 
 require_clean_tree
 require_pushed_refs_match_head < "$PUSH_REFS_FILE"
-echo "Running Universal AI Connector pre-push checks..."
+
+LIVE_BASE_REF="${UAC_LIVE_BASE_REF:-origin/main}"
+LIVE_BASE_SHA="$(git -C "$ROOT" rev-parse --verify "$LIVE_BASE_REF^{commit}" 2>/dev/null)" || {
+  echo "Verification-impact classification could not resolve $LIVE_BASE_REF." >&2
+  echo "Fetch the base branch or set UAC_LIVE_BASE_REF to the intended local base." >&2
+  exit 1
+}
+HEAD_SHA="$(git -C "$ROOT" rev-parse --verify HEAD)"
+
+VERIFICATION_IMPACT="$("$ROOT/scripts/verification-impact.sh" "$LIVE_BASE_SHA" "$HEAD_SHA")"
+case "$VERIFICATION_IMPACT" in
+  docs-only)
+    CHECK_MODE="--hygiene"
+    ;;
+  full)
+    CHECK_MODE="--full"
+    ;;
+  *)
+    echo "Verification-impact classification returned an invalid result." >&2
+    exit 1
+    ;;
+esac
+
+echo "Running Universal AI Connector pre-push checks ($VERIFICATION_IMPACT)..."
 env \
   -u OPENAI_API_KEY \
   -u OPENAI_LIVE_MODEL \
@@ -54,16 +77,14 @@ env \
   -u GATEWAY_LIVE_MODEL \
   -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
   -u UAC_LIVE_EXPECTED_SHA \
-  "$ROOT/scripts/check.sh" --full
+  "$ROOT/scripts/check.sh" "$CHECK_MODE"
 require_clean_tree
 
-LIVE_BASE_REF="${UAC_LIVE_BASE_REF:-origin/main}"
-LIVE_BASE_SHA="$(git -C "$ROOT" rev-parse --verify "$LIVE_BASE_REF^{commit}" 2>/dev/null)" || {
-  echo "Provider-impact classification could not resolve $LIVE_BASE_REF." >&2
-  echo "Fetch the base branch or set UAC_LIVE_BASE_REF to the intended local base." >&2
-  exit 1
-}
-HEAD_SHA="$(git -C "$ROOT" rev-parse --verify HEAD)"
+if [[ "$VERIFICATION_IMPACT" == "docs-only" ]]; then
+  echo "Documentation-only push passed lightweight checks; full and live gates were not selected."
+  exit 0
+fi
+
 LIVE_PROVIDERS="$("$ROOT/scripts/live-impact.sh" "$LIVE_BASE_SHA" "$HEAD_SHA")"
 case "$LIVE_PROVIDERS" in
   none)
