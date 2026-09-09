@@ -65,6 +65,9 @@ if [[ -n "${UAC_SKIP_XCFRAMEWORK_BUILD:-}" ||
       -n "${UAC_IOS_SAMPLE_PROOF_CREDENTIAL:-}" ||
       -n "${UAC_IOS_SAMPLE_PROOF_MODEL:-}" ||
       -n "${UAC_IOS_SAMPLE_PROOF_BASE_URL:-}" ||
+      -n "${PROOF_CREDENTIAL:-}" ||
+      -n "${PROOF_MODEL:-}" ||
+      -n "${PROOF_BASE_URL:-}" ||
       -n "${OPENAI_API_KEY:-}" ||
       -n "${OPENAI_LIVE_MODEL:-}" ||
       -n "${UAC_LIVE_ENV_FILE:-}" ]]; then
@@ -137,6 +140,9 @@ env \
   UAC_IOS_LIVE_SAMPLE_DERIVED_DATA="$DERIVED_DATA" \
   UAC_IOS_SAMPLE_PROOF_CREDENTIAL="$CREDENTIAL" \
   UAC_IOS_SAMPLE_PROOF_MODEL="$MODEL" \
+  PROOF_CREDENTIAL="ambient-exported-proof-credential-alias" \
+  PROOF_MODEL="ambient-exported-proof-model-alias" \
+  PROOF_BASE_URL="ambient-exported-proof-base-url-alias" \
   UAC_SKIP_XCFRAMEWORK_BUILD=1 \
   SIMCTL_CHILD_UAC_IOS_SAMPLE_LIVE_BOOTSTRAP=ambient \
   SIMCTL_CHILD_UAC_IOS_SAMPLE_LIVE_PROVIDER=ambient \

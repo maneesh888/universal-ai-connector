@@ -191,6 +191,7 @@ if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ || "$EXPECTED_SHA" != "$HEAD_SHA" ]]; 
   fail "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA."
 fi
 
+unset BASE_URL_VALUE KEY_VALUE MODEL_VALUE STRUCTURED_OUTPUT_VALUE
 BASE_URL_VALUE=""
 if [[ -n "$BASE_URL_NAME" ]]; then
   if [[ -z "${!BASE_URL_NAME:-}" ]]; then

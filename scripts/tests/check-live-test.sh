@@ -75,7 +75,11 @@ if [[ "$*" == *":bridge:jvmTest"* ]]; then
         -n "${GATEWAY_LIVE_MODEL:-}" ||
         -n "${GATEWAY_LIVE_STRUCTURED_OUTPUT:-}" ||
         -n "${UAC_LIVE_ENV_FILE:-}" ||
-        -n "${UAC_LIVE_EXPECTED_SHA:-}" ]]; then
+        -n "${UAC_LIVE_EXPECTED_SHA:-}" ||
+        -n "${KEY_VALUE:-}" ||
+        -n "${MODEL_VALUE:-}" ||
+        -n "${BASE_URL_VALUE:-}" ||
+        -n "${STRUCTURED_OUTPUT_VALUE:-}" ]]; then
     echo "Deterministic tests received live environment values." >&2
     exit 9
   fi
@@ -466,6 +470,10 @@ env \
   GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
   GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
   GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
+  KEY_VALUE="ambient-exported-key-alias" \
+  MODEL_VALUE="ambient-exported-model-alias" \
+  BASE_URL_VALUE="ambient-exported-base-url-alias" \
+  STRUCTURED_OUTPUT_VALUE="ambient-exported-structured-output-alias" \
   UAC_IOS_SAMPLE_PROOF_CREDENTIAL="ambient-credential" \
   UAC_IOS_SAMPLE_PROOF_MODEL="ambient-model" \
   UAC_IOS_SAMPLE_PROOF_BASE_URL="https://ambient.invalid/v1" \
