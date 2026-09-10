@@ -139,6 +139,7 @@ while IFS= read -r -d '' changed_path; do
       bridge/src/* | \
       bridge/build.gradle.kts | \
       swift-package/* | \
+      samples/ios/* | \
       build.gradle.kts | \
       settings.gradle.kts | \
       gradle.properties | \
@@ -150,6 +151,8 @@ while IFS= read -r -d '' changed_path; do
       .env.live.example | \
       .githooks/pre-push | \
       scripts/check-live.sh | \
+      scripts/launch-ios-live-sample.sh | \
+      scripts/test-ios-sample.sh | \
       scripts/live-impact.sh | \
       scripts/secret-scan.sh | \
       .github/workflows/live.yml)

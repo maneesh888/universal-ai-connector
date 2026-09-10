@@ -51,13 +51,13 @@ Use the smallest commands that exercise the changed surface:
 | Kotlin Apple bridge | `./gradlew :bridge:iosSimulatorArm64Test` |
 | Swift façade | `./scripts/test-swift-package.sh` |
 | XCFramework or Apple package boundary | `./scripts/build-xcframework.sh` |
-| iOS application integration | `./scripts/build-sample.sh`; add `./scripts/build-sample-device.sh` for device-slice link changes |
+| iOS application integration | `./scripts/test-ios-sample.sh` and `./scripts/build-sample.sh`; add `./scripts/build-sample-device.sh` for device-slice link changes |
 | iOS app-extension integration | `./scripts/build-app-extension-consumer.sh` |
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
-The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, the simulator sample build, and generic-device link verification.
+The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests, the locally signed simulator sample build, and unsigned generic-device link verification.
 
 When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
 
@@ -72,6 +72,7 @@ documented provider input from the full deterministic gate and every non-selecte
 from a selected live gate. OpenAI, Anthropic, OpenRouter, and the Gateway are the delivered real
 gates after P7-B adds the Gateway runner, task, and selection to the existing three routes. A
 generic-adapter change selects both its representative OpenRouter proof and the Gateway proof. The
+P8 iOS live-sample surface selects every delivered gate because it can configure each one. The
 initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.

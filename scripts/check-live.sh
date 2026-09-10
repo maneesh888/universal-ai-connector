@@ -32,6 +32,8 @@ Supported providers and required live inputs:
 Optional:
   UAC_LIVE_EXPECTED_SHA  Exact 40-character commit SHA expected by the caller.
   UAC_LIVE_ENV_FILE      .env.live or .env.live.<name> in the primary checkout.
+  UAC_IOS_SAMPLE_LIVE_PROOF=1
+                         Build, install, and seed the Simulator sample for visible proof.
 
 Non-empty process environment values override the canonical ignored local file.
 EOF
@@ -87,6 +89,11 @@ require_clean_checkout() {
 if [[ "$#" -ne 1 ]]; then
   usage >&2
   exit 2
+fi
+
+if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "0" &&
+      "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
+  fail "UAC_IOS_SAMPLE_LIVE_PROOF must be 0 or 1."
 fi
 
 case "$PROVIDER" in
@@ -184,6 +191,7 @@ if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ || "$EXPECTED_SHA" != "$HEAD_SHA" ]]; 
   fail "Live verification HEAD does not match UAC_LIVE_EXPECTED_SHA."
 fi
 
+unset BASE_URL_VALUE KEY_VALUE MODEL_VALUE STRUCTURED_OUTPUT_VALUE
 BASE_URL_VALUE=""
 if [[ -n "$BASE_URL_NAME" ]]; then
   if [[ -z "${!BASE_URL_NAME:-}" ]]; then
@@ -295,33 +303,34 @@ fi
 require_clean_checkout
 
 echo "Running local $PROVIDER_LABEL live smoke tests for exact HEAD."
-LIVE_ENVIRONMENT=(
-  "$KEY_NAME=$KEY_VALUE"
-  "$MODEL_NAME=$MODEL_VALUE"
-)
-if [[ -n "$BASE_URL_NAME" ]]; then
-  LIVE_ENVIRONMENT+=("$BASE_URL_NAME=$BASE_URL_VALUE")
-  LIVE_ENVIRONMENT+=("GATEWAY_LIVE_STRUCTURED_OUTPUT=$STRUCTURED_OUTPUT_VALUE")
-fi
-env \
-  -u OPENAI_API_KEY \
-  -u OPENAI_LIVE_MODEL \
-  -u ANTHROPIC_API_KEY \
-  -u ANTHROPIC_LIVE_MODEL \
-  -u OPENROUTER_API_KEY \
-  -u OPENROUTER_LIVE_MODEL \
-  -u GATEWAY_LIVE_BASE_URL \
-  -u GATEWAY_API_KEY \
-  -u GATEWAY_LIVE_MODEL \
-  -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
-  -u UAC_LIVE_ENV_FILE \
-  "${LIVE_ENVIRONMENT[@]}" \
-  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+(
+  unset \
+    OPENAI_API_KEY \
+    OPENAI_LIVE_MODEL \
+    ANTHROPIC_API_KEY \
+    ANTHROPIC_LIVE_MODEL \
+    OPENROUTER_API_KEY \
+    OPENROUTER_LIVE_MODEL \
+    GATEWAY_LIVE_BASE_URL \
+    GATEWAY_API_KEY \
+    GATEWAY_LIVE_MODEL \
+    GATEWAY_LIVE_STRUCTURED_OUTPUT \
+    UAC_LIVE_ENV_FILE
+  printf -v "$KEY_NAME" '%s' "$KEY_VALUE"
+  printf -v "$MODEL_NAME" '%s' "$MODEL_VALUE"
+  export "$KEY_NAME" "$MODEL_NAME"
+  if [[ -n "$BASE_URL_NAME" ]]; then
+    printf -v "$BASE_URL_NAME" '%s' "$BASE_URL_VALUE"
+    GATEWAY_LIVE_STRUCTURED_OUTPUT="$STRUCTURED_OUTPUT_VALUE"
+    export "$BASE_URL_NAME" GATEWAY_LIVE_STRUCTURED_OUTPUT
+  fi
+  export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
   "$ROOT/gradlew" \
     "$LIVE_TASK" \
     --no-daemon \
     --no-configuration-cache \
     "-PuacLiveExpectedSha=$HEAD_SHA"
+)
 
 POST_LIVE_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
   fail "Live verification could not revalidate HEAD after provider tests."
@@ -329,6 +338,37 @@ if [[ "$POST_LIVE_SHA" != "$HEAD_SHA" ]]; then
   fail "Live verification HEAD changed during provider tests."
 fi
 require_clean_checkout
+
+if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+  IOS_SAMPLE_LAUNCHER="$ROOT/scripts/launch-ios-live-sample.sh"
+  if [[ ! -x "$IOS_SAMPLE_LAUNCHER" ]]; then
+    fail "The iOS Simulator live-sample launcher is required for requested proof."
+  fi
+  (
+    unset \
+      OPENAI_API_KEY \
+      OPENAI_LIVE_MODEL \
+      ANTHROPIC_API_KEY \
+      ANTHROPIC_LIVE_MODEL \
+      OPENROUTER_API_KEY \
+      OPENROUTER_LIVE_MODEL \
+      GATEWAY_LIVE_BASE_URL \
+      GATEWAY_API_KEY \
+      GATEWAY_LIVE_MODEL \
+      GATEWAY_LIVE_STRUCTURED_OUTPUT \
+      UAC_LIVE_ENV_FILE \
+      UAC_IOS_SAMPLE_PROOF_CREDENTIAL \
+      UAC_IOS_SAMPLE_PROOF_MODEL \
+      UAC_IOS_SAMPLE_PROOF_BASE_URL
+    export UAC_IOS_SAMPLE_PROOF_CREDENTIAL="$KEY_VALUE"
+    export UAC_IOS_SAMPLE_PROOF_MODEL="$MODEL_VALUE"
+    if [[ -n "$BASE_URL_VALUE" ]]; then
+      export UAC_IOS_SAMPLE_PROOF_BASE_URL="$BASE_URL_VALUE"
+    fi
+    export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
+    "$IOS_SAMPLE_LAUNCHER" "$PROVIDER"
+  )
+fi
 
 echo "$PROVIDER_LABEL live verification passed."
 echo "provider=$PROVIDER"
