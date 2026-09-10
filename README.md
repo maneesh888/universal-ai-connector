@@ -21,11 +21,10 @@ acceptance. P6 completed OpenRouter/generic protocol readiness in P6-A, direct n
 OpenRouter behavior in P6-B, generic OpenAI-compatible non-streaming behavior in P6-C, and strict
 structured output, bounded errors/metadata, and conservative capabilities in P6-D, and
 incremental streaming and active cancellation in P6-E. P6-F completed concurrent lifecycle,
-close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P7 is complete in
-this milestone-closing candidate: P7-A
+close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P7 is complete: P7-A
 authoritatively froze the external Gateway contract and deterministic compatibility fixtures, and
 P7-B added the demonstrated compatibility correction plus a dedicated local Gateway live gate.
-P7-C completes Gateway-representative concurrent lifecycle, cleanup, host-configuration, and
+P7-C completed Gateway-representative concurrent lifecycle, cleanup, host-configuration, and
 package-boundary acceptance without another runtime adapter. P8-A is now active and upgrades the
 iOS sample with explicit live configuration, Keychain-backed credential storage, model discovery,
 exact selection, and no-substitution connection testing while retaining the original
@@ -69,7 +68,7 @@ P1 established this package boundary through compiling iOS, Android, and JVM con
 
 ## Project status and progress
 
-### Overall roadmap completion: 80% — 8 of 10 milestones completed in this candidate
+### Overall roadmap completion: 80% — 8 of 10 milestones completed
 
 ```text
 Interoperability POC       ████████████████████ 100%  ✅ Complete
@@ -97,7 +96,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Stable Kotlin-to-Swift error mapping | ✅ Verified |
 | Swift-to-Kotlin cancellation | ✅ Verified |
 | SwiftUI simulator sample compilation | ✅ Locally verified |
-| iOS live configuration and model-discovery sample | 🚧 P8-A candidate; deterministic tests and acceptance proof required |
+| iOS live configuration and model-discovery sample | 🚧 P8-A in progress; implementation and acceptance evidence are recorded in PR #69 |
 | Generic iOS-device sample link/build | ✅ Locally verified; no device execution |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
@@ -116,7 +115,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | OpenRouter and compatible adapters | ✅ P6 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| OpenAI-compatible Gateway validation | ✅ P7 completed in the milestone-closing candidate |
+| OpenAI-compatible Gateway validation | ✅ P7 completed through PR #59 |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
 
@@ -131,7 +130,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P4 | OpenAI Responses adapter | ✅ Completed |
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
-| P7 | OpenAI-compatible Gateway validation | ✅ Completed in the milestone-closing candidate |
+| P7 | OpenAI-compatible Gateway validation | ✅ Completed through PR #59 |
 | P8 | Production distribution and host integration | 🚧 P8-A in progress |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
@@ -167,7 +166,7 @@ Gateway's tested standard contract was pinned. P7-A authoritatively froze that c
 intersection and added deterministic compatibility fixtures through the existing generic adapter.
 P7-B accepts otherwise-valid responses that omit usage while keeping present usage strict, and
 adds the dedicated exact-head Gateway live route without a Gateway-specific runtime surface.
-P7-C completes concurrent Gateway response/stream isolation, concurrent-close cancellation and
+P7-C completed concurrent Gateway response/stream isolation, concurrent-close cancellation and
 cleanup, credential redaction, copy-paste Kotlin and Swift host configuration, and the existing
 provider-neutral package-boundary acceptance.
 
