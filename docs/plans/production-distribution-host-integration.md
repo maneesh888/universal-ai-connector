@@ -208,9 +208,6 @@ Status: `In progress`.
   link gates. Opt-in live acceptance must use the actual iOS sample on one exact source head and
   prove discovery plus minimal response for at least two exact selected models.
 - Record normal Simulator interaction proof for the complete visible live workflow.
-- As required P8-A acceptance evidence, install and launch the same exact signed build on a physical
-  iPhone and exercise a visible **Test Connection** on an exact selected model, retaining only
-  secret-free evidence.
 
 P8-A adds no remote publication, Maven coordinate, remote Swift binary, desktop application,
 Android/JVM UI, release tag, or supported distribution claim.

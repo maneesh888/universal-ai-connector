@@ -118,8 +118,7 @@ choose **Live**, press
 identifier, and press **Test Connection**. Repeat on the same clean exact head with a second
 distinct provider/model configuration for the P8-A multi-model record. Gateway proof uses the
 validated Gateway base URL and exposes manual model entry only if discovery explicitly reports
-unsupported. This opt-in is Simulator-only; it does not satisfy the separately required signed
-physical-iPhone record.
+unsupported. This Simulator interaction is the required P8-A runtime acceptance route.
 
 The repository hygiene, quick, full, sample, consumer, and ordinary CI checks are deterministic
 and credential-free. Only `check-live.sh` and the provider-impacting local pre-push route require

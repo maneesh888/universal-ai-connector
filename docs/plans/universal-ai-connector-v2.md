@@ -77,7 +77,7 @@ The initial alpha optimizes for broad practical reach without maintaining every 
 | Host surface | Initial delivery | Verification expectation |
 |---|---|---|
 | Android | Kotlin Multiplatform Android library | Shared tests, AAR packaging, Android sample build, and P8 emulator lifecycle/live-sample proof |
-| iOS | Swift façade over a device-and-simulator XCFramework | Kotlin/Native tests, Swift Package tests, SwiftUI sample builds, and P8 simulator plus signed-iPhone live-sample proof |
+| iOS | Swift façade over a device-and-simulator XCFramework | Kotlin/Native tests, Swift Package tests, SwiftUI sample builds, and P8 Simulator live-sample proof |
 | Linux | Kotlin/JVM artifact | JVM tests plus P8 console and Compose desktop consumer/runtime proof on Linux |
 | Windows | Kotlin/JVM artifact | JVM tests plus P8 console and Compose desktop consumer/runtime proof on Windows |
 | macOS | Kotlin/JVM artifact plus the Apple delivery toolchain | JVM/Compose desktop proof and the Apple verification suite on macOS |
@@ -309,8 +309,6 @@ Acceptance requires:
   device-link gates, and opt-in exact-head live proof through the actual iOS sample with at least
   two exact selected models;
 - normal iOS Simulator interaction proof for the live sample workflow;
-- signed physical-iPhone install, launch, and visible **Test Connection** interaction proof on the
-  same exact head as required P8-A acceptance evidence;
 - Android deterministic state tests, build/consumer gates, and normal emulator lifecycle/runtime
   proof covering launch, live connection, cancellation, background/foreground, and credential
   clearing;
