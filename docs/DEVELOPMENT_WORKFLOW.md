@@ -25,6 +25,10 @@ preflight: `--hygiene` validates standard shell, Git, Ruby YAML parsing, and sec
 toolchain. Normal repository gates invoke the matching preflight automatically. A preflight
 failure is a machine setup blocker, not permission to weaken the affected test or bypass a hook.
 
+Android checks require SDK platforms 36 (shared library) and 37.0 (Lifecycle 2.11 sample),
+plus Build Tools 36.1.0. The sample compiles against API 37 while retaining target API 36 and
+minimum API 24. Both Linux and macOS CI provision the same SDK components.
+
 Run targeted checks while editing, then run only the highest final gate required by the selected mode:
 
 | Mode | Final gate | Additional proof |

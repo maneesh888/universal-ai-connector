@@ -58,7 +58,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
         with:
-          packages: platform-tools platforms;android-36 build-tools;36.1.0
+          packages: platform-tools platforms;android-36 platforms;android-37.0 build-tools;36.1.0
 
       - name: Run JVM and Android checks
         run: >-
@@ -148,7 +148,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
         with:
-          packages: platform-tools platforms;android-36 build-tools;36.1.0
+          packages: platform-tools platforms;android-36 platforms;android-37.0 build-tools;36.1.0
 
       - name: Report toolchain versions
         run: |

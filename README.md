@@ -341,7 +341,7 @@ variables; it is not a credentials file and new contributors do not create it.
 | Git and Bash | Source control, hooks, and committed verification scripts |
 | Ripgrep (`rg`) | Fail-closed secret scanning |
 | Java 21 JDK | Gradle, Kotlin Multiplatform, Android, and JVM builds |
-| Android SDK platform 36 and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
+| Android SDK platforms 36 and 37.0, and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
 | Xcode on Apple silicon macOS | Kotlin/Native, Swift Package, and iOS sample verification |
 | iOS 17 or newer simulator runtime | Apple simulator tests and sample build |
 
@@ -349,6 +349,13 @@ GitHub Apple verification currently runs with Xcode 16.4, and the complete local
 passed with Xcode 26.0. The minimum supported Xcode version has not been established; the
 preflight checks that the selected Xcode can run and resolve the iOS Simulator SDK, and the actual
 build remains the compatibility authority.
+
+The shared Android library compiles against API 36. The sample compiles against API 37 for
+Lifecycle 2.11 while retaining target API 36 and minimum API 24. Install both SDK platforms:
+
+```bash
+sdkmanager "platforms;android-36" "platforms;android-37.0" "build-tools;36.1.0"
+```
 
 After installing those tools, run the read-only preflight before enabling hooks:
 

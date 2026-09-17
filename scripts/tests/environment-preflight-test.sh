@@ -52,6 +52,7 @@ record_failure() {
 mkdir -p \
   "$FAKE_PATH" \
   "$FAKE_ANDROID_SDK/platforms/android-36" \
+  "$FAKE_ANDROID_SDK/platforms/android-37.0" \
   "$FAKE_ANDROID_SDK/build-tools/36.1.0" \
   "$FAKE_JAVA_17_HOME/bin" \
   "$FAKE_JAVA_21_HOME/bin" \
@@ -150,6 +151,23 @@ JAVA_HOME="" \
 if [[ "$java_status" -ne 0 ]]; then
   record_failure "Contributor environment rejected the complete PATH-selected Java 21 JDK."
 fi
+
+for missing_platform in 36 37.0; do
+  rmdir "$FAKE_ANDROID_SDK/platforms/android-$missing_platform"
+  android_status=0
+  JAVA_HOME="$FAKE_JAVA_21_HOME" \
+    ANDROID_HOME="$FAKE_ANDROID_SDK" \
+    PATH="$FAKE_PATH" \
+    /bin/bash "$ROOT/scripts/check-environment.sh" --quick \
+    > "$PREFLIGHT_OUTPUT" 2>&1 || android_status=$?
+  if [[ "$android_status" -ne 1 ]]; then
+    record_failure "Contributor environment preflight did not reject missing Android platform $missing_platform."
+  fi
+  if ! grep -Fq "Android SDK platform $missing_platform is missing from:" "$PREFLIGHT_OUTPUT"; then
+    record_failure "Contributor environment preflight did not identify missing Android platform $missing_platform."
+  fi
+  mkdir -p "$FAKE_ANDROID_SDK/platforms/android-$missing_platform"
+done
 
 rm -f "$FAKE_PATH/uname"
 write_executable "$FAKE_PATH/uname" '#!/bin/sh' 'printf "%s\n" Darwin'
