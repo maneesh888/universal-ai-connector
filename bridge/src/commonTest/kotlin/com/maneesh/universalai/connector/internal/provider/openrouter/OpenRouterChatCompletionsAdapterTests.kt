@@ -67,7 +67,7 @@ class OpenRouterChatCompletionsAdapterTests {
                         ByteReadChannel(
                             successResponse(
                                 id = "chatcmpl_test",
-                                model = "resolved/provider-model",
+                                model = "requested/provider-model",
                                 text = "ready",
                                 finishReason = "stop",
                             ),
@@ -107,7 +107,7 @@ class OpenRouterChatCompletionsAdapterTests {
             assertEquals("chatcmpl_test", response.id.rawValue)
             assertEquals("req_openrouter", response.requestId?.rawValue)
             assertEquals("openrouter", response.target.providerId.rawValue)
-            assertEquals("resolved/provider-model", response.target.modelId.rawValue)
+            assertEquals("requested/provider-model", response.target.modelId.rawValue)
             assertEquals(UniversalAiCompletionReason.Stop, response.completionReason)
             with(response.outputs.single()) {
                 assertEquals("chatcmpl_test", id.rawValue)
@@ -644,10 +644,32 @@ class OpenRouterChatCompletionsAdapterTests {
     }
 
     @Test
+    fun reasoningMetadataAlongsideValidAssistantTextIsIgnored() = runTest {
+        listOf(
+            successResponse(extraMessageMembers = ""","reasoning":"hidden""""),
+            successResponse(extraMessageMembers = ""","reasoning_content":"hidden""""),
+            successResponse(
+                extraMessageMembers =
+                    ""","reasoning_details":[{"type":"reasoning.text","text":"hidden"}]""",
+            ),
+        ).forEach { payload ->
+            val engine = MockEngine { respond(payload) }
+            val connector = connector(engine) { "credential" }
+            try {
+                assertEquals("ready", connector.respond(request()).outputs.single().text)
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
     fun malformedIncompleteOrUnsupportedSuccessPayloadsUseOneFixedSafeError() = runTest {
         val malformedPayloads =
             listOf(
                 """{"not_json":""",
+                successResponse(model = "provider-substitution"),
                 successResponse(objectType = "response"),
                 successResponse(choices = "[]"),
                 successResponse(
@@ -671,15 +693,13 @@ class OpenRouterChatCompletionsAdapterTests {
                 successResponse(role = "tool"),
                 successResponse(text = ""),
                 successResponse(text = "   "),
+                successResponse(
+                    text = "",
+                    extraMessageMembers = ""","reasoning_content":"hidden"""",
+                ),
                 successResponse(finishReason = "tool_calls"),
                 successResponse(
                     extraMessageMembers = ""","tool_calls":[{"id":"call_1"}]""",
-                ),
-                successResponse(
-                    extraMessageMembers = ""","reasoning_details":[{"type":"reasoning.text"}]""",
-                ),
-                successResponse(
-                    extraMessageMembers = ""","reasoning_content":"hidden"""",
                 ),
                 successResponse(
                     extraMessageMembers = ""","function_call":{"name":"tool"}""",
@@ -827,7 +847,7 @@ class OpenRouterChatCompletionsAdapterTests {
     private fun successResponse(
         id: String = "chatcmpl_test",
         objectType: String = "chat.completion",
-        model: String = "resolved/provider-model",
+        model: String = "requested/provider-model",
         text: String = "ready",
         role: String = "assistant",
         finishReason: String = "stop",

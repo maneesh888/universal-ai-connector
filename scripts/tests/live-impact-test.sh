@@ -102,6 +102,22 @@ if [[ "$("$CLASSIFIER" "$FOUNDATION_SHA" "$SWIFT_SHA")" != \
   exit 1
 fi
 
+IOS_SAMPLE_DIRECTORY="$TEST_REPOSITORY/samples/ios/UniversalAiConnectorSample/App"
+mkdir -p "$IOS_SAMPLE_DIRECTORY"
+printf '%s\n' "live iOS sample marker" > "$IOS_SAMPLE_DIRECTORY/ContentView.swift"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" \
+  -c user.name="Live Impact Test" \
+  -c user.email="live-impact@example.invalid" \
+  commit -qm "change live iOS sample"
+IOS_SAMPLE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
+if [[ "$("$CLASSIFIER" "$SWIFT_SHA" "$IOS_SAMPLE_SHA")" != \
+  "openai,anthropic,openrouter,gateway" ]]; then
+  echo "Changing the live iOS sample must require every delivered live gate." >&2
+  exit 1
+fi
+
 mkdir -p "$OPENAI_DIRECTORY"
 printf '%s\n' "internal adapter marker" > "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" add .
@@ -111,7 +127,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "add adapter"
 ADAPTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$SWIFT_SHA" "$ADAPTER_SHA")" != "openai" ]]; then
+if [[ "$("$CLASSIFIER" "$IOS_SAMPLE_SHA" "$ADAPTER_SHA")" != "openai" ]]; then
   echo "Adding an adapter outside any sentinel package must require live verification." >&2
   exit 1
 fi

@@ -556,7 +556,7 @@ class AnthropicP5CTests {
           "type":"message",
           "role":"assistant",
           "content":[{"type":"text","text":${JsonPrimitive(outputText)}}$extraContent],
-          "model":"resolved-model",
+          "model":"requested-model",
           "stop_reason":"$stopReason",
           "stop_sequence":null,
           "usage":{"input_tokens":2,"output_tokens":3}

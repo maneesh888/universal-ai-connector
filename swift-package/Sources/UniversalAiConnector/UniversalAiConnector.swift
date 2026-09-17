@@ -9,6 +9,7 @@ import UniversalAiConnectorBridge
 /// operations, and is also performed automatically during deinitialization.
 public final class UniversalAiConnector: @unchecked Sendable {
     private let bridge: AppleConnectorBridge
+    private let modelListOperation: any UniversalAiModelListOperation
     private let lifecycle = LockedConnectorLifecycle()
     private let testingHooks: UniversalAiConnectorTestingHooks
 
@@ -34,6 +35,8 @@ public final class UniversalAiConnector: @unchecked Sendable {
             configuredBridge = try AppleConnectorBridge(
                 adapterNames: providers.map(\.providerId.rawValue),
                 adapterBaseUrls: providers.map(\.baseURL),
+                connectTimeoutMillis: configuration.connectTimeoutMillis,
+                requestTimeoutMillis: configuration.requestTimeoutMillis,
                 hostValueResolver: { adapterName, onValue, onCancelled in
                     guard let provider = providers.first(
                         where: { $0.providerId.rawValue == adapterName }
@@ -65,9 +68,12 @@ public final class UniversalAiConnector: @unchecked Sendable {
 
     init(
         bridge: AppleConnectorBridge = AppleConnectorBridge(),
-        testingHooks: UniversalAiConnectorTestingHooks
+        testingHooks: UniversalAiConnectorTestingHooks,
+        modelListOperation: (any UniversalAiModelListOperation)? = nil
     ) {
         self.bridge = bridge
+        self.modelListOperation =
+            modelListOperation ?? AppleBridgeModelListOperation(bridge: bridge)
         self.testingHooks = testingHooks
     }
 
@@ -150,6 +156,64 @@ public final class UniversalAiConnector: @unchecked Sendable {
                 testingHooks.beforeResponseCancellationInstallation()
                 state.installCancellation {
                     handleBox.cancel()
+                }
+            }
+        } onCancel: {
+            state.cancel()
+        }
+    }
+
+    /// Lists a bounded, deterministically ordered model snapshot for one provider.
+    ///
+    /// Providers without a compatible model-list endpoint return `.unsupported`.
+    /// Authentication, authorization, rate limiting, transport, and malformed
+    /// responses throw ``UniversalAiConnectorError``. Cancelling the calling task
+    /// throws `CancellationError` and cancels the underlying request.
+    public func listModels(
+        providerId: UniversalAiProviderId
+    ) async throws -> UniversalAiModelListResult {
+        guard lifecycle.isOpen else {
+            throw Self.closedError
+        }
+        try Task.checkCancellation()
+
+        let operationIdentifier = UUID()
+        let lifecycle = self.lifecycle
+        let state = LockedOperationState<UniversalAiModelListResult> {
+            lifecycle.unregister(operationIdentifier)
+        }
+        guard lifecycle.register(
+            operationIdentifier,
+            onClose: {
+                state.cancel()
+            }
+        ) else {
+            throw Self.closedError
+        }
+
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                guard state.installContinuation(continuation) else {
+                    return
+                }
+                guard state.isActive else {
+                    return
+                }
+
+                let cancellation = modelListOperation.start(
+                    adapterName: providerId.rawValue,
+                    onSuccess: { result in
+                        state.succeed(Self.map(result))
+                    },
+                    onError: { error in
+                        state.fail(Self.map(error))
+                    },
+                    onCancelled: {
+                        state.cancel()
+                    }
+                )
+                state.installCancellation {
+                    cancellation.cancel()
                 }
             }
         } onCancel: {
@@ -302,6 +366,70 @@ public final class UniversalAiConnector: @unchecked Sendable {
                 rawValue: response.completionReason
             ),
             extensions: map(response.extensions)
+        )
+    }
+
+    private static func map(
+        _ result: AppleBridgeModelListResult
+    ) -> UniversalAiModelListResult {
+        let providerId = UniversalAiProviderId(rawValue: result.adapterName)
+        guard result.supported else {
+            return .unsupported(providerId: providerId)
+        }
+        return .supported(
+            providerId: providerId,
+            models: result.models.map(map)
+        )
+    }
+
+    private static func map(
+        _ model: AppleBridgeModelDescriptor
+    ) -> UniversalAiModelDescriptor {
+        let declarations = Dictionary(
+            uniqueKeysWithValues: model.capabilities.map { declaration in
+                (
+                    UniversalAiCapabilityName(
+                        trustedRawValue: declaration.name
+                    ),
+                    UniversalAiCapabilityDeclaration(
+                        trustedSupport: UniversalAiCapabilitySupport(
+                            trustedRawValue: declaration.support
+                        ),
+                        limits: Dictionary(
+                            uniqueKeysWithValues: declaration.limits.map {
+                                entry in
+                                (
+                                    UniversalAiCapabilityLimitName(
+                                        trustedRawValue: entry.name
+                                    ),
+                                    entry.value
+                                )
+                            }
+                        ),
+                        extensions: map(declaration.extensions)
+                    )
+                )
+            }
+        )
+        return UniversalAiModelDescriptor(
+            trustedContractVersion: model.contractVersion,
+            target: map(model.target),
+            displayName: model.displayName,
+            limits: model.limits.map { limits in
+                UniversalAiModelTokenLimits(
+                    trustedContextWindowTokens:
+                        limits.hasContextWindowTokens
+                        ? limits.contextWindowTokens : nil,
+                    maxInputTokens:
+                        limits.hasMaxInputTokens ? limits.maxInputTokens : nil,
+                    maxOutputTokens:
+                        limits.hasMaxOutputTokens ? limits.maxOutputTokens : nil
+                )
+            },
+            capabilities: UniversalAiCapabilitySet(
+                trustedDeclarations: declarations
+            ),
+            extensions: map(model.extensions)
         )
     }
 

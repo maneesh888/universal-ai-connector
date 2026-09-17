@@ -537,7 +537,7 @@ private fun successfulResponse(text: String): String =
       "id":"resp_non_stream",
       "object":"response",
       "status":"completed",
-      "model":"resolved-model",
+      "model":"requested-model",
       "output":[
         {
           "id":"message_0",

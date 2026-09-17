@@ -536,7 +536,7 @@ private fun successfulLifecycleResponse(text: String): String =
       "type":"message",
       "role":"assistant",
       "content":[{"type":"text","text":${JsonPrimitive(text)}}],
-      "model":"resolved-model",
+      "model":"requested-model",
       "stop_reason":"end_turn",
       "stop_sequence":null,
       "usage":{"input_tokens":1,"output_tokens":1}
@@ -570,7 +570,7 @@ private fun lifecycleMessageStartEvent(): String =
             "type":"message",
             "role":"assistant",
             "content":[],
-            "model":"resolved-model",
+            "model":"requested-model",
             "stop_reason":null,
             "stop_sequence":null,
             "usage":{"input_tokens":2,"output_tokens":1}

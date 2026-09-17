@@ -26,7 +26,8 @@ The single ignored `.env.live` file may contain distinct inputs for each provide
 OpenAI, Anthropic, OpenRouter, and the OpenAI-compatible Gateway are delivered local-live gates.
 Each direct-provider change selects its delivered gate, a generic `openai-compatible` adapter
 change selects OpenRouter plus the Gateway, and shared or ambiguous live-impacting changes select
-all four.
+all four. The P8 iOS live-sample surface also selects all four because its host configuration can
+exercise every delivered provider or the compatible Gateway.
 
 Do not use production keys. Restrict access to the test project or workspace, set conservative
 spend and rate limits, and monitor usage. The repository, samples, mobile or desktop artifacts,
@@ -100,6 +101,24 @@ Each command refuses a dirty checkout, validates the expected SHA when
 provider or Gateway task without a reusable Gradle daemon. It never prints the Gateway base URL,
 credential, authorization header, or full request/response content, and disables Gradle
 configuration caching for the credential-bearing process.
+
+For P8-A Simulator interaction proof, add the explicit opt-in to a selected exact-head gate:
+
+```bash
+UAC_IOS_SAMPLE_LIVE_PROOF=1 ./scripts/check-live.sh openai
+```
+
+After the provider gate passes, the command forces a clean-head XCFramework rebuild, installs, and
+launches the locally signed DEBUG Simulator sample with the selected provider credential imported
+directly into its app-scoped Keychain service. Git-routing, stale-artifact, and Simulator child
+environment overrides are removed before proof. Credentials stay out of process arguments, and
+the command does not render the credential or retain the model in command output. In the app,
+choose **Live**, press
+**Load Models**, verify the exact configured model is selected only when discovery returns that
+identifier, and press **Test Connection**. Repeat on the same clean exact head with a second
+distinct provider/model configuration for the P8-A multi-model record. Gateway proof uses the
+validated Gateway base URL and exposes manual model entry only if discovery explicitly reports
+unsupported. This Simulator interaction is the required P8-A runtime acceptance route.
 
 The repository hygiene, quick, full, sample, consumer, and ordinary CI checks are deterministic
 and credential-free. Only `check-live.sh` and the provider-impacting local pre-push route require
@@ -237,4 +256,6 @@ optional-usage behavior, governed structured output only when the retained capab
 the exact recorded head and date. It does not prove every Gateway deployment, backend, model,
 optional field, error shape, stream timing,
 upstream-disconnect cleanup, physical-device behavior, released-artifact distribution, or
-production credential management.
+production credential management. P8-A Simulator interaction additionally proves only the visible
+sample workflow, selected exact model, and minimal connection request for the recorded Simulator,
+provider/model configurations, head, and date; it is not signing or physical-device evidence.
