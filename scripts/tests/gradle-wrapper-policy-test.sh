@@ -3,8 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PROPERTIES="$ROOT/gradle/wrapper/gradle-wrapper.properties"
-EXPECTED_DISTRIBUTION_URL='https\://services.gradle.org/distributions/gradle-9.6.1-bin.zip'
-EXPECTED_DISTRIBUTION_SHA256='9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14'
+EXPECTED_DISTRIBUTION_URL='https\://services.gradle.org/distributions/gradle-9.7.1-bin.zip'
+EXPECTED_DISTRIBUTION_SHA256='acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a'
 
 property_count() {
   local property_name="$1"
@@ -26,7 +26,7 @@ property_value() {
 
 if [[ "$(property_count distributionUrl)" -ne 1 ||
       "$(property_value distributionUrl)" != "$EXPECTED_DISTRIBUTION_URL" ]]; then
-  echo "Gradle wrapper distribution URL must retain the reviewed 9.6.1 binary distribution." >&2
+  echo "Gradle wrapper distribution URL must retain the reviewed 9.7.1 binary distribution." >&2
   exit 1
 fi
 

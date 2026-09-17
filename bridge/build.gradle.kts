@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     val xcframework = XCFramework("UniversalAiConnectorBridge")
-    val ktorVersion = "3.5.1"
+    val ktorVersion = "3.5.2"
 
     jvm()
 
@@ -70,7 +70,7 @@ kotlin {
         }
 
         jvmTest.dependencies {
-            implementation("com.networknt:json-schema-validator:3.0.6")
+            implementation("com.networknt:json-schema-validator:3.0.7")
         }
     }
 }
