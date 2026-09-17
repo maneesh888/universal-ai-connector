@@ -5,6 +5,20 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
+internal data class OpenAiModelListWire(
+    @SerialName("object")
+    val objectType: String? = null,
+    val data: List<OpenAiModelWire>? = null,
+)
+
+@Serializable
+internal data class OpenAiModelWire(
+    val id: String? = null,
+    @SerialName("object")
+    val objectType: String? = null,
+)
+
+@Serializable
 internal data class OpenAiCreateResponseWire(
     val model: String,
     val input: List<OpenAiInputMessageWire>,

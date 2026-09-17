@@ -15,6 +15,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
 import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiTextInput
 import com.maneesh.universalai.connector.internal.provider.openai.OPENAI_INVALID_REQUEST_MESSAGE
+import com.maneesh.universalai.connector.internal.provider.openai.OPENAI_NOT_FOUND_MESSAGE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
@@ -30,6 +31,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -41,6 +43,23 @@ import kotlin.test.assertTrue
  */
 class OpenAiLiveTest {
     @Test
+    fun configuredModelIsDiscoverableWithoutIdentifierSubstitution(): Unit = runBlocking {
+        val configuredModel = ModelId.of(requiredEnvironment("OPENAI_LIVE_MODEL"))
+        connector().use { connector ->
+            val supported =
+                assertIs<UniversalAiModelListResult.Supported>(
+                    connector.listModels(OPENAI_PROVIDER_ID),
+                )
+
+            assertTrue(
+                supported.models.any { descriptor ->
+                    descriptor.target.modelId == configuredModel
+                },
+            )
+        }
+    }
+
+    @Test
     fun minimalNonStreamingResponseTranslatesToCanonicalOutput(): Unit = runBlocking {
         connector().use { connector ->
             val response = connector.respond(liveRequest("Reply with one short word: ready."))
@@ -48,6 +67,9 @@ class OpenAiLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == OPENAI_PROVIDER_ID)
+            assertTrue(
+                response.target.modelId == ModelId.of(requiredEnvironment("OPENAI_LIVE_MODEL")),
+            )
             assertNotNull(response.requestId)
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
@@ -118,11 +140,15 @@ class OpenAiLiveTest {
             assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
             assertTrue(events.last().terminal)
             assertEquals(completedOutput, events.last().response?.outputs?.single())
+            assertTrue(
+                events.last().response?.target?.modelId ==
+                    ModelId.of(requiredEnvironment("OPENAI_LIVE_MODEL")),
+            )
         }
     }
 
     @Test
-    fun intentionalUnknownModelErrorMapsToSafeCanonicalValidationFailure(): Unit = runBlocking {
+    fun intentionalUnknownModelErrorMapsToSafeCanonicalFailure(): Unit = runBlocking {
         connector().use { connector ->
             val failure =
                 assertFailsWith<UniversalAiException> {
@@ -134,9 +160,17 @@ class OpenAiLiveTest {
                     )
                 }
 
-            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
-            assertEquals("provider_invalid_request", failure.error.code.rawValue)
-            assertEquals(OPENAI_INVALID_REQUEST_MESSAGE, failure.message)
+            when (failure.error.category to failure.error.code.rawValue) {
+                UniversalAiErrorCategory.Validation to "provider_invalid_request" ->
+                    assertEquals(OPENAI_INVALID_REQUEST_MESSAGE, failure.message)
+                UniversalAiErrorCategory.NotFound to "provider_resource_not_found" ->
+                    assertEquals(OPENAI_NOT_FOUND_MESSAGE, failure.message)
+                else ->
+                    assertTrue(
+                        false,
+                        "OpenAI unknown-model failure must use a governed canonical classification.",
+                    )
+            }
         }
     }
 

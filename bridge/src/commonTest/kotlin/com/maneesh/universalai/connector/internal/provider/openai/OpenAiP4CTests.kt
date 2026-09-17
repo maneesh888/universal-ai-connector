@@ -573,7 +573,7 @@ class OpenAiP4CTests {
                       "id":"resp_refusal",
                       "object":"response",
                       "status":"completed",
-                      "model":"resolved-model",
+                      "model":"requested-model",
                       "output":[{
                         "id":"message_0",
                         "type":"message",
@@ -728,7 +728,7 @@ class OpenAiP4CTests {
           "id":"resp_structured",
           "object":"response",
           "status":"completed",
-          "model":"resolved-model",
+          "model":"requested-model",
           "output":[{
             "id":"message_0",
             "type":"message",

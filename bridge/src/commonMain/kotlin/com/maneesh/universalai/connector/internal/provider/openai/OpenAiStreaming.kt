@@ -116,6 +116,7 @@ internal class OpenAiStreamTranslator(
         streamRequire(response.usage == null)
         responseId = ResponseId.of(streamValue(response.id))
         responseModel = ModelId.of(streamValue(response.model))
+        streamRequire(responseModel == request.target.modelId)
         return listOf(
             canonicalEvent(
                 type = UniversalAiStreamEventType.ResponseStarted,

@@ -3,62 +3,98 @@ import UniversalAiConnector
 
 struct ContentView: View {
     @StateObject private var viewModel = UniversalAiConnectorViewModel()
+    @StateObject private var liveViewModel: LiveAiConfigurationViewModel
+    @State private var mode = SampleMode.deterministic
+
+    init(liveViewModel: LiveAiConfigurationViewModel) {
+        _liveViewModel = StateObject(
+            wrappedValue: liveViewModel
+        )
+    }
 
     var body: some View {
         NavigationStack {
             List {
+                Section("Mode") {
+                    Picker("Sample mode", selection: $mode) {
+                        ForEach(SampleMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("sample-mode-picker")
+                }
+
                 Section("Package") {
                     statusRow("Version", value: viewModel.version)
                 }
 
-                Section("Response") {
-                    Button("Run response") {
-                        viewModel.runResponse()
+                if mode == .deterministic {
+                    Section("Response") {
+                        Button("Run response") {
+                            viewModel.runResponse()
+                        }
+                        .disabled(viewModel.isResponseRunning)
+
+                        statusRow("Result", value: viewModel.responseResult)
                     }
-                    .disabled(viewModel.isResponseRunning)
 
-                    statusRow("Result", value: viewModel.responseResult)
-                }
+                    Section("Streaming") {
+                        Button("Run stream") {
+                            viewModel.runStream()
+                        }
+                        .disabled(viewModel.isStreamRunning)
 
-                Section("Streaming") {
-                    Button("Run stream") {
-                        viewModel.runStream()
+                        statusRow("Events", value: viewModel.streamResult)
                     }
-                    .disabled(viewModel.isStreamRunning)
 
-                    statusRow("Events", value: viewModel.streamResult)
-                }
+                    Section("Stable error") {
+                        Button("Force error") {
+                            viewModel.runForcedError()
+                        }
+                        .disabled(viewModel.isForcedErrorRunning)
 
-                Section("Stable error") {
-                    Button("Force error") {
-                        viewModel.runForcedError()
+                        statusRow("Result", value: viewModel.forcedErrorResult)
                     }
-                    .disabled(viewModel.isForcedErrorRunning)
 
-                    statusRow("Result", value: viewModel.forcedErrorResult)
-                }
+                    Section("Response cancellation") {
+                        Button("Run response cancellation") {
+                            viewModel.runResponseCancellation()
+                        }
+                        .disabled(viewModel.isResponseCancellationRunning)
 
-                Section("Response cancellation") {
-                    Button("Run response cancellation") {
-                        viewModel.runResponseCancellation()
+                        statusRow(
+                            "Result",
+                            value: viewModel.responseCancellationResult
+                        )
                     }
-                    .disabled(viewModel.isResponseCancellationRunning)
 
-                    statusRow("Result", value: viewModel.responseCancellationResult)
-                }
+                    Section("Stream cancellation") {
+                        Button("Cancel stream task after first output delta") {
+                            viewModel.runStreamCancellation()
+                        }
+                        .disabled(viewModel.isStreamCancellationRunning)
 
-                Section("Stream cancellation") {
-                    Button("Cancel stream task after first output delta") {
-                        viewModel.runStreamCancellation()
+                        statusRow(
+                            "Events",
+                            value: viewModel.streamCancellationResult
+                        )
                     }
-                    .disabled(viewModel.isStreamCancellationRunning)
-
-                    statusRow("Events", value: viewModel.streamCancellationResult)
+                } else {
+                    LiveAiConfigurationSections(viewModel: liveViewModel)
                 }
             }
             .navigationTitle("Universal AI Connector")
+            .onChange(of: mode) { _, mode in
+                if mode == .deterministic {
+                    liveViewModel.deactivate()
+                } else {
+                    viewModel.cancelAll()
+                }
+            }
             .onDisappear {
                 viewModel.cancelAll()
+                liveViewModel.cancelAll()
             }
         }
     }
@@ -71,6 +107,186 @@ struct ContentView: View {
                 .font(.callout.monospaced())
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private enum SampleMode: String, CaseIterable, Identifiable {
+    case deterministic
+    case live
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .deterministic:
+            return "Deterministic"
+        case .live:
+            return "Live"
+        }
+    }
+}
+
+private struct LiveAiConfigurationSections: View {
+    @ObservedObject var viewModel: LiveAiConfigurationViewModel
+
+    var body: some View {
+        Section("Live configuration") {
+            Picker(
+                "Provider",
+                selection: Binding(
+                    get: { viewModel.provider },
+                    set: viewModel.setProvider
+                )
+            ) {
+                ForEach(LiveAiProvider.allCases) { provider in
+                    Text(provider.title).tag(provider)
+                }
+            }
+            .accessibilityIdentifier("live-provider-picker")
+
+            TextField(
+                "Base URL ending in /v1",
+                text: Binding(
+                    get: { viewModel.baseURL },
+                    set: viewModel.setBaseURL
+                )
+            )
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .keyboardType(.URL)
+            .accessibilityIdentifier("live-base-url-field")
+
+            SecureField("Credential", text: $viewModel.credentialInput)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .accessibilityIdentifier("live-credential-field")
+
+            Button("Save Credential") {
+                viewModel.saveCredential()
+            }
+            .disabled(viewModel.credentialInput.isEmpty || viewModel.isBusy)
+            .accessibilityIdentifier("live-save-credential-button")
+
+            Button("Clear Live Configuration", role: .destructive) {
+                viewModel.clearConfiguration()
+            }
+            .disabled(viewModel.isBusy)
+            .accessibilityIdentifier("live-clear-configuration-button")
+
+            statusRow("Credential", value: viewModel.configurationStatus)
+        }
+
+        Section("Model discovery") {
+            Button("Load Models") {
+                viewModel.loadModels()
+            }
+            .disabled(!viewModel.credentialStored || viewModel.isBusy)
+            .accessibilityIdentifier("live-load-models-button")
+
+            if viewModel.canRetryDiscovery {
+                Button("Retry Model Discovery") {
+                    viewModel.retryModelDiscovery()
+                }
+                .accessibilityIdentifier("live-retry-models-button")
+            }
+
+            if viewModel.isBusy {
+                Button("Cancel Live Operation", role: .cancel) {
+                    viewModel.cancelCurrentOperation()
+                }
+                .accessibilityIdentifier("live-cancel-operation-button")
+            }
+
+            statusRow("State", value: discoveryStatus)
+
+            if !viewModel.models.isEmpty {
+                Picker(
+                    "Exact model",
+                    selection: Binding(
+                        get: { viewModel.selectedModelID ?? "" },
+                        set: viewModel.selectModel
+                    )
+                ) {
+                    Text("Select an exact model").tag("")
+                    ForEach(viewModel.models) { model in
+                        Text(model.title).tag(model.id)
+                    }
+                }
+                .accessibilityIdentifier("live-exact-model-picker")
+            }
+
+            if viewModel.isManualModelEntryEnabled {
+                TextField(
+                    "Exact manual model ID",
+                    text: Binding(
+                        get: { viewModel.manualModelID },
+                        set: viewModel.setManualModelID
+                    )
+                )
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .accessibilityIdentifier("live-manual-model-field")
+            }
+        }
+
+        Section("Connection") {
+            Button("Test Connection") {
+                viewModel.testConnection()
+            }
+            .disabled(!viewModel.canTestConnection)
+            .accessibilityIdentifier("live-test-connection-button")
+
+            statusRow("Result", value: connectionStatus)
+        }
+    }
+
+    private var discoveryStatus: String {
+        switch viewModel.discoveryState {
+        case .idle:
+            return "Ready to load models."
+        case .loading:
+            return "Loading models…"
+        case .retrying:
+            return "Retrying model discovery…"
+        case .loaded(let models):
+            return "Loaded \(models.count) models. Select an exact identifier."
+        case .empty:
+            return "Discovery succeeded with an empty model list. Connection is blocked."
+        case .unsupported:
+            return "Model discovery is explicitly unsupported. Enter an exact model ID manually."
+        case .failed(let message):
+            return "Discovery failed: \(message)"
+        case .cancelled:
+            return "Model discovery was cancelled."
+        }
+    }
+
+    private var connectionStatus: String {
+        switch viewModel.connectionState {
+        case .idle:
+            return "Select an exact model before testing."
+        case .testing:
+            return "Discovering again before the connection request…"
+        case .connected(let modelID):
+            return "Connected with exact model \(modelID)."
+        case .failed(let message):
+            return "Connection failed: \(message)"
+        case .cancelled:
+            return "Connection test was cancelled."
+        }
+    }
+
+    private func statusRow(_ title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.headline)
+            Text(value)
+                .font(.callout.monospaced())
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+                .accessibilityIdentifier("live-\(title.lowercased())-status")
         }
         .padding(.vertical, 4)
     }
@@ -257,8 +473,8 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                 }
 
                 var isFirstDelta = true
-                for try await event in connector.stream(
-                    request: canonicalRequest("cancel stream")
+                for try await event in self.connector.stream(
+                    request: self.canonicalRequest("cancel stream")
                 ) {
                     if isFirstDelta && event.type == .outputDelta {
                         isFirstDelta = false
@@ -274,16 +490,16 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                     guard let event = await firstDeltaIterator.next() else {
                         try Task.checkCancellation()
                         try await consumingTask.value
-                        streamCancellationResult = "Unexpected stream completion."
+                        self.streamCancellationResult = "Unexpected stream completion."
                         return
                     }
 
-                    streamCancellationResult =
-                        "Received \(eventText(event))"
+                    self.streamCancellationResult =
+                        "Received \(self.eventText(event))"
                         + "; cancelling the consuming task…"
                     consumingTask.cancel()
                     try await consumingTask.value
-                    streamCancellationResult = "Unexpected stream completion."
+                    self.streamCancellationResult = "Unexpected stream completion."
                 } onCancel: {
                     consumingTask.cancel()
                     firstDeltaContinuation.finish()
@@ -325,7 +541,7 @@ final class UniversalAiConnectorViewModel: ObservableObject {
                 modelId: UniversalAiModelId(rawValue: "echo-v1")
             ),
             input: [
-                UniversalAiTextInput(role: .user, content: content),
+                UniversalAiTextInput(role: .user, content: content)
             ]
         )
     }

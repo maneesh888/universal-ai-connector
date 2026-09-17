@@ -549,6 +549,16 @@ public struct UniversalAiModelTokenLimits: Sendable, Equatable {
         self.maxOutputTokens = maxOutputTokens
     }
 
+    internal init(
+        trustedContextWindowTokens: Int64?,
+        maxInputTokens: Int64?,
+        maxOutputTokens: Int64?
+    ) {
+        self.contextWindowTokens = trustedContextWindowTokens
+        self.maxInputTokens = maxInputTokens
+        self.maxOutputTokens = maxOutputTokens
+    }
+
     var isEmpty: Bool {
         contextWindowTokens == nil &&
             maxInputTokens == nil &&
@@ -591,6 +601,38 @@ public struct UniversalAiModelDescriptor: Sendable, Equatable {
         self.limits = limits?.isEmpty == true ? nil : limits
         self.capabilities = capabilities
         self.extensions = extensions
+    }
+
+    internal init(
+        trustedContractVersion: String,
+        target: UniversalAiTarget,
+        displayName: String?,
+        limits: UniversalAiModelTokenLimits?,
+        capabilities: UniversalAiCapabilitySet,
+        extensions: UniversalAiExtensions
+    ) {
+        self.contractVersion = trustedContractVersion
+        self.target = target
+        self.displayName = displayName
+        self.limits = limits
+        self.capabilities = capabilities
+        self.extensions = extensions
+    }
+}
+
+/// The provider-neutral result of one model-list request.
+public enum UniversalAiModelListResult: Sendable, Equatable {
+    case supported(
+        providerId: UniversalAiProviderId,
+        models: [UniversalAiModelDescriptor]
+    )
+    case unsupported(providerId: UniversalAiProviderId)
+
+    public var providerId: UniversalAiProviderId {
+        switch self {
+        case let .supported(providerId, _), let .unsupported(providerId):
+            return providerId
+        }
     }
 }
 

@@ -27,6 +27,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -39,6 +40,25 @@ import kotlin.test.assertTrue
  */
 class OpenRouterLiveTest {
     @Test
+    fun configuredModelIsDiscoverableThroughBothAdaptersWithoutSubstitution(): Unit = runBlocking {
+        val configuredModel = ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL"))
+        listOf(OPENROUTER_PROVIDER_ID, OPENAI_COMPATIBLE_PROVIDER_ID).forEach { providerId ->
+            connector(providerId).use { connector ->
+                val supported =
+                    assertIs<UniversalAiModelListResult.Supported>(
+                        connector.listModels(providerId),
+                    )
+
+                assertTrue(
+                    supported.models.any { descriptor ->
+                        descriptor.target.modelId == configuredModel
+                    },
+                )
+            }
+        }
+    }
+
+    @Test
     fun minimalNonStreamingResponseTranslatesToCanonicalOutput(): Unit = runBlocking {
         connector(OPENROUTER_PROVIDER_ID).use { connector ->
             val response =
@@ -49,6 +69,10 @@ class OpenRouterLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == OPENROUTER_PROVIDER_ID)
+            assertTrue(
+                response.target.modelId ==
+                    ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
+            )
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
                 assertTrue(outputTokens >= 0)
@@ -71,6 +95,10 @@ class OpenRouterLiveTest {
             assertTrue(response.outputs.isNotEmpty())
             assertTrue(response.outputs.all { output -> output.text?.isNotBlank() == true })
             assertTrue(response.target.providerId == OPENAI_COMPATIBLE_PROVIDER_ID)
+            assertTrue(
+                response.target.modelId ==
+                    ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
+            )
             with(assertNotNull(response.usage)) {
                 assertTrue(inputTokens >= 0)
                 assertTrue(outputTokens >= 0)
@@ -128,6 +156,10 @@ class OpenRouterLiveTest {
                 assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
                 assertEquals(UniversalAiStreamEventType.ResponseCompleted, events.last().type)
                 assertEquals(providerId, events.last().response?.target?.providerId)
+                assertTrue(
+                    events.last().response?.target?.modelId ==
+                        ModelId.of(requiredEnvironment("OPENROUTER_LIVE_MODEL")),
+                )
                 assertEquals(completedOutput, events.last().response?.outputs?.single())
             }
         }

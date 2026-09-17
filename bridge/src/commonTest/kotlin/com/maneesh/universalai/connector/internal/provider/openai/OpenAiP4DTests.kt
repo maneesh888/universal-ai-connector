@@ -100,6 +100,7 @@ class OpenAiP4DTests {
             assertEquals("Héllo", events[4].output?.text)
             assertEquals(3L, events[5].usage?.totalTokens)
             assertEquals("Héllo", events.last().response?.outputs?.single()?.text)
+            assertEquals("requested-model", events.last().response?.target?.modelId?.rawValue)
             assertEquals(1, events.count(UniversalAiStreamEvent::terminal))
             assertTrue(events.last().terminal)
         } finally {
@@ -333,7 +334,7 @@ class OpenAiP4DTests {
                                 "id":"resp_stream",
                                 "object":"response",
                                 "status":"failed",
-                                "model":"resolved-model",
+                                "model":"requested-model",
                                 "output":[],
                                 "usage":null,
                                 "error":{"code":"server_error","message":"sensitive provider detail"},
@@ -356,7 +357,7 @@ class OpenAiP4DTests {
                                 "id":"resp_stream",
                                 "object":"response",
                                 "status":"incomplete",
-                                "model":"resolved-model",
+                                "model":"requested-model",
                                 "output":[],
                                 "usage":null,
                                 "error":null,
@@ -459,7 +460,7 @@ class OpenAiP4DTests {
                             "id":"resp_stream",
                             "object":"response",
                             "status":"in_progress",
-                            "model":"resolved-model",
+                            "model":"requested-model",
                             "output":[],
                             "usage":null,
                             "error":null,
@@ -480,7 +481,7 @@ class OpenAiP4DTests {
                         "id":"resp_stream",
                         "object":"response",
                         "status":"in_progress",
-                        "model":"resolved-model",
+                        "model":"requested-model",
                         "output":[],
                         "usage":null,
                         "error":null,
@@ -489,6 +490,10 @@ class OpenAiP4DTests {
                     }
                     """,
                     eventName = "response.completed",
+                ),
+                createdEvent().replace(
+                    "\"model\":\"requested-model\"",
+                    "\"model\":\"provider-substitution\"",
                 ),
             )
 
@@ -1078,7 +1083,7 @@ private fun createdEvent(
             "id":"resp_stream",
             "object":"response",
             "status":"in_progress",
-            "model":"resolved-model",
+            "model":"requested-model",
             "output":[],
             "usage":null,
             "error":null,
@@ -1102,7 +1107,7 @@ private fun inProgressEvent(
             "id":"resp_stream",
             "object":"response",
             "status":"in_progress",
-            "model":"resolved-model",
+            "model":"requested-model",
             "output":[],
             "usage":null,
             "error":null,
@@ -1294,7 +1299,7 @@ private fun responseCompletedEvent(
             "id":"resp_stream",
             "object":"response",
             "status":"completed",
-            "model":"resolved-model",
+            "model":"requested-model",
             "output":[
               {"id":"reasoning_0","type":"reasoning","status":"completed"},
               {
@@ -1339,7 +1344,7 @@ private fun responseCompletedWithMessagesEvent(
             "id":"resp_stream",
             "object":"response",
             "status":"completed",
-            "model":"resolved-model",
+            "model":"requested-model",
             "output":[
               {"id":"reasoning_0","type":"reasoning","status":"completed"},
               $messageItems

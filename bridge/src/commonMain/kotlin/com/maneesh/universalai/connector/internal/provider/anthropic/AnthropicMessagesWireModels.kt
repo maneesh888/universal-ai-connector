@@ -5,6 +5,25 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
+internal data class AnthropicModelListWire(
+    val data: List<AnthropicModelWire>? = null,
+    @SerialName("first_id")
+    val firstId: String? = null,
+    @SerialName("has_more")
+    val hasMore: Boolean? = null,
+    @SerialName("last_id")
+    val lastId: String? = null,
+)
+
+@Serializable
+internal data class AnthropicModelWire(
+    val id: String? = null,
+    val type: String? = null,
+    @SerialName("display_name")
+    val displayName: String? = null,
+)
+
+@Serializable
 internal data class AnthropicCreateMessageWire(
     val model: String,
     @SerialName("max_tokens")

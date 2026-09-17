@@ -151,10 +151,11 @@ the compatibility identity so later Gateway changes do not silently widen this p
   existing bounded `max_tokens`, `temperature`, `top_p`, and `stop` fields are forwarded as part of
   the standard Chat Completions body.
 - Accept one standard non-streaming choice with assistant text, a supported finish reason, and
-  harmless unknown fields. Usage is optional because the pinned Gateway forwards successful bodies
-  without adding it; when present, prompt, completion, and total counts remain complete and
-  non-negative. Gateway administration and OpenKeyboard operation extensions are not part of this
-  intersection.
+  harmless unknown fields. Reasoning metadata may accompany independently valid final assistant
+  text and is discarded rather than exposed; reasoning-only results remain malformed. Usage is
+  optional because the pinned Gateway forwards successful bodies without adding it; when present,
+  prompt, completion, and total counts remain complete and non-negative. Gateway administration
+  and OpenKeyboard operation extensions are not part of this intersection.
 - Use standard `response_format.type = json_schema` only for the connector's already-governed
   strict schema subset. The pinned Gateway forwards ordinary Chat Completions request bodies and
   successful response bodies; actual structured-output support remains selected-model dependent,
@@ -165,8 +166,9 @@ the compatibility identity so later Gateway changes do not silently widen this p
   bounded `Retry-After` metadata remains supported.
 - Accept OpenAI-compatible `text/event-stream` data records with standard
   `chat.completion.chunk` payloads and `[DONE]`. The pinned Gateway proves streaming response-body
-  pass-through, while the connector owns framing, ordering, terminal validation, cleanup, and the
-  no-retry-after-content rule.
+  pass-through. Reasoning-only delta members are discarded without starting canonical output; the
+  connector still requires final assistant text and owns framing, ordering, terminal validation,
+  cleanup, and the no-retry-after-content rule.
 - Caller cancellation must cancel the connector's in-flight HTTP request and remain cancellation,
   not a canonical provider error. The pinned Gateway does not document or deterministically prove
   that a disconnected client cancels its own upstream fetch, so P7 does not make that stronger

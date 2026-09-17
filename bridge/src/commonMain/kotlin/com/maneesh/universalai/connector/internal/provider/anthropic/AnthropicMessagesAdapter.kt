@@ -11,6 +11,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -21,6 +22,10 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.ANTHROPIC_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.ANTHROPIC_PROVIDER_CAPABILITY_PROFILE
+import com.maneesh.universalai.connector.internal.provider.ANTHROPIC_UNKNOWN_MODEL_CAPABILITIES
+import com.maneesh.universalai.connector.internal.provider.ProviderModelDiscovery
+import com.maneesh.universalai.connector.internal.provider.ProviderModelListResult
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
 import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEventReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
@@ -41,7 +46,33 @@ import kotlinx.serialization.json.Json
 internal class AnthropicMessagesAdapter(
     private val configuration: UniversalAiProviderConfiguration,
     private val transport: ConnectorTransport,
-) : ConnectorEngine {
+) : ConnectorEngine, ProviderModelDiscovery {
+    override suspend fun listModels(): ProviderModelListResult {
+        val collected = mutableListOf<UniversalAiModelDescriptor>()
+        val seenCursors = mutableSetOf<String>()
+        var afterId: String? = null
+        repeat(MAX_MODEL_PAGES) {
+            val page = requestModelPage(afterId)
+            if (page.models.size > MAX_DISCOVERED_MODELS - collected.size) {
+                throw malformedResponse()
+            }
+            collected += page.models
+            if (!page.hasMore) {
+                return ProviderModelListResult.Supported(
+                    collected
+                        .distinctBy { descriptor -> descriptor.target.modelId }
+                        .sortedBy { descriptor -> descriptor.target.modelId.rawValue },
+                )
+            }
+            val nextCursor = page.lastId ?: throw malformedResponse()
+            if (!seenCursors.add(nextCursor)) {
+                throw malformedResponse()
+            }
+            afterId = nextCursor
+        }
+        throw malformedResponse()
+    }
+
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
         val transportRequest = transportRequest(request, stream = false)
@@ -131,6 +162,47 @@ internal class AnthropicMessagesAdapter(
                 ),
             body = body,
         )
+    }
+
+    private suspend fun requestModelPage(afterId: String?): AnthropicModelPage {
+        val credential = resolveCredential()
+        val endpoint =
+            buildString {
+                append(MODELS_ENDPOINT)
+                append("?limit=")
+                append(MODEL_PAGE_SIZE)
+                afterId?.let { cursor ->
+                    append("&after_id=")
+                    append(cursor.encodeModelCursor())
+                }
+            }
+        val request =
+            ConnectorTransportRequest(
+                method = "GET",
+                baseUrl = configuration.validatedBaseUrl,
+                endpoint = endpoint,
+                adapterHeaders =
+                    listOf(
+                        ConnectorTransportHeader(
+                            name = "x-api-key",
+                            value = credential,
+                        ),
+                        ConnectorTransportHeader(
+                            name = "anthropic-version",
+                            value = ANTHROPIC_API_VERSION,
+                        ),
+                        ConnectorTransportHeader(
+                            name = "accept",
+                            value = JSON_CONTENT_TYPE,
+                        ),
+                    ),
+            )
+        return transport.execute(request) { response ->
+            if (response.statusCode !in 200..299) {
+                throw providerFailure(response)
+            }
+            translateModelPage(response)
+        }
     }
 
     private fun validateRequest(request: UniversalAiRequest) {
@@ -246,7 +318,83 @@ internal class AnthropicMessagesAdapter(
             throw malformedResponse()
         }
     }
+
+    private suspend fun translateModelPage(
+        response: ConnectorTransportResponse,
+    ): AnthropicModelPage {
+        val bytes = readBoundedBody(response.body)
+        return try {
+            val wire =
+                ANTHROPIC_WIRE_JSON.decodeFromString<AnthropicModelListWire>(
+                    bytes.decodeToString(throwOnInvalidSequence = true),
+                )
+            val wireModels = requireWireValue(wire.data)
+            val hasMore = requireWireValue(wire.hasMore)
+            requireWire(wireModels.size <= MODEL_PAGE_SIZE)
+            if (wireModels.isEmpty()) {
+                requireWire(wire.firstId == null && wire.lastId == null && !hasMore)
+            } else {
+                requireWire(wire.firstId == wireModels.first().id)
+                requireWire(wire.lastId == wireModels.last().id)
+            }
+            val models =
+                wireModels.map { model ->
+                    requireWire(model.type == "model")
+                    val target =
+                        UniversalAiTarget(
+                            providerId = ANTHROPIC_PROVIDER_ID,
+                            modelId = ModelId.of(requireWireValue(model.id)),
+                        )
+                    UniversalAiModelDescriptor(
+                        target = target,
+                        displayName = requireWireValue(model.displayName),
+                        capabilities =
+                            com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet.resolve(
+                                providerProfile = ANTHROPIC_PROVIDER_CAPABILITY_PROFILE,
+                                modelTarget = target,
+                                modelOverrides = ANTHROPIC_UNKNOWN_MODEL_CAPABILITIES,
+                            ),
+                    )
+                }
+            AnthropicModelPage(
+                models = models,
+                hasMore = hasMore,
+                lastId = wire.lastId,
+            )
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: UniversalAiException) {
+            throw failure
+        } catch (_: Throwable) {
+            throw malformedResponse()
+        }
+    }
 }
+
+private data class AnthropicModelPage(
+    val models: List<UniversalAiModelDescriptor>,
+    val hasMore: Boolean,
+    val lastId: String?,
+)
+
+private fun String.encodeModelCursor(): String =
+    buildString {
+        encodeToByteArray().forEach { byte ->
+            val value = byte.toInt() and 0xff
+            if (
+                value in 'a'.code..'z'.code ||
+                value in 'A'.code..'Z'.code ||
+                value in '0'.code..'9'.code ||
+                value == '-'.code || value == '.'.code || value == '_'.code || value == '~'.code
+            ) {
+                append(value.toChar())
+            } else {
+                append('%')
+                append(MODEL_CURSOR_HEX[value ushr 4])
+                append(MODEL_CURSOR_HEX[value and 0x0f])
+            }
+        }
+    }
 
 private sealed interface AnthropicStreamSignal {
     data class Event(
@@ -317,6 +465,7 @@ private fun AnthropicMessageResponseWire.toCanonical(
     requireWire(role == "assistant")
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val completionReason =
         when (stopReason) {
             "end_turn" -> {
@@ -373,11 +522,7 @@ private fun AnthropicMessageResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = ANTHROPIC_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = listOf(output),
         usage = requireWireValue(usage).toCanonical(),
         completionReason = completionReason,
@@ -812,6 +957,7 @@ internal const val ANTHROPIC_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
     "The Anthropic structured response did not match the requested governed schema."
 
 private const val MESSAGES_ENDPOINT: String = "messages"
+private const val MODELS_ENDPOINT: String = "models"
 private const val ANTHROPIC_API_VERSION: String = "2023-06-01"
 private const val JSON_CONTENT_TYPE: String = "application/json"
 private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
@@ -823,6 +969,10 @@ private const val MAX_ERROR_BODY_BYTES: Int = 256 * 1_024
 private const val INITIAL_ERROR_BODY_CAPACITY: Int = 4 * 1_024
 private const val MAX_ERROR_BODY_CHUNKS: Int = 1_024
 private const val SUCCESS_STATUS_CODE: Int = 200
+private const val MODEL_PAGE_SIZE: Int = 1_000
+private const val MAX_MODEL_PAGES: Int = 4
+private const val MAX_DISCOVERED_MODELS: Int = 2_048
+private const val MODEL_CURSOR_HEX: String = "0123456789ABCDEF"
 
 private val PROVIDER_FAILURE_MAPPING =
     ProviderErrorMapping(

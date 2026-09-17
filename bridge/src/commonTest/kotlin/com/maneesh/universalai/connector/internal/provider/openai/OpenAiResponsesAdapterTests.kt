@@ -65,7 +65,7 @@ class OpenAiResponsesAdapterTests {
                               "id": "resp_test",
                               "object": "response",
                               "status": "completed",
-                              "model": "resolved-model-snapshot",
+                              "model": "requested-model",
                               "output": [
                                 {
                                   "id": "reasoning_0",
@@ -142,7 +142,7 @@ class OpenAiResponsesAdapterTests {
             assertEquals("resp_test", response.id.rawValue)
             assertEquals("req_test", response.requestId?.rawValue)
             assertEquals("openai", response.target.providerId.rawValue)
-            assertEquals("resolved-model-snapshot", response.target.modelId.rawValue)
+            assertEquals("requested-model", response.target.modelId.rawValue)
             assertEquals(listOf(0, 1), response.outputs.map { output -> output.index })
             assertEquals(
                 listOf("first response", "second response"),
@@ -335,6 +335,10 @@ class OpenAiResponsesAdapterTests {
         val malformedPayloads =
             listOf(
                 """{"not_json":""",
+                successResponse(
+                    responseId = "resp_substituted",
+                    model = "provider-substitution",
+                ),
                 // Missing the required top-level object discriminator.
                 """
                 {
@@ -738,13 +742,16 @@ class OpenAiResponsesAdapterTests {
             extensions = extensions,
         )
 
-    private fun successResponse(responseId: String): String =
+    private fun successResponse(
+        responseId: String,
+        model: String = "requested-model",
+    ): String =
         """
         {
           "id":"$responseId",
           "object":"response",
           "status":"completed",
-          "model":"resolved-model",
+          "model":"$model",
           "output":[{
             "id":"message_0",
             "type":"message",

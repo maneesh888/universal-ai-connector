@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P7%20complete-16a34a)
+![Project stage](https://img.shields.io/badge/stage-P8--A%20in%20progress-f59e0b)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -21,12 +21,14 @@ acceptance. P6 completed OpenRouter/generic protocol readiness in P6-A, direct n
 OpenRouter behavior in P6-B, generic OpenAI-compatible non-streaming behavior in P6-C, and strict
 structured output, bounded errors/metadata, and conservative capabilities in P6-D, and
 incremental streaming and active cancellation in P6-E. P6-F completed concurrent lifecycle,
-close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P7 is complete in
-this milestone-closing candidate: P7-A
+close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P7 is complete: P7-A
 authoritatively froze the external Gateway contract and deterministic compatibility fixtures, and
 P7-B added the demonstrated compatibility correction plus a dedicated local Gateway live gate.
-P7-C completes Gateway-representative concurrent lifecycle, cleanup, host-configuration, and
-package-boundary acceptance without another runtime adapter.
+P7-C completed Gateway-representative concurrent lifecycle, cleanup, host-configuration, and
+package-boundary acceptance without another runtime adapter. P8-A is now active and upgrades the
+iOS sample with explicit live configuration, Keychain-backed credential storage, model discovery,
+exact selection, and no-substitution connection testing while retaining the original
+credential-free deterministic mode.
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
@@ -35,7 +37,8 @@ package-boundary acceptance without another runtime adapter.
 > P6 is completed authoritatively. P7 remains scoped as validation of the existing
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
 > a proprietary Gateway protocol. P7-A and P7-B are authoritative, and P7-C lifecycle integration
-> and acceptance complete P7 in this milestone-closing candidate.
+> and acceptance complete P7. P8-A is the sole active package and is bounded to the iOS sample;
+> Android, JVM/desktop, parity, and distribution work remain sequential later packages.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -54,7 +57,8 @@ package-boundary acceptance without another runtime adapter.
 >
 > **Accepted bounded proof:** The P2 Apple path covers 36 Swift integration tests, the two-slice XCFramework, simulator sample compilation, and generic iOS-device linking. The Android application passed installation, launch, rerun, and deterministic UI inspection on a local API 36 emulator. Physical iOS-device execution has not been performed.
 >
-> **Production status:** Architecture validation only—not a production AI client yet.
+> **Production status:** Source-pinned production-consumption contract; remote P8 distribution and
+> an immutable alpha release remain planned and are not claimed here.
 
 ## Integration goal
 
@@ -64,7 +68,7 @@ P1 established this package boundary through compiling iOS, Android, and JVM con
 
 ## Project status and progress
 
-### Overall roadmap completion: 80% — 8 of 10 milestones completed in this candidate
+### Overall roadmap completion: 80% — 8 of 10 milestones completed
 
 ```text
 Interoperability POC       ████████████████████ 100%  ✅ Complete
@@ -73,7 +77,7 @@ Canonical AI contracts    ██████████████████
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
 Gateway compatibility     ████████████████████ 100%  ✅ Complete
-Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
+Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P8-A active
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
 
@@ -86,11 +90,13 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Kotlin/Native iOS ARM64 device and simulator frameworks | ✅ Locally verified |
 | Combined device-and-simulator XCFramework | ✅ Locally verified |
 | Product-facing local Swift Package façade | ✅ Locally verified |
+| iOS app-extension consumer boundary | ✅ Simulator compilation/linking with extension-safe APIs |
 | Swift synchronous and async calls into Kotlin | ✅ Verified |
 | Kotlin `Flow` to Swift `AsyncThrowingStream` | ✅ Verified |
 | Stable Kotlin-to-Swift error mapping | ✅ Verified |
 | Swift-to-Kotlin cancellation | ✅ Verified |
 | SwiftUI simulator sample compilation | ✅ Locally verified |
+| iOS live configuration and model-discovery sample | 🚧 P8-A in progress; implementation and acceptance evidence are recorded in PR #69 |
 | Generic iOS-device sample link/build | ✅ Locally verified; no device execution |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
@@ -104,10 +110,12 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
 | HTTP transport | ✅ P3 completed with deterministic construction, policy, SSE/metadata, registry, cancellation, cleanup, and terminal proof |
+| Configurable connect/request timeouts | ✅ Public Kotlin and Swift construction boundary |
+| Provider-neutral model discovery | ✅ OpenAI, Anthropic, OpenRouter, and conservative compatible endpoints |
 | OpenAI Responses adapter | ✅ P4 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | Anthropic Messages adapter | ✅ P5 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
 | OpenRouter and compatible adapters | ✅ P6 completed with deterministic, live, lifecycle, secret-safety, and package-boundary proof |
-| OpenAI-compatible Gateway validation | ✅ P7 completed in the milestone-closing candidate |
+| OpenAI-compatible Gateway validation | ✅ P7 completed through PR #59 |
 
 On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK assembled, and the app installed and launched on a local API 36.1 Pixel 8 emulator. UI inspection confirmed the version, one-shot response, five ordered stream events, stable simulated error, response cancellation, and stream stop. GitHub Actions run [29730678994](https://github.com/maneesh888/universal-ai-connector/actions/runs/29730678994) then passed the Android consumer and complete remote matrix as configured at the time, but its source-testing jobs ran against synthetic merge commit `4a4bd2d88bc62c663a58cb5bb1f8d4bdaccec2d9` rather than the exact branch head. Their platform results are bounded compatibility evidence; the run does not provide exact-head repository-hygiene proof.
 
@@ -122,8 +130,8 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P4 | OpenAI Responses adapter | ✅ Completed |
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
-| P7 | OpenAI-compatible Gateway validation | ✅ Completed in the milestone-closing candidate |
-| P8 | Production distribution and host integration | ⏳ Planned |
+| P7 | OpenAI-compatible Gateway validation | ✅ Completed through PR #59 |
+| P8 | Production distribution and host integration | 🚧 P8-A in progress |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion
@@ -158,7 +166,7 @@ Gateway's tested standard contract was pinned. P7-A authoritatively froze that c
 intersection and added deterministic compatibility fixtures through the existing generic adapter.
 P7-B accepts otherwise-valid responses that omit usage while keeping present usage strict, and
 adds the dedicated exact-head Gateway live route without a Gateway-specific runtime surface.
-P7-C completes concurrent Gateway response/stream isolation, concurrent-close cancellation and
+P7-C completed concurrent Gateway response/stream isolation, concurrent-close cancellation and
 cleanup, credential redaction, copy-paste Kotlin and Swift host configuration, and the existing
 provider-neutral package-boundary acceptance.
 
@@ -197,7 +205,7 @@ Native Linux, Windows, and macOS artifacts are demand-driven. The initial deskto
 
 P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. The JVM console remains the headless and server-oriented verification path.
 
-The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond` and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes.
+The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond`, `listModels`, and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes. The complete source-revision integration contract is in [`docs/PRODUCTION_CONSUMPTION.md`](docs/PRODUCTION_CONSUMPTION.md).
 
 Provider configuration is immutable and provider-neutral. Applications supply a synchronous
 credential loader owned by the host; the connector invokes it once per network request and does
@@ -218,6 +226,8 @@ fun openAiConnector(loadCredential: () -> String): UniversalAiConnector =
                         credentialSupplier = loadCredential,
                     ),
                 ),
+            connectTimeoutMillis = 10_000,
+            requestTimeoutMillis = 60_000,
         ),
     )
 ```
@@ -235,7 +245,9 @@ func openAiConnector(
     )
     return try UniversalAiConnector(
         configuration: UniversalAiConnectorConfiguration(
-            providers: [provider]
+            providers: [provider],
+            connectTimeoutMillis: 10_000,
+            requestTimeoutMillis: 60_000
         )
     )
 }
@@ -309,11 +321,12 @@ func gatewayRequest(model: String, content: String) -> UniversalAiRequest {
 ```
 
 Use HTTPS except for an exact loopback development endpoint. The connector sends standard bearer
-authentication to `POST <gateway-base-url>/chat/completions`; it does not discover models, manage
-Gateway keys, or know which backend a model uses. Structured output remains selected-model
-dependent, and absent non-streaming usage is accepted while null, incomplete, or negative present
-usage is rejected. Close the connector at the host lifecycle boundary, and never persist or log a
-credential returned by the supplier.
+authentication to `POST <gateway-base-url>/chat/completions`. `listModels` attempts the conservative
+standard `GET <gateway-base-url>/models` shape and returns explicit unsupported discovery for 404,
+405, or 501; it does not manage Gateway keys or know which backend a model uses. Structured output
+remains selected-model dependent, and absent non-streaming usage is accepted while null,
+incomplete, or negative present usage is rejected. Close the connector at the host lifecycle
+boundary, and never persist or log a credential returned by the supplier.
 
 ## Quick start
 
@@ -405,6 +418,7 @@ On macOS, the full check covers:
 - product-facing shared and Apple-adapter tests on iOS Simulator
 - device-and-simulator XCFramework generation and slice validation
 - product-facing Swift Package integration tests
+- iOS Simulator app-extension compilation and linking with extension-safe APIs enforced
 - iOS simulator sample build
 - generic iOS-device sample link/build
 - secret scanning
@@ -434,6 +448,7 @@ Run individual checks when needed:
 ./gradlew :bridge:iosSimulatorArm64Test
 ./scripts/build-xcframework.sh
 ./scripts/test-swift-package.sh
+./scripts/build-app-extension-consumer.sh
 ./scripts/build-sample.sh
 ./scripts/build-sample-device.sh
 ./scripts/check-contracts.sh --all
@@ -633,6 +648,13 @@ Verify the sample for both supported build destinations:
 ./scripts/build-sample-device.sh
 ```
 
+The same Swift product is also compiled and linked by a minimal iOS app-extension consumer with
+`APPLICATION_EXTENSION_API_ONLY=YES`:
+
+```bash
+./scripts/build-app-extension-consumer.sh
+```
+
 The second command compiles and links against the `ios-arm64` framework slice using Xcode's generic iOS-device destination with code signing disabled. It is not physical-device execution proof.
 
 ## Repository layout
@@ -641,7 +663,7 @@ The second command compiles and links against the `ios-arm64` framework slice us
 bridge/                 Kotlin Multiplatform bridge and tests
 contracts/              Versioned JSON Schemas and compatibility fixtures
 swift-package/          Supported Swift façade and Swift tests
-samples/ios/            Standalone iOS SwiftUI sample
+samples/ios/            Standalone iOS SwiftUI and app-extension consumers
 samples/android/        Jetpack Compose public-module Android consumer
 samples/jvm-console/    Non-interactive public-module Kotlin/JVM consumer
 scripts/                Deterministic verification commands

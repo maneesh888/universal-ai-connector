@@ -21,9 +21,21 @@ public struct UniversalAiProviderConfiguration: Sendable {
 
 /// Immutable per-client provider configuration.
 public struct UniversalAiConnectorConfiguration: Sendable {
-    public let providers: [UniversalAiProviderConfiguration]
+    public static let defaultConnectTimeoutMillis: Int64 = 10_000
+    public static let defaultRequestTimeoutMillis: Int64 = 60_000
+    public static let maximumTimeoutMillis: Int64 = 86_400_000
 
-    public init(providers: [UniversalAiProviderConfiguration] = []) {
+    public let providers: [UniversalAiProviderConfiguration]
+    public let connectTimeoutMillis: Int64
+    public let requestTimeoutMillis: Int64
+
+    public init(
+        providers: [UniversalAiProviderConfiguration] = [],
+        connectTimeoutMillis: Int64 = Self.defaultConnectTimeoutMillis,
+        requestTimeoutMillis: Int64 = Self.defaultRequestTimeoutMillis
+    ) {
         self.providers = providers
+        self.connectTimeoutMillis = connectTimeoutMillis
+        self.requestTimeoutMillis = requestTimeoutMillis
     }
 }

@@ -23,7 +23,10 @@ let package = Package(
         ),
         .testTarget(
             name: "UniversalAiConnectorTests",
-            dependencies: ["UniversalAiConnector"]
+            dependencies: [
+                "UniversalAiConnector",
+                "UniversalAiConnectorBridge",
+            ]
         ),
     ]
 )
