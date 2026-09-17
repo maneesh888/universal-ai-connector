@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.maneesh.universalai.samples.android"
-    compileSdk = 36
+    compileSdk = 37
     buildToolsVersion = "36.1.0"
 
     defaultConfig {

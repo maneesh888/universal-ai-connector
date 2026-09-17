@@ -136,6 +136,10 @@ require_android_sdk() {
     echo "Android SDK platform 36 is missing from: $sdk_root" >&2
     return 1
   fi
+  if [[ ! -d "$sdk_root/platforms/android-37.0" ]]; then
+    echo "Android SDK platform 37.0 is missing from: $sdk_root" >&2
+    return 1
+  fi
   if [[ ! -d "$sdk_root/build-tools/36.1.0" ]]; then
     echo "Android Build Tools 36.1.0 are missing from: $sdk_root" >&2
     return 1
