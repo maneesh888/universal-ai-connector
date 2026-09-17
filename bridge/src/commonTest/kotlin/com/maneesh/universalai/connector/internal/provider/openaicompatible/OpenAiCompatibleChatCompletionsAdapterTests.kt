@@ -97,7 +97,7 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
             assertEquals("chatcmpl_compatible", response.id.rawValue)
             assertEquals("req_compatible", response.requestId?.rawValue)
             assertEquals("openai-compatible", response.target.providerId.rawValue)
-            assertEquals("resolved-compatible-model", response.target.modelId.rawValue)
+            assertEquals("requested-compatible-model", response.target.modelId.rawValue)
             assertEquals(UniversalAiCompletionReason.Stop, response.completionReason)
             with(response.outputs.single()) {
                 assertEquals("chatcmpl_compatible", id.rawValue)
@@ -337,25 +337,39 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
     }
 
     @Test
-    fun harmlessUnknownResponseFieldsAreIgnoredButSemanticIntrusionsFail() = runTest {
-        val acceptedEngine = MockEngine { respond(successResponse()) }
-        val acceptedConnector = connector(acceptedEngine) { "credential" }
-        try {
-            assertEquals("ready", acceptedConnector.respond(request()).outputs.single().text)
-        } finally {
-            acceptedConnector.close()
-            acceptedEngine.close()
+    fun harmlessUnknownAndReasoningMetadataAreIgnoredButSemanticIntrusionsFail() = runTest {
+        listOf(
+            successResponse(),
+            successResponse(extraMessageMembers = ",\"reasoning\":\"hidden\""),
+            successResponse(extraMessageMembers = ",\"reasoning_content\":\"hidden\""),
+            successResponse(
+                extraMessageMembers =
+                    ",\"reasoning_details\":[{\"type\":\"reasoning.text\",\"text\":\"hidden\"}]",
+            ),
+        ).forEach { payload ->
+            val acceptedEngine = MockEngine { respond(payload) }
+            val acceptedConnector = connector(acceptedEngine) { "credential" }
+            try {
+                assertEquals("ready", acceptedConnector.respond(request()).outputs.single().text)
+            } finally {
+                acceptedConnector.close()
+                acceptedEngine.close()
+            }
         }
 
         listOf(
             successResponse(objectType = "response"),
+            successResponse(model = "provider-substitution"),
             successResponse(extraMessageMembers = ",\"tool_calls\":[{\"id\":\"call_1\"}]"),
             successResponse(extraMessageMembers = ",\"refusal\":\"blocked\""),
             successResponse(extraMessageMembers = ",\"function_call\":{\"name\":\"tool\"}"),
-            successResponse(extraMessageMembers = ",\"reasoning_content\":\"hidden\""),
             successResponse(extraChoiceMembers = ",\"delta\":{\"content\":\"streamed\"}"),
             successResponse(finishReason = "tool_calls"),
             successResponse(text = ""),
+            successResponse(
+                text = "",
+                extraMessageMembers = ",\"reasoning_content\":\"hidden\"",
+            ),
         ).forEach { payload ->
             val engine = MockEngine { respond(payload) }
             val connector = connector(engine) { "credential" }
@@ -631,7 +645,7 @@ class OpenAiCompatibleChatCompletionsAdapterTests {
     private fun successResponse(
         id: String = "chatcmpl_compatible",
         objectType: String = "chat.completion",
-        model: String = "resolved-compatible-model",
+        model: String = "requested-compatible-model",
         text: String = "ready",
         finishReason: String = "stop",
         extraMessageMembers: String = "",

@@ -12,7 +12,6 @@ import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEvent
 import com.maneesh.universalai.connector.contract.UniversalAiStreamEventType
-import com.maneesh.universalai.connector.contract.UniversalAiTarget
 import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.internal.provider.openai.OpenAiStructuredOutput
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
@@ -127,6 +126,7 @@ internal class ChatCompletionsStreamTranslator(
         streamRequire(chunk.objectType == CHAT_COMPLETION_CHUNK_OBJECT)
         val chunkResponseId = ResponseId.of(streamValue(chunk.id))
         val chunkModel = ModelId.of(streamValue(chunk.model))
+        streamRequire(chunkModel == request.target.modelId)
         val chunkCreated = streamValue(chunk.created)
         streamRequire(chunkCreated >= 0L)
         responseId?.let { value -> streamRequire(value == chunkResponseId) }
@@ -143,11 +143,12 @@ internal class ChatCompletionsStreamTranslator(
         streamRequire(choice.index == CANONICAL_OUTPUT_INDEX)
         streamRequire(choice.message == null && choice.logprobs == null)
         val delta = streamValue(choice.delta)
+        val hasReasoningMetadata =
+            delta.reasoning != null ||
+                delta.reasoningContent != null ||
+                delta.reasoningDetails != null
         streamRequire(
             delta.refusal == null &&
-                delta.reasoning == null &&
-                delta.reasoningContent == null &&
-                delta.reasoningDetails == null &&
                 delta.annotations == null &&
                 delta.images == null &&
                 delta.audio == null &&
@@ -169,7 +170,15 @@ internal class ChatCompletionsStreamTranslator(
         }
         val finishReason = choice.finishReason
         val content = delta.content
-        streamRequire(delta.role != null || content != null || finishReason != null)
+        streamRequire(
+            delta.role != null ||
+                content != null ||
+                finishReason != null ||
+                hasReasoningMetadata,
+        )
+        if (content == null && finishReason == null && hasReasoningMetadata) {
+            return emptyList()
+        }
         val events = mutableListOf<UniversalAiStreamEvent>()
         if (!outputStarted) {
             outputStarted = true
@@ -210,9 +219,6 @@ internal class ChatCompletionsStreamTranslator(
         streamRequire(delta.content == null || delta.content.isEmpty())
         streamRequire(
             delta.refusal == null &&
-                delta.reasoning == null &&
-                delta.reasoningContent == null &&
-                delta.reasoningDetails == null &&
                 delta.annotations == null &&
                 delta.images == null &&
                 delta.audio == null &&
@@ -260,7 +266,7 @@ internal class ChatCompletionsStreamTranslator(
     private fun complete(): List<UniversalAiStreamEvent> {
         streamRequire(outputStarted)
         val responseId = streamValue(responseId)
-        val responseModel = streamValue(responseModel)
+        streamValue(responseModel)
         val completionReason = streamValue(completionReason)
         val usage = streamValue(usage)
         val finalText = text.toString()
@@ -283,7 +289,7 @@ internal class ChatCompletionsStreamTranslator(
             UniversalAiResponse(
                 id = responseId,
                 requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-                target = UniversalAiTarget(providerId = providerId, modelId = responseModel),
+                target = request.target,
                 outputs = listOf(output),
                 usage = usage,
                 completionReason = completionReason,

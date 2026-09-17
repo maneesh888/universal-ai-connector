@@ -58,6 +58,47 @@ class AppleBridgeTarget(
     val modelRawValue: String,
 )
 
+/** One capability entry in a discovered model descriptor. */
+class AppleBridgeCapabilityDeclaration(
+    val name: String,
+    val support: String,
+    limits: List<AppleBridgeLongEntry>,
+    val extensions: AppleBridgeExtensions,
+) {
+    val limits: List<AppleBridgeLongEntry> = limits.toList()
+}
+
+/** Optional token ceilings for a discovered model. */
+class AppleBridgeModelTokenLimits(
+    val hasContextWindowTokens: Boolean,
+    val contextWindowTokens: Long,
+    val hasMaxInputTokens: Boolean,
+    val maxInputTokens: Long,
+    val hasMaxOutputTokens: Boolean,
+    val maxOutputTokens: Long,
+)
+
+/** One provider-neutral discovered model crossing only the private callback boundary. */
+class AppleBridgeModelDescriptor(
+    val contractVersion: String,
+    val target: AppleBridgeTarget,
+    val displayName: String?,
+    val limits: AppleBridgeModelTokenLimits?,
+    capabilities: List<AppleBridgeCapabilityDeclaration>,
+    val extensions: AppleBridgeExtensions,
+) {
+    val capabilities: List<AppleBridgeCapabilityDeclaration> = capabilities.toList()
+}
+
+/** A supported model snapshot or an explicit unsupported-discovery result. */
+class AppleBridgeModelListResult(
+    val adapterName: String,
+    val supported: Boolean,
+    models: List<AppleBridgeModelDescriptor>,
+) {
+    val models: List<AppleBridgeModelDescriptor> = models.toList()
+}
+
 class AppleBridgeTextInput(
     val role: String,
     val content: String,

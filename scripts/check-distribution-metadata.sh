@@ -107,7 +107,7 @@ require_exact_release_property DESKTOP_PACKAGE_NAME universal-ai-connector-demo
 require_exact_release_property MACOS_SIGNING_IDENTITY_TYPE "Developer ID Application"
 require_exact_release_property WINDOWS_SIGNING_POLICY optional-for-alpha
 require_exact_release_property JDK_MIN_VERSION 21
-require_exact_release_property GRADLE_VERSION 9.6.1
+require_exact_release_property GRADLE_VERSION 9.7.1
 require_exact_release_property KOTLIN_VERSION 2.4.10
 require_exact_release_property ANDROID_MIN_SDK 24
 require_exact_release_property ANDROID_COMPILE_SDK 36
@@ -139,7 +139,7 @@ require_literal "$ROOT/samples/android/build.gradle.kts" 'targetSdk = 36'
 require_literal "$ROOT/swift-package/Package.swift" '// swift-tools-version: 6.0'
 require_literal "$ROOT/swift-package/Package.swift" '.iOS(.v17)'
 require_literal "$ROOT/build.gradle.kts" 'kotlin("multiplatform") version "2.4.10"'
-require_literal "$ROOT/gradle/wrapper/gradle-wrapper.properties" 'gradle-9.6.1-bin.zip'
+require_literal "$ROOT/gradle/wrapper/gradle-wrapper.properties" 'gradle-9.7.1-bin.zip'
 require_literal "$ROOT/.github/workflows/ci.yml" 'runs-on: ubuntu-24.04'
 require_literal "$ROOT/.github/workflows/ci.yml" 'runs-on: windows-2025'
 require_literal "$ROOT/.github/workflows/ci.yml" 'runs-on: macos-15'
@@ -157,8 +157,7 @@ coordinate="$group:$(property_value "$RELEASE_PROPERTIES" MAVEN_ARTIFACT_ID):$ve
 require_literal "$GUIDE" "$coordinate"
 require_literal "$GUIDE" "v$version"
 require_literal "$PLAN" '`gradle.properties` owns one canonical SemVer value'
-require_literal "$ROADMAP" '| P8 | Production distribution and host integration | In progress |'
-require_literal "$ROADMAP" 'P8 is active at P8-A;'
-require_literal "$ROOT/README.md" '**Current phase:** P8-A is active'
+# Package activation is governed by the roadmap, not a metadata consistency check.
+require_literal "$PLAN" '### P8-E: Distribution contract and version freeze'
 
 echo "Distribution metadata is internally consistent for $coordinate."

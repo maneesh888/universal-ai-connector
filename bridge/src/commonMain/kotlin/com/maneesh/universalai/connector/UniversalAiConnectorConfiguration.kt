@@ -4,6 +4,7 @@ package com.maneesh.universalai.connector
 
 import com.maneesh.universalai.connector.contract.ProviderId
 import com.maneesh.universalai.connector.internal.transport.ConnectorBaseUrl
+import com.maneesh.universalai.connector.internal.transport.ConnectorTransportTimeouts
 import kotlin.native.HiddenFromObjC
 
 /**
@@ -40,10 +41,18 @@ class UniversalAiProviderConfiguration(
 @HiddenFromObjC
 class UniversalAiConnectorConfiguration(
     providers: List<UniversalAiProviderConfiguration>,
+    val connectTimeoutMillis: Long = DEFAULT_CONNECT_TIMEOUT_MILLIS,
+    val requestTimeoutMillis: Long = DEFAULT_REQUEST_TIMEOUT_MILLIS,
 ) {
     private val storedProviders: List<UniversalAiProviderConfiguration>
+    internal val transportTimeouts: ConnectorTransportTimeouts
 
     init {
+        transportTimeouts =
+            ConnectorTransportTimeouts(
+                connectTimeoutMillis = connectTimeoutMillis,
+                requestTimeoutMillis = requestTimeoutMillis,
+            )
         val ordered = providers.sortedBy { provider -> provider.providerId.rawValue }
         val duplicate =
             ordered.zipWithNext().firstOrNull { (first, second) ->
@@ -63,6 +72,10 @@ class UniversalAiConnectorConfiguration(
         storedProviders
 
     companion object {
+        const val DEFAULT_CONNECT_TIMEOUT_MILLIS: Long = 10_000
+        const val DEFAULT_REQUEST_TIMEOUT_MILLIS: Long = 60_000
+        const val MAX_TIMEOUT_MILLIS: Long = 86_400_000
+
         val Empty: UniversalAiConnectorConfiguration =
             UniversalAiConnectorConfiguration(emptyList())
     }

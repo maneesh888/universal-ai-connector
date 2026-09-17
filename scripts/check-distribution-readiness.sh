@@ -192,5 +192,5 @@ if ! xcrun notarytool history \
 fi
 
 echo "Locally verifiable distribution prerequisites passed for $group:$artifact_id:$version."
-echo "P8-A remains blocked until authenticated Central Portal namespace ownership is recorded and independently reviewed." >&2
+echo "P8-E remains blocked until authenticated Central Portal namespace ownership is recorded and independently reviewed." >&2
 exit 2

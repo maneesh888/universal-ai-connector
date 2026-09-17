@@ -11,6 +11,7 @@ import com.maneesh.universalai.connector.contract.UniversalAiErrorCategory
 import com.maneesh.universalai.connector.contract.UniversalAiErrorCode
 import com.maneesh.universalai.connector.contract.UniversalAiException
 import com.maneesh.universalai.connector.contract.UniversalAiInputRole
+import com.maneesh.universalai.connector.contract.UniversalAiModelDescriptor
 import com.maneesh.universalai.connector.contract.UniversalAiOutput
 import com.maneesh.universalai.connector.contract.UniversalAiRequest
 import com.maneesh.universalai.connector.contract.UniversalAiResponse
@@ -22,6 +23,10 @@ import com.maneesh.universalai.connector.contract.UniversalAiUsage
 import com.maneesh.universalai.connector.contract.extension.ExtensionValue
 import com.maneesh.universalai.connector.internal.ConnectorEngine
 import com.maneesh.universalai.connector.internal.provider.OPENAI_PROVIDER_ID
+import com.maneesh.universalai.connector.internal.provider.OPENAI_PROVIDER_CAPABILITY_PROFILE
+import com.maneesh.universalai.connector.internal.provider.OPENAI_UNKNOWN_MODEL_CAPABILITIES
+import com.maneesh.universalai.connector.internal.provider.ProviderModelDiscovery
+import com.maneesh.universalai.connector.internal.provider.ProviderModelListResult
 import com.maneesh.universalai.connector.internal.transport.ConnectorResponseMetadata
 import com.maneesh.universalai.connector.internal.transport.ConnectorServerSentEventReader
 import com.maneesh.universalai.connector.internal.transport.ConnectorTransport
@@ -42,7 +47,34 @@ import kotlinx.serialization.json.Json
 internal class OpenAiResponsesAdapter(
     private val configuration: UniversalAiProviderConfiguration,
     private val transport: ConnectorTransport,
-) : ConnectorEngine {
+) : ConnectorEngine, ProviderModelDiscovery {
+    override suspend fun listModels(): ProviderModelListResult {
+        val credential = resolveCredential()
+        val request =
+            ConnectorTransportRequest(
+                method = "GET",
+                baseUrl = configuration.validatedBaseUrl,
+                endpoint = MODELS_ENDPOINT,
+                adapterHeaders =
+                    listOf(
+                        ConnectorTransportHeader(
+                            name = "authorization",
+                            value = "Bearer $credential",
+                        ),
+                        ConnectorTransportHeader(
+                            name = "accept",
+                            value = JSON_CONTENT_TYPE,
+                        ),
+                    ),
+            )
+        return transport.execute(request) { response ->
+            if (response.statusCode !in 200..299) {
+                throw providerFailure(response)
+            }
+            ProviderModelListResult.Supported(translateModelList(response))
+        }
+    }
+
     override suspend fun respond(request: UniversalAiRequest): UniversalAiResponse {
         validateRequest(request)
         val transportRequest = transportRequest(request, stream = false)
@@ -217,6 +249,46 @@ internal class OpenAiResponsesAdapter(
             throw malformedResponse()
         }
     }
+
+    private suspend fun translateModelList(
+        response: ConnectorTransportResponse,
+    ): List<UniversalAiModelDescriptor> {
+        val bytes = readBoundedBody(response.body)
+        return try {
+            val wire =
+                OPENAI_WIRE_JSON.decodeFromString<OpenAiModelListWire>(
+                    bytes.decodeToString(throwOnInvalidSequence = true),
+                )
+            requireWire(wire.objectType == "list")
+            val models = requireWireValue(wire.data)
+            requireWire(models.size <= MAX_DISCOVERED_MODELS)
+            models
+                .map { model ->
+                    requireWire(model.objectType == "model")
+                    val target =
+                        UniversalAiTarget(
+                            providerId = OPENAI_PROVIDER_ID,
+                            modelId = ModelId.of(requireWireValue(model.id)),
+                        )
+                    UniversalAiModelDescriptor(
+                        target = target,
+                        capabilities =
+                            com.maneesh.universalai.connector.contract.UniversalAiCapabilitySet.resolve(
+                                providerProfile = OPENAI_PROVIDER_CAPABILITY_PROFILE,
+                                modelTarget = target,
+                                modelOverrides = OPENAI_UNKNOWN_MODEL_CAPABILITIES,
+                            ),
+                    )
+                }.distinctBy { descriptor -> descriptor.target.modelId }
+                .sortedBy { descriptor -> descriptor.target.modelId.rawValue }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: UniversalAiException) {
+            throw failure
+        } catch (_: Throwable) {
+            throw malformedResponse()
+        }
+    }
 }
 
 private sealed interface OpenAiStreamSignal {
@@ -298,6 +370,7 @@ internal fun OpenAiResponseWire.toCanonical(
 
     val responseId = ResponseId.of(requireWireValue(id))
     val responseModel = ModelId.of(requireWireValue(model))
+    requireWire(responseModel == request.target.modelId)
     val providerOutput = requireWireValue(output)
     val canonicalOutputs = mutableListOf<UniversalAiOutput>()
     providerOutput.forEach { item ->
@@ -313,11 +386,7 @@ internal fun OpenAiResponseWire.toCanonical(
     return UniversalAiResponse(
         id = responseId,
         requestId = metadata.requestId.toCanonicalRequestIdOrNull(),
-        target =
-            UniversalAiTarget(
-                providerId = OPENAI_PROVIDER_ID,
-                modelId = responseModel,
-            ),
+        target = request.target,
         outputs = canonicalOutputs,
         usage = requireWireValue(usage).toCanonical(),
         completionReason = UniversalAiCompletionReason.Stop,
@@ -823,6 +892,7 @@ internal const val OPENAI_INVALID_STRUCTURED_RESPONSE_MESSAGE: String =
     "The OpenAI structured response did not match the requested governed schema."
 
 private const val RESPONSES_ENDPOINT: String = "responses"
+private const val MODELS_ENDPOINT: String = "models"
 private const val JSON_CONTENT_TYPE: String = "application/json"
 private const val EVENT_STREAM_CONTENT_TYPE: String = "text/event-stream"
 private const val OPENAI_STRUCTURED_OUTPUT_NAME: String = "universal_ai_response"
@@ -834,6 +904,7 @@ private const val MAX_ERROR_BODY_BYTES: Int = 256 * 1_024
 private const val INITIAL_ERROR_BODY_CAPACITY: Int = 4 * 1_024
 private const val MAX_ERROR_BODY_CHUNKS: Int = 1_024
 private const val SUCCESS_STATUS_CODE: Int = 200
+private const val MAX_DISCOVERED_MODELS: Int = 2_048
 
 private val PROVIDER_FAILURE_MAPPING =
     ProviderErrorMapping(

@@ -2,9 +2,9 @@
 
 ## Status
 
-- Repository stage: P0-P7 are completed; P8 is active at P8-A; P9 remains not started
-- Current implementation: the accepted P1-P7 client, contract, provider, Gateway, lifecycle, and package-boundary baseline plus the P8-A canonical distribution identity, generated version path, frozen host/toolchain metadata, and credential-free drift gate
-- Active work package: P8-A distribution activation and external readiness; P8-B and later packages are not active
+- Repository stage: P0-P7 are completed; P8 is in progress at P8-A; P9 remains not started
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, completed P7 Gateway validation, and the active P8-A iOS live-sample implementation
+- Active work package: P8-A iOS live sample and model discovery is in progress; no later P8 package is active
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
@@ -37,11 +37,13 @@
 - P7-B completion: accepts omitted non-streaming usage while keeping null, incomplete, or negative present usage malformed, preserves safe status-only Gateway error handling, adds a dedicated exact-head Gateway live task and fail-closed runner, and extends delivered live-impact routing and secretless-policy validation to the Gateway
 - P7-B completion authority: exact head `4aa2134120279771871cb8b180bbf464f78a37e5` passed the full deterministic and Gateway live gates, ordinary CI, secretless live-policy status, and independent review; PR [#58](https://github.com/maneesh888/universal-ai-connector/pull/58) merged as `f93d3ed2d7eff2856f610f486fdaff85bd5c5987`, and resulting-`main` run [31527045862](https://github.com/maneesh888/universal-ai-connector/actions/runs/31527045862) passed
 - P7 completion: P7-A through P7-C validate the pinned Gateway standard intersection through the existing generic adapter, including deterministic fixtures, omitted-usage compatibility, safe errors, exact-head live proof, concurrent lifecycle and cleanup, copy-paste Kotlin and Swift configuration, and existing secret/package-boundary audits
-- P7 closeout authority: exact head `8d7498293178a475b72428de485eb8becf0df4be` passed the full deterministic and affected live gates, ordinary CI, secretless live-policy status, and independent review; PR [#59](https://github.com/maneesh888/universal-ai-connector/pull/59) merged as `ebdbaf6e1d923f5090a709602b10d9b2e553cb2e`, and resulting-`main` run [31539555497](https://github.com/maneesh888/universal-ai-connector/actions/runs/31539555497) passed
-- P8-A progress: disposable candidate `0.1.0-0.p8.1`, Maven/POM/asset/package identities, generated runtime versioning, minimum toolchain and host baselines, and credential-free consistency checks are frozen; Central namespace, PGP, Developer ID Application, and notarization readiness remain external blockers
+- P7 closeout authority: exact head `8d7498293178a475b72428de485eb8becf0df4be` passed the full deterministic and Gateway live gates, ordinary CI, secretless live-policy status, and independent review; PR [#59](https://github.com/maneesh888/universal-ai-connector/pull/59) merged as `ebdbaf6e1d923f5090a709602b10d9b2e553cb2e`, and resulting `main` run [31539555497](https://github.com/maneesh888/universal-ai-connector/actions/runs/31539555497) passed
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
-- OpenAI-compatible Gateway validation is completed authoritatively; OpenKeyboard integration remains deferred
+- OpenAI-compatible Gateway validation is complete. P8 is delivering live model discovery and
+  exact-model connection flows sequentially, beginning with the active P8-A iOS package, then
+  Android, Kotlin/JVM console, and Compose desktop before the existing cross-platform distribution
+  sequence. OpenKeyboard integration remains deferred.
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
@@ -74,15 +76,20 @@ The initial alpha optimizes for broad practical reach without maintaining every 
 
 | Host surface | Initial delivery | Verification expectation |
 |---|---|---|
-| Android | Kotlin Multiplatform Android library | Shared tests, AAR packaging, and Android sample build |
-| iOS | Swift façade over a device-and-simulator XCFramework | Kotlin/Native tests, Swift Package tests, and SwiftUI sample builds |
-| Linux | Kotlin/JVM artifact | JVM tests and console consumer on Linux CI |
-| Windows | Kotlin/JVM artifact | JVM tests and console consumer on Windows CI |
-| macOS | Kotlin/JVM artifact plus the Apple delivery toolchain | JVM consumer proof and the Apple verification suite on macOS CI |
+| Android | Kotlin Multiplatform Android library | Shared tests, AAR packaging, Android sample build, and P8 emulator lifecycle/live-sample proof |
+| iOS | Swift façade over a device-and-simulator XCFramework | Kotlin/Native tests, Swift Package tests, SwiftUI sample builds, and P8 Simulator live-sample proof |
+| Linux | Kotlin/JVM artifact | JVM tests plus P8 console and Compose desktop consumer/runtime proof on Linux |
+| Windows | Kotlin/JVM artifact | JVM tests plus P8 console and Compose desktop consumer/runtime proof on Windows |
+| macOS | Kotlin/JVM artifact plus the Apple delivery toolchain | JVM/Compose desktop proof and the Apple verification suite on macOS |
 
 Native macOS ARM64 and Linux X64 may be added when a no-JVM or native-language consumer requires them. Windows Kotlin/Native, JavaScript, and Wasm remain demand-driven. A host is not described as supported merely because the compiler can produce a target: the repository must also test its public API, packaging, documented consumption path, and lifecycle behavior.
 
-The initial JVM console remains the headless and server-oriented proof. P8 must add one Compose Multiplatform desktop demonstration application that runs from the same JVM code on macOS, Windows, and Linux. It must offer a zero-configuration deterministic mode for evaluation and an explicitly configured live mode once the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. Native desktop library targets remain demand-driven; the demonstration application consumes the Kotlin/JVM artifact.
+The initial JVM console remains the headless and server-oriented proof. P8 must add live model
+discovery, exact selection, and connection testing to that console flow, and add one Compose
+Multiplatform desktop demonstration application that runs from the same JVM code on macOS,
+Windows, and Linux. Every sample retains a zero-configuration deterministic mode and makes live
+mode an explicit host-configured choice. Native desktop library targets remain demand-driven; the
+demonstration application consumes the Kotlin/JVM artifact.
 
 The host-facing developer experience must converge on:
 
@@ -103,7 +110,7 @@ Cross-platform delivery is a foundation cost, not a platform tax that every late
 | P1 | High, one-time foundation | Establish targets, package boundaries, thin samples, lifecycle behavior, and the deterministic host matrix |
 | P2-P3 | Controlled contract stabilization | Finalize canonical models, the primary client contract, construction, transport injection, ownership, and cleanup without adding host targets or provider-specific host APIs |
 | P4-P7 | Low | Implement provider adapters, then validate an OpenAI-compatible Gateway through the existing generic adapter; reuse the stable Kotlin and Swift entry points and existing samples |
-| P8 | High, planned distribution work | Add publication, released-artifact consumers, signing/checksums, and the desktop demonstration without duplicating connector behavior per host |
+| P8 | High, phased host and distribution work | Deliver sample-host live workflows sequentially for iOS, Android, Kotlin/JVM console, and Compose desktop, prove parity, then add publication, released-artifact consumers, signing, and checksums without duplicating connector behavior per host |
 | P9 | Verification and hardening | Exercise the complete matrix and fix defects; do not introduce a new platform surface as incidental release work |
 
 Apply these guardrails to every future work package:
@@ -111,7 +118,11 @@ Apply these guardrails to every future work package:
 - Do not add another host target, sample, or CI lane without an approved consumer requirement and an explicit maintenance-cost decision.
 - During P2-P3, change the supported Kotlin or Swift façade only when the canonical contract, construction, or lifecycle requires it. After P3 acceptance, keep those host entry points stable through P7 except for an approved compatibility, correctness, or security fix.
 - P4-P7 must not add per-provider Swift, Android, or JVM implementations, DTOs, controls, or lifecycle paths. Provider differences stay behind canonical shared contracts and internal adapter modules. P7 must not add a Gateway-specific adapter when the existing generic OpenAI-compatible boundary is sufficient.
-- Keep the Android, iOS, and JVM samples as stable contract consumers. Update all samples only when an approved canonical host behavior changes, not merely because another provider adapter is added.
+- Keep the Android, iOS, and JVM samples as stable contract consumers. Update all samples only when
+  an approved canonical host behavior changes, not merely because another provider adapter is
+  added. P8-A through P8-D explicitly sequence host-owned model discovery and exact-model
+  connection flows over the already-delivered public contracts; they do not authorize
+  package-owned UI, credential storage, or provider/Gateway administration.
 - Use affected-module and targeted host tests during implementation. Run the repository's mandatory quick gate at commit time and the complete supported platform matrix at push, pull-request, and release gates rather than repeatedly in the inner edit loop.
 - If a proposed P3-P7 feature materially requires changes across the shared API, Swift façade, Android/JVM host API, all samples, packaging scripts, and CI lanes, pause implementation. Record the cross-platform reason in an ADR or scoped plan decision and either correct the abstraction or explicitly approve the wider platform cost before proceeding.
 - Do not reintroduce the retired POC Swift or callback surfaces. Later milestones extend the single product-facing Kotlin client and Swift façade established by P1.
@@ -143,9 +154,10 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P4 | OpenAI Responses adapter | Completed | Internal Responses request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
-| P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; see `openai-compatible-gateway-validation.md` and the P7 closeout evidence above |
-| P8 | Production distribution and host integration | In progress | P8-A distribution contract is frozen; authenticated namespace and signing/notarization readiness remain blockers |
+| P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; PR #59 closed the lifecycle and acceptance milestone; see `openai-compatible-gateway-validation.md` |
+| P8 | Production distribution and host integration | In progress | P8-A is the active iOS live-sample and model-discovery package; later host and distribution packages remain not started |
 | P9 | Release hardening and internal alpha | Not started | |
+| P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
 
 Only one row may be `In progress` at a time.
 
@@ -259,10 +271,17 @@ package boundaries without activating P8.
 
 ## P8: Production distribution and host integration
 
-Use the bounded work packages in `production-distribution-host-integration.md`. P8 is active at
-P8-A as the sole milestone marked `In progress`; P8-B and later packages remain inactive.
+Use the bounded work packages in `production-distribution-host-integration.md`. P8-A activates P8
+as the sole milestone marked `In progress`; every later P8 package remains `Not started`.
 
 Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
+
+P8 first delivers the same bounded live workflow sequentially to the iOS sample, Android sample,
+Kotlin/JVM console, and Compose desktop application, then proves cross-platform parity before
+starting distribution. Every host preserves its zero-configuration deterministic path and owns
+direct-provider or OpenAI-compatible Gateway configuration, secure credential handling, model
+discovery, exact selection, and connection testing. The connector package remains independent of
+SwiftUI, Compose, platform credential stores, account state, and provider/Gateway administration.
 
 Acceptance requires:
 
@@ -270,10 +289,33 @@ Acceptance requires:
 - consumer fixtures that resolve released artifacts rather than repository source projects;
 - compiled first-use examples for Kotlin and Swift;
 - user-visible Android, iOS, and desktop demonstrations covering response, streaming, stable errors, and cancellation;
+- iOS, Android, Kotlin/JVM console, and Compose desktop samples whose deterministic modes remain
+  credential-free and whose explicit live modes present supported, empty, unsupported, error,
+  cancelled, and retrying model-discovery states;
+- an exact-model picker with manual model-ID entry enabled only for an explicit `.unsupported`
+  discovery result, plus a visible **Test Connection** action that always attempts discovery before
+  a minimal `respond` request on the exact selected model and never falls back to or substitutes
+  another model; the console provides the equivalent headless flow, and a supported empty list
+  remains a non-success state that blocks `respond` on every host;
+- sample-host ownership of direct-provider or OpenAI-compatible Gateway configuration and secure
+  credentials through iOS Keychain, Android Keystore-backed host storage, secure or session-only
+  JVM/desktop host input, with no credential persistence, UI dependency, account state, or
+  Gateway-specific contract added to the connector package;
 - a desktop deterministic mode that starts without an account, network, gateway, provider credential, or secret;
-- an opt-in desktop live mode that accepts host-provided adapter configuration only after the corresponding adapter milestone is complete;
+- opt-in live modes that accept host-provided adapter configuration only after the corresponding adapter milestone is complete;
 - OpenAI-compatible Gateway configuration limited to provider ID `openai-compatible`, its base URL, model identifier, and a host-owned Gateway credential supplier, with no assumption about Gateway internals and no secret logging or committed credentials;
 - local pre-push live gates and protected secretless GitHub evidence policy pass for any distribution or sample change that affects live provider or Gateway behavior;
+- deterministic iOS sample state tests, the existing Swift package/XCFramework/sample build and
+  device-link gates, and opt-in exact-head live proof through the actual iOS sample with at least
+  two exact selected models;
+- normal iOS Simulator interaction proof for the live sample workflow;
+- Android deterministic state tests, build/consumer gates, and normal emulator lifecycle/runtime
+  proof covering launch, live connection, cancellation, background/foreground, and credential
+  clearing;
+- Kotlin/JVM console and Compose desktop deterministic plus opt-in live proof on Linux, Windows,
+  and macOS, including matching-host launch and exact-model connection evidence;
+- cross-platform deterministic fixture, state, error, cancellation, lifecycle, redaction, and
+  exact-model/no-substitution parity across every current host surface before distribution begins;
 - self-contained desktop distributions built and smoke-tested on their matching macOS, Windows, and Linux hosts;
 - documented minimum toolchain and platform versions;
 - no manual framework copying, generated artifact commits, or repository-specific build steps for consumers.
@@ -291,14 +333,44 @@ Release `0.1.0-alpha.1` only after:
 - API compatibility and secret scans pass;
 - public API documentation and known limitations are published.
 
+## P10: Multimodal inputs
+
+Use the bounded work packages in `multimodal-inputs.md`. P10 remains `Not started` until a
+separate P10-A change activates it as the sole milestone marked `In progress`. P10 is deliberately
+post-alpha work: it changes the text-only canonical request contract and is not part of P8
+distribution or P9 alpha-release acceptance.
+
+The initial P10 acceptance scope is provider-neutral image and audio input. Images and audio must
+be represented as typed, bounded media parts alongside ordered text, with stable MIME-type,
+size, and reference/byte-source validation. Each delivered adapter must declare its media support
+conservatively and reject unsupported media before network dispatch. Implementations must preserve
+host-owned media lifecycle, cancellation, cleanup, and redaction; media bytes, local paths, and
+provider file references must not appear in errors, diagnostics, or retained proof artifacts.
+
+P10 does not require every provider/model to accept every medium. The first delivered adapter for
+each medium must receive deterministic translation, capability, rejection, cancellation, and
+cleanup coverage plus targeted live proof. Text-only use remains the baseline and must retain its
+existing API and behavior.
+
+Documents (including PDF and office formats), video, generated media output, realtime media
+sessions, local transcoding/DSP, and media storage are not initial P10 acceptance. They remain
+separate future extensions and require their own provider-intersection, extraction, lifecycle, and
+proof decisions before activation.
+
 ## Deferred work
 
 The following remain outside this package roadmap until explicitly activated:
 
 - LLM Gateway server implementation or deployment; it is maintained as an independent project
 - OpenKeyboard application and keyboard-extension migration
-- provider-selection UI and credential storage
+- package-owned provider/model-selection UI, package credential storage, account management, and
+  provider or Gateway administration; P8-A through P8-C allow only the current sample hosts to own
+  their bounded live configuration, model-loading interaction, and secure host credential handling
 - Gateway administration, billing, quotas, internal backend routing, and model allowlists
-- agent frameworks, tool execution, RAG, and multimodal inputs
+- agent frameworks, tool execution, and RAG
+- documents (including PDF and office formats), video, generated media output, realtime media
+  sessions, local transcoding/DSP, and media storage; P10 reserves only provider-neutral image and
+  audio input as its initial scope
 - native desktop library targets without a demonstrated no-JVM or native-language consumer requirement; the planned P8 graphical desktop demo uses Kotlin/JVM
-- Java-specific, JavaScript, and Wasm façades until their consumer demand and maintenance cost are approved
+- Java-specific, JavaScript, Wasm, and additional Kotlin/Native façades or sample hosts until their
+  consumer demand and maintenance cost are approved

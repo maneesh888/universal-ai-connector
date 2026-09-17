@@ -6,6 +6,48 @@ CHECKER="$ROOT/scripts/check-distribution-readiness.sh"
 TEST_DIRECTORY="$(mktemp -d)"
 trap 'rm -rf "$TEST_DIRECTORY"' EXIT
 
+STUB_DIRECTORY="$TEST_DIRECTORY/stubs"
+mkdir -p "$STUB_DIRECTORY"
+
+write_stub() {
+  local name="$1"
+  shift
+
+  printf '%s\n' '#!/usr/bin/env bash' "$@" > "$STUB_DIRECTORY/$name"
+  chmod +x "$STUB_DIRECTORY/$name"
+}
+
+write_stub git '[[ " $* " == *" ls-remote --tags origin "* ]] || exit 64' 'exit 0'
+write_stub curl \
+  'if [[ "${1:-}" != "-q" ]]; then exit 64; fi' \
+  'if [[ " $* " == *"central.sonatype.com"* && "${UAC_TEST_FAILURE:-}" == central ]]; then printf 401; else printf 404; fi'
+write_stub gh \
+  'if [[ "${1:-} ${2:-}" == "auth status" ]]; then [[ "${UAC_TEST_FAILURE:-}" != github ]]; exit; fi' \
+  'if [[ "${1:-}" == "api" ]]; then printf "maneesh888/universal-ai-connector\n"; exit 0; fi' \
+  'exit 1'
+write_stub gpg \
+  'if [[ " $* " == *" --detach-sign "* && "${UAC_TEST_FAILURE:-}" == signing ]]; then exit 1; fi' \
+  'if [[ " $* " == *" --list-secret-keys "* ]]; then' \
+  "  printf '%s\\n' 'sec:u:4096:1:0123456789ABCDEF:0:0:::::::' 'fpr:::::::::0123456789ABCDEF0123456789ABCDEF01234567:'" \
+  'fi' \
+  'exit 0'
+write_stub security \
+  "printf '%s\\n' '  1) 0123456789ABCDEF \"Developer ID Application: UAC Test\"'"
+write_stub xcrun '[[ "${1:-} ${2:-}" == "notarytool history" ]] || exit 64' 'exit 0'
+write_stub uname "printf 'Darwin\\n'"
+
+# Every checker invocation uses stubs, including missing-input and redaction cases.
+export PATH="$STUB_DIRECTORY:$PATH"
+export TMPDIR="$TEST_DIRECTORY/scratch"
+mkdir -p "$TMPDIR"
+
+assert_cleanup() {
+  if [[ -n "$(find "$TMPDIR" -mindepth 1 -print -quit)" ]]; then
+    echo "Distribution readiness retained temporary credential material." >&2
+    exit 1
+  fi
+}
+
 MISSING_OUTPUT="$TEST_DIRECTORY/missing-output.txt"
 if env \
   -u ORG_GRADLE_PROJECT_mavenCentralUsername \
@@ -23,6 +65,8 @@ if ! grep -Fq 'requires host input ORG_GRADLE_PROJECT_mavenCentralUsername' "$MI
   echo "Distribution readiness must identify a missing input by name." >&2
   exit 1
 fi
+
+assert_cleanup
 
 SENTINEL='uac-distribution-sentinel-secret'
 SENTINEL_OUTPUT="$TEST_DIRECTORY/sentinel-output.txt"
@@ -43,13 +87,15 @@ if grep -Fq "$SENTINEL" "$SENTINEL_OUTPUT"; then
   exit 1
 fi
 
+assert_cleanup
+
 for required_literal in \
   'api/v1/publisher/status' \
   'curl -q' \
   'gh api "repos/$github_owner/$github_name"' \
   '--list-secret-keys' \
   '--pinentry-mode loopback' \
-  'P8-A remains blocked until authenticated Central Portal namespace ownership is recorded'; do
+  'P8-E remains blocked until authenticated Central Portal namespace ownership is recorded'; do
   if ! grep -Fq -- "$required_literal" "$CHECKER"; then
     echo "Distribution readiness is missing fail-closed validation: $required_literal" >&2
     exit 1
@@ -60,35 +106,6 @@ if grep -Fq 'Distribution release inputs are ready' "$CHECKER"; then
   echo "Distribution readiness must not claim completion without Portal namespace evidence." >&2
   exit 1
 fi
-
-STUB_DIRECTORY="$TEST_DIRECTORY/stubs"
-mkdir -p "$STUB_DIRECTORY"
-
-write_stub() {
-  local name="$1"
-  shift
-
-  printf '%s\n' '#!/usr/bin/env bash' "$@" > "$STUB_DIRECTORY/$name"
-  chmod +x "$STUB_DIRECTORY/$name"
-}
-
-write_stub git 'exit 0'
-write_stub curl \
-  'if [[ "${1:-}" != "-q" ]]; then exit 64; fi' \
-  "printf '404'"
-write_stub gh \
-  'if [[ "${1:-} ${2:-}" == "auth status" ]]; then exit 0; fi' \
-  'if [[ "${1:-}" == "api" ]]; then printf "maneesh888/universal-ai-connector\n"; exit 0; fi' \
-  'exit 1'
-write_stub gpg \
-  'if [[ " $* " == *" --list-secret-keys "* ]]; then' \
-  "  printf '%s\\n' 'sec:u:4096:1:0123456789ABCDEF:0:0:::::::' 'fpr:::::::::0123456789ABCDEF0123456789ABCDEF01234567:'" \
-  'fi' \
-  'exit 0'
-write_stub security \
-  "printf '%s\\n' '  1) 0123456789ABCDEF \"Developer ID Application: UAC Test\"'"
-write_stub xcrun 'exit 0'
-write_stub uname "printf 'Darwin\\n'"
 
 LOCALLY_VALID_OUTPUT="$TEST_DIRECTORY/locally-valid-output.txt"
 if env \
@@ -108,10 +125,40 @@ if ! grep -Fq 'Locally verifiable distribution prerequisites passed' "$LOCALLY_V
   echo "The readiness regression did not exercise every locally verifiable prerequisite." >&2
   exit 1
 fi
-if ! grep -Fq 'P8-A remains blocked until authenticated Central Portal namespace ownership is recorded' \
+if ! grep -Fq 'P8-E remains blocked until authenticated Central Portal namespace ownership is recorded' \
   "$LOCALLY_VALID_OUTPUT"; then
   echo "Distribution readiness must preserve the external namespace blocker." >&2
   exit 1
 fi
+
+assert_cleanup
+
+# Authentication and signing errors must remain deterministic, redacted, and clean.
+for failure in github central signing; do
+  FAILURE_OUTPUT="$TEST_DIRECTORY/$failure-output.txt"
+  if env \
+    UAC_TEST_FAILURE="$failure" \
+    ORG_GRADLE_PROJECT_mavenCentralUsername="$SENTINEL" \
+    ORG_GRADLE_PROJECT_mavenCentralPassword="$SENTINEL" \
+    ORG_GRADLE_PROJECT_signingInMemoryKey="$SENTINEL" \
+    ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="$SENTINEL" \
+    UAC_PGP_SIGNING_KEY_FINGERPRINT=0123456789ABCDEF0123456789ABCDEF01234567 \
+    UAC_MACOS_SIGNING_IDENTITY='Developer ID Application: UAC Test' \
+    UAC_NOTARY_KEYCHAIN_PROFILE="$SENTINEL" \
+    "$CHECKER" >"$FAILURE_OUTPUT" 2>&1; then
+    echo "Distribution readiness accepted a failed $failure prerequisite." >&2
+    exit 1
+  fi
+  case "$failure" in
+    github) expected='requires an authenticated gh session' ;;
+    central) expected='Central Portal token was rejected' ;;
+    signing) expected='could not sign with the supplied passphrase' ;;
+  esac
+  if ! grep -Fq "$expected" "$FAILURE_OUTPUT" || grep -Fq "$SENTINEL" "$FAILURE_OUTPUT"; then
+    echo "Distribution readiness did not safely report the $failure failure." >&2
+    exit 1
+  fi
+  assert_cleanup
+done
 
 echo "Distribution readiness fails closed without exposing host inputs."

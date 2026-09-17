@@ -1,11 +1,13 @@
-# Distribution Contract
+# Proposed P8-E Distribution Contract
 
-P8 uses the disposable proof version `0.1.0-0.p8.1`. It is valid SemVer and has lower
+This draft is staged for P8-E after P8-A through P8-D. It does not activate or complete a milestone, freeze a release version, or prove distribution readiness.
+
+The proposed disposable proof version is `0.1.0-0.p8.1`. It is valid SemVer and has lower
 precedence than the P9 target `0.1.0-alpha.1` because its first prerelease identifier is numeric
 `0`. The canonical value and Maven group live only in `gradle.properties`; builds generate the
 Kotlin runtime constant and derive host metadata from those properties.
 
-## Frozen identity
+## Proposed identity
 
 | Item | P8 contract |
 |---|---|
@@ -28,23 +30,23 @@ The full public POM, asset, package, and toolchain fields are machine-readable i
 `distribution/release.properties`. Release assets are immutable within their tag; a correction
 uses a new candidate version.
 
-## Supported baseline
+## Candidate baseline
 
-| Surface | Minimum P8 build or consumer baseline |
+| Surface | Candidate build or consumer baseline |
 |---|---|
 | JDK | 21 |
-| Gradle wrapper | 9.6.1 |
+| Gradle wrapper | 9.7.1 |
 | Kotlin Gradle plugin | 2.4.10 |
 | Android | API 24 minimum; compile/target API 36; Build Tools 36.1.0 |
 | Swift | Swift tools 6.0 |
-| Xcode | 16.4; Xcode 26.0 is also locally verified |
+| Xcode | 16.4 proposed minimum; minimum-version validation remains pending |
 | iOS | 17.0 |
 | macOS build host | macOS 15 on Apple silicon |
 | Windows build host | Windows Server 2025 x86_64 |
 | Linux build host | Ubuntu 24.04 x86_64 |
 
-The desktop runtime claim remains pending P8-E matching-host package and launch proof. These
-values therefore freeze the P8 verification floor; they do not claim broader desktop operating
+The desktop runtime claim remains pending P8-I matching-host package and launch proof. These
+values are provisional until P8-E validates the minimum toolchains; they do not claim broader desktop operating
 system compatibility yet.
 
 ## Release inputs
@@ -92,14 +94,14 @@ path, confirms that the active GitHub session can read the target repository, pr
 expected PGP private key can sign with the supplied passphrase, and validates the installed
 Developer ID Application identity and notarization profile. It identifies missing input names but
 never prints their values. Authenticated repository access does not prove that the active GitHub
-token has `contents:write`; P8-F must validate that capability immediately before release creation.
+token has `contents:write`; P8-J must validate that capability immediately before release creation.
 
 The Portal exposes no documented read-only API that proves namespace ownership. The probe
 therefore exits blocked even after its locally verifiable checks pass. A release owner must inspect
-the authenticated Portal namespace page, record the resulting evidence in the P8-A review packet,
-and obtain independent review before P8-A can complete. Supplying the group name as an environment
+the authenticated Portal namespace page, record the resulting evidence in the P8-E review packet,
+and obtain independent review before P8-E can complete. Supplying the group name as an environment
 variable is not accepted as ownership proof.
 
 On August 12, 2026, the candidate tag and Maven path were both unused. Central namespace ownership,
 PGP signing readiness, a Developer ID Application identity, and a notarization profile still require
-authenticated external proof before P8-A can complete.
+authenticated external proof before P8-E can complete.
