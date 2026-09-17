@@ -683,3 +683,5 @@ Provider and gateway work begins only after the cross-platform package foundatio
 ## License
 
 Universal AI Connector is available under the MIT License. See [`LICENSE`](LICENSE).
+
+This draft branch repairs the proposed [P8-E distribution contract](docs/DISTRIBUTION.md). It does not activate P8-E or change the accepted iOS-first package order; distribution remains unverified and must not merge before its activation prerequisites are satisfied.

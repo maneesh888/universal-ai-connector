@@ -55,11 +55,12 @@ Use the smallest commands that exercise the changed surface:
 | iOS app-extension integration | `./scripts/build-app-extension-consumer.sh` |
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
+| Distribution identity, version, POM, assets, or host baselines | `./scripts/check-distribution-metadata.sh` and its metadata/readiness regressions; run `./scripts/check-distribution-readiness.sh` only on a credentialed release host |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
 The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests, the locally signed simulator sample build, and unsigned generic-device link verification.
 
-When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
+When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior. The P8-E draft adds credential-free distribution metadata and regression checks to hygiene on its branch; these do not activate P8-E, validate real credentials, or establish remote publication.
 
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
 `--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
@@ -135,8 +136,8 @@ These hook requirements are safety gates; they do not make every task a Release 
 `.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch:
 
 - `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
-- `JVM + Android (Linux)` runs shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer check with Java 21.
-- `JVM (Windows)` runs JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
+- `JVM + Android (Linux)` runs on Ubuntu 24.04 and checks shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer with Java 21.
+- `JVM (Windows)` runs on Windows Server 2025 and checks JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
 - `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
 - `Required checks` provides one stable branch-protection status.
 
