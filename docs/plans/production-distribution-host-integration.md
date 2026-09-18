@@ -201,9 +201,9 @@ passed. The PR merged as `32bca29d2f2baafa4a31c368630e9b47cdfaa574`; resulting-m
 passed. This record relies on the contributor-attested runtime evidence in that PR; it does not
 claim a new live execution, physical-device execution, or distribution proof.
 
-The closeout/activation candidate requires its own exact-head full gate, independent review, CI,
-and guarded merge before this status transition becomes authoritative. P8-B follows that merge;
-no Android live implementation is included in the closeout candidate.
+The Android implementation candidate records this previously merged iOS acceptance before
+activating P8-B. Its proposed status transition becomes authoritative through its own exact-head
+full gate, independent review, CI, and guarded merge.
 
 - Activate P8 as the only `In progress` milestone while keeping every later P8 package
   `Not started`.
@@ -231,7 +231,7 @@ Android/JVM UI, release tag, or supported distribution claim.
 
 ### P8-B: Android live sample and model discovery
 
-Status: `In progress` after the P8-A closeout/activation change merges.
+Status: `In progress`.
 
 - Preserve the Android sample's zero-configuration deterministic mode and add an explicit live
   Compose UI through the existing public Kotlin client; do not duplicate connector behavior in

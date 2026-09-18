@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -24,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,18 +35,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
     private val controller by lazy { AndroidSampleController(lifecycleScope) }
+    private val live by lazy { ViewModelProvider(this)[LiveAiViewModel::class.java].controller }
+    private var bootstrap: java.io.Closeable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             UniversalAiSampleTheme {
-                AndroidSampleScreen(controller)
+                var liveMode by remember { mutableStateOf(false) }
+                Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+                    Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { live.deactivate(); liveMode = false }) { Text("Demo") }
+                        OutlinedButton(onClick = { liveMode = true }) { Text("Live") }
+                    }
+                    if (liveMode) LiveAiScreen(live) {
+                        bootstrap?.close()
+                        bootstrap = null
+                        live.clearConfiguration()
+                    } else AndroidSampleScreen(controller)
+                }
             }
         }
         controller.runCompleteDemo()
+        bootstrap = LiveBootstrap.start(this, intent, live)
+    }
+
+    override fun onStop() {
+        bootstrap?.close()
+        bootstrap = null
+        live.deactivate()
+        super.onStop()
     }
 
     override fun onDestroy() {

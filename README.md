@@ -97,6 +97,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Swift-to-Kotlin cancellation | ✅ Verified |
 | SwiftUI simulator sample compilation | ✅ Locally verified |
 | iOS live configuration and model-discovery sample | ✅ P8-A accepted; exact-head implementation and Simulator acceptance evidence are recorded in PR #69 |
+| Android live configuration and model discovery | P8-B candidate: Compose live controls, Keystore-protected credentials, exact-model connection testing, and opt-in debug seeding; runtime acceptance is recorded in the implementation PR |
 | Generic iOS-device sample link/build | ✅ Locally verified; no device execution |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |

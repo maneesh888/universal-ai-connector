@@ -22,6 +22,7 @@ unset \
   UAC_LIVE_ENV_FILE \
   UAC_LIVE_EXPECTED_SHA \
   UAC_IOS_SAMPLE_LIVE_PROOF \
+  UAC_ANDROID_SAMPLE_LIVE_PROOF \
   UAC_IOS_SAMPLE_PROOF_CREDENTIAL \
   UAC_IOS_SAMPLE_PROOF_MODEL \
   UAC_IOS_SAMPLE_PROOF_BASE_URL
@@ -243,6 +244,9 @@ fi
 echo "ios-sample" >> "$UAC_TEST_CALL_LOG"
 EOF
 chmod +x "$TEST_REPOSITORY/scripts/launch-ios-live-sample.sh"
+sed 's/UAC_IOS_SAMPLE/UAC_ANDROID_SAMPLE/g; s/ios-sample/android-sample/g' \
+  "$TEST_REPOSITORY/scripts/launch-ios-live-sample.sh" > "$TEST_REPOSITORY/scripts/launch-android-live-sample.sh"
+chmod +x "$TEST_REPOSITORY/scripts/launch-android-live-sample.sh"
 
 git -C "$TEST_REPOSITORY" init -q
 git -C "$TEST_REPOSITORY" add .
@@ -497,6 +501,49 @@ if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
   grep -Fq "ambient-credential" "$OUTPUT" ||
   grep -Fq "ambient-model" "$OUTPUT"; then
   echo "Simulator proof runner output exposed protected values." >&2
+  exit 1
+fi
+
+# Requested Android proof receives only the selected generic values and exact SHA.
+: > "$CALL_LOG"
+env \
+  OPENAI_API_KEY="$SYNTHETIC_KEY" \
+  OPENAI_LIVE_MODEL="$MODEL" \
+  ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  ANTHROPIC_LIVE_MODEL="$ANTHROPIC_MODEL" \
+  OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+  OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  GATEWAY_LIVE_BASE_URL="$GATEWAY_BASE_URL" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  GATEWAY_LIVE_MODEL="$GATEWAY_MODEL" \
+  GATEWAY_LIVE_STRUCTURED_OUTPUT="$GATEWAY_STRUCTURED_OUTPUT" \
+  KEY_VALUE="ambient-exported-key-alias" \
+  MODEL_VALUE="ambient-exported-model-alias" \
+  BASE_URL_VALUE="ambient-exported-base-url-alias" \
+  STRUCTURED_OUTPUT_VALUE="ambient-exported-structured-output-alias" \
+  UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL="ambient-credential" \
+  UAC_ANDROID_SAMPLE_PROOF_MODEL="ambient-model" \
+  UAC_ANDROID_SAMPLE_PROOF_BASE_URL="https://ambient.invalid/v1" \
+  UAC_ANDROID_SAMPLE_LIVE_PROOF=1 \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+  UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_PROVIDER="openai" \
+  UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
+  UAC_TEST_EXPECTED_MODEL="$MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+  "$RUNNER" openai > "$OUTPUT" 2>&1
+if [[ "$(sed -n '1p' "$CALL_LOG")" != "deterministic" ||
+      "$(sed -n '2p' "$CALL_LOG")" != "live" ||
+      "$(sed -n '3p' "$CALL_LOG")" != "android-sample" ||
+      -n "$(sed -n '4p' "$CALL_LOG")" ]]; then
+  echo "Live runner did not isolate and launch requested Android proof." >&2
+  exit 1
+fi
+if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT" ||
+  grep -Fq "$MODEL" "$OUTPUT" ||
+  grep -Fq "ambient-credential" "$OUTPUT" ||
+  grep -Fq "ambient-model" "$OUTPUT"; then
+  echo "Android proof runner output exposed protected values." >&2
   exit 1
 fi
 
