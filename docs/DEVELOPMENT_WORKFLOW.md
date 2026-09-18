@@ -58,6 +58,7 @@ Use the smallest commands that exercise the changed surface:
 | iOS application integration | `./scripts/test-ios-sample.sh` and `./scripts/build-sample.sh`; add `./scripts/build-sample-device.sh` for device-slice link changes |
 | iOS app-extension integration | `./scripts/build-app-extension-consumer.sh` |
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
+| Android live state and bootstrap | `./gradlew :samples:android:consumerCheck`; `python3 -B scripts/tests/android-live-seed-test.py`; build `:samples:android:assembleRelease` when changing the debug-only bootstrap boundary |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
@@ -76,7 +77,7 @@ documented provider input from the full deterministic gate and every non-selecte
 from a selected live gate. OpenAI, Anthropic, OpenRouter, and the Gateway are the delivered real
 gates after P7-B adds the Gateway runner, task, and selection to the existing three routes. A
 generic-adapter change selects both its representative OpenRouter proof and the Gateway proof. The
-P8 iOS live-sample surface selects every delivered gate because it can configure each one. The
+P8 iOS and Android live-sample surfaces select every delivered gate because they can configure each one. The
 initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.

@@ -34,6 +34,8 @@ Optional:
   UAC_LIVE_ENV_FILE      .env.live or .env.live.<name> in the primary checkout.
   UAC_IOS_SAMPLE_LIVE_PROOF=1
                          Build, install, and seed the Simulator sample for visible proof.
+  UAC_ANDROID_SAMPLE_LIVE_PROOF=1
+                         Build, install, and securely seed the Android debug sample.
 
 Non-empty process environment values override the canonical ignored local file.
 EOF
@@ -95,6 +97,12 @@ if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "0" &&
       "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
   fail "UAC_IOS_SAMPLE_LIVE_PROOF must be 0 or 1."
 fi
+
+if [[ "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" != "0" &&
+      "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
+  fail "UAC_ANDROID_SAMPLE_LIVE_PROOF must be 0 or 1."
+fi
+unset UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL UAC_ANDROID_SAMPLE_PROOF_MODEL UAC_ANDROID_SAMPLE_PROOF_BASE_URL
 
 case "$PROVIDER" in
   openai)
@@ -367,6 +375,19 @@ if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
     fi
     export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
     "$IOS_SAMPLE_LAUNCHER" "$PROVIDER"
+  )
+fi
+
+if [[ "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+  (
+    unset OPENAI_API_KEY OPENAI_LIVE_MODEL ANTHROPIC_API_KEY ANTHROPIC_LIVE_MODEL \
+      OPENROUTER_API_KEY OPENROUTER_LIVE_MODEL GATEWAY_API_KEY GATEWAY_LIVE_MODEL \
+      GATEWAY_LIVE_BASE_URL GATEWAY_LIVE_STRUCTURED_OUTPUT UAC_LIVE_ENV_FILE
+    export UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL="$KEY_VALUE"
+    export UAC_ANDROID_SAMPLE_PROOF_MODEL="$MODEL_VALUE"
+    export UAC_ANDROID_SAMPLE_PROOF_BASE_URL="$BASE_URL_VALUE"
+    export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
+    "$ROOT/scripts/launch-android-live-sample.sh" "$PROVIDER"
   )
 fi
 

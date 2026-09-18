@@ -186,6 +186,7 @@ require_command rg "Ripgrep performs fail-closed secret scanning."
 require_command ruby "Ruby validates the parsed Dependabot YAML policy."
 
 if [[ "$MODE" == "--quick" || "$MODE" == "--full" ]]; then
+  require_command python3 "Python 3 runs the Android bootstrap safety regressions."
   require_java_21
   require_command unzip "Android artifact-boundary checks inspect AAR contents."
   require_android_sdk

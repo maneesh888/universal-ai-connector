@@ -63,6 +63,7 @@ run_hygiene() {
 run_script_tests() {
   "$ROOT/scripts/tests/check-live-test.sh"
   "$ROOT/scripts/tests/launch-ios-live-sample-test.sh"
+  python3 -B "$ROOT/scripts/tests/android-live-seed-test.py"
   "$ROOT/scripts/tests/live-impact-test.sh"
   "$ROOT/scripts/tests/pre-push-live-test.sh"
   "$ROOT/scripts/tests/live-workflow-policy-test.sh"

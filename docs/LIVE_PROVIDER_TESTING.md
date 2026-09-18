@@ -120,6 +120,36 @@ distinct provider/model configuration for the P8-A multi-model record. Gateway p
 validated Gateway base URL and exposes manual model entry only if discovery explicitly reports
 unsupported. This Simulator interaction is the required P8-A runtime acceptance route.
 
+For P8-B Android interaction proof, use the same canonical configuration loader with a separate
+explicit opt-in on a clean committed head:
+
+```bash
+UAC_ANDROID_SAMPLE_LIVE_PROOF=1 UAC_ANDROID_SERIAL=emulator-5554 ./scripts/check-live.sh openai
+UAC_ANDROID_SAMPLE_LIVE_PROOF=1 UAC_ANDROID_SERIAL=emulator-5554 ./scripts/check-live.sh anthropic
+```
+
+Python 3, the Android SDK, and an authorized, booted ADB device are required. The command first
+passes the selected provider gate, builds and installs the debug app without credential-bearing
+build inputs, and launches a random, one-use abstract Unix socket with an explicit bootstrap flag.
+ADB forwards a temporary loopback port to that socket. The app verifies the shell/root peer UID,
+strict bounded UTF-8 framing, provider, URL, credential, and exact model before importing into its
+Keystore-backed host store. Credentials travel only in process and socket memory, never in an
+intent, shell argument, APK, plaintext file, log, or screenshot. The app rejects other peer UIDs,
+incomplete input, trailing data, invalid model identifiers, and non-opted-in launches. The listener
+closes after one attempt, on backgrounding/clearing, or after 30 seconds; forwarding is removed in
+the launcher's cleanup path. A failed import never reports success. The release source set does
+not implement a bootstrap listener. Only authorized development devices and a trusted local ADB
+host are within this bootstrap's trust boundary.
+
+The app still starts in **Demo**. Choose **Live**, **Load models**, confirm the exact seeded model
+is present and selected, then **Test Connection**. The preferred model is never replaced by the
+first available model; an absent preferred model requires a new explicit selection. A seed only
+prefills manual entry after explicit unsupported discovery. Repeat with a second exact model on
+the same source head. Exercise **Cancel**, background/foreground, and **Clear configuration**,
+then capture only screens without credentials or response bodies. A seeded launch alone proves
+configuration import, not discovery or a successful connection. Clear the sample's protected
+credentials after proof. No physical-device or hardware-backed emulator key claim is implied.
+
 The repository hygiene, quick, full, sample, consumer, and ordinary CI checks are deterministic
 and credential-free. Only `check-live.sh` and the provider-impacting local pre-push route require
 live credentials; direct `:bridge:*LiveTest` tasks require already supplied process environment and

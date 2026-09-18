@@ -140,6 +140,7 @@ while IFS= read -r -d '' changed_path; do
       bridge/build.gradle.kts | \
       swift-package/* | \
       samples/ios/* | \
+      samples/android/* | \
       build.gradle.kts | \
       settings.gradle.kts | \
       gradle.properties | \
@@ -152,6 +153,8 @@ while IFS= read -r -d '' changed_path; do
       .githooks/pre-push | \
       scripts/check-live.sh | \
       scripts/launch-ios-live-sample.sh | \
+      scripts/launch-android-live-sample.sh | \
+      scripts/android-live-seed.py | \
       scripts/test-ios-sample.sh | \
       scripts/live-impact.sh | \
       scripts/secret-scan.sh | \

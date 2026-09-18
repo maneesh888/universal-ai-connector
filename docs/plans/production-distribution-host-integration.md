@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A is active.
+Status: `In progress`; P8-A and P8-B are completed; P8-C awaits separate activation.
 
-P0-P7 are completed. P8-A activates P8 as the sole roadmap milestone marked `In progress`.
-Every later P8 package remains `Not started`, and P9 remains inactive until P8 closes
+P0-P7, P8-A, and P8-B are completed. P8 remains the sole roadmap milestone marked `In progress`.
+P8-C through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -186,7 +186,25 @@ Execute one package at a time after activation.
 
 ### P8-A: iOS live sample and model discovery
 
-Status: `In progress`.
+Status: `Completed`.
+
+Acceptance evidence: PR [#69](https://github.com/maneesh888/universal-ai-connector/pull/69)
+records deterministic sample-state and Keychain checks, the full Apple build/link gates, all four
+delivered live gates, and normal iPhone 17 Pro / iOS 26.0 Simulator interaction on exact source head
+`38e9f735603ce12f18a7fefa3f52bc06e98cd66c` on September 10, 2026. The actual sample discovered
+and connected with exact selected models `gpt-5.6-luna` (OpenAI) and `claude-sonnet-5` (Anthropic)
+on that head, with masked credentials and no retained provider response bodies. Exact-head CI run
+[34508878215](https://github.com/maneesh888/universal-ai-connector/actions/runs/34508878215)
+and live-policy run [34508971278](https://github.com/maneesh888/universal-ai-connector/actions/runs/34508971278)
+passed. The PR merged as `32bca29d2f2baafa4a31c368630e9b47cdfaa574`; resulting-main run
+[34510228731](https://github.com/maneesh888/universal-ai-connector/actions/runs/34510228731)
+passed. This record relies on the contributor-attested runtime evidence in that PR; it does not
+claim a new live execution, physical-device execution, or distribution proof.
+
+The Android implementation candidate records this previously merged iOS acceptance before
+implementing and closing P8-B. Its proposed status transition becomes authoritative through its own
+exact-head full/live gates, emulator acceptance, independent review, CI, guarded merge, and
+resulting-main verification.
 
 - Activate P8 as the only `In progress` milestone while keeping every later P8 package
   `Not started`.
@@ -214,7 +232,24 @@ Android/JVM UI, release tag, or supported distribution claim.
 
 ### P8-B: Android live sample and model discovery
 
-Status: `Not started`.
+Status: `Completed`.
+
+PR [#75](https://github.com/maneesh888/universal-ai-connector/pull/75) owns the exact closing
+head, commands, September 18, 2026 runtime record, independent review, CI, merge, and resulting-main
+evidence. The candidate adds Compose discovery and exact-model connection controls, Android
+Keystore-backed host storage, and explicit debug-only credential seeding through the canonical
+live configuration loader. Deterministic state and bootstrap coverage includes empty/unsupported
+results, retry, cancellation, exact selection, redaction, clearing, and no substitution; emulator
+instrumentation covers protected storage recovery/deletion and socket teardown.
+
+Completion requires actual Pixel 9 Pro / Android 16 (API 36) emulator discovery and connection on
+at least two exact models, plus cancellation, background/foreground, and credential clearing on
+the same closing head. The PR records OpenAI, Anthropic, OpenRouter, and Gateway checks separately
+from host UI proof. Its proposed completion becomes authoritative only after the exact-head full
+and affected live gates, runtime acceptance, independent review, required CI, guarded merge, and
+resulting-main verification pass. No physical-device, hardware-backed emulator key, later-host,
+or distribution proof is implied; P8-C remains `Not started`.
+
 
 - Preserve the Android sample's zero-configuration deterministic mode and add an explicit live
   Compose UI through the existing public Kotlin client; do not duplicate connector behavior in

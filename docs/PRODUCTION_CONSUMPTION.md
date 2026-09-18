@@ -83,6 +83,41 @@ The provider model-list shapes and authentication follow the official
 [Anthropic Models API](https://docs.anthropic.com/en/api/models-list), and
 [OpenRouter Models API](https://openrouter.ai/docs/api/api-reference/models/get-models).
 
+### Android sample live workflow
+
+The Android Compose application keeps **Demo** as its credential-free default. Choose **Live** to
+configure OpenAI, Anthropic, OpenRouter, or an OpenAI-compatible Gateway through the public Kotlin
+client. A blank base URL uses the direct provider default; a Gateway requires its explicit `/v1`
+URL. HTTPS is required except for exact loopback hosts. For a host-local Gateway, configure an
+explicit ADB reverse mapping to reach the host at the same loopback port; do not replace the model
+or silently rewrite the endpoint.
+
+Credential entry is masked, excluded from saved-instance state, and cleared after saving or
+backgrounding. The host encrypts retained credentials with AES-256-GCM using an Android Keystore
+key and binds each ciphertext to its provider/base-URL identity. Only ciphertext is written to
+app-private no-backup files; neither preferences nor APK resources contain credentials. **Clear
+configuration** cancels work and bootstrap import, deletes the key and ciphertexts, and removes
+model selection. Storage failures are visible and never claim successful deletion.
+
+**Load models** exposes loading, retrying, supported, empty, unsupported, failed, and cancelled
+states. Choose an exact discovered identifier; manual entry is available only after explicit
+unsupported discovery. **Test Connection** discovers again before one minimal response on that
+same identifier. Missing selection, empty discovery, disappeared models, discovery errors, and
+cancellation block generation. No model substitution or automatic retry is performed. Response
+bodies and exception details are not displayed or retained. Backgrounding cancels live work;
+returning allows an explicit retry. Configuration survives activity recreation through the host
+view model; only protected credentials survive process death.
+
+Run `./gradlew :samples:android:consumerCheck` for deterministic state/bootstrap tests and the
+debug consumer build, and `./scripts/run-android-sample.sh` to install and launch. Development
+storage/socket regressions run on an emulator with `./gradlew :samples:android:connectedDebugAndroidTest`;
+they use synthetic credentials in isolated stores and prove Keystore round-trip, authenticated
+ciphertext, interrupted-write recovery, deletion, and teardown of a listener with no client. Live
+seeding is explicitly opted in through `check-live.sh`, documented in `LIVE_PROVIDER_TESTING.md`.
+Its one-use socket exists only in the debug source set; the release APK has no bootstrap listener.
+These deterministic commands do not establish actual provider, emulator, hardware-backed key,
+physical-device, or distribution proof.
+
 ### Kotlin construction
 
 ```kotlin
