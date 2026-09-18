@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-B is active.
+Status: `In progress`; P8-A and P8-B are completed; P8-C awaits separate activation.
 
-P0-P7 and P8-A are completed. P8 remains the sole roadmap milestone marked `In progress`.
-P8-B is active; P8-C through P8-L remain `Not started`, and P9 remains inactive until P8 closes
+P0-P7, P8-A, and P8-B are completed. P8 remains the sole roadmap milestone marked `In progress`.
+P8-C through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -202,8 +202,9 @@ passed. This record relies on the contributor-attested runtime evidence in that 
 claim a new live execution, physical-device execution, or distribution proof.
 
 The Android implementation candidate records this previously merged iOS acceptance before
-activating P8-B. Its proposed status transition becomes authoritative through its own exact-head
-full gate, independent review, CI, and guarded merge.
+implementing and closing P8-B. Its proposed status transition becomes authoritative through its own
+exact-head full/live gates, emulator acceptance, independent review, CI, guarded merge, and
+resulting-main verification.
 
 - Activate P8 as the only `In progress` milestone while keeping every later P8 package
   `Not started`.
@@ -231,7 +232,24 @@ Android/JVM UI, release tag, or supported distribution claim.
 
 ### P8-B: Android live sample and model discovery
 
-Status: `In progress`.
+Status: `Completed`.
+
+PR [#75](https://github.com/maneesh888/universal-ai-connector/pull/75) owns the exact closing
+head, commands, September 18, 2026 runtime record, independent review, CI, merge, and resulting-main
+evidence. The candidate adds Compose discovery and exact-model connection controls, Android
+Keystore-backed host storage, and explicit debug-only credential seeding through the canonical
+live configuration loader. Deterministic state and bootstrap coverage includes empty/unsupported
+results, retry, cancellation, exact selection, redaction, clearing, and no substitution; emulator
+instrumentation covers protected storage recovery/deletion and socket teardown.
+
+Completion requires actual Pixel 9 Pro / Android 16 (API 36) emulator discovery and connection on
+at least two exact models, plus cancellation, background/foreground, and credential clearing on
+the same closing head. The PR records OpenAI, Anthropic, OpenRouter, and Gateway checks separately
+from host UI proof. Its proposed completion becomes authoritative only after the exact-head full
+and affected live gates, runtime acceptance, independent review, required CI, guarded merge, and
+resulting-main verification pass. No physical-device, hardware-backed emulator key, later-host,
+or distribution proof is implied; P8-C remains `Not started`.
+
 
 - Preserve the Android sample's zero-configuration deterministic mode and add an explicit live
   Compose UI through the existing public Kotlin client; do not duplicate connector behavior in

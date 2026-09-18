@@ -2,7 +2,7 @@
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P8--B%20in%20progress-f59e0b)
+![Project stage](https://img.shields.io/badge/stage-P8--B%20completed%20%7C%20P8%20in%20progress-f59e0b)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
@@ -28,7 +28,9 @@ P7-C completed Gateway-representative concurrent lifecycle, cleanup, host-config
 package-boundary acceptance without another runtime adapter. P8-A is accepted through PR #69 and upgrades the
 iOS sample with explicit live configuration, Keychain-backed credential storage, model discovery,
 exact selection, and no-substitution connection testing while retaining the original
-credential-free deterministic mode.
+credential-free deterministic mode. P8-B adds the same explicit live workflow to Android with
+Keystore-protected credentials, secure opt-in development seeding, and emulator acceptance
+recorded in [PR #75](https://github.com/maneesh888/universal-ai-connector/pull/75).
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
@@ -38,7 +40,8 @@ credential-free deterministic mode.
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
 > a proprietary Gateway protocol. P7-A and P7-B are authoritative, and P7-C lifecycle integration
 > and acceptance complete P7. P8-A iOS acceptance is complete.
-> P8-B Android is the sole active package; JVM/desktop, parity, and distribution remain later packages.
+> P8-B Android is complete; P8-C JVM/desktop awaits separate activation. Parity and distribution
+> remain later packages. PR #75 owns the exact closing-head acceptance and merge evidence.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -77,7 +80,7 @@ Canonical AI contracts    ██████████████████
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
 Gateway compatibility     ████████████████████ 100%  ✅ Complete
-Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P8-B active
+Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P8-A/B complete; later packages planned
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
 
@@ -97,7 +100,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Swift-to-Kotlin cancellation | ✅ Verified |
 | SwiftUI simulator sample compilation | ✅ Locally verified |
 | iOS live configuration and model-discovery sample | ✅ P8-A accepted; exact-head implementation and Simulator acceptance evidence are recorded in PR #69 |
-| Android live configuration and model discovery | P8-B candidate: Compose live controls, Keystore-protected credentials, exact-model connection testing, and opt-in debug seeding; runtime acceptance is recorded in the implementation PR |
+| Android live configuration and model discovery | ✅ P8-B complete: Compose live controls, Keystore-protected credentials, exact-model connection testing, and debug seeding; exact-head emulator acceptance is recorded in PR #75 |
 | Generic iOS-device sample link/build | ✅ Locally verified; no device execution |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
@@ -132,7 +135,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
 | P7 | OpenAI-compatible Gateway validation | ✅ Completed through PR #59 |
-| P8 | Production distribution and host integration | 🚧 P8-B in progress |
+| P8 | Production distribution and host integration | 🚧 P8-A/B completed; later packages not started |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion
