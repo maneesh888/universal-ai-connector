@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A is active.
+Status: `In progress`; P8-B is active.
 
-P0-P7 are completed. P8-A activates P8 as the sole roadmap milestone marked `In progress`.
-Every later P8 package remains `Not started`, and P9 remains inactive until P8 closes
+P0-P7 and P8-A are completed. P8 remains the sole roadmap milestone marked `In progress`.
+P8-B is active; P8-C through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -186,7 +186,24 @@ Execute one package at a time after activation.
 
 ### P8-A: iOS live sample and model discovery
 
-Status: `In progress`.
+Status: `Completed`.
+
+Acceptance evidence: PR [#69](https://github.com/maneesh888/universal-ai-connector/pull/69)
+records deterministic sample-state and Keychain checks, the full Apple build/link gates, all four
+delivered live gates, and normal iPhone 17 Pro / iOS 26.0 Simulator interaction on exact source head
+`38e9f735603ce12f18a7fefa3f52bc06e98cd66c` on September 10, 2026. The actual sample discovered
+and connected with exact selected models `gpt-5.6-luna` (OpenAI) and `claude-sonnet-5` (Anthropic)
+on that head, with masked credentials and no retained provider response bodies. Exact-head CI run
+[34508878215](https://github.com/maneesh888/universal-ai-connector/actions/runs/34508878215)
+and live-policy run [34508971278](https://github.com/maneesh888/universal-ai-connector/actions/runs/34508971278)
+passed. The PR merged as `32bca29d2f2baafa4a31c368630e9b47cdfaa574`; resulting-main run
+[34510228731](https://github.com/maneesh888/universal-ai-connector/actions/runs/34510228731)
+passed. This record relies on the contributor-attested runtime evidence in that PR; it does not
+claim a new live execution, physical-device execution, or distribution proof.
+
+The closeout/activation candidate requires its own exact-head full gate, independent review, CI,
+and guarded merge before this status transition becomes authoritative. P8-B follows that merge;
+no Android live implementation is included in the closeout candidate.
 
 - Activate P8 as the only `In progress` milestone while keeping every later P8 package
   `Not started`.
@@ -214,7 +231,7 @@ Android/JVM UI, release tag, or supported distribution claim.
 
 ### P8-B: Android live sample and model discovery
 
-Status: `Not started`.
+Status: `In progress` after the P8-A closeout/activation change merges.
 
 - Preserve the Android sample's zero-configuration deterministic mode and add an explicit live
   Compose UI through the existing public Kotlin client; do not duplicate connector behavior in

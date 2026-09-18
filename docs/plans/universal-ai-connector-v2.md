@@ -2,9 +2,9 @@
 
 ## Status
 
-- Repository stage: P0-P7 are completed; P8 is in progress at P8-A; P9 remains not started
-- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, completed P7 Gateway validation, and the active P8-A iOS live-sample implementation
-- Active work package: P8-A iOS live sample and model discovery is in progress; no later P8 package is active
+- Repository stage: P0-P7 are completed; P8 is in progress at P8-B; P9 remains not started
+- Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, completed P7 Gateway validation, and the accepted P8-A iOS live-sample implementation
+- Active work package: P8-B Android live sample and model discovery; P8-A is completed and P8-C through P8-L remain not started
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
 - P2 completion: ADRs 0001-0007 and P2-D readiness are accepted; P2-E through P2-J delivered canonical Kotlin and Swift host contracts, 21 authoritative schemas, 173 fixture documents, deterministic host verification, and atomic closeout evidence in the milestone-closing pull request
@@ -41,9 +41,9 @@
 - Package version target: `0.1.0-alpha.1`
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - OpenAI-compatible Gateway validation is complete. P8 is delivering live model discovery and
-  exact-model connection flows sequentially, beginning with the active P8-A iOS package, then
-  Android, Kotlin/JVM console, and Compose desktop before the existing cross-platform distribution
-  sequence. OpenKeyboard integration remains deferred.
+  exact-model connection flows sequentially, with P8-A iOS accepted and P8-B Android active,
+  followed by Kotlin/JVM console and Compose desktop before the existing cross-platform
+  distribution sequence. OpenKeyboard integration remains deferred.
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
@@ -155,7 +155,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; PR #59 closed the lifecycle and acceptance milestone; see `openai-compatible-gateway-validation.md` |
-| P8 | Production distribution and host integration | In progress | P8-A is the active iOS live-sample and model-discovery package; later host and distribution packages remain not started |
+| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android is active; later host and distribution packages remain not started |
 | P9 | Release hardening and internal alpha | Not started | |
 | P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
 
@@ -271,8 +271,9 @@ package boundaries without activating P8.
 
 ## P8: Production distribution and host integration
 
-Use the bounded work packages in `production-distribution-host-integration.md`. P8-A activates P8
-as the sole milestone marked `In progress`; every later P8 package remains `Not started`.
+Use the bounded work packages in `production-distribution-host-integration.md`. P8-A activated P8
+as the sole milestone marked `In progress`. P8-A is completed; P8-B is now active and every later
+P8 package remains `Not started`.
 
 Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.
 
