@@ -5,6 +5,17 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class LiveProofSeedTest {
+    @Test fun framedTransportDoesNotRequireSocketEofAndRejectsInvalidLengths() {
+        val body = frame()
+        val output = java.io.ByteArrayOutputStream()
+        java.io.DataOutputStream(output).use { it.writeInt(body.size); it.write(body) }
+        val valid = output.toByteArray()
+        assertEquals("vendor/exact:version", LiveProofSeed.readFramed(ByteArrayInputStream(valid), true, 2000).model)
+        listOf(valid.copyOf(valid.size - 1), valid.copyOf().apply { this[0] = 0x7f }).forEach { invalid ->
+            assertThrows(Exception::class.java) { LiveProofSeed.readFramed(ByteArrayInputStream(invalid), true, 2000) }
+        }
+    }
+
     @Test fun optInAndAuthorizedPeerAreBothRequired() {
         assertThrows(IllegalArgumentException::class.java) { read(frame(), false, 2000) }
         assertThrows(IllegalArgumentException::class.java) { read(frame(), true, 10001) }

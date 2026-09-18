@@ -15,6 +15,18 @@ class LiveProofSeed private constructor(
     override fun toString() = "LiveProofSeed(redacted)"
 
     companion object {
+        fun readFramed(input: InputStream, enabled: Boolean, peerUid: Int): LiveProofSeed {
+            require(enabled && peerUid in listOf(0, 2000)) { "Development bootstrap is not authorized." }
+            val data = DataInputStream(input)
+            val size = data.readInt()
+            require(size in 20..11000) { "Invalid development bootstrap frame." }
+            val bytes = ByteArray(size)
+            return try {
+                data.readFully(bytes)
+                read(java.io.ByteArrayInputStream(bytes), enabled, peerUid)
+            } finally { bytes.fill(0) }
+        }
+
         /** Bounded, strict UTF-8 framing; only the explicitly enabled ADB shell/root peer is accepted. */
         fun read(input: InputStream, enabled: Boolean, peerUid: Int): LiveProofSeed {
             require(enabled && peerUid in listOf(0, 2000)) { "Development bootstrap is not authorized." }

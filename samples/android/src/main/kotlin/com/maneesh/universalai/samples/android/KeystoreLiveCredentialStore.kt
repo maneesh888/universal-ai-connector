@@ -13,15 +13,22 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /** Only authenticated ciphertext is retained, in app-private no-backup storage. */
-class KeystoreLiveCredentialStore(context: Context) : LiveCredentialStore {
-    private val directory = File(context.noBackupFilesDir, "live-credentials")
+class KeystoreLiveCredentialStore(
+    context: Context,
+    storageName: String = "live-credentials",
+    private val keyAlias: String = "uac.sample.live.credentials.v1",
+) : LiveCredentialStore {
+    private val directory = File(context.noBackupFilesDir, storageName)
     private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
     @Synchronized
     override fun read(key: String): String? {
         val file = file(key)
-        if (!file.baseFile.exists()) return null
-        val encrypted = file.openRead().use { stream ->
+        val input = try { file.openRead() } catch (failure: java.io.FileNotFoundException) {
+            if (file.baseFile.exists() || File(file.baseFile.path + ".bak").exists()) throw failure
+            return null
+        }
+        val encrypted = input.use { stream ->
             val output = java.io.ByteArrayOutputStream()
             val buffer = ByteArray(1024)
             while (true) {
@@ -34,7 +41,7 @@ class KeystoreLiveCredentialStore(context: Context) : LiveCredentialStore {
         }
         check(encrypted.size >= 29 && encrypted[0] == 1.toByte())
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, checkNotNull(keyStore.getKey(ALIAS, null)), GCMParameterSpec(128, encrypted.copyOfRange(1, 13)))
+        cipher.init(Cipher.DECRYPT_MODE, checkNotNull(keyStore.getKey(keyAlias, null)), GCMParameterSpec(128, encrypted.copyOfRange(1, 13)))
         cipher.updateAAD(key.toByteArray(Charsets.UTF_8))
         val plaintext = cipher.doFinal(encrypted, 13, encrypted.size - 13)
         return try { plaintext.toString(Charsets.UTF_8).also(::validateLiveCredential) } finally { plaintext.fill(0) }
@@ -64,7 +71,7 @@ class KeystoreLiveCredentialStore(context: Context) : LiveCredentialStore {
     @Synchronized
     override fun clearAll() {
         // Delete the key first, so any ciphertext left by a failed filesystem removal is unusable.
-        keyStore.deleteEntry(ALIAS)
+        keyStore.deleteEntry(keyAlias)
         check(!directory.exists() || directory.deleteRecursively())
     }
 
@@ -73,8 +80,8 @@ class KeystoreLiveCredentialStore(context: Context) : LiveCredentialStore {
         return AtomicFile(File(directory, digest.joinToString("") { "%02x".format(it) }))
     }
 
-    private fun encryptionKey(): SecretKey = (keyStore.getKey(ALIAS, null) as? SecretKey) ?: KeyGenerator.getInstance("AES", "AndroidKeyStore").run {
-        init(KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+    private fun encryptionKey(): SecretKey = (keyStore.getKey(keyAlias, null) as? SecretKey) ?: KeyGenerator.getInstance("AES", "AndroidKeyStore").run {
+        init(KeyGenParameterSpec.Builder(keyAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .setKeySize(256)
@@ -82,5 +89,4 @@ class KeystoreLiveCredentialStore(context: Context) : LiveCredentialStore {
         generateKey()
     }
 
-    private companion object { const val ALIAS = "uac.sample.live.credentials.v1" }
 }

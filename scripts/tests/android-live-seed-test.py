@@ -88,6 +88,9 @@ class BootstrapTest(unittest.TestCase):
                 else:
                     with self.assertRaises(ValueError): seed.main()
                 self.assertIn("synthetic-sensitive-value".encode(), connection.sendall.call_args.args[0])
+                wire = connection.sendall.call_args.args[0]
+                self.assertEqual(len(wire) - 4, struct.unpack(">I", wire[:4])[0])
+                connection.shutdown.assert_not_called()
                 self.assertNotIn("synthetic-sensitive-value", repr(printer.call_args_list))
                 self.assertTrue(any("--remove" in c for c in calls))
                 self.assertEqual(not acknowledged, any("force-stop" in c for c in calls))

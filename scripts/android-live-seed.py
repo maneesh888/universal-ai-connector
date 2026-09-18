@@ -10,6 +10,8 @@ import subprocess
 import sys
 from urllib.parse import urlsplit
 
+STAGE = "input validation"
+
 INPUTS = (
     "UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL",
     "UAC_ANDROID_SAMPLE_PROOF_MODEL",
@@ -52,6 +54,8 @@ def sanitized_environment(environment):
 
 
 def main():
+    global STAGE
+    STAGE = "input validation"
     credential, model, base = (os.environ.pop(name, "") for name in INPUTS)
     environment = dict(os.environ)
     if len(sys.argv) != 2 or environment.get("UAC_ANDROID_SAMPLE_LIVE_PROOF") != "1":
@@ -67,6 +71,7 @@ def main():
                                 stderr=subprocess.DEVNULL, check=True, timeout=600)
         return result.stdout.decode().strip() if capture else ""
 
+    STAGE = "source validation"
     head = run(["git", "rev-parse", "HEAD"], True)
     if not re.fullmatch(r"[0-9a-f]{40}", head) or head != environment.get("UAC_LIVE_EXPECTED_SHA"):
         raise ValueError("Exact head required")
@@ -78,25 +83,31 @@ def main():
         adb_path = str(Path(sdk) / "platform-tools/adb")
     serial = environment.get("UAC_ANDROID_SERIAL", "")
     adb = [adb_path] + (["-s", serial] if serial else [])
+    STAGE = "device availability"
     if run(adb + ["shell", "getprop", "sys.boot_completed"], True) != "1":
         raise ValueError("Booted device required")
+    STAGE = "Android build"
     run([str(root / "gradlew"), ":samples:android:assembleDebug", "--no-configuration-cache"])
     app = "com.maneesh.universalai.samples.android"
+    STAGE = "Android install"
     run(adb + ["install", "-r", str(root / "samples/android/build/outputs/apk/debug/android-debug.apk")])
     name = "uac_live_" + secrets.token_hex(16)
     port = None
     succeeded = False
     try:
+        STAGE = "bootstrap launch"
         run(adb + ["shell", "am", "start", "-S", "-W", "-n", app + "/.MainActivity",
                    "--ez", "uac_live_bootstrap", "true", "--es", "uac_live_socket", name])
         port = run(adb + ["forward", "tcp:0", "localabstract:" + name], True)
         if not port.isdecimal() or not 0 < int(port) <= 65535:
             raise ValueError("Invalid forwarding port")
+        STAGE = "credential import acknowledgment"
         with socket.create_connection(("127.0.0.1", int(port)), timeout=5) as connection:
-            connection.sendall(frame)
-            connection.shutdown(socket.SHUT_WR)
+            # ADB forwarding does not preserve TCP half-close; use an explicit bounded frame.
+            connection.sendall(struct.pack(">I", len(frame)) + frame)
             if connection.recv(1) != b"\x01":
                 raise ValueError("Bootstrap rejected")
+        STAGE = "final source validation"
         if run(["git", "rev-parse", "HEAD"], True) != head or run(["git", "status", "--porcelain", "--untracked-files=all"], True):
             raise ValueError("Source changed during proof")
         succeeded = True
@@ -115,5 +126,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        print("Android bootstrap failed. Check opt-in, complete configuration, clean exact head, SDK, and authorized device. No seed details retained.", file=sys.stderr)
+        print("Android bootstrap failed during " + STAGE + ". Check opt-in, complete configuration, clean exact head, SDK, and authorized device. No seed details retained.", file=sys.stderr)
         sys.exit(1)

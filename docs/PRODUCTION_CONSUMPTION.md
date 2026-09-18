@@ -110,6 +110,9 @@ view model; only protected credentials survive process death.
 
 Run `./gradlew :samples:android:consumerCheck` for deterministic state/bootstrap tests and the
 debug consumer build, and `./scripts/run-android-sample.sh` to install and launch. Development
+storage/socket regressions run on an emulator with `./gradlew :samples:android:connectedDebugAndroidTest`;
+they use synthetic credentials in isolated stores and prove Keystore round-trip, authenticated
+ciphertext, interrupted-write recovery, deletion, and teardown of a listener with no client. Live
 seeding is explicitly opted in through `check-live.sh`, documented in `LIVE_PROVIDER_TESTING.md`.
 Its one-use socket exists only in the debug source set; the release APK has no bootstrap listener.
 These deterministic commands do not establish actual provider, emulator, hardware-backed key,
