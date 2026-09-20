@@ -1,7 +1,7 @@
-.gradle/
-.kotlin/
+.gradle
+.kotlin
 **/.swiftpm/
-**/build/
+**/build
 DerivedData/
 *.xcresult
 *.log

@@ -4,7 +4,7 @@
 
 - Repository stage: P0-P7 are completed; P8 is in progress with P8-A and P8-B completed; P9 remains not started
 - Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, completed P7 Gateway validation, and the accepted P8-A iOS and P8-B Android live-sample implementations
-- Active work package: none pending the separate activation of P8-C; P8-A and P8-B are completed, and P8-C through P8-L remain not started
+- Active work package: P8-C Kotlin/JVM console and Compose desktop live samples; P8-A and P8-B are completed, and P8-D through P8-L remain not started
 - P8-B closeout authority: the Android completion proposed in PR #75 becomes authoritative only after exact-head full/live and emulator acceptance, independent review, required CI, guarded merge, and resulting-main verification; the PR brief owns the closing SHA and evidence
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
 - P1 completion evidence: closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate and independent review; exact-head run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652) passed; PR [#12](https://github.com/maneesh888/universal-ai-connector/pull/12) merged July 23, 2026; and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed
@@ -156,7 +156,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; PR #59 closed the lifecycle and acceptance milestone; see `openai-compatible-gateway-validation.md` |
-| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; later host and distribution packages remain not started |
+| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; P8-C is active; parity and distribution packages remain not started |
 | P9 | Release hardening and internal alpha | Not started | |
 | P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
 
@@ -273,7 +273,7 @@ package boundaries without activating P8.
 ## P8: Production distribution and host integration
 
 Use the bounded work packages in `production-distribution-host-integration.md`. P8-A activated P8
-as the sole milestone marked `In progress`. P8-A and P8-B are completed; P8-C awaits separate activation and every later
+as the sole milestone marked `In progress`. P8-A and P8-B are completed; P8-C is activated by the desktop implementation request; every later
 P8 package remains `Not started`.
 
 Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.

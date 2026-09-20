@@ -37,6 +37,11 @@ Optional:
   UAC_ANDROID_SAMPLE_LIVE_PROOF=1
                          Build, install, and securely seed the Android debug sample.
 
+  UAC_JVM_SAMPLE_LIVE_PROOF=1
+                         Run the process-scoped console exact-model connection flow.
+  UAC_DESKTOP_SAMPLE_LIVE_PROOF=1
+                         Launch the real desktop app with session-only live inputs.
+
 Non-empty process environment values override the canonical ignored local file.
 EOF
 }
@@ -102,6 +107,12 @@ if [[ "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" != "0" &&
       "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
   fail "UAC_ANDROID_SAMPLE_LIVE_PROOF must be 0 or 1."
 fi
+for flag in UAC_JVM_SAMPLE_LIVE_PROOF UAC_DESKTOP_SAMPLE_LIVE_PROOF; do
+  if [[ "${!flag:-0}" != "0" && "${!flag:-0}" != "1" ]]; then
+    fail "$flag must be 0 or 1."
+  fi
+done
+
 unset UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL UAC_ANDROID_SAMPLE_PROOF_MODEL UAC_ANDROID_SAMPLE_PROOF_BASE_URL
 
 case "$PROVIDER" in
@@ -338,6 +349,14 @@ echo "Running local $PROVIDER_LABEL live smoke tests for exact HEAD."
     --no-daemon \
     --no-configuration-cache \
     "-PuacLiveExpectedSha=$HEAD_SHA"
+  sample_provider="$PROVIDER"
+  if [[ "$sample_provider" == "gateway" ]]; then sample_provider="openai-compatible"; fi
+  if [[ "${UAC_JVM_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+    "$ROOT/gradlew" :samples:jvm-console:run --no-daemon --no-configuration-cache --args="--live $sample_provider"
+  fi
+  if [[ "${UAC_DESKTOP_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+    "$ROOT/gradlew" :samples:desktop:run --no-daemon --no-configuration-cache --args="--live $sample_provider"
+  fi
 )
 
 POST_LIVE_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||

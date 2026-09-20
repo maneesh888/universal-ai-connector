@@ -66,7 +66,7 @@ jobs:
           :bridge:jvmTest
           :bridge:testAndroidHostTest
           :bridge:bundleAndroidMainAar
-          :samples:jvm-console:consumerCheck
+          :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck
           :samples:android:consumerCheck
           --stacktrace
 
@@ -105,7 +105,7 @@ jobs:
           validate-wrappers: true
 
       - name: Run JVM checks
-        run: ./gradlew.bat :bridge:jvmTest :samples:jvm-console:consumerCheck --stacktrace
+        run: ./gradlew.bat :bridge:jvmTest :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck --stacktrace
 
       - name: Upload failure evidence
         if: failure()
@@ -156,7 +156,7 @@ jobs:
           xcodebuild -version
 
       - name: Run JVM checks
-        run: ./gradlew :bridge:jvmTest :samples:jvm-console:consumerCheck --stacktrace
+        run: ./gradlew :bridge:jvmTest :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck --stacktrace
 
       - name: Run complete Apple verification
         env:

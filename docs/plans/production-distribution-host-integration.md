@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A and P8-B are completed; P8-C awaits separate activation.
+Status: `In progress`; P8-A and P8-B are completed; P8-C is active.
 
 P0-P7, P8-A, and P8-B are completed. P8 remains the sole roadmap milestone marked `In progress`.
-P8-C through P8-L remain `Not started`, and P9 remains inactive until P8 closes
+P8-D through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -248,7 +248,7 @@ the same closing head. The PR records OpenAI, Anthropic, OpenRouter, and Gateway
 from host UI proof. Its proposed completion becomes authoritative only after the exact-head full
 and affected live gates, runtime acceptance, independent review, required CI, guarded merge, and
 resulting-main verification pass. No physical-device, hardware-backed emulator key, later-host,
-or distribution proof is implied; P8-C remains `Not started`.
+or distribution proof is implied; P8-C is activated separately below.
 
 
 - Preserve the Android sample's zero-configuration deterministic mode and add an explicit live
@@ -270,7 +270,11 @@ new host target, or distribution claim.
 
 ### P8-C: Kotlin/JVM console and Compose desktop live samples
 
-Status: `Not started`.
+Status: `In progress`.
+
+Activated September 20, 2026 by the explicit desktop implementation request, from accepted
+main `49264f65ddfbcd452ee538ebb097c48e2fdaa7f7`, after checking P8-A/P8-B acceptance and
+concurrent ownership. Matching-host runtime/live proof remains required before completion.
 
 - Extend the Kotlin/JVM console with a zero-configuration deterministic path and an explicit
   headless `listModels` -> exact selection -> minimal `respond` connection flow. Only

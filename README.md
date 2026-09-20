@@ -40,7 +40,7 @@ recorded in [PR #75](https://github.com/maneesh888/universal-ai-connector/pull/7
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
 > a proprietary Gateway protocol. P7-A and P7-B are authoritative, and P7-C lifecycle integration
 > and acceptance complete P7. P8-A iOS acceptance is complete.
-> P8-B Android is complete; P8-C JVM/desktop awaits separate activation. Parity and distribution
+> P8-B Android is complete; P8-C JVM/desktop is active. Parity and distribution
 > remain later packages. PR #75 owns the exact closing-head acceptance and merge evidence.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
@@ -109,7 +109,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM console through the public Gradle module boundary | ✅ Verified locally |
 | JVM console on Linux, Windows, and macOS CI | ✅ Verified |
 | Android application consumer | ✅ Verified locally on API 36.1 emulator |
-| Graphical JVM desktop demonstration | ⏳ Planned for P8 distribution work |
+| Graphical JVM desktop demonstration | 🚧 P8-C implementation; matching-host runtime/live acceptance pending |
 | Physical iOS-device execution | ⏳ Not exercised |
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
@@ -135,7 +135,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
 | P7 | OpenAI-compatible Gateway validation | ✅ Completed through PR #59 |
-| P8 | Production distribution and host integration | 🚧 P8-A/B completed; later packages not started |
+| P8 | Production distribution and host integration | 🚧 P8-A/B completed; P8-C active; later packages not started |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion
@@ -694,3 +694,61 @@ Provider and gateway work begins only after the cross-platform package foundatio
 ## License
 
 Universal AI Connector is available under the MIT License. See [`LICENSE`](LICENSE).
+
+## P8-C desktop and console live testing
+
+P8-C is active and incomplete. The Compose desktop sample and JVM console share the
+sample-only `samples/host-controller` module and use the existing public Kotlin connector.
+Android and iOS retain their accepted interfaces. Maven publication and desktop packaging
+remain later packages; these commands consume the public repository module boundary.
+
+With JDK 21 and the existing repository toolchain:
+
+```bash
+./gradlew :samples:desktop:run
+./gradlew :samples:host-controller:test :samples:desktop:consumerCheck :samples:jvm-console:consumerCheck
+```
+
+The desktop starts in deterministic mode with no environment inputs, credentials, network,
+or OS-store access. Run all checks, or use the individual response, stream, typed-error,
+and cancellation controls. The Live tab supports OpenAI, Anthropic, OpenRouter, and the
+generic OpenAI-compatible Gateway. Supply its `/v1` URL where required, enter the masked
+credential, and choose **Use for session**. Load models, select an exact model, and press
+**Test Connection**. This always rediscovers before responding. Only explicit unsupported
+discovery enables manual entry; empty, failed, or cancelled discovery blocks responding.
+There is no fallback, alias replacement, or routing substitution. Connection results show
+status and the exact model, never a provider response body.
+
+Credentials default to process memory. **Remember securely** stores one profile through
+macOS Keychain, Windows Credential Manager, or Linux Secret Service (not KWallet or a file).
+**Restore saved** requires the same provider/base URL. If the matching service fails,
+persistence is disabled and the credential stays session-only. **Clear configuration**
+clears the session and requests removal of the saved profile, reporting deletion failure
+without claiming success. Closing cancels client work and clears session memory; intentionally
+remembered credentials survive until cleared. OS stores protect persistence; this development
+JVM sample does not claim isolation from other programs running as the same OS user.
+
+The console remains deterministic without arguments. Explicit live mode accepts only
+`--live <provider-id>` as arguments. Set `<PROVIDER>_API_KEY` and `<PROVIDER>_LIVE_MODEL` in
+the process environment, or enter the credential through a real terminal's non-echoing
+password prompt. The Gateway uses `GATEWAY_API_KEY`, `GATEWAY_LIVE_MODEL`, and
+`GATEWAY_LIVE_BASE_URL`. Never put a credential in command arguments or shell history.
+The console reports discovery and connection status, fails with a nonzero exit when blocked,
+and discards the response body.
+
+For canonical local configuration, on a clean committed head, use the existing loader:
+
+```bash
+UAC_JVM_SAMPLE_LIVE_PROOF=1 ./scripts/check-live.sh openai
+UAC_DESKTOP_SAMPLE_LIVE_PROOF=1 ./scripts/check-live.sh openai
+```
+
+The same opt-in flags support `anthropic`, `openrouter`, and `gateway`. The loader first
+runs the selected provider gate, then launches the actual host with only that provider's
+process-scoped inputs and configuration caching disabled. Desktop import selects the exact
+configured model only after discovery; the user still presses Load models and Test Connection.
+Closing the desktop lets the loader recheck the source head. The launch alone is not GUI
+acceptance: record actual visible discovery/connection, cancellation, clearing, screenshots,
+and exact source/model identities. P8-C still requires console and desktop proof on matching
+macOS, Windows, and Linux hosts with at least two exact models across the matrix. Tests and
+cross-platform compilation alone do not establish that proof.
