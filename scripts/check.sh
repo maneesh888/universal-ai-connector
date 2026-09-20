@@ -79,6 +79,8 @@ run_cross_platform_gradle_checks() {
   "$ROOT/gradlew" \
     :bridge:bundleAndroidMainAar \
     :samples:jvm-console:consumerCheck \
+    :samples:host-controller:test \
+    :samples:desktop:consumerCheck \
     :samples:android:consumerCheck
 
   verify_platform_packaging_boundaries

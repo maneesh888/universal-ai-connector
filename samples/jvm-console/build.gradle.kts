@@ -8,7 +8,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":bridge"))
+    implementation(project(":samples:host-controller"))
 
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")

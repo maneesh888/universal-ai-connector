@@ -23,6 +23,8 @@ unset \
   UAC_LIVE_EXPECTED_SHA \
   UAC_IOS_SAMPLE_LIVE_PROOF \
   UAC_ANDROID_SAMPLE_LIVE_PROOF \
+  UAC_JVM_SAMPLE_LIVE_PROOF \
+  UAC_DESKTOP_SAMPLE_LIVE_PROOF \
   UAC_IOS_SAMPLE_PROOF_CREDENTIAL \
   UAC_IOS_SAMPLE_PROOF_MODEL \
   UAC_IOS_SAMPLE_PROOF_BASE_URL
@@ -63,6 +65,19 @@ TEST_REPOSITORY_PHYSICAL="$(cd "$TEST_REPOSITORY" && pwd -P)"
 cat > "$TEST_REPOSITORY/gradlew" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+
+if [[ "$*" == *":samples:jvm-console:run"* || "$*" == *":samples:desktop:run"* ]]; then
+  if [[ "${OPENAI_API_KEY:-}" != "$UAC_TEST_EXPECTED_KEY" ||
+        "${OPENAI_LIVE_MODEL:-}" != "$UAC_TEST_EXPECTED_MODEL" ||
+        -n "${ANTHROPIC_API_KEY:-}" || -n "${OPENROUTER_API_KEY:-}" || -n "${GATEWAY_API_KEY:-}" ||
+        "$*" != *"--no-configuration-cache"* || "$*" != *"--no-daemon"* ||
+        "$*" != *"--args=--live openai"* || "$*" == *"$UAC_TEST_EXPECTED_KEY"* ]]; then
+    echo "Host launcher violated isolated process-input boundary." >&2
+    exit 31
+  fi
+  echo "host-sample" >> "$UAC_TEST_CALL_LOG"
+  exit 0
+fi
 
 if [[ "$*" == *":bridge:jvmTest"* ]]; then
   if [[ -n "${OPENAI_API_KEY:-}" ||
@@ -792,5 +807,23 @@ if ! grep -Fq "provider=gateway" "$OUTPUT" ||
   echo "Successful Gateway runner output omitted bounded evidence metadata." >&2
   exit 1
 fi
+
+for proof_flag in UAC_JVM_SAMPLE_LIVE_PROOF UAC_DESKTOP_SAMPLE_LIVE_PROOF; do
+  : > "$CALL_LOG"
+  env "$proof_flag=1" OPENAI_API_KEY="$SYNTHETIC_KEY" OPENAI_LIVE_MODEL="$MODEL" \
+    ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
+    UAC_TEST_CALL_LOG="$CALL_LOG" UAC_TEST_EXPECTED_KEY="$SYNTHETIC_KEY" \
+    UAC_TEST_EXPECTED_MODEL="$MODEL" UAC_TEST_EXPECTED_SHA="$HEAD_SHA" \
+    "$RUNNER" openai > "$OUTPUT" 2>&1
+  if [[ "$(sed -n '3p' "$CALL_LOG")" != "host-sample" || -n "$(sed -n '4p' "$CALL_LOG")" ]]; then
+    echo "Requested host proof did not follow the provider gate exactly once." >&2
+    exit 1
+  fi
+  if grep -Fq "$SYNTHETIC_KEY" "$OUTPUT"; then
+    echo "Host launcher retained credential material." >&2
+    exit 1
+  fi
+done
 
 echo "Live verification runner regression tests passed."

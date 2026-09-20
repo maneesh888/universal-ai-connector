@@ -113,7 +113,34 @@ internal object JvmConsoleSample {
         }
 }
 
-fun main() =
-    runBlocking {
-        JvmConsoleSample.execute(::println)
+fun main(args: Array<String>) {
+    // No credentials, URLs, or model IDs are accepted as command-line arguments.
+    if (args.isEmpty()) {
+        runConsoleLifecycle { JvmConsoleSample.execute(::println) }
+        return
     }
+    val provider = if (args.size == 2 && args[0] == "--live")
+        com.maneesh.universalai.samples.host.LiveProvider.entries.firstOrNull { it.id == args[1] }
+    else null
+    if (provider == null) {
+        System.err.println("Usage: run [--live openai|anthropic|openrouter|openai-compatible]. Inputs use process environment or non-echoing credential input.")
+        kotlin.system.exitProcess(2)
+    }
+    val prefix = if (provider.id == "openai-compatible") "GATEWAY" else provider.id.uppercase()
+    val password = System.getenv("${prefix}_API_KEY")?.toCharArray()
+        ?: System.console()?.readPassword("Credential (session only): ")
+    if (password == null) {
+        System.err.println("Credential input unavailable. Use process environment or a real terminal.")
+        kotlin.system.exitProcess(2)
+    }
+    val passed = try {
+        runConsoleLifecycle {
+            runLiveConsole(this, provider, System.getenv("${prefix}_LIVE_BASE_URL").orEmpty(),
+                password.concatToString(), System.getenv("${prefix}_LIVE_MODEL").orEmpty(), ::println)
+        }
+    } catch (_: Exception) {
+        System.err.println("Live console failed or cancelled; no response body retained.")
+        false
+    } finally { password.fill('\u0000') }
+    if (!passed) kotlin.system.exitProcess(1)
+}

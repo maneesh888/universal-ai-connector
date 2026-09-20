@@ -141,6 +141,9 @@ while IFS= read -r -d '' changed_path; do
       swift-package/* | \
       samples/ios/* | \
       samples/android/* | \
+      samples/jvm-console/* | \
+      samples/host-controller/* | \
+      samples/desktop/* | \
       build.gradle.kts | \
       settings.gradle.kts | \
       gradle.properties | \
