@@ -81,7 +81,7 @@ class DesktopVault(private val backend: () -> VaultBackend = { nativeVault() }) 
         catch (_: Exception) { throw VaultUnavailable() }
         catch (_: LinkageError) { throw VaultUnavailable() }
     }
-    suspend fun clear() = mutex.withLock { clearNative() }
+    suspend fun clear() = withContext(NonCancellable) { mutex.withLock { clearNative() } }
     private suspend fun clearNative() {
         try { withContext(Dispatchers.IO) { backend().use { it.remove() } } }
         catch (cancelled: CancellationException) { throw cancelled }

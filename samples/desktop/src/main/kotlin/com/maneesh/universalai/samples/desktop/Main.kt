@@ -13,7 +13,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.maneesh.universalai.samples.host.*
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class DesktopLiveInput(val provider: LiveProvider, val baseUrl: String, val model: String, credential: String) {
@@ -35,21 +34,40 @@ fun main(args: Array<String>) {
         DesktopLiveInput(provider, baseUrl, model, credential)
     }
     application {
-    Window(onCloseRequest = ::exitApplication, title = "Universal AI Connector", state = rememberWindowState(width = 980.dp, height = 820.dp)) {
-        MaterialTheme { Surface(Modifier.fillMaxSize()) { DesktopApp(input) } }
-    }
+        val scope = rememberCoroutineScope()
+        val storage = remember { DesktopStorageActions(scope, DesktopVault()) }
+        var closing by remember { mutableStateOf(false) }
+        var confirmClose by remember { mutableStateOf(false) }
+        Window(onCloseRequest = {
+            if (!closing) {
+                closing = true
+                scope.launch {
+                    storage.awaitIdle()
+                    if (storage.state.value.cleanupFailed) { closing = false; confirmClose = true }
+                    else exitApplication()
+                }
+            }
+        }, title = "Universal AI Connector", state = rememberWindowState(width = 980.dp, height = 820.dp)) {
+            MaterialTheme {
+                Surface(Modifier.fillMaxSize()) { DesktopApp(input, storage, closing) }
+                if (confirmClose) AlertDialog(onDismissRequest = { confirmClose = false },
+                    title = { Text("Saved credential may remain") },
+                    text = { Text("The OS credential service could not clear the saved profile. Retry Clear configuration before closing, or close anyway.") },
+                    confirmButton = { TextButton(onClick = ::exitApplication) { Text("Close anyway") } },
+                    dismissButton = { TextButton(onClick = { confirmClose = false }) { Text("Return to app") } })
+            }
+        }
     }
 }
 
 @Composable
-fun DesktopApp(input: DesktopLiveInput? = null) {
+internal fun DesktopApp(input: DesktopLiveInput?, storage: DesktopStorageActions, closing: Boolean) {
     val scope = rememberCoroutineScope()
     val credentials = remember { SessionCredentials() }
     val live = remember { LiveAiController(scope, credentials).also { controller ->
         input?.let { controller.configure(it.provider, it.baseUrl); controller.saveCredential(it.takeCredential()) }
     } }
     val demo = remember { DemoController(scope) }
-    val vault = remember { DesktopVault() }
     var liveMode by remember { mutableStateOf(input != null) }
     var initialSelection by remember { mutableStateOf(input?.model) }
     val liveState by live.state.collectAsState()
@@ -59,15 +77,16 @@ fun DesktopApp(input: DesktopLiveInput? = null) {
             else if (liveState.discovery == Discovery.UNSUPPORTED) { live.setManualModel(model); initialSelection = null }
         }
     }
+    LaunchedEffect(closing) { if (closing) { live.deactivate(); demo.cancel() } }
     DisposableEffect(Unit) { onDispose { live.close(); demo.close() } }
     Column(Modifier.padding(28.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Universal AI Connector", style = MaterialTheme.typography.headlineLarge)
         Text("Desktop live testing · macOS, Windows & Linux", style = MaterialTheme.typography.bodyLarge)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            FilterChip(selected = !liveMode, onClick = { live.deactivate(); liveMode = false }, label = { Text("Deterministic") }, modifier = Modifier.testTag("mode-deterministic"))
-            FilterChip(selected = liveMode, onClick = { demo.cancel(); liveMode = true }, label = { Text("Live") }, modifier = Modifier.testTag("mode-live"))
+            FilterChip(selected = !liveMode, enabled = !closing, onClick = { live.deactivate(); liveMode = false }, label = { Text("Deterministic") }, modifier = Modifier.testTag("mode-deterministic"))
+            FilterChip(selected = liveMode, enabled = !closing, onClick = { demo.cancel(); liveMode = true }, label = { Text("Live") }, modifier = Modifier.testTag("mode-live"))
         }
-        if (liveMode) LivePanel(live, credentials, vault) else DemoPanel(demo)
+        if (liveMode) LivePanel(live, credentials, storage, closing) else DemoPanel(demo)
     }
 }
 
@@ -101,15 +120,13 @@ private fun ResultCard(title: String, text: String) {
 }
 
 @Composable
-private fun LivePanel(controller: LiveAiController, credentials: SessionCredentials, vault: DesktopVault) {
+private fun LivePanel(controller: LiveAiController, credentials: SessionCredentials, storage: DesktopStorageActions, closing: Boolean) {
     val state by controller.state.collectAsState()
-    val scope = rememberCoroutineScope()
+    val storageState by storage.state.collectAsState()
     var credential by remember { mutableStateOf("") }
-    var vaultBusy by remember { mutableStateOf(false) }
-    var storageStatus by remember { mutableStateOf("Session only. Remember stores one profile in this OS credential service.") }
-    var persistenceAvailable by remember { mutableStateOf(true) }
     var pickerOpen by remember { mutableStateOf(false) }
-    val enabled = !state.busy && !vaultBusy
+    val configuration = runCatching { LiveConfiguration(state.provider, state.baseUrl) }.getOrNull()
+    val enabled = !state.busy && !storageState.busy && !closing
     Text("Choose a delivered provider, load models, then test your exact selection.")
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         LiveProvider.entries.forEach { provider ->
@@ -124,34 +141,16 @@ private fun LivePanel(controller: LiveAiController, credentials: SessionCredenti
         modifier = Modifier.fillMaxWidth().testTag("credential"))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(onClick = { controller.saveCredential(credential); credential = "" }, enabled = enabled && credential.isNotEmpty(), modifier = Modifier.testTag("use-credential")) { Text("Use for session") }
-        OutlinedButton(enabled = enabled && state.credentialStored && persistenceAvailable, onClick = {
-            vaultBusy = true
-            scope.launch {
-                try {
-                    val key = LiveConfiguration(state.provider, state.baseUrl).credentialKey
-                    vault.remember(key, checkNotNull(credentials.read(key)))
-                    storageStatus = "Remembered in this OS credential service."
-                } catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: VaultCleanupFailed) { persistenceAvailable = false; storageStatus = "Saved credential cleanup failed. Retry Clear configuration." }
-                catch (_: Exception) { persistenceAvailable = false; storageStatus = "OS credential service unavailable. Session only; persistence disabled." }
-                finally { vaultBusy = false }
-            }
+        OutlinedButton(enabled = enabled && configuration != null && state.credentialStored && storageState.persistenceAvailable, onClick = {
+            val key = checkNotNull(configuration).credentialKey
+            storage.remember(key, checkNotNull(credentials.read(key)))
         }) { Text("Remember securely") }
-        OutlinedButton(enabled = enabled && persistenceAvailable, onClick = {
-            vaultBusy = true
-            scope.launch {
-                try {
-                    val key = LiveConfiguration(state.provider, state.baseUrl).credentialKey
-                    val restored = vault.restore(key)
-                    if (restored == null) storageStatus = "No saved credential for this configuration."
-                    else { controller.saveCredential(restored); storageStatus = "Restored from this OS credential service." }
-                } catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { storageStatus = "Could not restore a saved credential. Use a session credential or retry the OS service." }
-                finally { vaultBusy = false }
-            }
+        OutlinedButton(enabled = enabled && configuration != null && storageState.persistenceAvailable, onClick = {
+            val key = checkNotNull(configuration).credentialKey
+            storage.restore(key, controller::saveCredential)
         }) { Text("Restore saved") }
     }
-    Text(storageStatus, modifier = Modifier.testTag("storage-status"))
+    Text(storageState.status, modifier = Modifier.testTag("storage-status"))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(onClick = { controller.loadModels() }, enabled = enabled && state.credentialStored, modifier = Modifier.testTag("load-models")) { Text("Load models") }
         OutlinedButton(onClick = { controller.loadModels(retry = true) }, enabled = enabled && state.credentialStored) { Text("Retry discovery") }
@@ -171,15 +170,9 @@ private fun LivePanel(controller: LiveAiController, credentials: SessionCredenti
             label = { Text("Exact model ID (discovery unsupported)") }, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("manual-model"))
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(onClick = controller::testConnection, enabled = state.canTest && !vaultBusy, modifier = Modifier.testTag("test-connection")) { Text("Test Connection") }
-        OutlinedButton(enabled = !vaultBusy, modifier = Modifier.testTag("clear-configuration"), onClick = {
-            credential = ""; controller.clearConfiguration(); vaultBusy = true
-            scope.launch {
-                try { vault.clear(); storageStatus = "Session and saved credentials cleared."; persistenceAvailable = true }
-                catch (cancelled: CancellationException) { throw cancelled }
-                catch (_: Exception) { storageStatus = "Session cleared. OS credential deletion failed; retry Clear configuration." }
-                finally { vaultBusy = false }
-            }
+        Button(onClick = controller::testConnection, enabled = state.canTest && !storageState.busy && !closing, modifier = Modifier.testTag("test-connection")) { Text("Test Connection") }
+        OutlinedButton(enabled = !storageState.busy && !closing, modifier = Modifier.testTag("clear-configuration"), onClick = {
+            credential = ""; controller.clearConfiguration(); storage.clear()
         }) { Text("Clear configuration") }
     }
     ResultCard("Connection: ${state.connection}", state.status + (state.connectedModel?.let { "\nExact model: $it\nResponse received; body discarded." } ?: ""))

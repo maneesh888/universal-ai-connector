@@ -118,6 +118,7 @@ class DemoController(
         }
 
     fun cancel() {
+        if (closed || activeJob?.isActive != true) return
         activeJob?.cancel()
         mutableState.update { it.copy(headline = "Operation cancelled") }
     }
