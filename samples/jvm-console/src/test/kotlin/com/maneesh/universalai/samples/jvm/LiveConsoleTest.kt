@@ -2,7 +2,8 @@ package com.maneesh.universalai.samples.jvm
 
 import com.maneesh.universalai.samples.host.*
 import kotlin.test.*
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 
 class LiveConsoleTest {
@@ -36,6 +37,23 @@ class LiveConsoleTest {
             assertEquals(0, responses)
             assertFalse(output.joinToString().contains("synthetic-secret"))
         }
+    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test fun callerCancellationClosesClientAndClearsSession() = runTest {
+        var closes = 0
+        var suppliedStore: LiveCredentialStore? = null
+        val client = object : LiveClient {
+            override suspend fun listModels(): LiveModels = awaitCancellation()
+            override suspend fun testConnection(exactModel: String) = error("must not respond")
+            override fun close() { closes++ }
+        }
+        val job = launch {
+            runLiveConsole(this, LiveProvider.OPENAI, "", "synthetic-credential", "exact", {},
+                LiveClientFactory { _, store -> suppliedStore = store; client })
+        }
+        runCurrent(); job.cancelAndJoin()
+        assertEquals(1, closes)
+        assertNull(suppliedStore?.read(LiveConfiguration(LiveProvider.OPENAI, "").credentialKey))
     }
     @Test fun unsupportedIsTheOnlyManualContinuation() = runTest {
         var selected: String? = null

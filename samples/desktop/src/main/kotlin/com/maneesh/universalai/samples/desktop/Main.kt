@@ -25,13 +25,13 @@ class DesktopLiveInput(val provider: LiveProvider, val baseUrl: String, val mode
 fun main(args: Array<String>) {
     val input = if (args.isEmpty()) null else {
         val provider = if (args.size == 2 && args[0] == "--live") LiveProvider.entries.firstOrNull { it.id == args[1] } else null
-        if (provider == null) { System.err.println("Use no arguments for deterministic mode, or --live with a delivered provider ID."); return }
+        if (provider == null) { System.err.println("Use no arguments for deterministic mode, or --live with a delivered provider ID."); kotlin.system.exitProcess(2) }
         val prefix = if (provider == LiveProvider.GATEWAY) "GATEWAY" else provider.id.uppercase()
         val credential = System.getenv("${prefix}_API_KEY").orEmpty()
         val model = System.getenv("${prefix}_LIVE_MODEL").orEmpty()
         val baseUrl = System.getenv("${prefix}_LIVE_BASE_URL").orEmpty()
         try { validateLiveCredential(credential); LiveConfiguration(provider, baseUrl); com.maneesh.universalai.connector.contract.ModelId.of(model) }
-        catch (_: Exception) { System.err.println("Explicit live mode requires valid process-scoped configuration."); return }
+        catch (_: Exception) { System.err.println("Explicit live mode requires valid process-scoped configuration."); kotlin.system.exitProcess(2) }
         DesktopLiveInput(provider, baseUrl, model, credential)
     }
     application {

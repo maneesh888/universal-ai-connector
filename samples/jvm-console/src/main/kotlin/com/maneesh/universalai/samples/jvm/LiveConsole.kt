@@ -46,3 +46,21 @@ internal suspend fun runLiveConsole(
         } else false
     } finally { controller.close() }
 }
+
+/** SIGINT/process shutdown cancels the structured operation before the JVM exits. */
+internal fun <T> runConsoleLifecycle(action: suspend CoroutineScope.() -> T): T {
+    val lifetime = kotlinx.coroutines.Job()
+    val runtime = Runtime.getRuntime()
+    val shutdown = Thread({
+        lifetime.cancel()
+        kotlinx.coroutines.runBlocking {
+            kotlinx.coroutines.withTimeoutOrNull(3_000) { lifetime.join() }
+        }
+    }, "uac-console-cleanup")
+    runtime.addShutdownHook(shutdown)
+    return try { kotlinx.coroutines.runBlocking(lifetime, action) }
+    finally {
+        lifetime.cancel()
+        runCatching { runtime.removeShutdownHook(shutdown) }
+    }
+}

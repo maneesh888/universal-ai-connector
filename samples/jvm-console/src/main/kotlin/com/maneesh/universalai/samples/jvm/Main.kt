@@ -116,7 +116,7 @@ internal object JvmConsoleSample {
 fun main(args: Array<String>) {
     // No credentials, URLs, or model IDs are accepted as command-line arguments.
     if (args.isEmpty()) {
-        runBlocking { JvmConsoleSample.execute(::println) }
+        runConsoleLifecycle { JvmConsoleSample.execute(::println) }
         return
     }
     val provider = if (args.size == 2 && args[0] == "--live")
@@ -134,7 +134,7 @@ fun main(args: Array<String>) {
         kotlin.system.exitProcess(2)
     }
     val passed = try {
-        runBlocking {
+        runConsoleLifecycle {
             runLiveConsole(this, provider, System.getenv("${prefix}_LIVE_BASE_URL").orEmpty(),
                 password.concatToString(), System.getenv("${prefix}_LIVE_MODEL").orEmpty(), ::println)
         }
