@@ -728,10 +728,12 @@ On September 22, 2026, exact commit `6722c705fbc1364508885e948142e937b382681f`
 passed the Windows live adapter and JVM console discovery/connection flows for OpenAI
 `gpt-5.6-luna`, Anthropic `claude-sonnet-5`, and OpenRouter
 `google/gemini-2.5-flash-lite`. One Anthropic structured-response assertion failed on the first
-attempt and passed on the immediate exact-head retry. The configured Gateway returned transport
-failures for all six live cases, so no Gateway console connection was claimed. No credential or
-provider response body was retained. P8-C remains active for interactive desktop live proof,
-Gateway availability, and matching-host macOS and Linux acceptance.
+attempt and passed on the immediate exact-head retry. The configured loopback Gateway was not
+listening, so its first six live cases returned transport failures. Exact commit
+`f200c2a6e596fff6730e03446f25629eb26ba8ea` then passed all six Gateway adapter cases against the
+hosted OpenRouter service through the generic `openai-compatible` configuration. No credential or
+provider response body was retained. P8-C remains active for interactive desktop live proof, the
+separately configured loopback Gateway deployment, and matching-host macOS and Linux acceptance.
 
 The desktop starts in deterministic mode with no environment inputs, credentials, network,
 or OS-store access. Run all checks, or use the individual response, stream, typed-error,

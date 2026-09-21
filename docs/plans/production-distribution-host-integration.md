@@ -289,10 +289,13 @@ contributor tooling and passed the complete quick gate on September 22, 2026. On
 the live adapter suites and JVM console discovery/connection flows passed for OpenAI
 `gpt-5.6-luna`, Anthropic `claude-sonnet-5`, and OpenRouter
 `google/gemini-2.5-flash-lite`. Anthropic required one immediate retry after a generated
-structured response missed the requested schema. The configured Gateway returned transport
-failures for every live case, so no Gateway console connection is claimed. No credential or
-provider response body was retained. This remains bounded Windows console evidence and does not
-replace the required interactive desktop, Gateway, macOS, or Linux proof.
+structured response missed the requested schema. The configured loopback Gateway was not
+listening and returned transport failures for every live case. Exact commit
+`f200c2a6e596fff6730e03446f25629eb26ba8ea` then passed all six Gateway adapter cases against the
+hosted OpenRouter service through the generic `openai-compatible` configuration. No credential or
+provider response body was retained. This remains bounded Windows console and adapter evidence and
+does not replace the required interactive desktop, separately deployed Gateway, macOS, or Linux
+proof.
 
 - Extend the Kotlin/JVM console with a zero-configuration deterministic path and an explicit
   headless `listModels` -> exact selection -> minimal `respond` connection flow. Only
