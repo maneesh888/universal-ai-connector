@@ -314,9 +314,14 @@ if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != \
   exit 1
 fi
 
-rm "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
-ln -s "synthetic-adapter-target.kt" "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
-git -C "$TEST_REPOSITORY" add -A
+SYMLINK_BLOB_SHA="$(
+  printf '%s' 'synthetic-adapter-target.kt' |
+    git -C "$TEST_REPOSITORY" hash-object -w --stdin
+)"
+git -C "$TEST_REPOSITORY" update-index \
+  --add \
+  --cacheinfo \
+  "120000,$SYMLINK_BLOB_SHA,bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" \
   -c user.name="Live Impact Test" \
   -c user.email="live-impact@example.invalid" \

@@ -51,6 +51,24 @@ cleanup() {
 }
 trap cleanup EXIT
 
+restrict_config_permissions() {
+  local file_path="$1"
+  local windows_path
+
+  chmod 600 "$file_path"
+  case "$(uname -s 2>/dev/null)" in
+    MINGW* | MSYS* | CYGWIN*)
+      windows_path="$(cygpath -w "$file_path")"
+      icacls.exe "$windows_path" \
+        /inheritance:r \
+        /grant:r \
+        "${USERDOMAIN}\\${USERNAME}:(F)" \
+        'SYSTEM:(F)' \
+        'BUILTIN\Administrators:(F)' >/dev/null
+      ;;
+  esac
+}
+
 mkdir -p "$TEST_REPOSITORY/scripts"
 cp "$ROOT/scripts/check-live.sh" "$RUNNER"
 cp "$ROOT/scripts/local-config.sh" "$LOCAL_CONFIG_HELPER"
@@ -455,7 +473,7 @@ cp "$TEST_DIRECTORY/index.backup" "$TEST_REPOSITORY/.git/index"
 printf '%s\n' \
   "OPENAI_API_KEY='$SYNTHETIC_KEY'" \
   "OPENAI_LIVE_MODEL='$MODEL'" > "$TEST_REPOSITORY/.env.live"
-chmod 600 "$TEST_REPOSITORY/.env.live"
+restrict_config_permissions "$TEST_REPOSITORY/.env.live"
 : > "$CALL_LOG"
 env \
   UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" \
