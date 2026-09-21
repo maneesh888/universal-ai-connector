@@ -156,7 +156,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; PR #59 closed the lifecycle and acceptance milestone; see `openai-compatible-gateway-validation.md` |
-| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; P8-C is active; parity and distribution packages remain not started |
+| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; P8-C source hosts are merged through PR #76 and bounded Windows deterministic/source-launch proof is recorded; interactive live and multi-host acceptance remains outstanding; parity and distribution packages remain not started |
 | P9 | Release hardening and internal alpha | Not started | |
 | P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
 

@@ -45,6 +45,39 @@ cleanup() {
 }
 trap cleanup EXIT
 
+is_windows_posix_layer() {
+  case "$(uname -s 2>/dev/null)" in
+    MINGW* | MSYS* | CYGWIN*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+restrict_config_permissions() {
+  local file_path="$1"
+  local windows_path
+
+  chmod 600 "$file_path"
+  if is_windows_posix_layer; then
+    windows_path="$(cygpath -w "$file_path")"
+    icacls.exe "$windows_path" \
+      /inheritance:r \
+      /grant:r \
+      "${USERDOMAIN}\\${USERNAME}:(F)" \
+      'SYSTEM:(F)' \
+      'BUILTIN\Administrators:(F)' >/dev/null
+  fi
+}
+
+make_config_permissions_permissive() {
+  local file_path="$1"
+
+  if is_windows_posix_layer; then
+    icacls.exe "$(cygpath -w "$file_path")" /inheritance:e >/dev/null
+  else
+    chmod 644 "$file_path"
+  fi
+}
+
 create_repository() {
   local repository="$1"
 
@@ -81,7 +114,7 @@ write_valid_config() {
     "OPENAI_API_KEY='$SYNTHETIC_SECRET'" \
     'OPENAI_LIVE_MODEL=test-model' \
     'GATEWAY_LIVE_STRUCTURED_OUTPUT=false' > "$file_path"
-  chmod 600 "$file_path"
+  restrict_config_permissions "$file_path"
 }
 
 assert_secret_absent() {
@@ -125,7 +158,10 @@ if [[ "$("$PRIMARY_REPOSITORY/scripts/local-config.sh" live-env-path)" != \
   echo "Canonical live configuration path was not rooted in the primary checkout." >&2
   exit 1
 fi
-"$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env > "$OUTPUT" 2>&1
+if ! "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env > "$OUTPUT" 2>&1; then
+  cat "$OUTPUT" >&2
+  exit 1
+fi
 assert_secret_absent
 
 # Literal parsing loads only requested names and preserves process-environment overrides.
@@ -210,7 +246,7 @@ UAC_LIVE_ENV_FILE="$OVERRIDE_CONFIG" \
 assert_secret_absent
 
 printf '%s\n' "OPENAI_API_KEY='$SYNTHETIC_SECRET'" > "$LINKED_WORKTREE/.env.live"
-chmod 600 "$LINKED_WORKTREE/.env.live"
+restrict_config_permissions "$LINKED_WORKTREE/.env.live"
 git -C "$LINKED_WORKTREE" add --force .env.live
 git -C "$LINKED_WORKTREE" \
   -c user.name="Local Config Test" \
@@ -265,16 +301,18 @@ expect_failure \
   "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env
 
 SYMLINK_CONFIG="$PRIMARY_PHYSICAL/.env.live.escape"
-ln -s "$OUTSIDE_CONFIG" "$SYMLINK_CONFIG"
-expect_failure \
-  "Local live configuration must not be a symbolic link: $SYMLINK_CONFIG" \
-  env UAC_LIVE_ENV_FILE=.env.live.escape \
-  "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env
+if ! is_windows_posix_layer; then
+  ln -s "$OUTSIDE_CONFIG" "$SYMLINK_CONFIG"
+  expect_failure \
+    "Local live configuration must not be a symbolic link: $SYMLINK_CONFIG" \
+    env UAC_LIVE_ENV_FILE=.env.live.escape \
+    "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env
+fi
 
 # Restrictive permissions and the documented variable allowlist fail closed without values.
 PERMISSIVE_CONFIG="$PRIMARY_PHYSICAL/.env.live.permissive"
 write_valid_config "$PERMISSIVE_CONFIG"
-chmod 644 "$PERMISSIVE_CONFIG"
+make_config_permissions_permissive "$PERMISSIVE_CONFIG"
 expect_failure \
   "Local live configuration permissions must deny group and other access: $PERMISSIVE_CONFIG" \
   env UAC_LIVE_ENV_FILE=.env.live.permissive \
@@ -284,7 +322,7 @@ INVALID_CONFIG="$PRIMARY_PHYSICAL/.env.live.invalid"
 printf '%s\n' \
   "OPENAI_API_KEY='$SYNTHETIC_SECRET'" \
   'UNSUPPORTED_SECRET_NAME=must-not-load' > "$INVALID_CONFIG"
-chmod 600 "$INVALID_CONFIG"
+restrict_config_permissions "$INVALID_CONFIG"
 expect_failure \
   "Local live configuration contains unsupported variable UNSUPPORTED_SECRET_NAME" \
   env UAC_LIVE_ENV_FILE=.env.live.invalid \
@@ -292,7 +330,7 @@ expect_failure \
 
 QUOTING_CONFIG="$PRIMARY_PHYSICAL/.env.live.quoting"
 printf 'OPENAI_API_KEY="%s"suffix\n' "$SYNTHETIC_SECRET" > "$QUOTING_CONFIG"
-chmod 600 "$QUOTING_CONFIG"
+restrict_config_permissions "$QUOTING_CONFIG"
 expect_failure \
   "Local live configuration has unmatched quotes at line 1." \
   env UAC_LIVE_ENV_FILE=.env.live.quoting \

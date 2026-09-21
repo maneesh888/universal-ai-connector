@@ -276,6 +276,14 @@ Activated September 20, 2026 by the explicit desktop implementation request, fro
 main `49264f65ddfbcd452ee538ebb097c48e2fdaa7f7`, after checking P8-A/P8-B acceptance and
 concurrent ownership. Matching-host runtime/live proof remains required before completion.
 
+Bounded Windows source proof was recorded on September 21, 2026 after the source hosts merged
+through PR #76. On Windows 10 x64 with JDK 21 and Gradle 9.7.1, the Windows CI-equivalent
+deterministic matrix passed and the Compose application opened a responsive window while Skiko
+used its renderer fallback after DirectX 12 device initialization failed. This is not completion
+evidence: it did not interact with the rendered controls, run a live provider or Gateway flow,
+exercise Windows Credential Manager persistence, prove packaged distribution, or cover the
+required macOS and Linux matching hosts.
+
 - Extend the Kotlin/JVM console with a zero-configuration deterministic path and an explicit
   headless `listModels` -> exact selection -> minimal `respond` connection flow. Only
   `.unsupported` permits manual model entry; a supported empty result fails closed.
