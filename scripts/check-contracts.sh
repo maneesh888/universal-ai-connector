@@ -75,8 +75,8 @@ verify_provider_neutral_public_surfaces() {
   local prohibited_vendor_pattern
   local scan_status
   local supported_surface_paths=(
-    "$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/contract"
-    "$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/UniversalAiConnector.kt"
+    "$ROOT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/contract"
+    "$ROOT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/UniversalAiConnector.kt"
     "$ROOT/swift-package/Sources/UniversalAiConnector/UniversalAiConnector.swift"
     "$ROOT/swift-package/Sources/UniversalAiConnector/UniversalAiConnectorModels.swift"
   )

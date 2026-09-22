@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "com.maneesh.universalai.samples.android"
+    namespace = "com.myadidi.universalai.samples.android"
     compileSdk = 37
     buildToolsVersion = "36.1.0"
 
     defaultConfig {
-        applicationId = "com.maneesh.universalai.samples.android"
+        applicationId = "com.myadidi.universalai.samples.android"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

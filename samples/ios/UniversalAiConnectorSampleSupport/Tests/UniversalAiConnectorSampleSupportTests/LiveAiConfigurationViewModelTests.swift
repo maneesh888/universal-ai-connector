@@ -324,7 +324,7 @@ final class LiveAiConfigurationViewModelTests: XCTestCase {
     }
 
     func testKeychainStoreRoundTripUpdateAttributesIsolationAndClearAll() throws {
-        let service = "com.maneesh.universalai.connector.tests.\(UUID().uuidString)"
+        let service = "com.myadidi.universalai.connector.tests.\(UUID().uuidString)"
         let isolatedService = "\(service).isolated"
         let store = KeychainLiveAiCredentialStore(service: service)
         let isolatedStore = KeychainLiveAiCredentialStore(service: isolatedService)

@@ -8,6 +8,8 @@ plugins {
     id("com.android.kotlin.multiplatform.library") version "9.3.1" apply false
 }
 
+group = "com.myadidi"
+
 if (JavaVersion.current() != JavaVersion.VERSION_21) {
     throw GradleException(
         "Java 21 is required to build Universal AI Connector. " +

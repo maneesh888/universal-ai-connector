@@ -1,0 +1,945 @@
+package com.myadidi.universalai.connector.internal.provider.openrouter
+
+import com.myadidi.universalai.connector.UniversalAiConnector
+import com.myadidi.universalai.connector.UniversalAiConnectorConfiguration
+import com.myadidi.universalai.connector.UniversalAiProviderConfiguration
+import com.myadidi.universalai.connector.contract.ModelId
+import com.myadidi.universalai.connector.contract.ProviderId
+import com.myadidi.universalai.connector.contract.StructuredOutputSchema
+import com.myadidi.universalai.connector.contract.StructuredOutputValue
+import com.myadidi.universalai.connector.contract.UniversalAiCapabilityLimitName
+import com.myadidi.universalai.connector.contract.UniversalAiCapabilityName
+import com.myadidi.universalai.connector.contract.UniversalAiCapabilitySupport
+import com.myadidi.universalai.connector.contract.UniversalAiCompletionReason
+import com.myadidi.universalai.connector.contract.UniversalAiErrorCategory
+import com.myadidi.universalai.connector.contract.UniversalAiException
+import com.myadidi.universalai.connector.contract.UniversalAiGenerationParameters
+import com.myadidi.universalai.connector.contract.UniversalAiInputRole
+import com.myadidi.universalai.connector.contract.UniversalAiOutputKind
+import com.myadidi.universalai.connector.contract.UniversalAiRequest
+import com.myadidi.universalai.connector.contract.UniversalAiResponseFormat
+import com.myadidi.universalai.connector.contract.UniversalAiTarget
+import com.myadidi.universalai.connector.contract.UniversalAiTextInput
+import com.myadidi.universalai.connector.internal.provider.OPENROUTER_PROVIDER_ID
+import com.myadidi.universalai.connector.internal.provider.OPENROUTER_PROVIDER_CAPABILITY_PROFILE
+import com.myadidi.universalai.connector.internal.provider.ProviderRegistry
+import com.myadidi.universalai.connector.internal.provider.builtInProviderRegistration
+import com.myadidi.universalai.connector.internal.transport.ConnectorTransport
+import com.myadidi.universalai.connector.internal.transport.ConnectorTransportRequest
+import com.myadidi.universalai.connector.internal.transport.ConnectorTransportResponse
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.Headers
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.int
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+class OpenRouterChatCompletionsAdapterTests {
+    @Test
+    fun translatesAuthenticationOrderedTextRequestResponseUsageAndMetadata() = runTest {
+        val credential = "synthetic-openrouter-credential"
+        var credentialCalls = 0
+        val engine =
+            MockEngine {
+                respond(
+                    content =
+                        ByteReadChannel(
+                            successResponse(
+                                id = "chatcmpl_test",
+                                model = "requested/provider-model",
+                                text = "ready",
+                                finishReason = "stop",
+                            ),
+                        ),
+                    status = HttpStatusCode.OK,
+                    headers =
+                        Headers.build {
+                            append("X-Request-Id", "req_openrouter")
+                            append("Retry-After", "4")
+                        },
+                )
+            }
+        val connector =
+            connector(
+                engine = engine,
+                credentialSupplier = {
+                    credentialCalls += 1
+                    credential
+                },
+            )
+
+        try {
+            val response =
+                connector.respond(
+                    request(
+                        generation =
+                            UniversalAiGenerationParameters(
+                                maxOutputTokens = 64,
+                                temperature = 0.25,
+                                topP = 0.8,
+                                stopSequences = listOf("END", "STOP"),
+                            ),
+                    ),
+                )
+
+            assertEquals(1, credentialCalls)
+            assertEquals("chatcmpl_test", response.id.rawValue)
+            assertEquals("req_openrouter", response.requestId?.rawValue)
+            assertEquals("openrouter", response.target.providerId.rawValue)
+            assertEquals("requested/provider-model", response.target.modelId.rawValue)
+            assertEquals(UniversalAiCompletionReason.Stop, response.completionReason)
+            with(response.outputs.single()) {
+                assertEquals("chatcmpl_test", id.rawValue)
+                assertEquals(0, index)
+                assertEquals(UniversalAiOutputKind.Text, kind)
+                assertEquals("ready", text)
+            }
+            with(assertNotNull(response.usage)) {
+                assertEquals(12L, inputTokens)
+                assertEquals(5L, outputTokens)
+                assertEquals(17L, totalTokens)
+                assertEquals(mapOf("cached_tokens" to 2L), inputDetails)
+                assertEquals(mapOf("reasoning_tokens" to 1L), outputDetails)
+            }
+
+            val sentRequest = engine.requestHistory.single()
+            assertEquals(HttpMethod.Post, sentRequest.method)
+            assertEquals(
+                "https://openrouter.example.invalid/api/v1/chat/completions",
+                sentRequest.url.toString(),
+            )
+            assertEquals("Bearer $credential", sentRequest.headers["Authorization"])
+            assertEquals("application/json", sentRequest.body.contentType?.toString())
+            assertEquals("application/json", sentRequest.headers["Accept"])
+            assertNull(sentRequest.headers["HTTP-Referer"])
+            assertNull(sentRequest.headers["X-OpenRouter-Title"])
+            val requestBody = sentRequest.body.bodyBytes().decodeToString()
+            assertFalse(requestBody.contains(credential))
+            val document = JSON.parseToJsonElement(requestBody) as JsonObject
+            assertEquals("requested/provider-model", document.string("model"))
+            assertFalse("stream" in document)
+            assertEquals(64, document.int("max_tokens"))
+            assertEquals(0.25, document.double("temperature"))
+            assertEquals(0.8, document.double("top_p"))
+            assertEquals(
+                listOf("END", "STOP"),
+                (document["stop"] as JsonArray).map { element ->
+                    (element as JsonPrimitive).content
+                },
+            )
+            val messages = document["messages"] as JsonArray
+            assertEquals(
+                listOf("system", "user", "assistant"),
+                messages.map { element -> (element as JsonObject).string("role") },
+            )
+            assertEquals(
+                listOf("system rules", "question", "earlier answer"),
+                messages.map { element -> (element as JsonObject).string("content") },
+            )
+            assertTrue((document["provider"] as JsonObject).boolean("require_parameters"))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun omitsAbsentGenerationFieldsAndResolvesCredentialOncePerRequest() = runTest {
+        var credentialCalls = 0
+        val engine =
+            MockEngine { request ->
+                val document =
+                    JSON.parseToJsonElement(
+                        request.body.bodyBytes().decodeToString(),
+                    ) as JsonObject
+                assertFalse("max_tokens" in document)
+                assertFalse("temperature" in document)
+                assertFalse("top_p" in document)
+                assertFalse("stop" in document)
+                respond(successResponse(id = "response-$credentialCalls"))
+            }
+        val connector =
+            connector(engine) {
+                credentialCalls += 1
+                "request-scoped-credential"
+            }
+
+        try {
+            connector.respond(request())
+            connector.respond(request())
+
+            assertEquals(2, credentialCalls)
+            assertEquals(2, engine.requestHistory.size)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun missingBlankMalformedAndThrowingCredentialsFailBeforeDispatchWithoutDetails() = runTest {
+        val sensitiveSupplierDetail = "supplier-sensitive-detail"
+        val suppliers =
+            listOf<() -> String>(
+                { "" },
+                { "   " },
+                { "line\nbreak" },
+                { "x".repeat(8_193) },
+                { throw IllegalStateException(sensitiveSupplierDetail) },
+            )
+
+        suppliers.forEach { supplier ->
+            var calls = 0
+            val engine = MockEngine { error("Credential failure must prevent dispatch.") }
+            val connector =
+                connector(engine) {
+                    calls += 1
+                    supplier()
+                }
+            try {
+                val failure =
+                    assertFailsWith<UniversalAiException> {
+                        connector.respond(request())
+                    }
+
+                assertEquals(1, calls)
+                assertEquals(0, engine.requestHistory.size)
+                assertEquals(UniversalAiErrorCategory.Authentication, failure.error.category)
+                assertEquals("missing_credential", failure.error.code.rawValue)
+                assertEquals(OPENROUTER_CREDENTIAL_MESSAGE, failure.message)
+                assertNull(failure.cause)
+                assertFalse(failure.stackTraceToString().contains(sensitiveSupplierDetail))
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
+    fun credentialSupplierCancellationPropagatesBeforeDispatch() = runTest {
+        val cancellation = CancellationException("host credential lookup cancelled")
+        val engine = MockEngine { error("Credential cancellation must prevent dispatch.") }
+        val connector = connector(engine) { throw cancellation }
+
+        try {
+            assertFailsWith<CancellationException> {
+                connector.respond(request())
+            }
+            assertEquals(0, engine.requestHistory.size)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun unsupportedProviderRolesFormatsAndStreamingFailBeforeDispatch() = runTest {
+        val engine = MockEngine { error("Unsupported requests must not dispatch.") }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val wrongProvider =
+                request(
+                    providerId = "openai",
+                )
+            val developerInput =
+                request(
+                    input =
+                        listOf(
+                            UniversalAiTextInput(
+                                role = UniversalAiInputRole.Developer,
+                                content = "developer instruction",
+                            ),
+                        ),
+                )
+            listOf(wrongProvider, developerInput).forEach { unsupported ->
+                val failure =
+                    assertFailsWith<UniversalAiException> {
+                        connector.respond(unsupported)
+                    }
+                assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+                assertEquals("invalid_request", failure.error.code.rawValue)
+            }
+            assertEquals(0, engine.requestHistory.size)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun encodesStrictStructuredOutputAndRevalidatesTheCanonicalValue() = runTest {
+        val schema = supportedSchema()
+        val structuredJson = """{"answer":"ready","score":1}"""
+        val engine =
+            MockEngine { request ->
+                val document =
+                    JSON.parseToJsonElement(request.body.bodyBytes().decodeToString()) as JsonObject
+                val responseFormat = document["response_format"] as JsonObject
+                assertEquals("json_schema", responseFormat.string("type"))
+                val jsonSchema = responseFormat["json_schema"] as JsonObject
+                assertEquals("universal_ai_response", jsonSchema.string("name"))
+                assertTrue(jsonSchema.boolean("strict"))
+                assertEquals(JSON.parseToJsonElement(schema.toJson()), jsonSchema["schema"])
+                assertTrue((document["provider"] as JsonObject).boolean("require_parameters"))
+                respond(successResponse(text = structuredJson))
+            }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val output =
+                connector
+                    .respond(request(responseFormat = UniversalAiResponseFormat.jsonSchema(schema)))
+                    .outputs
+                    .single()
+            assertEquals(UniversalAiOutputKind.StructuredJson, output.kind)
+            assertNull(output.text)
+            assertEquals(StructuredOutputValue.parse(structuredJson), output.structuredJson)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun rejectsUnsupportedSchemasBeforeCredentialResolutionOrDispatch() = runTest {
+        val unsupported =
+            StructuredOutputSchema.parse(
+                """
+                {
+                  "type":"object",
+                  "properties":{"answer":{"type":"string","minLength":1}},
+                  "required":["answer"],
+                  "additionalProperties":false
+                }
+                """.trimIndent(),
+            )
+        var credentialCalls = 0
+        val engine = MockEngine { error("Unsupported schemas must not dispatch.") }
+        val connector = connector(engine) { credentialCalls += 1; "credential" }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(
+                        request(responseFormat = UniversalAiResponseFormat.jsonSchema(unsupported)),
+                    )
+                }
+            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+            assertEquals("invalid_request", failure.error.code.rawValue)
+            assertEquals(OPENROUTER_STRUCTURED_SCHEMA_MESSAGE, failure.message)
+            assertEquals(0, credentialCalls)
+            assertTrue(engine.requestHistory.isEmpty())
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun invalidStructuredProviderValuesUseOneFixedSafeProtocolError() = runTest {
+        val sensitive = "structured-provider-sensitive-fragment"
+        val invalidValues =
+            listOf(
+                """{"answer":"ready"}""",
+                """{"answer":"ready","score":1,"extra":"$sensitive"}""",
+                """{"answer":"other","score":1}""",
+                """{"answer":"ready","score":"1"}""",
+                """{"answer":"ready","score":3}""",
+                """{"answer":"ready","score":1""",
+            )
+
+        invalidValues.forEach { invalid ->
+            val engine = MockEngine { respond(successResponse(text = invalid)) }
+            val connector = connector(engine) { "credential" }
+            try {
+                val failure =
+                    assertFailsWith<UniversalAiException> {
+                        connector.respond(
+                            request(
+                                responseFormat =
+                                    UniversalAiResponseFormat.jsonSchema(supportedSchema()),
+                            ),
+                        )
+                    }
+                assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+                assertEquals("invalid_structured_provider_response", failure.error.code.rawValue)
+                assertEquals(OPENROUTER_INVALID_STRUCTURED_RESPONSE_MESSAGE, failure.message)
+                assertFalse(failure.stackTraceToString().contains(sensitive))
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
+    fun mapsDocumentedTypedErrorsFromHttpAndEmbeddedGenerationEnvelopes() = runTest {
+        data class Case(
+            val errorType: String,
+            val category: UniversalAiErrorCategory,
+            val code: String,
+            val message: String,
+        )
+
+        val cases =
+            listOf(
+                Case("invalid_request", UniversalAiErrorCategory.Validation, "provider_invalid_request", OPENROUTER_INVALID_REQUEST_MESSAGE),
+                Case("authentication", UniversalAiErrorCategory.Authentication, "provider_authentication_failed", OPENROUTER_AUTHENTICATION_MESSAGE),
+                Case("payment_required", UniversalAiErrorCategory.Authorization, "provider_permission_denied", OPENROUTER_PAYMENT_REQUIRED_MESSAGE),
+                Case("not_found", UniversalAiErrorCategory.NotFound, "provider_resource_not_found", OPENROUTER_NOT_FOUND_MESSAGE),
+                Case("image_not_found", UniversalAiErrorCategory.NotFound, "provider_resource_not_found", OPENROUTER_NOT_FOUND_MESSAGE),
+                Case("rate_limit_exceeded", UniversalAiErrorCategory.RateLimit, "provider_rate_limited", OPENROUTER_RATE_LIMIT_MESSAGE),
+                Case("content_policy_violation", UniversalAiErrorCategory.Provider, "provider_response_filtered", OPENROUTER_FILTERED_RESPONSE_MESSAGE),
+                Case("provider_overloaded", UniversalAiErrorCategory.Provider, "provider_unavailable", OPENROUTER_UNAVAILABLE_MESSAGE),
+                Case("timeout", UniversalAiErrorCategory.Provider, "provider_request_timeout", OPENROUTER_TIMEOUT_MESSAGE),
+                Case("server", UniversalAiErrorCategory.Provider, "provider_server_error", OPENROUTER_SERVER_ERROR_MESSAGE),
+                Case("unmapped", UniversalAiErrorCategory.Provider, "provider_request_failed", OPENROUTER_PROVIDER_FAILURE_MESSAGE),
+            )
+        val sensitive = "typed-provider-sensitive-fragment"
+
+        cases.forEachIndexed { index, case ->
+            val status = if (case.errorType == "rate_limit_exceeded") 599 else 598
+            val engine =
+                MockEngine {
+                    respond(
+                        content = errorEnvelope(status, case.errorType, sensitive),
+                        status = HttpStatusCode.fromValue(status),
+                        headers =
+                            Headers.build {
+                                append("X-Request-Id", "req_typed_$index")
+                                append("Retry-After", "2")
+                            },
+                    )
+                }
+            val connector = connector(engine) { "credential" }
+            try {
+                val failure =
+                    assertFailsWith<UniversalAiException> { connector.respond(request()) }
+                assertEquals(case.category, failure.error.category)
+                assertEquals(case.code, failure.error.code.rawValue)
+                assertEquals(case.message, failure.message)
+                with(assertNotNull(failure.error.metadata)) {
+                    assertEquals(status.toLong(), number("statusCode")?.toLongOrNull())
+                    assertEquals("req_typed_$index", string("requestId"))
+                    assertEquals(2_000L, number("retryAfterMillis")?.toLongOrNull())
+                }
+                assertFalse(failure.stackTraceToString().contains(sensitive))
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+
+        val embeddedEngine =
+            MockEngine {
+                respond(
+                    successResponse(
+                        finishReason = "error",
+                        extraChoiceMembers =
+                            ",\"error\":${errorObject(502, "provider_unavailable", sensitive)}",
+                    ),
+                    headers = Headers.build { append("X-Request-Id", "req_embedded") },
+                )
+            }
+        val embeddedConnector = connector(embeddedEngine) { "credential" }
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> { embeddedConnector.respond(request()) }
+            assertEquals(UniversalAiErrorCategory.Provider, failure.error.category)
+            assertEquals("provider_unavailable", failure.error.code.rawValue)
+            assertEquals(OPENROUTER_UNAVAILABLE_MESSAGE, failure.message)
+            assertEquals(
+                "req_embedded",
+                assertNotNull(failure.error.metadata).string("requestId"),
+            )
+            assertFalse(failure.stackTraceToString().contains(sensitive))
+        } finally {
+            embeddedConnector.close()
+            embeddedEngine.close()
+        }
+    }
+
+    @Test
+    fun reportsStructuredSupportAndUnknownModelSupportConservatively() {
+        val configuration =
+            UniversalAiProviderConfiguration(
+                providerId = OPENROUTER_PROVIDER_ID,
+                baseUrl = "https://openrouter.example.invalid/api/v1",
+                credentialSupplier = { error("Capability lookup must not resolve credentials.") },
+            )
+        val registration = builtInProviderRegistration(configuration)
+        assertEquals(OPENROUTER_PROVIDER_CAPABILITY_PROFILE, registration.capabilityProfile)
+        val structured =
+            assertNotNull(
+                registration.capabilityProfile.capabilities[
+                    UniversalAiCapabilityName.StructuredOutput
+                ],
+            )
+        assertEquals(UniversalAiCapabilitySupport.Supported, structured.support)
+        assertEquals(
+            65_536L,
+            structured.limits[UniversalAiCapabilityLimitName.MaxSchemaBytes],
+        )
+        assertEquals(
+            10L,
+            structured.limits[UniversalAiCapabilityLimitName.MaxSchemaDepth],
+        )
+        assertEquals(
+            UniversalAiCapabilitySupport.Supported,
+            assertNotNull(
+                registration.capabilityProfile.capabilities[
+                    UniversalAiCapabilityName.Streaming
+                ],
+            ).support,
+        )
+        val registry = ProviderRegistry(listOf(registration), noDispatchTransport())
+        val modelCapabilities =
+            assertNotNull(
+                registry.capabilitiesOrNull(
+                    UniversalAiTarget(
+                        providerId = OPENROUTER_PROVIDER_ID,
+                        modelId = ModelId.of("unverified/provider-model"),
+                    ),
+                ),
+            )
+        assertEquals(
+            UniversalAiCapabilitySupport.Unknown,
+            assertNotNull(modelCapabilities[UniversalAiCapabilityName.StructuredOutput]).support,
+        )
+        assertEquals(
+            UniversalAiCapabilitySupport.Supported,
+            assertNotNull(modelCapabilities[UniversalAiCapabilityName.Streaming]).support,
+        )
+    }
+
+    @Test
+    fun statusFailuresMapOnlySafeHttpAndTransportMetadata() = runTest {
+        val credential = "adversarial-credential-fragment"
+        val providerFragment = "provider-body-sensitive-fragment"
+        val engine =
+            MockEngine {
+                respond(
+                    content = """{"error":{"message":"$credential $providerFragment"}}""",
+                    status = HttpStatusCode.TooManyRequests,
+                    headers =
+                        Headers.build {
+                            append("X-Request-Id", "req_rate_limit")
+                            append("Retry-After", "7")
+                        },
+                )
+            }
+        val connector = connector(engine) { credential }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.RateLimit, failure.error.category)
+            assertEquals("provider_rate_limited", failure.error.code.rawValue)
+            assertEquals(OPENROUTER_RATE_LIMIT_MESSAGE, failure.message)
+            with(assertNotNull(failure.error.metadata)) {
+                assertEquals(429L, number("statusCode")?.toLongOrNull())
+                assertEquals("req_rate_limit", string("requestId"))
+                assertEquals(7_000L, number("retryAfterMillis")?.toLongOrNull())
+            }
+            val diagnostic = failure.stackTraceToString()
+            assertFalse(diagnostic.contains(credential))
+            assertFalse(diagnostic.contains(providerFragment))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun bodylessPayloadTooLargeMapsToSafeValidationFallback() = runTest {
+        val engine =
+            MockEngine {
+                respond(
+                    content = "",
+                    status = HttpStatusCode.fromValue(413),
+                    headers = Headers.build { append("X-Request-Id", "req_payload_too_large") },
+                )
+            }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.Validation, failure.error.category)
+            assertEquals("provider_invalid_request", failure.error.code.rawValue)
+            assertEquals(OPENROUTER_INVALID_REQUEST_MESSAGE, failure.message)
+            with(assertNotNull(failure.error.metadata)) {
+                assertEquals(413L, number("statusCode")?.toLongOrNull())
+                assertEquals("req_payload_too_large", string("requestId"))
+            }
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun successfulEnvelopeErrorMapsToFixedSafeProviderFailure() = runTest {
+        val sensitive = "provider-sensitive-message"
+        val engine =
+            MockEngine {
+                respond(
+                    content =
+                        """
+                        {
+                          "error":{
+                            "code":500,
+                            "message":"$sensitive",
+                            "metadata":{"provider_name":"sensitive-upstream"}
+                          }
+                        }
+                        """.trimIndent(),
+                )
+            }
+        val connector = connector(engine) { "credential" }
+
+        try {
+            val failure =
+                assertFailsWith<UniversalAiException> {
+                    connector.respond(request())
+                }
+
+            assertEquals(UniversalAiErrorCategory.Provider, failure.error.category)
+            assertEquals("provider_request_failed", failure.error.code.rawValue)
+            assertEquals(OPENROUTER_PROVIDER_FAILURE_MESSAGE, failure.message)
+            assertFalse(failure.stackTraceToString().contains(sensitive))
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun reasoningMetadataAlongsideValidAssistantTextIsIgnored() = runTest {
+        listOf(
+            successResponse(extraMessageMembers = ""","reasoning":"hidden""""),
+            successResponse(extraMessageMembers = ""","reasoning_content":"hidden""""),
+            successResponse(
+                extraMessageMembers =
+                    ""","reasoning_details":[{"type":"reasoning.text","text":"hidden"}]""",
+            ),
+        ).forEach { payload ->
+            val engine = MockEngine { respond(payload) }
+            val connector = connector(engine) { "credential" }
+            try {
+                assertEquals("ready", connector.respond(request()).outputs.single().text)
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
+    fun malformedIncompleteOrUnsupportedSuccessPayloadsUseOneFixedSafeError() = runTest {
+        val malformedPayloads =
+            listOf(
+                """{"not_json":""",
+                successResponse(model = "provider-substitution"),
+                successResponse(objectType = "response"),
+                successResponse(choices = "[]"),
+                successResponse(
+                    choices =
+                        """
+                        [
+                          {
+                            "index":0,
+                            "message":{"role":"assistant","content":"one"},
+                            "finish_reason":"stop"
+                          },
+                          {
+                            "index":1,
+                            "message":{"role":"assistant","content":"two"},
+                            "finish_reason":"stop"
+                          }
+                        ]
+                        """.trimIndent(),
+                ),
+                successResponse(choiceIndex = 1),
+                successResponse(role = "tool"),
+                successResponse(text = ""),
+                successResponse(text = "   "),
+                successResponse(
+                    text = "",
+                    extraMessageMembers = ""","reasoning_content":"hidden"""",
+                ),
+                successResponse(finishReason = "tool_calls"),
+                successResponse(
+                    extraMessageMembers = ""","tool_calls":[{"id":"call_1"}]""",
+                ),
+                successResponse(
+                    extraMessageMembers = ""","function_call":{"name":"tool"}""",
+                ),
+                successResponse(
+                    extraChoiceMembers = ""","delta":{"content":"streamed"}""",
+                ),
+                successResponse(
+                    usage =
+                        """
+                        {"prompt_tokens":12,"completion_tokens":5,"total_tokens":18}
+                        """.trimIndent(),
+                ),
+            )
+
+        malformedPayloads.forEach { payload ->
+            val engine = MockEngine { respond(payload) }
+            val connector = connector(engine) { "credential" }
+            try {
+                val failure =
+                    assertFailsWith<UniversalAiException> {
+                        connector.respond(request())
+                    }
+                assertEquals(UniversalAiErrorCategory.Protocol, failure.error.category)
+                assertEquals("malformed_provider_response", failure.error.code.rawValue)
+                assertEquals(OPENROUTER_MALFORMED_RESPONSE_MESSAGE, failure.message)
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
+    fun supportedFinishReasonsTranslateConservatively() = runTest {
+        val cases =
+            listOf(
+                "stop" to UniversalAiCompletionReason.Stop,
+                "length" to UniversalAiCompletionReason.MaxOutputTokens,
+                "content_filter" to UniversalAiCompletionReason.ContentFilter,
+            )
+
+        cases.forEach { (finishReason, expected) ->
+            val engine =
+                MockEngine {
+                    respond(
+                        successResponse(
+                            id = "response-$finishReason",
+                            finishReason = finishReason,
+                        ),
+                    )
+                }
+            val connector = connector(engine) { "credential" }
+            try {
+                assertEquals(expected, connector.respond(request()).completionReason)
+            } finally {
+                connector.close()
+                engine.close()
+            }
+        }
+    }
+
+    @Test
+    fun cancellingPendingMockEngineRequestRemainsCallerCancellation() = runTest {
+        val requestStarted = CompletableDeferred<Unit>()
+        var credentialCalls = 0
+        val engine =
+            MockEngine {
+                requestStarted.complete(Unit)
+                awaitCancellation()
+            }
+        val connector =
+            connector(engine) {
+                credentialCalls += 1
+                "credential"
+            }
+
+        try {
+            val operation =
+                async(start = CoroutineStart.UNDISPATCHED) {
+                    connector.respond(request())
+                }
+            requestStarted.await()
+            operation.cancel()
+
+            assertFailsWith<CancellationException> {
+                operation.await()
+            }
+            assertEquals(1, credentialCalls)
+        } finally {
+            connector.close()
+            engine.close()
+        }
+    }
+
+    private fun connector(
+        engine: MockEngine,
+        credentialSupplier: () -> String,
+    ): UniversalAiConnector =
+        UniversalAiConnector(
+            configuration =
+                UniversalAiConnectorConfiguration(
+                    listOf(
+                        UniversalAiProviderConfiguration(
+                            providerId = OPENROUTER_PROVIDER_ID,
+                            baseUrl = "https://openrouter.example.invalid/api/v1",
+                            credentialSupplier = credentialSupplier,
+                        ),
+                    ),
+                ),
+            httpEngine = engine,
+        )
+
+    private fun request(
+        providerId: String = "openrouter",
+        generation: UniversalAiGenerationParameters = UniversalAiGenerationParameters.Default,
+        responseFormat: UniversalAiResponseFormat = UniversalAiResponseFormat.PlainText,
+        input: List<UniversalAiTextInput> =
+            listOf(
+                UniversalAiTextInput(
+                    role = UniversalAiInputRole.System,
+                    content = "system rules",
+                ),
+                UniversalAiTextInput(
+                    role = UniversalAiInputRole.User,
+                    content = "question",
+                ),
+                UniversalAiTextInput(
+                    role = UniversalAiInputRole.Assistant,
+                    content = "earlier answer",
+                ),
+            ),
+    ): UniversalAiRequest =
+        UniversalAiRequest(
+            target =
+                UniversalAiTarget(
+                    providerId = ProviderId.of(providerId),
+                    modelId = ModelId.of("requested/provider-model"),
+                ),
+            input = input,
+            responseFormat = responseFormat,
+            generation = generation,
+        )
+
+    private fun successResponse(
+        id: String = "chatcmpl_test",
+        objectType: String = "chat.completion",
+        model: String = "requested/provider-model",
+        text: String = "ready",
+        role: String = "assistant",
+        finishReason: String = "stop",
+        choiceIndex: Int = 0,
+        choices: String? = null,
+        extraMessageMembers: String = "",
+        extraChoiceMembers: String = "",
+        usage: String =
+            """
+            {
+              "prompt_tokens":12,
+              "completion_tokens":5,
+              "total_tokens":17,
+              "prompt_tokens_details":{"cached_tokens":2},
+              "completion_tokens_details":{"reasoning_tokens":1}
+            }
+            """.trimIndent(),
+    ): String =
+        """
+        {
+          "id":"$id",
+          "object":"$objectType",
+          "model":"$model",
+          "choices":${choices ?: """
+            [{
+              "index":$choiceIndex,
+              "message":{
+                "role":"$role",
+                "content":${JsonPrimitive(text)}
+                $extraMessageMembers
+              },
+              "finish_reason":"$finishReason"
+              $extraChoiceMembers
+            }]
+          """.trimIndent()},
+          "usage":$usage,
+          "future_optional_field":true
+        }
+        """.trimIndent()
+
+    private fun supportedSchema(): StructuredOutputSchema =
+        StructuredOutputSchema.parse(
+            """
+            {
+              "type":"object",
+              "properties":{
+                "answer":{"type":"string","enum":["ready"]},
+                "score":{"type":"integer","minimum":1,"maximum":2}
+              },
+              "required":["answer","score"],
+              "additionalProperties":false
+            }
+            """.trimIndent(),
+        )
+
+    private fun errorEnvelope(
+        code: Int,
+        errorType: String,
+        sensitive: String,
+    ): String = """{"error":${errorObject(code, errorType, sensitive)}}"""
+
+    private fun errorObject(
+        code: Int,
+        errorType: String,
+        sensitive: String,
+    ): String =
+        """{"code":$code,"message":"$sensitive","metadata":{"error_type":"$errorType","provider_code":"$sensitive"}}"""
+
+    private fun noDispatchTransport(): ConnectorTransport =
+        object : ConnectorTransport {
+            override suspend fun <Result> execute(
+                request: ConnectorTransportRequest,
+                consumeResponse: suspend (ConnectorTransportResponse) -> Result,
+            ): Result = error("Capability lookup must not dispatch.")
+
+            override fun close() = Unit
+        }
+}
+
+private fun OutgoingContent.bodyBytes(): ByteArray =
+    (this as OutgoingContent.ByteArrayContent).bytes()
+
+private fun JsonObject.string(name: String): String =
+    (this[name] as JsonPrimitive).content
+
+private fun JsonObject.int(name: String): Int =
+    (this[name] as JsonPrimitive).int
+
+private fun JsonObject.double(name: String): Double =
+    (this[name] as JsonPrimitive).double
+
+private fun JsonObject.boolean(name: String): Boolean =
+    (this[name] as JsonPrimitive).boolean
+
+private val JSON = Json

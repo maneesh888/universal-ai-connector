@@ -122,7 +122,7 @@ verify_platform_packaging_boundaries() {
     echo "Could not inspect JVM artifact: $jvm_jar" >&2
     return 1
   fi
-  if grep -q '^com/maneesh/universalai/apple/.*\.class$' "$jvm_listing"; then
+  if grep -q '^com/myadidi/universalai/apple/.*\.class$' "$jvm_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "JVM artifact must not contain Apple bridge classes: $jvm_jar" >&2
     return 1
@@ -134,7 +134,7 @@ verify_platform_packaging_boundaries() {
       return 1
     fi
   fi
-  if grep -q '^com/maneesh/universalai/poc/.*\.class$' "$jvm_listing"; then
+  if grep -q '^com/myadidi/universalai/poc/.*\.class$' "$jvm_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "JVM artifact must not contain retired POC classes: $jvm_jar" >&2
     return 1
@@ -162,7 +162,7 @@ verify_platform_packaging_boundaries() {
     echo "Could not inspect Android classes.jar from: $android_aar" >&2
     return 1
   fi
-  if grep -q '^com/maneesh/universalai/apple/.*\.class$' "$android_listing"; then
+  if grep -q '^com/myadidi/universalai/apple/.*\.class$' "$android_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Android artifact must not contain Apple bridge classes: $android_aar" >&2
     return 1
@@ -174,7 +174,7 @@ verify_platform_packaging_boundaries() {
       return 1
     fi
   fi
-  if grep -q '^com/maneesh/universalai/poc/.*\.class$' "$android_listing"; then
+  if grep -q '^com/myadidi/universalai/poc/.*\.class$' "$android_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Android artifact must not contain retired POC classes: $android_aar" >&2
     return 1
@@ -217,12 +217,12 @@ verify_public_artifact_signatures() {
   : > "$signatures"
   while IFS= read -r class_entry; do
     case "$class_entry" in
-      com/maneesh/universalai/connector/internal/* | *'$'* | module-info.class)
+      com/myadidi/universalai/connector/internal/* | *'$'* | module-info.class)
         continue
         ;;
-      com/maneesh/universalai/connector/*.class | \
-        com/maneesh/universalai/connector/contract/*.class | \
-        com/maneesh/universalai/connector/contract/*/*.class)
+      com/myadidi/universalai/connector/*.class | \
+        com/myadidi/universalai/connector/contract/*.class | \
+        com/myadidi/universalai/connector/contract/*/*.class)
         class_name="${class_entry%.class}"
         class_name="${class_name//\//.}"
         if ! "$javap_command" -public -classpath "$artifact" "$class_name" >> "$signatures"; then

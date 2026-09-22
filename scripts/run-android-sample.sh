@@ -58,7 +58,7 @@ main() {
 
   install_sample
   run_adb shell am start -W \
-    -n com.maneesh.universalai.samples.android/.MainActivity
+    -n com.myadidi.universalai.samples.android/.MainActivity
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

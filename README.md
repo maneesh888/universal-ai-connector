@@ -209,7 +209,7 @@ Native Linux, Windows, and macOS artifacts are demand-driven. The initial deskto
 
 P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. The JVM console remains the headless and server-oriented verification path.
 
-The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond`, `listModels`, and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes. The complete source-revision integration contract is in [`docs/PRODUCTION_CONSUMPTION.md`](docs/PRODUCTION_CONSUMPTION.md).
+The current Kotlin client is `com.myadidi.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond`, `listModels`, and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes. The complete source-revision integration contract is in [`docs/PRODUCTION_CONSUMPTION.md`](docs/PRODUCTION_CONSUMPTION.md).
 
 Provider configuration is immutable and provider-neutral. Applications supply a synchronous
 credential loader owned by the host; the connector invokes it once per network request and does
@@ -520,13 +520,13 @@ The console sample declares only `implementation(project(":bridge"))` for connec
 The first-use path is:
 
 ```kotlin
-import com.maneesh.universalai.connector.UniversalAiConnector
-import com.maneesh.universalai.connector.contract.ModelId
-import com.maneesh.universalai.connector.contract.ProviderId
-import com.maneesh.universalai.connector.contract.UniversalAiInputRole
-import com.maneesh.universalai.connector.contract.UniversalAiRequest
-import com.maneesh.universalai.connector.contract.UniversalAiTarget
-import com.maneesh.universalai.connector.contract.UniversalAiTextInput
+import com.myadidi.universalai.connector.UniversalAiConnector
+import com.myadidi.universalai.connector.contract.ModelId
+import com.myadidi.universalai.connector.contract.ProviderId
+import com.myadidi.universalai.connector.contract.UniversalAiInputRole
+import com.myadidi.universalai.connector.contract.UniversalAiRequest
+import com.myadidi.universalai.connector.contract.UniversalAiTarget
+import com.myadidi.universalai.connector.contract.UniversalAiTextInput
 
 fun request(content: String) =
     UniversalAiRequest(

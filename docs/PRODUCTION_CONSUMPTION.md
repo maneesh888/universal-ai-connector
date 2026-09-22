@@ -6,9 +6,18 @@ artifacts, tag a release, or deploy a consumer. The pull-request brief is the au
 of the exact verified commit SHA; downstream repositories must pin that immutable SHA rather than
 a branch name.
 
+## Identity and compatibility
+
+Universal AI Connector is an unreleased library. Its configured Maven group is `com.myadidi`, and
+its Kotlin package root is `com.myadidi.universalai`; no artifact is published by this repository
+or this change. The superseded `com.maneesh.universalai` package is not retained as a source or
+binary compatibility façade because no public artifact was released under it. Downstream source
+consumers must update imports when they pin a commit containing this migration. The supported Swift
+product and module name remains `UniversalAiConnector`.
+
 ## Supported host entry points
 
-- Kotlin/JVM and Android: `com.maneesh.universalai.connector.UniversalAiConnector` from the
+- Kotlin/JVM and Android: `com.myadidi.universalai.connector.UniversalAiConnector` from the
   `:bridge` Gradle module.
 - Apple: the `UniversalAiConnector` Swift Package product in `swift-package/`. Application and
   app-extension code must not import `UniversalAiConnectorBridge`.
