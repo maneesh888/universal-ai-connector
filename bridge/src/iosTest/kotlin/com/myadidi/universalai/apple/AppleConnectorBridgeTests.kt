@@ -151,7 +151,7 @@ class AppleConnectorBridgeTests {
             assertEquals("provider", category)
             assertEquals("simulated_failure", code)
             assertEquals(
-                "The Universal AI Connector produced the requested simulated failure.",
+                "The Adidi Universal AI Connector produced the requested simulated failure.",
                 message,
             )
             assertNull(metadata)
@@ -628,7 +628,7 @@ class AppleConnectorBridgeTests {
         listOf(responseErrors.single(), streamErrors.single()).forEach { failure ->
             assertEquals("validation", failure.category)
             assertEquals("invalid_request", failure.code)
-            assertEquals("The Universal AI Connector is closed.", failure.message)
+            assertEquals("The Adidi Universal AI Connector is closed.", failure.message)
             assertNull(failure.metadata)
             assertTrue(failure.extensions.entries.isEmpty())
         }

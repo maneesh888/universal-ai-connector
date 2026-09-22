@@ -49,7 +49,7 @@ class JvmConsoleSampleTests {
                     "5:output.completed:output=Kotlin echo: stream | " +
                     "6:response.completed:response=Kotlin echo: stream:terminal=true",
                 "Error: provider/simulated_failure: " +
-                    "The Universal AI Connector produced the requested simulated failure.",
+                    "The Adidi Universal AI Connector produced the requested simulated failure.",
                 "One-shot cancellation: cancelled",
                 "Stream stopped after event: 3:output.delta:delta=Kotlin echo: ",
             ),

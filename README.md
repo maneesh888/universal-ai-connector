@@ -1,4 +1,4 @@
-# Universal AI Connector
+# Adidi Universal AI Connector
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
@@ -7,7 +7,7 @@
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
 
-Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Android, iOS, and Kotlin/JVM applications. The initial JVM artifact is intended to provide portable Linux, Windows, and macOS consumption without requiring separate native desktop builds.
+Adidi Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Android, iOS, and Kotlin/JVM applications. The initial JVM artifact is intended to provide portable Linux, Windows, and macOS consumption without requiring separate native desktop builds.
 
 The repository has completed its P1 cross-platform baseline and P2 provider-neutral contract foundation. Apple applications use the product-facing `UniversalAiConnector` Swift Package product over one local XCFramework containing iOS ARM64 device and simulator slices. The Swift façade preserves asynchronous response, streaming, stable errors, cancellation, concurrency, and exactly-once terminal handling. Android and JVM share the product-facing Kotlin client through the public Gradle module boundary.
 
@@ -176,11 +176,11 @@ provider-neutral package-boundary acceptance.
 
 ## Architecture direction
 
-Applications will consume Universal AI Connector models rather than provider DTOs:
+Applications will consume Adidi Universal AI Connector models rather than provider DTOs:
 
 ```text
 Application
-    -> Universal AI Connector client
+    -> Adidi Universal AI Connector client
     -> provider adapter
     -> provider or OpenAI-compatible LLM Gateway endpoint
     -> canonical response/error/stream events
@@ -693,7 +693,7 @@ Provider and gateway work begins only after the cross-platform package foundatio
 
 ## License
 
-Universal AI Connector is available under the MIT License. See [`LICENSE`](LICENSE).
+Adidi Universal AI Connector is available under the MIT License. See [`LICENSE`](LICENSE).
 
 ## P8-C desktop and console live testing
 

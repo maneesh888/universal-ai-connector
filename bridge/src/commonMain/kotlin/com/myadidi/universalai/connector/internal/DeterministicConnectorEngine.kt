@@ -202,7 +202,7 @@ internal class DeterministicConnectorEngine : ConnectorEngine {
         const val UNSUPPORTED_GENERATION_MESSAGE =
             "The deterministic connector does not support generation parameters."
         const val SIMULATED_FAILURE_MESSAGE =
-            "The Universal AI Connector produced the requested simulated failure."
+            "The Adidi Universal AI Connector produced the requested simulated failure."
 
         val RESPONSE_ID = ResponseId.of("deterministic-response")
         val OUTPUT_ID = OutputId.of("deterministic-output-0")

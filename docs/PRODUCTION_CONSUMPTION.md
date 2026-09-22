@@ -1,14 +1,14 @@
 # Production consumption contract
 
 This document defines the supported source-revision consumption boundary for applications that
-need Universal AI Connector before remote P8 distribution exists. It does not activate P8, publish
+need Adidi Universal AI Connector before remote P8 distribution exists. It does not activate P8, publish
 artifacts, tag a release, or deploy a consumer. The pull-request brief is the authoritative record
 of the exact verified commit SHA; downstream repositories must pin that immutable SHA rather than
 a branch name.
 
 ## Identity and compatibility
 
-Universal AI Connector is an unreleased library. Its configured Maven group is `com.myadidi`, and
+Adidi Universal AI Connector is an unreleased library. Its configured Maven group is `com.myadidi`, and
 its Kotlin package root is `com.myadidi.universalai`; no artifact is published by this repository
 or this change. The superseded `com.maneesh.universalai` package is not retained as a source or
 binary compatibility façade because no public artifact was released under it. Downstream source

@@ -144,7 +144,7 @@ class UniversalAiConnectorTests {
         assertEquals(UniversalAiErrorCategory.Provider, failure.error.category)
         assertEquals(UniversalAiErrorCode.SimulatedFailure, failure.error.code)
         assertEquals(
-            "The Universal AI Connector produced the requested simulated failure.",
+            "The Adidi Universal AI Connector produced the requested simulated failure.",
             failure.message,
         )
 

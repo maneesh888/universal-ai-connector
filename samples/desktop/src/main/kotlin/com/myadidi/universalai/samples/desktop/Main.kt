@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
                     else exitApplication()
                 }
             }
-        }, title = "Universal AI Connector", state = rememberWindowState(width = 980.dp, height = 820.dp)) {
+        }, title = "Adidi Universal AI Connector", state = rememberWindowState(width = 980.dp, height = 820.dp)) {
             MaterialTheme {
                 Surface(Modifier.fillMaxSize()) { DesktopApp(input, storage, closing) }
                 if (confirmClose) AlertDialog(onDismissRequest = { confirmClose = false },
@@ -80,7 +80,7 @@ internal fun DesktopApp(input: DesktopLiveInput?, storage: DesktopStorageActions
     LaunchedEffect(closing) { if (closing) { live.deactivate(); demo.cancel() } }
     DisposableEffect(Unit) { onDispose { live.close(); demo.close() } }
     Column(Modifier.padding(28.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Universal AI Connector", style = MaterialTheme.typography.headlineLarge)
+        Text("Adidi Universal AI Connector", style = MaterialTheme.typography.headlineLarge)
         Text("Desktop live testing · macOS, Windows & Linux", style = MaterialTheme.typography.bodyLarge)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             FilterChip(selected = !liveMode, enabled = !closing, onClick = { live.deactivate(); liveMode = false }, label = { Text("Deterministic") }, modifier = Modifier.testTag("mode-deterministic"))

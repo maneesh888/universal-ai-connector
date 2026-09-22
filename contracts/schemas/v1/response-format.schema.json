@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:universal-ai-connector:contract:v1:response-format",
-  "title": "Universal AI Connector V1 Response Format",
+  "title": "Adidi Universal AI Connector V1 Response Format",
   "description": "Plain-text, governed JSON Schema, or a future raw response-format kind. Known kind/schema coupling is a semantic constraint.",
   "type": "object",
   "properties": {

@@ -66,7 +66,7 @@ class AndroidSampleControllerTest {
             )
             assertEquals(
                 "provider/simulated_failure: " +
-                    "The Universal AI Connector produced the requested simulated failure.",
+                    "The Adidi Universal AI Connector produced the requested simulated failure.",
                 state.error,
             )
             assertEquals("Cancelled before completion", state.responseCancellation)

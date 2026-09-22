@@ -122,7 +122,7 @@ case "$MODE" in
       :bridge:jvmTest \
       :bridge:testAndroidHostTest \
       :bridge:iosSimulatorArm64Test
-    echo "Universal AI Connector contract checks passed."
+    echo "Adidi Universal AI Connector contract checks passed."
     ;;
   --layout-only|layout-only)
     verify_layout

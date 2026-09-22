@@ -33,4 +33,4 @@ internal fun Throwable.toUniversalAiException(): UniversalAiException =
     }
 
 internal const val UNEXPECTED_CONNECTOR_FAILURE_MESSAGE: String =
-    "The Universal AI Connector failed unexpectedly."
+    "The Adidi Universal AI Connector failed unexpectedly."

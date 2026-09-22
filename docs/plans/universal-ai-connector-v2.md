@@ -1,4 +1,4 @@
-# Universal AI Connector V2 Roadmap
+# Adidi Universal AI Connector V2 Roadmap
 
 ## Status
 
@@ -50,7 +50,7 @@ This document is the package repository's source of truth for implementation ord
 
 ## Product boundary
 
-Universal AI Connector is an independent Kotlin Multiplatform package. It must not depend on OpenKeyboard, SwiftUI, App Group storage, Keychain storage, keyboard actions, keyboard prompts, or Gateway V1 DTOs.
+Adidi Universal AI Connector is an independent Kotlin Multiplatform package. It must not depend on OpenKeyboard, SwiftUI, App Group storage, Keychain storage, keyboard actions, keyboard prompts, or Gateway V1 DTOs.
 
 The package owns provider-neutral public models. Provider protocols remain internal adapters. An
 OpenAI-compatible Gateway uses the existing generic `openai-compatible` adapter rather than a

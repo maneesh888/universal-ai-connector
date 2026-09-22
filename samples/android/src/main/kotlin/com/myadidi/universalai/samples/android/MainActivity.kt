@@ -109,7 +109,7 @@ private fun AndroidSampleScreen(controller: AndroidSampleController) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Text(
-                text = "Universal AI Connector",
+                text = "Adidi Universal AI Connector",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )

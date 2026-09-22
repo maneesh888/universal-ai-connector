@@ -57,7 +57,7 @@ run_hygiene() {
     git -C "$ROOT" diff --check
   rm -rf "$temp_index_directory"
 
-  echo "Universal AI Connector hygiene checks passed."
+  echo "Adidi Universal AI Connector hygiene checks passed."
 }
 
 run_script_tests() {
@@ -251,7 +251,7 @@ run_quick() {
   run_hygiene --quick
   run_script_tests
   run_cross_platform_gradle_checks
-  echo "Universal AI Connector quick checks passed."
+  echo "Adidi Universal AI Connector quick checks passed."
 }
 
 run_full() {
@@ -267,7 +267,7 @@ run_full() {
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"
 
-  echo "Universal AI Connector complete deterministic checks passed."
+  echo "Adidi Universal AI Connector complete deterministic checks passed."
 }
 
 case "$MODE" in

@@ -245,7 +245,7 @@ class UniversalAiConnector private constructor(
         const val LIBRARY_VERSION: String = "0.1.0-alpha.1"
         const val SIMULATED_ERROR_INPUT: String = "__force_error__"
 
-        internal const val CLOSED_MESSAGE: String = "The Universal AI Connector is closed."
+        internal const val CLOSED_MESSAGE: String = "The Adidi Universal AI Connector is closed."
 
         internal fun createForTesting(
             engineFactory: () -> ConnectorEngine,

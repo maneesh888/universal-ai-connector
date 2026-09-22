@@ -1,6 +1,6 @@
 import UniversalAiConnectorBridge
 
-/// The supported Apple client for Universal AI Connector.
+/// The supported Apple client for Adidi Universal AI Connector.
 ///
 /// A connector is reusable and supports concurrent responses and independently
 /// created streams. Each returned stream supports one consuming task. Cancelling
@@ -335,7 +335,7 @@ public final class UniversalAiConnector: @unchecked Sendable {
     private static let closedError = UniversalAiConnectorError(
         trustedCategory: .validation,
         code: .invalidRequest,
-        message: "The Universal AI Connector is closed."
+        message: "The Adidi Universal AI Connector is closed."
     )
 
     private static func map(
