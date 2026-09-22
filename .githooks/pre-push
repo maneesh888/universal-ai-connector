@@ -41,7 +41,7 @@ require_pushed_refs_match_head() {
 
 require_clean_tree
 require_pushed_refs_match_head < "$PUSH_REFS_FILE"
-echo "Running Universal AI Connector pre-push checks..."
+echo "Running Adidi Universal AI Connector pre-push checks..."
 env \
   -u OPENAI_API_KEY \
   -u OPENAI_LIVE_MODEL \
