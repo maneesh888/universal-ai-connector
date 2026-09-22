@@ -7,6 +7,8 @@ plugins {
     id("com.android.kotlin.multiplatform.library")
 }
 
+group = "com.myadidi"
+
 kotlin {
     val xcframework = XCFramework("UniversalAiConnectorBridge")
     val ktorVersion = "3.5.2"
@@ -14,7 +16,7 @@ kotlin {
     jvm()
 
     androidLibrary {
-        namespace = "com.maneesh.universalai.connector.bridge"
+        namespace = "com.myadidi.universalai.connector.bridge"
         compileSdk = 36
         minSdk = 24
         buildToolsVersion = "36.1.0"
@@ -26,7 +28,7 @@ kotlin {
         binaries.framework {
             baseName = "UniversalAiConnectorBridge"
             isStatic = true
-            binaryOption("bundleId", "com.maneesh.universalai.connector.bridge")
+            binaryOption("bundleId", "com.myadidi.universalai.connector.bridge")
             freeCompilerArgs +=
                 "-Xoverride-konan-properties=minVersion.ios=17.0"
             xcframework.add(this)
@@ -37,7 +39,7 @@ kotlin {
         binaries.framework {
             baseName = "UniversalAiConnectorBridge"
             isStatic = true
-            binaryOption("bundleId", "com.maneesh.universalai.connector.bridge")
+            binaryOption("bundleId", "com.myadidi.universalai.connector.bridge")
             freeCompilerArgs +=
                 "-Xoverride-konan-properties=minVersion.ios=17.0"
             xcframework.add(this)

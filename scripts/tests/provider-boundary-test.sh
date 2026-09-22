@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PROVIDER_SOURCES="$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider"
+PROVIDER_SOURCES="$ROOT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/internal/provider"
 PROVIDER_IMPLEMENTATION_PATTERN='(OpenAi|Anthropic|OpenRouter)[A-Za-z0-9_]*(Wire|Adapter|Translator)'
 scan_status=0
 
@@ -28,8 +28,8 @@ case "$scan_status" in
 esac
 
 for supported_surface in \
-  "$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector" \
-  "$ROOT/bridge/src/iosMain/kotlin/com/maneesh/universalai/apple" \
+  "$ROOT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector" \
+  "$ROOT/bridge/src/iosMain/kotlin/com/myadidi/universalai/apple" \
   "$ROOT/swift-package/Sources" \
   "$ROOT/samples"; do
   scan_status=0

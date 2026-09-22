@@ -88,7 +88,7 @@ def main():
         raise ValueError("Booted device required")
     STAGE = "Android build"
     run([str(root / "gradlew"), ":samples:android:assembleDebug", "--no-configuration-cache"])
-    app = "com.maneesh.universalai.samples.android"
+    app = "com.myadidi.universalai.samples.android"
     STAGE = "Android install"
     run(adb + ["install", "-r", str(root / "samples/android/build/outputs/apk/debug/android-debug.apk")])
     name = "uac_live_" + secrets.token_hex(16)

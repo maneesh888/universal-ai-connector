@@ -15,7 +15,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.maneesh.universalai.samples.jvm.MainKt")
+    mainClass.set("com.myadidi.universalai.samples.jvm.MainKt")
 }
 
 tasks.register("consumerCheck") {

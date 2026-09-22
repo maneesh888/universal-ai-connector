@@ -1,4 +1,4 @@
-name: Universal AI Connector CI
+name: Adidi Universal AI Connector CI
 
 on:
   pull_request:
@@ -205,4 +205,4 @@ jobs:
             exit 1
           fi
 
-          echo "All required Universal AI Connector checks passed."
+          echo "All required Adidi Universal AI Connector checks passed."

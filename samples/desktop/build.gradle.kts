@@ -16,7 +16,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
-compose.desktop { application { mainClass = "com.maneesh.universalai.samples.desktop.MainKt" } }
+compose.desktop { application { mainClass = "com.myadidi.universalai.samples.desktop.MainKt" } }
 tasks.register("consumerCheck") {
     group = "verification"
     dependsOn("check", "jar")

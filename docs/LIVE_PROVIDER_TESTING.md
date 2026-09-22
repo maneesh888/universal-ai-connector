@@ -212,7 +212,7 @@ Trust boundary: local execution is contributor-attested; GitHub verifies retaine
 
 ## Secretless GitHub policy
 
-The `Universal AI Connector Live Verification` workflow classifies the provider set affected by
+The `Adidi Universal AI Connector Live Verification` workflow classifies the provider set affected by
 the exact pull-request head. Provider-specific paths select that delivered provider; shared
 bridge, build, Swift package, authentication, and live-policy paths select all delivered providers.
 An undelivered or ambiguous affected provider path fails closed to every delivered provider. A

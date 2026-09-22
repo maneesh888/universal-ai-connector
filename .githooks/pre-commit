@@ -17,5 +17,5 @@ if [[ -n "$(git -C "$ROOT" ls-files --others --exclude-standard)" ]]; then
   exit 1
 fi
 
-echo "Running Universal AI Connector pre-commit checks..."
+echo "Running Adidi Universal AI Connector pre-commit checks..."
 "$ROOT/scripts/check.sh" --quick

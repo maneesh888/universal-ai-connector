@@ -10,7 +10,7 @@ PROOF_CREDENTIAL="${UAC_IOS_SAMPLE_PROOF_CREDENTIAL:-}"
 PROOF_MODEL="${UAC_IOS_SAMPLE_PROOF_MODEL:-}"
 PROOF_BASE_URL="${UAC_IOS_SAMPLE_PROOF_BASE_URL:-}"
 DERIVED_DATA="${UAC_IOS_LIVE_SAMPLE_DERIVED_DATA:-${TMPDIR:-/tmp}/universal-ai-connector-ios-live-sample-derived}"
-BUNDLE_ID="com.maneesh.universalai.connector.sample"
+BUNDLE_ID="com.myadidi.universalai.connector.sample"
 
 unset \
   UAC_IOS_SAMPLE_PROOF_CREDENTIAL \

@@ -6,7 +6,7 @@ EXPECTED_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HOOKS_PATH="$(git -C "$ROOT" config --local --get core.hooksPath || true)"
 
 if [[ "$ROOT" != "$EXPECTED_ROOT" ]]; then
-  echo "Run this script from the Universal AI Connector repository." >&2
+  echo "Run this script from the Adidi Universal AI Connector repository." >&2
   exit 1
 fi
 
@@ -21,4 +21,4 @@ fi
 chmod +x "$ROOT/.githooks/pre-commit" "$ROOT/.githooks/pre-push"
 git -C "$ROOT" config --local core.hooksPath .githooks
 
-echo "Universal AI Connector pre-commit and pre-push hooks enabled from .githooks/."
+echo "Adidi Universal AI Connector pre-commit and pre-push hooks enabled from .githooks/."
