@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(git rev-parse --show-toplevel)"
+ROOT="$(cd "$(git rev-parse --show-toplevel)" && pwd -P)"
 EXPECTED_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HOOKS_PATH="$(git -C "$ROOT" config --local --get core.hooksPath || true)"
 

@@ -24,6 +24,15 @@ write_executable() {
   chmod +x "$path"
 }
 
+write_command_proxy() {
+  local path="$1"
+  local target="$2"
+
+  write_executable "$path" \
+    '#!/bin/sh' \
+    "exec \"$target\" \"\$@\""
+}
+
 write_java() {
   local path="$1"
   local version="$2"
@@ -57,17 +66,17 @@ mkdir -p \
   "$FAKE_JAVA_17_HOME/bin" \
   "$FAKE_JAVA_21_HOME/bin" \
   "$FAKE_PATH_JAVA_HOME/bin"
-ln -s /usr/bin/env "$FAKE_PATH/env"
-ln -s "$(command -v bash)" "$FAKE_PATH/bash"
-ln -s "$(command -v dirname)" "$FAKE_PATH/dirname"
-ln -s "$(command -v git)" "$FAKE_PATH/git"
-ln -s "$(command -v head)" "$FAKE_PATH/head"
-ln -s "$(command -v rg)" "$FAKE_PATH/rg"
-ln -s "$(command -v ruby)" "$FAKE_PATH/ruby"
-ln -s "$(command -v python3)" "$FAKE_PATH/python3"
-ln -s "$(command -v sed)" "$FAKE_PATH/sed"
-ln -s "$(command -v uname)" "$FAKE_PATH/uname"
-ln -s "$(command -v unzip)" "$FAKE_PATH/unzip"
+write_command_proxy "$FAKE_PATH/env" /usr/bin/env
+write_command_proxy "$FAKE_PATH/bash" "$(command -v bash)"
+write_command_proxy "$FAKE_PATH/dirname" "$(command -v dirname)"
+write_command_proxy "$FAKE_PATH/git" "$(command -v git)"
+write_command_proxy "$FAKE_PATH/head" "$(command -v head)"
+write_command_proxy "$FAKE_PATH/rg" "$(command -v rg)"
+write_command_proxy "$FAKE_PATH/ruby" "$(command -v ruby)"
+write_command_proxy "$FAKE_PATH/python3" "$(command -v python3)"
+write_command_proxy "$FAKE_PATH/sed" "$(command -v sed)"
+write_command_proxy "$FAKE_PATH/uname" "$(command -v uname)"
+write_command_proxy "$FAKE_PATH/unzip" "$(command -v unzip)"
 
 write_java "$FAKE_JAVA_17_HOME/bin/java" 17 "$FAKE_JAVA_17_HOME"
 write_executable "$FAKE_JAVA_17_HOME/bin/jar" '#!/bin/sh' 'exit 0'
@@ -101,7 +110,7 @@ if ! grep -Fq "Contributor environment has a non-standard 'env' command:" "$PREF
 fi
 
 rm -f "$FAKE_PATH/env"
-ln -s /usr/bin/env "$FAKE_PATH/env"
+write_command_proxy "$FAKE_PATH/env" /usr/bin/env
 
 java_status=0
 JAVA_HOME="$FAKE_JAVA_17_HOME" \
