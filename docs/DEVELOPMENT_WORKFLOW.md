@@ -185,6 +185,7 @@ Remote dependency resolution starts only when P8 activates publication.
 
 - Do not create a separate plan when the user already supplied a clear bounded implementation.
 - A bounded implementation request starts the complete normal repository lifecycle unless the user states an explicit local, commit, push, PR, draft, or merge opt-out.
+- Finish the requested scope and all applicable local and host/live acceptance proof before opening its PR. A blocker means no PR yet; report what remains and the next action. A separate, independently complete task may advance an unfinished milestone, but relabeling unfinished requested work as a partial PR is not completion.
 - Do not pause for confirmations between branch creation, implementation, verification, commit, push, draft PR publication, in-scope review fixes, readiness, and guarded merge.
 - When planning is requested, invoke the read-only `work-package-planner` custom agent without inherited conversation. It uses `$plan-universal-ai-work-package`; pass its compact source-bound work order to implementation.
 - Verify work-order source digests; reread only changed or ambiguous source sections.
@@ -195,7 +196,7 @@ Remote dependency resolution starts only when P8 activates publication.
 
 ## Release pull requests
 
-Create pull requests as drafts. A Release candidate must have:
+Create pull requests as drafts only after the requested task passes its pre-PR completion gate. PR-triggered CI and independent review happen afterward; until guarded merge, report the repository task as in progress, explicitly handed off, or blocked—not delivered. A Release candidate must have:
 
 - a concise, current PR brief bound to the exact head SHA;
 - complete milestone-closeout documents when the milestone effect is `completes`;
