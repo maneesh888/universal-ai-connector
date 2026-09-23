@@ -11,6 +11,7 @@ Bind every conclusion and state change to one exact PR head.
 
 - Review, readiness assessment, and blocker requests are read-only.
 - A bounded implementation request starts the normal autonomous repository lifecycle through guarded merge.
+- Before PR publication, apply the task-completion gate in `AGENTS.md`.
 - Only the root agent performs commits, pushes, PR updates, readiness, and merge actions.
 - The independent reviewer is always read-only.
 - Honor the latest explicit `local only`, `do not commit`, `do not push`, `do not create a PR`, `keep draft`, or `do not merge` instruction.

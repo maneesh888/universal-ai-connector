@@ -44,6 +44,8 @@ The roadmap and active plan own product constraints. Do not copy them into a wor
 
 A bounded implementation request starts the normal repository lifecycle through guarded merge: branch/worktree preparation, edits, tests, commit, push, draft PR, in-scope review fixes, readiness, and merge. Continue without separate confirmation between those stages.
 
+Before opening a PR or reporting completion, apply the task-completion and delivery boundaries in `AGENTS.md`.
+
 Honor the latest explicit opt-out:
 
 - `local only`

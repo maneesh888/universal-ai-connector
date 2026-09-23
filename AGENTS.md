@@ -34,6 +34,8 @@ Run only the highest cumulative gate needed for the final state. Repository hook
 - Planning, review, status, readiness assessment, and blocker requests are read-only.
 - Do not invoke the planner for a clear bounded implementation; planning must not delay requested work.
 - A request to implement a bounded repository change starts the normal autonomous lifecycle: create or reuse an appropriate branch/worktree, edit, test, commit, push, create or update a draft pull request, address in-scope findings, mark the verified head ready, and perform the guarded merge when every gate passes.
+- Open the draft PR only after the requested task's in-scope implementation, documentation, local checks, and applicable host/live acceptance proof are complete. If any required work or proof is blocked, report the blocker without opening a PR. Do not narrow an unfinished requested task merely to publish a partial PR; an independently completed bounded task may still have milestone effect `advances`.
+- PR-only CI and independent review follow publication. Do not report the repository task as delivered while its PR remains open or draft. An explicit draft/merge opt-out or a genuine blocker is a handoff or blocked status, not completion.
 - Do not request separate confirmations between those normal stages.
 - The latest explicit opt-out narrows the lifecycle: `local only`, `do not commit`, `do not push`, `do not create a PR`, `keep draft`, or `do not merge`.
 - Opt-outs never create authority for a state change in a planning or review-only task.
@@ -64,7 +66,7 @@ Create new branches with `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/
 
 ## Pull requests
 
-- Create pull requests as drafts.
+- Create pull requests as drafts only after the pre-PR task-completion gate above is satisfied.
 - Keep the PR description concise and include the problem, scope, requirement sources, verification, proof limits, exact head SHA, and exactly one milestone effect: `none`, `advances`, or `completes`.
 - Build the richer reviewer packet only when independent Release review begins.
 - Keep milestone-closeout document changes with the implementation/root agent and commit them before final review.
