@@ -22,6 +22,27 @@ if command -v git >/dev/null 2>&1 &&
   )
 fi
 
+while IFS= read -r -d '' local_live_input; do
+  if [[ "$local_live_input" == */* || "$local_live_input" == *\\* ]]; then
+    echo "Potential secret material found." >&2
+    exit 1
+  fi
+done < <(
+  cd "$ROOT"
+  rg --files \
+    --null \
+    --no-config \
+    --no-ignore \
+    --hidden \
+    --glob '!.git/**' \
+    --glob '!**/build/**' \
+    --glob '!swift-package/Artifacts/**' \
+    --glob '.env.live' \
+    --glob '.env.live.*' \
+    --glob '**/.env.live' \
+    --glob '**/.env.live.*'
+)
+
 SECRET_PATTERNS=(
   -e 'sk-[A-Za-z0-9_-]{20,}'
   -e 'Authorization:[[:space:]]*Bearer[[:space:]]+[A-Za-z0-9._-]+'
@@ -40,8 +61,8 @@ scan_status=0
     --glob '!**/build/**' \
     --glob '!swift-package/Artifacts/**' \
     --glob '!gradle/wrapper/gradle-wrapper.jar' \
-    --glob '!/.env.live' \
-    --glob '!/.env.live.*' \
+    --glob '!.env.live' \
+    --glob '!.env.live.*' \
     "${SECRET_PATTERNS[@]}" \
     .
 ) || scan_status=$?

@@ -276,6 +276,34 @@ Activated September 20, 2026 by the explicit desktop implementation request, fro
 main `49264f65ddfbcd452ee538ebb097c48e2fdaa7f7`, after checking P8-A/P8-B acceptance and
 concurrent ownership. Matching-host runtime/live proof remains required before completion.
 
+Bounded Windows source proof was recorded on September 21, 2026 after the source hosts merged
+through PR #76. On Windows 10 x64 with JDK 21 and Gradle 9.7.1, the Windows CI-equivalent
+deterministic matrix passed and the Compose application opened a responsive window. A later
+interactive run found a blank surface after failed DirectX 12 initialization, so the desktop
+Gradle application now selects Skiko's software renderer on Windows.
+
+Exact commit `6722c705fbc1364508885e948142e937b382681f` added the Windows-safe
+contributor tooling and passed the complete quick gate on September 22, 2026. On that commit,
+the live adapter suites and JVM console discovery/connection flows passed for OpenAI
+`gpt-5.6-luna`, Anthropic `claude-sonnet-5`, and OpenRouter
+`google/gemini-2.5-flash-lite`. Anthropic required one immediate retry after a generated
+structured response missed the requested schema. The configured loopback Gateway was not
+listening and returned transport failures for every live case. Exact commit
+`f200c2a6e596fff6730e03446f25629eb26ba8ea` then passed all six Gateway adapter cases against the
+hosted OpenRouter service through the generic `openai-compatible` configuration. No credential or
+provider response body was retained.
+
+On September 28, 2026, the rebased Adidi-branded Windows PR head passed the complete quick gate and
+fresh live adapter verification for OpenAI, Anthropic, OpenRouter, and the hosted
+OpenAI-compatible Gateway path. The real JVM console visibly completed discovery and exact-model
+connection for OpenAI `gpt-5.6-luna` and Anthropic `claude-sonnet-5`. The normally launched Compose
+application visibly loaded OpenAI models, selected and connected with exact model `gpt-5.6-luna`,
+discarded the response body, exposed and completed cancellation, and cleared session plus
+saved-credential configuration. The launcher revalidated the exact source head after close. No
+credential or provider response body was retained. P8-C remains incomplete because the separately
+deployed loopback Gateway and matching-host macOS and Linux console/desktop proof remain required;
+P8-D therefore remains `Not started`.
+
 - Extend the Kotlin/JVM console with a zero-configuration deterministic path and an explicit
   headless `listModels` -> exact selection -> minimal `respond` connection flow. Only
   `.unsupported` permits manual model entry; a supported empty result fails closed.

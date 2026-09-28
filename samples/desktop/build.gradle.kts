@@ -16,7 +16,14 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
-compose.desktop { application { mainClass = "com.myadidi.universalai.samples.desktop.MainKt" } }
+compose.desktop {
+    application {
+        mainClass = "com.myadidi.universalai.samples.desktop.MainKt"
+        if (System.getProperty("os.name").startsWith("Windows", ignoreCase = true)) {
+            jvmArgs += "-Dskiko.renderApi=SOFTWARE"
+        }
+    }
+}
 tasks.register("consumerCheck") {
     group = "verification"
     dependsOn("check", "jar")
