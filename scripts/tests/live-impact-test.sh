@@ -321,7 +321,7 @@ SYMLINK_BLOB_SHA="$(
 git -C "$TEST_REPOSITORY" update-index \
   --add \
   --cacheinfo \
-  "120000,$SYMLINK_BLOB_SHA,bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider/openai/OpenAiResponsesAdapter.kt"
+  "120000,$SYMLINK_BLOB_SHA,bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/internal/provider/openai/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" \
   -c user.name="Live Impact Test" \
   -c user.email="live-impact@example.invalid" \
