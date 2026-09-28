@@ -110,7 +110,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM console through the public Gradle module boundary | ✅ Verified locally |
 | JVM console on Linux, Windows, and macOS CI | ✅ Verified |
 | Android application consumer | ✅ Verified locally on API 36.1 emulator |
-| Graphical JVM desktop demonstration | 🚧 Source implementation merged; Windows deterministic checks, source launch, and three-provider console live proof passed September 21-22, 2026; interactive desktop and multi-host acceptance pending |
+| Graphical JVM desktop demonstration | 🚧 Source implementation merged; Windows deterministic, console live, and interactive OpenAI desktop proof passed September 21-28, 2026; macOS and Linux matching-host acceptance pending |
 | Physical iOS-device execution | ⏳ Not exercised |
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
@@ -719,10 +719,9 @@ On Windows PowerShell, use the wrapper batch file:
 
 On September 21, 2026, Windows 10 x64 with JDK 21 and Gradle 9.7.1 passed the
 Windows CI-equivalent deterministic matrix and opened a responsive **Universal AI Connector**
-window. Skiko continued through its renderer fallback after DirectX 12 device initialization
-failed. The bounded desktop smoke did not interact with the rendered controls, use a provider
-or Gateway credential, exercise Windows Credential Manager persistence, or prove an MSI or
-other packaged distribution.
+window. A later interactive run found that Skiko's DirectX fallback could leave this Windows host
+with a blank surface, so the desktop Gradle application now selects the software renderer on
+Windows while preserving explicit renderer overrides for direct JVM launches.
 
 On September 22, 2026, exact commit `6722c705fbc1364508885e948142e937b382681f`
 passed the Windows live adapter and JVM console discovery/connection flows for OpenAI
@@ -732,8 +731,17 @@ attempt and passed on the immediate exact-head retry. The configured loopback Ga
 listening, so its first six live cases returned transport failures. Exact commit
 `f200c2a6e596fff6730e03446f25629eb26ba8ea` then passed all six Gateway adapter cases against the
 hosted OpenRouter service through the generic `openai-compatible` configuration. No credential or
-provider response body was retained. P8-C remains active for interactive desktop live proof, the
-separately configured loopback Gateway deployment, and matching-host macOS and Linux acceptance.
+provider response body was retained.
+
+On September 28, 2026, the rebased Adidi-branded Windows head passed the complete quick gate and
+fresh live adapter verification for OpenAI, Anthropic, OpenRouter, and the hosted
+OpenAI-compatible Gateway path. The actual JVM console connected with OpenAI `gpt-5.6-luna` and
+Anthropic `claude-sonnet-5`. The normally launched Compose desktop then visibly loaded models,
+selected and connected with exact model `gpt-5.6-luna`, discarded the response body, exposed and
+completed cancellation, and cleared its session and saved-credential configuration. The live
+launcher revalidated the exact source head after the window closed. No credential or provider
+response body was retained. P8-C remains active for the separately configured loopback Gateway
+deployment and matching-host macOS and Linux console/desktop acceptance.
 
 The desktop starts in deterministic mode with no environment inputs, credentials, network,
 or OS-store access. Run all checks, or use the individual response, stream, typed-error,
