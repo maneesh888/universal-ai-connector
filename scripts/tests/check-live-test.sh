@@ -332,7 +332,7 @@ expect_failure \
   "$RUNNER" openai
 if ! grep -Fq "Copy $TEST_REPOSITORY_PHYSICAL/.env.live.example to that exact path." "$OUTPUT" ||
   ! grep -Fq "Expected file: $TEST_REPOSITORY_PHYSICAL/.env.live" "$OUTPUT" ||
-  ! grep -Fq "chmod 600 \"$TEST_REPOSITORY_PHYSICAL/.env.live\"" "$OUTPUT" ||
+  ! grep -Fq "./scripts/local-config.sh secure-live-env" "$OUTPUT" ||
   ! grep -Fq "never displays their values" "$OUTPUT"; then
   echo "Missing-key failure omitted safe local configuration guidance." >&2
   exit 1

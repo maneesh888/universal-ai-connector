@@ -317,6 +317,12 @@ expect_failure \
   "Local live configuration permissions must deny group and other access: $PERMISSIVE_CONFIG" \
   env UAC_LIVE_ENV_FILE=.env.live.permissive \
   "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env
+env UAC_LIVE_ENV_FILE=.env.live.permissive \
+  "$PRIMARY_REPOSITORY/scripts/local-config.sh" secure-live-env > "$OUTPUT" 2>&1
+assert_secret_absent
+env UAC_LIVE_ENV_FILE=.env.live.permissive \
+  "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env > "$OUTPUT" 2>&1
+assert_secret_absent
 
 INVALID_CONFIG="$PRIMARY_PHYSICAL/.env.live.invalid"
 printf '%s\n' \

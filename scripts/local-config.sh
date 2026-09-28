@@ -220,12 +220,50 @@ uac_live_env_permissions_are_private() {
   esac
 }
 
-uac_validate_live_env_file() {
+uac_secure_live_env_permissions() {
+  local file_path="$1"
+  local windows_path
+
+  case "$(uname -s 2>/dev/null)" in
+    MINGW* | MSYS* | CYGWIN*)
+      if ! command -v cygpath >/dev/null 2>&1 ||
+        ! command -v powershell.exe >/dev/null 2>&1; then
+        uac_local_config_error "Could not secure local live configuration Windows ACLs."
+        return 2
+      fi
+      windows_path="$(cygpath -w "$file_path")" || return 2
+      UAC_LIVE_ENV_WINDOWS_PATH="$windows_path" powershell.exe \
+        -NoLogo \
+        -NoProfile \
+        -NonInteractive \
+        -Command '
+          $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+          $grants = @(
+            "*${userSid}:(F)",
+            "*S-1-5-18:(F)",
+            "*S-1-5-32-544:(F)"
+          )
+          $null = & icacls.exe $env:UAC_LIVE_ENV_WINDOWS_PATH /inheritance:r /grant:r $grants
+          exit $LASTEXITCODE
+        ' || {
+          uac_local_config_error "Could not secure local live configuration Windows ACLs."
+          return 2
+        }
+      ;;
+    *)
+      chmod 600 "$file_path" || {
+        uac_local_config_error "Could not secure local live configuration permissions."
+        return 2
+      }
+      ;;
+  esac
+}
+
+uac_validate_live_env_file_location() {
   local repository_root="$1"
   local file_path="$2"
   local primary_checkout
   local file_name="${file_path##*/}"
-  local size
 
   primary_checkout="$(uac_primary_checkout "$repository_root")" || return $?
   if [[ "$file_path" != "$primary_checkout/$file_name" ]]; then
@@ -261,6 +299,14 @@ uac_validate_live_env_file() {
     uac_local_config_error "Local live configuration must be ignored by Git: $file_path"
     return 2
   fi
+}
+
+uac_validate_live_env_file() {
+  local repository_root="$1"
+  local file_path="$2"
+  local size
+
+  uac_validate_live_env_file_location "$repository_root" "$file_path" || return $?
 
   if ! uac_live_env_permissions_are_private "$file_path"; then
     uac_local_config_error \
@@ -388,6 +434,7 @@ Usage: ./scripts/local-config.sh <command>
 Commands:
   primary-checkout  Print the dynamically resolved primary Git checkout.
   live-env-path     Print the canonical local live configuration path.
+  secure-live-env   Restrict the canonical file to the current user and OS admins.
   validate-live-env Validate the canonical file without displaying its values.
 EOF
 }
@@ -405,6 +452,14 @@ uac_local_config_main() {
     live-env-path)
       [[ "$#" -eq 1 ]] || return 2
       uac_live_env_path "$repository_root"
+      ;;
+    secure-live-env)
+      [[ "$#" -eq 1 ]] || return 2
+      file_path="$(uac_live_env_path "$repository_root")" || return $?
+      uac_validate_live_env_file_location "$repository_root" "$file_path" || return $?
+      uac_secure_live_env_permissions "$file_path" || return $?
+      uac_validate_live_env_file "$repository_root" "$file_path" || return $?
+      printf 'Local live configuration permissions secured: %s\n' "$file_path"
       ;;
     validate-live-env)
       [[ "$#" -eq 1 ]] || return 2

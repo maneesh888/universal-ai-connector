@@ -475,7 +475,7 @@ checkout from the shared Git metadata and reuses that canonical per-machine file
 ```bash
 LIVE_ENV_FILE="$(./scripts/local-config.sh live-env-path)"
 cp .env.live.example "$LIVE_ENV_FILE"
-chmod 600 "$LIVE_ENV_FILE"
+./scripts/local-config.sh secure-live-env
 ${EDITOR:-vi} "$LIVE_ENV_FILE"
 ./scripts/local-config.sh validate-live-env
 

@@ -67,7 +67,7 @@ Configure the ignored local file before retrying:
   Primary checkout: $PRIMARY_CHECKOUT
   Expected file: $LIVE_ENV_FILE_PATH
   Copy $PRIMARY_CHECKOUT/.env.live.example to that exact path.
-  chmod 600 "$LIVE_ENV_FILE_PATH"
+  ./scripts/local-config.sh secure-live-env
   Open the file in your local editor and set $input_names.
   ./scripts/check-live.sh $PROVIDER
 

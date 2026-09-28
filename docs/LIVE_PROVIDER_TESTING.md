@@ -59,7 +59,7 @@ per-machine path without printing its contents:
 ```bash
 LIVE_ENV_FILE="$(./scripts/local-config.sh live-env-path)"
 cp .env.live.example "$LIVE_ENV_FILE"
-chmod 600 "$LIVE_ENV_FILE"
+./scripts/local-config.sh secure-live-env
 ${EDITOR:-vi} "$LIVE_ENV_FILE"
 ./scripts/local-config.sh validate-live-env
 ```
@@ -67,7 +67,9 @@ ${EDITOR:-vi} "$LIVE_ENV_FILE"
 `local-config.sh` obtains the absolute Git common directory and enumerates its worktrees to identify
 the primary checkout. This works from the primary checkout or a linked worktree, with spaces in the
 path and at different clone locations. Git does not copy ignored or untracked files into linked
-worktrees, and removing a linked worktree cannot remove the canonical file.
+worktrees, and removing a linked worktree cannot remove the canonical file. `secure-live-env`
+applies mode `600` on POSIX hosts and removes inherited Windows ACLs before granting access only
+to the current user, SYSTEM, and the built-in Administrators group.
 
 Set only the provider values needed locally. Never print the file to diagnose it. The live runner
 parses the canonical file without shell evaluation only when a selected input is absent, or when an
