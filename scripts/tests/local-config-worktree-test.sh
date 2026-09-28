@@ -78,6 +78,20 @@ make_config_permissions_permissive() {
   fi
 }
 
+make_config_permissions_explicitly_permissive() {
+  local file_path="$1"
+
+  if is_windows_posix_layer; then
+    icacls.exe "$(cygpath -w "$file_path")" \
+      /inheritance:r \
+      /grant:r \
+      "${USERDOMAIN}\\${USERNAME}:(F)" \
+      'SYSTEM:(F)' \
+      'BUILTIN\Administrators:(F)' \
+      '*S-1-1-0:(R)' >/dev/null
+  fi
+}
+
 create_repository() {
   local repository="$1"
 
@@ -317,10 +331,28 @@ expect_failure \
   "Local live configuration permissions must deny group and other access: $PERMISSIVE_CONFIG" \
   env UAC_LIVE_ENV_FILE=.env.live.permissive \
   "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env
+if is_windows_posix_layer; then
+  make_config_permissions_explicitly_permissive "$PERMISSIVE_CONFIG"
+  expect_failure \
+    "Local live configuration permissions must deny group and other access: $PERMISSIVE_CONFIG" \
+    env UAC_LIVE_ENV_FILE=.env.live.permissive \
+    "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env
+fi
 env UAC_LIVE_ENV_FILE=.env.live.permissive \
   "$PRIMARY_REPOSITORY/scripts/local-config.sh" secure-live-env > "$OUTPUT" 2>&1
 assert_secret_absent
 env UAC_LIVE_ENV_FILE=.env.live.permissive \
+  "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env > "$OUTPUT" 2>&1
+assert_secret_absent
+
+CRLF_CONFIG="$PRIMARY_PHYSICAL/.env.live.crlf"
+while IFS= read -r line || [[ -n "$line" ]]; do
+  printf '%s\r\n' "${line%$'\r'}"
+done < "$ROOT/.env.live.example" > "$CRLF_CONFIG"
+env UAC_LIVE_ENV_FILE=.env.live.crlf \
+  "$PRIMARY_REPOSITORY/scripts/local-config.sh" secure-live-env > "$OUTPUT" 2>&1
+assert_secret_absent
+env UAC_LIVE_ENV_FILE=.env.live.crlf \
   "$PRIMARY_REPOSITORY/scripts/local-config.sh" validate-live-env > "$OUTPUT" 2>&1
 assert_secret_absent
 

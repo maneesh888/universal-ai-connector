@@ -237,14 +237,30 @@ uac_secure_live_env_permissions() {
         -NoProfile \
         -NonInteractive \
         -Command '
-          $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-          $grants = @(
-            "*${userSid}:(F)",
-            "*S-1-5-18:(F)",
-            "*S-1-5-32-544:(F)"
+          $acl = [System.IO.File]::GetAccessControl($env:UAC_LIVE_ENV_WINDOWS_PATH)
+          $acl.SetAccessRuleProtection($true, $false)
+          foreach ($rule in @($acl.GetAccessRules(
+            $true,
+            $false,
+            [System.Security.Principal.SecurityIdentifier]
+          ))) {
+            $acl.RemoveAccessRuleSpecific($rule)
+          }
+          $allowed = @(
+            [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value,
+            "S-1-5-18",
+            "S-1-5-32-544"
           )
-          $null = & icacls.exe $env:UAC_LIVE_ENV_WINDOWS_PATH /inheritance:r /grant:r $grants
-          exit $LASTEXITCODE
+          foreach ($sidValue in $allowed) {
+            $sid = [System.Security.Principal.SecurityIdentifier]::new($sidValue)
+            $rule = [System.Security.AccessControl.FileSystemAccessRule]::new(
+              $sid,
+              [System.Security.AccessControl.FileSystemRights]::FullControl,
+              [System.Security.AccessControl.AccessControlType]::Allow
+            )
+            $null = $acl.AddAccessRule($rule)
+          }
+          [System.IO.File]::SetAccessControl($env:UAC_LIVE_ENV_WINDOWS_PATH, $acl)
         ' || {
           uac_local_config_error "Could not secure local live configuration Windows ACLs."
           return 2
@@ -362,6 +378,9 @@ uac_parse_live_env_file() {
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     line_number=$((line_number + 1))
+    if [[ "$line" == *$'\r' ]]; then
+      line="${line%$'\r'}"
+    fi
     if [[ "${#line}" -gt 8192 || "$line" == *$'\r'* ]]; then
       uac_local_config_error \
         "Local live configuration has an invalid line at line $line_number."
