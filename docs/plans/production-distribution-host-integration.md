@@ -2,9 +2,9 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A and P8-B are completed; P8-C is active.
+Status: `In progress`; P8-A through P8-C are completed; no subsequent package is active.
 
-P0-P7, P8-A, and P8-B are completed. P8 remains the sole roadmap milestone marked `In progress`.
+P0-P7 and P8-A through P8-C are completed. P8 remains the sole roadmap milestone marked `In progress`.
 P8-D through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
@@ -270,11 +270,23 @@ new host target, or distribution claim.
 
 ### P8-C: Kotlin/JVM console and Compose desktop live samples
 
-Status: `In progress`.
+Status: `Completed`.
+
+The September 29, 2026 closeout adopts the user's explicit API-only acceptance scope. Library API
+functionality and deterministic consumer/controller coverage are required; interactive desktop UI
+and native credential-store exercises are optional. The [acceptance record](../verification/p8c-api-acceptance.md)
+binds Windows, macOS, and Ubuntu results to their actual tested revisions, records the actual
+Gateway deployment limits and first-attempt failures, and explains the accepted cross-revision
+evidence. It supersedes the former single-head interactive-host requirement for P8-C only.
+
+The documentation closing head must pass the full local gate, independent exact-head review,
+required CI, guarded merge, and resulting-main verification before this transition becomes
+authoritative. The closing PR brief owns those identifiers. P8-D remains `Not started`.
 
 Activated September 20, 2026 by the explicit desktop implementation request, from accepted
 main `49264f65ddfbcd452ee538ebb097c48e2fdaa7f7`, after checking P8-A/P8-B acceptance and
-concurrent ownership. Matching-host runtime/live proof remains required before completion.
+concurrent ownership. The original matching-host runtime/live acceptance was narrowed to API
+functionality by the closeout decision above.
 
 Bounded Windows source proof was recorded on September 21, 2026 after the source hosts merged
 through PR #76. On Windows 10 x64 with JDK 21 and Gradle 9.7.1, the Windows CI-equivalent
@@ -300,9 +312,10 @@ connection for OpenAI `gpt-5.6-luna` and Anthropic `claude-sonnet-5`. The normal
 application visibly loaded OpenAI models, selected and connected with exact model `gpt-5.6-luna`,
 discarded the response body, exposed and completed cancellation, and cleared session plus
 saved-credential configuration. The launcher revalidated the exact source head after close. No
-credential or provider response body was retained. P8-C remains incomplete because the separately
-deployed loopback Gateway and matching-host macOS and Linux console/desktop proof remain required;
-P8-D therefore remains `Not started`.
+credential or provider response body was retained. These historical observations are supplementary;
+the final Windows API evidence is bound to PR #77 head `3e1a71a3e26984750b234b3548ccd3238795c2c9`.
+The acceptance record adds the macOS/Ubuntu API results, including the actual configured Gateway,
+and successful PR #77 resulting-main CI. P8-D remains `Not started`.
 
 - Extend the Kotlin/JVM console with a zero-configuration deterministic path and an explicit
   headless `listModels` -> exact selection -> minimal `respond` connection flow. Only
@@ -316,9 +329,13 @@ P8-D therefore remains `Not started`.
   secure persistence is unavailable.
 - Add deterministic console/controller/state, redaction, cancellation, lifecycle, and secure-store
   availability tests, plus launchable UI semantics.
-- On one exact head, prove the real console flow and normally launched Compose application on
-  Linux, Windows, and macOS. Exercise at least two exact selected models across this live matrix,
-  with no fallback or substitution and with visible desktop connection evidence on each host.
+- Record successful library API suites on Linux, Windows, and macOS for the delivered OpenAI,
+  Anthropic, OpenRouter, and generic Gateway routes, with deterministic consumer/controller
+  coverage and exact source/model identities. At least two exact models must be exercised without
+  fallback or substitution. Accept the recorded September 28 runs on their distinct revisions
+  together with PR #77 resulting-main CI for this documentation-only closeout; do not relabel
+  those runs as live execution on the closing documentation head. Interactive desktop proof is
+  optional for this package; later distribution-package requirements remain unchanged.
 
 P8-C adds no native desktop library target, Java-specific façade, provider-specific public client,
 account UI, remote publication, or packaged distribution claim.
