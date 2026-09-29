@@ -40,8 +40,9 @@ recorded in [PR #75](https://github.com/maneesh888/universal-ai-connector/pull/7
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
 > a proprietary Gateway protocol. P7-A and P7-B are authoritative, and P7-C lifecycle integration
 > and acceptance complete P7. P8-A iOS acceptance is complete.
-> P8-B Android is complete. P8-C JVM/desktop source hosts are merged through PR #76 and
-> remain active for matching-host acceptance. Parity and distribution remain later packages.
+> P8-B Android and P8-C JVM/desktop are complete. P8-C closes under the user-approved API-only
+> acceptance scope; [revision-bound platform evidence](docs/verification/p8c-api-acceptance.md)
+> records Windows, macOS, and Ubuntu results. Parity and distribution remain not started.
 > PR #75 owns the P8-B exact closing-head acceptance and merge evidence.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
@@ -136,7 +137,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
 | P7 | OpenAI-compatible Gateway validation | ✅ Completed through PR #59 |
-| P8 | Production distribution and host integration | 🚧 P8-A/B completed; P8-C active; later packages not started |
+| P8 | Production distribution and host integration | 🚧 P8-A/B/C completed; P8-D through P8-L not started |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion
@@ -698,7 +699,8 @@ Adidi Universal AI Connector is available under the MIT License. See [`LICENSE`]
 
 ## P8-C desktop and console live testing
 
-P8-C is active and incomplete. The Compose desktop sample and JVM console share the
+P8-C is complete under the [API-only acceptance decision](docs/verification/p8c-api-acceptance.md).
+The Compose desktop sample and JVM console share the
 sample-only `samples/host-controller` module and use the existing public Kotlin connector.
 Android and iOS retain their accepted interfaces. Maven publication and desktop packaging
 remain later packages; these commands consume the public repository module boundary.
@@ -740,8 +742,11 @@ Anthropic `claude-sonnet-5`. The normally launched Compose desktop then visibly 
 selected and connected with exact model `gpt-5.6-luna`, discarded the response body, exposed and
 completed cancellation, and cleared its session and saved-credential configuration. The live
 launcher revalidated the exact source head after the window closed. No credential or provider
-response body was retained. P8-C remains active for the separately configured loopback Gateway
-deployment and matching-host macOS and Linux console/desktop acceptance.
+response body was retained. The final Windows API suites are recorded in merged PR #77;
+macOS and Ubuntu API suites, including the actual configured Gateway, also passed. See the
+[acceptance record](docs/verification/p8c-api-acceptance.md) for exact revisions, counts, first-attempt
+failures, Gateway scope, and successful PR #77 post-merge CI. These are contributor-attested
+API results, not new live executions on the documentation closeout head.
 
 The desktop starts in deterministic mode with no environment inputs, credentials, network,
 or OS-store access. Run all checks, or use the individual response, stream, typed-error,
@@ -781,8 +786,9 @@ The same opt-in flags support `anthropic`, `openrouter`, and `gateway`. The load
 runs the selected provider gate, then launches the actual host with only that provider's
 process-scoped inputs and configuration caching disabled. Desktop import selects the exact
 configured model only after discovery; the user still presses Load models and Test Connection.
-Closing the desktop lets the loader recheck the source head. The launch alone is not GUI
-acceptance: record actual visible discovery/connection, cancellation, clearing, screenshots,
-and exact source/model identities. P8-C still requires console and desktop proof on matching
-macOS, Windows, and Linux hosts with at least two exact models across the matrix. Tests and
-cross-platform compilation alone do not establish that proof.
+Closing the desktop lets the loader recheck the source head. When claiming optional GUI
+proof, record actual visible discovery/connection, cancellation, clearing, and exact source/model
+identities; launch or compilation alone does not establish interaction proof. P8-C acceptance
+requires API functionality and deterministic consumer/controller coverage on macOS, Windows, and
+Linux, as recorded above. Interactive UI and native credential-store tests are not P8-C closeout
+blockers. Packaged desktop launch and lifecycle proof remains future distribution work.
