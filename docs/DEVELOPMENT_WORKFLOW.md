@@ -13,6 +13,12 @@ Keep these claims separate:
 3. **Consumer integration proof:** a thin host sample consumes the public package boundary and compiles or runs its documented first-use path.
 4. **Distribution proof:** a clean fixture resolves a published artifact from its documented location.
 
+Map each acceptance criterion to changed behavior and its required evidence class. Accept equivalent
+routes only when they establish the same observable result at that class. An independent reviewer
+must inspect that reasoning. A human observation is attributed as human evidence and cannot waive
+mandatory deterministic, live, packaging, or active-plan proof. No OpenKeyboard runtime approval
+exception is imported.
+
 Do not infer a stronger level from a weaker one. Distribution proof remains P8 work.
 
 ## Modes and cumulative gates
@@ -20,7 +26,7 @@ Do not infer a stronger level from a weaker one. Distribution proof remains P8 w
 Canonical-contract changes additionally require **contract conformance proof**: authoritative schemas are meta-valid, every fixture has one documented schema or semantic result, production encodings stay schema-valid for the governed corpus, and the embedded multiplatform mirror has zero drift from the tracked bundle.
 
 Run `./scripts/check-environment.sh` on a new clone before enabling hooks. It is a read-only
-preflight: `--hygiene` validates standard shell, Git, Ruby YAML parsing, and secret-scan tools;
+preflight: `--hygiene` validates standard shell, Git, Python 3, Ruby YAML parsing, and secret-scan tools;
 `--quick` also validates Java 21 and the Android SDK; and `--full` also validates the Apple
 toolchain. Normal repository gates invoke the matching preflight automatically. A preflight
 failure is a machine setup blocker, not permission to weaken the affected test or bypass a hook.
@@ -39,7 +45,31 @@ Run targeted checks while editing, then run only the highest final gate required
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
+Successful same-head hook evidence may satisfy the matching local gate when the command, scope, environment, and result are retained. Do not rerun an unchanged successful full gate merely to label it Release.
+
 Mandatory hooks may execute a higher cumulative gate at commit or push. Do not manually repeat the same gate immediately before the hook unless the intervening state changed.
+
+## Trusted docs-only exception
+
+`./scripts/verification-mode.sh staged` selects commit scope; `head` selects the complete PR scope
+against the merge base with fresh `origin/main`. It loads the classifier from that trusted base,
+never from the candidate. Only regular-file content modifications to `README.md` and
+`docs/PRODUCTION_CONSUMPTION.md` qualify as `docs`. Additions, deletions, renames, modes/symlinks,
+unknown paths, plans, ADRs, AGENTS/skills, workflow/security policy, config, source, and dependencies
+select `full`. A mixed diff is always full. A docs classification proves file scope, not correctness;
+review documentation claims against the actual API and required proof.
+
+Eligible prose uses hygiene at commit, push, and Release. Other commits use quick, and other pushes
+and Release heads use full. Explicit `check.sh --full` always runs full. Missing trusted base or
+classifier retains full locally; invalid classifier execution/output fails. CI requires a valid
+PR base/head and uses the same base-loaded classifier; a missing policy during rollout selects
+full. Push-to-main and manual CI always run all platforms. This policy/CI rollout therefore runs
+full, even if its files include Markdown.
+
+CI permits platform jobs to be skipped only after successful `docs` classification and hygiene.
+Missing/unknown classification, failed/cancelled jobs, or skipped hygiene fail `Required checks`.
+The separate provider-live classifier and selected exact-head gates remain unchanged. Neither this
+exception nor optional review availability weakens branch protection or independent review.
 
 ## Targeted check routing
 
@@ -130,8 +160,8 @@ git config --local --get core.hooksPath
 
 The path must be `.githooks`.
 
-- Pre-commit rejects unstaged tracked changes and untracked files, then runs `./scripts/check.sh --quick` against the proposed contents.
-- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`. It then runs every exact-head provider gate selected relative to `origin/main` and fails closed when any selected gate, task, or required process input is absent.
+- Pre-commit rejects unstaged tracked changes and untracked files, then runs quick against the proposed contents, or hygiene for trusted docs-only scope.
+- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs full, or hygiene for trusted docs-only scope. It then runs every exact-head provider gate selected relative to `origin/main` and fails closed when any selected gate, task, or required process input is absent.
 - Never use `--no-verify`. Missing toolchains and failed checks are blockers.
 
 These hook requirements are safety gates; they do not make every task a Release analysis task.
@@ -144,7 +174,8 @@ These hook requirements are safety gates; they do not make every task a Release 
 - `JVM + Android (Linux)` runs shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer check with Java 21.
 - `JVM (Windows)` runs JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
 - `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
-- `Required checks` provides one stable branch-protection status.
+- `Classify verification` selects trusted docs-only scope; platform jobs run for every other PR.
+- `Required checks` provides one stable branch-protection status and validates classified skips.
 
 Pull-request jobs check out the exact PR head. Third-party actions remain pinned, workflow permissions remain read-only, and ordinary CI remains secretless. CI does not prove emulator/device execution, live providers, gateways, distribution, or release behavior without matching evidence.
 
@@ -173,6 +204,13 @@ When public API, packaging, or sample behavior changes:
 
 Remote dependency resolution starts only when P8 activates publication.
 
+## External review and security
+
+Follow [the advisory review workflow](SECURITY_REVIEW.md) and [threat model](../SECURITY.md).
+Maintain private, revision-bound findings and dispositions; optional service status does not
+replace mandatory local checks. The independent reviewer inspects external findings without
+adopting another reviewer's conclusion. Repository documentation does not activate account settings.
+
 ## External tools
 
 - Use `gh` for repository, PR, issue, review, workflow, log, artifact, and lifecycle state-changing operations. Use `gh api graphql` for review-thread state.
@@ -200,7 +238,7 @@ Create pull requests as drafts only after the requested task passes its pre-PR c
 
 - a concise, current PR brief bound to the exact head SHA;
 - complete milestone-closeout documents when the milestone effect is `completes`;
-- successful full local verification for that head;
+- successful full local verification for that head, or hygiene for trusted docs-only scope;
 - successful exact-head required CI and applicable exact-head local-live policy status;
 - an independent exact-head review with no blocking finding;
 - no requested changes or unresolved threads;

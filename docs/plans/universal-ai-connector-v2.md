@@ -125,7 +125,7 @@ Apply these guardrails to every future work package:
   added. P8-A through P8-D explicitly sequence host-owned model discovery and exact-model
   connection flows over the already-delivered public contracts; they do not authorize
   package-owned UI, credential storage, or provider/Gateway administration.
-- Use affected-module and targeted host tests during implementation. Run the repository's mandatory quick gate at commit time and the complete supported platform matrix at push, pull-request, and release gates rather than repeatedly in the inner edit loop.
+- Use affected-module and targeted host tests during implementation. Run the repository's mandatory quick gate at commit time and the complete supported platform matrix at push, pull-request, and release gates rather than repeatedly in the inner edit loop. The trusted reader-only prose exception in `docs/DEVELOPMENT_WORKFLOW.md` may select hygiene; plans, policy, source, configuration, dependencies, and mixed changes retain the normal gates.
 - If a proposed P3-P7 feature materially requires changes across the shared API, Swift façade, Android/JVM host API, all samples, packaging scripts, and CI lanes, pause implementation. Record the cross-platform reason in an ADR or scoped plan decision and either correct the abstraction or explicitly approve the wider platform cost before proceeding.
 - Do not reintroduce the retired POC Swift or callback surfaces. Later milestones extend the single product-facing Kotlin client and Swift façade established by P1.
 

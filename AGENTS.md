@@ -27,6 +27,8 @@ A plan is coordination, not another approval gate. Start a clear requested imple
 | **Standard** | Normal completed implementation or commit | Fast plus `./scripts/check.sh --quick`; when committing, let the mandatory pre-commit hook supply that exact quick gate instead of immediately duplicating it. |
 | **Release** | PR readiness, merge, milestone closeout, or explicit release verification | Freeze the candidate, run `./scripts/check.sh --full` on exact `HEAD`, run exact-head CI and independent review, then apply merge gates through `$review-verify-merge-pr`. |
 
+The trusted docs-only exception in `docs/DEVELOPMENT_WORKFLOW.md` may select hygiene for eligible prose; policy changes always retain full Release checks.
+
 Run only the highest cumulative gate needed for the final state. Repository hooks remain mandatory and may run a higher gate at commit or push; never bypass them. Add screen, simulator/device execution, live-provider, gateway, or distribution proof only when the changed surface or active plan requires it.
 
 ## Authority
@@ -38,10 +40,21 @@ Run only the highest cumulative gate needed for the final state. Repository hook
 - PR-only CI and independent review follow publication. Do not report the repository task as delivered while its PR remains open or draft. An explicit draft/merge opt-out or a genuine blocker is a handoff or blocked status, not completion.
 - Do not request separate confirmations between those normal stages.
 - The latest explicit opt-out narrows the lifecycle: `local only`, `do not commit`, `do not push`, `do not create a PR`, `keep draft`, or `do not merge`.
+- Track constraints at their stated checkpoint, phase, or whole-task scope. A clear implementation request after a completed read-only checkpoint starts normal lifecycle authority unless a broader opt-out remains active. Recheck active constraints before each mutation; distinguish authorization from gates still waiting for evidence.
 - Opt-outs never create authority for a state change in a planning or review-only task.
 - Ask only for a material scope expansion, destructive action, unavailable credential or external dependency, or another action outside the requested repository workflow.
 
 Create new branches with `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/` and a concise lowercase kebab-case suffix. Do not rename existing branches solely to adopt the convention.
+
+## Code Review Rules
+
+- Flag credential/endpoint leakage or cross-request state sharing. Host credentials and provider
+  DTOs must remain private; verify isolation, redaction, and safe endpoint/redirect handling.
+- Preserve cancellation, exactly-once stream termination, and resource cleanup across Kotlin and
+  Swift, without exposing implementation types through supported public APIs.
+- Treat changes to contracts, packaging, dependencies, hooks, and CI trust as consequential.
+  Read `SECURITY.md` and `docs/SECURITY_REVIEW.md`; external reviews are advisory inputs to the
+  independent project reviewer, never substitutes for required checks or proof.
 
 ## Product and proof boundaries
 

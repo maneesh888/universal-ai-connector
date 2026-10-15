@@ -184,6 +184,7 @@ require_command bash "Bash runs the committed repository scripts."
 require_command git "Git provides source and worktree checks."
 require_command rg "Ripgrep performs fail-closed secret scanning."
 require_command ruby "Ruby validates the parsed Dependabot YAML policy."
+require_command python3 "Python 3 validates verification and review policy."
 
 if [[ "$MODE" == "--quick" || "$MODE" == "--full" ]]; then
   require_command python3 "Python 3 runs the Android bootstrap safety regressions."

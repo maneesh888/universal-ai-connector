@@ -15,6 +15,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  classification:
+    name: Classify verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      class: ${{ steps.classify.outputs.class }}
+    steps:
+      - name: Check out exact candidate history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Classify with trusted base policy
+        id: classify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          class=full
+          if [[ "$EVENT_NAME" == pull_request ]]; then
+            base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+            if git cat-file -e "$base:scripts/verification-policy.py" 2>/dev/null; then
+              git show "$base:scripts/verification-policy.py" > "$RUNNER_TEMP/verification-policy.py"
+              class="$(python3 -I "$RUNNER_TEMP/verification-policy.py" classify "$GITHUB_WORKSPACE" "$base" "$HEAD_SHA")"
+            fi
+          fi
+          case "$class" in docs|full) ;; *) exit 1 ;; esac
+          echo "class=$class" >> "$GITHUB_OUTPUT"
+
   hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest
@@ -34,6 +66,8 @@ jobs:
           ./scripts/tests/run-android-sample-test.sh
 
   jvm-android-linux:
+    needs: classification
+    if: needs.classification.outputs.class == 'full'
     name: JVM + Android (Linux)
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -83,6 +117,8 @@ jobs:
           retention-days: 7
 
   jvm-windows:
+    needs: classification
+    if: needs.classification.outputs.class == 'full'
     name: JVM (Windows)
     runs-on: windows-latest
     timeout-minutes: 15
@@ -119,6 +155,8 @@ jobs:
           retention-days: 7
 
   apple-jvm:
+    needs: classification
+    if: needs.classification.outputs.class == 'full'
     name: Apple + JVM (macOS)
     runs-on: macos-15
     timeout-minutes: 45
@@ -181,6 +219,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     needs:
+      - classification
       - hygiene
       - jvm-android-linux
       - jvm-windows
@@ -188,21 +227,22 @@ jobs:
     steps:
       - name: Confirm required jobs passed
         env:
+          CLASSIFICATION: ${{ needs.classification.outputs.class }}
+          CLASSIFIER_RESULT: ${{ needs.classification.result }}
           HYGIENE_RESULT: ${{ needs.hygiene.result }}
           JVM_ANDROID_LINUX_RESULT: ${{ needs.jvm-android-linux.result }}
           JVM_WINDOWS_RESULT: ${{ needs.jvm-windows.result }}
           APPLE_JVM_RESULT: ${{ needs.apple-jvm.result }}
         run: |
-          if [[ "$HYGIENE_RESULT" != "success" ||
-                "$JVM_ANDROID_LINUX_RESULT" != "success" ||
-                "$JVM_WINDOWS_RESULT" != "success" ||
-                "$APPLE_JVM_RESULT" != "success" ]]; then
-            echo "Required checks did not pass."
-            echo "hygiene=$HYGIENE_RESULT"
-            echo "jvm-android-linux=$JVM_ANDROID_LINUX_RESULT"
-            echo "jvm-windows=$JVM_WINDOWS_RESULT"
-            echo "apple-jvm=$APPLE_JVM_RESULT"
+          if [[ "$CLASSIFIER_RESULT" != success || "$HYGIENE_RESULT" != success ]]; then
+            echo "Classification and hygiene must succeed."
             exit 1
           fi
-
-          echo "All required Adidi Universal AI Connector checks passed."
+          case "$CLASSIFICATION" in docs|full) ;; *) exit 1 ;; esac
+          for result in "$JVM_ANDROID_LINUX_RESULT" "$JVM_WINDOWS_RESULT" "$APPLE_JVM_RESULT"; do
+            if [[ "$result" == success ]]; then continue; fi
+            if [[ "$CLASSIFICATION" == docs && "$result" == skipped ]]; then continue; fi
+            echo "Required platform verification did not pass."
+            exit 1
+          done
+          echo "All applicable Adidi Universal AI Connector checks passed."
