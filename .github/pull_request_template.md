@@ -24,6 +24,11 @@ Link durable sources and evidence; do not copy full plans, raw logs, test-by-tes
 <!-- Summarize exact commands or checks and their results. Link durable evidence instead of copying logs or transcripts. -->
 -
 
+## Advisory external review
+
+<!-- Record route, status (pending/completed/failed/unavailable/not-applicable), exact head, and a sanitized disposition summary. Keep vulnerability details and private report references in the private reviewer packet. No finding is not proof of security. -->
+-
+
 ## Proof limits and out of scope
 
 <!-- Identify what the evidence does not prove and what this PR deliberately excludes. -->

@@ -24,6 +24,7 @@ run_hygiene() {
     bash -n "$ROOT/$shell_file"
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
+  python3 -I "$ROOT/scripts/tests/verification-policy-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
