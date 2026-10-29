@@ -2,7 +2,8 @@
 
 ## Scope and case catalog
 
-P8-D is in progress. It does not publish a package or establish remote consumption.
+This candidate proposes P8-D completion, conditional on its complete exact-head Release gates
+and guarded merge. It does not publish a package or establish remote consumption.
 `samples/parity/cases.json` is the authoritative catalog of twelve observable cases:
 supported selection, supported empty, unsupported manual entry, transition back to supported,
 safe errors and retry, discovery cancellation, connection cancellation/deactivation, no model
@@ -62,6 +63,6 @@ Gateway model was not recorded, so no exact Gateway-model identity is inferred f
 Catalog validation, three fail-closed checker regressions, repository hygiene, and all twelve
 Android/shared-JVM-controller cases pass locally. Console and desktop-storage bindings also pass.
 The first Android run exposed the cancellation cleanup difference described above; the corrected
-run passed. iOS execution and complete exact-head Release evidence are pending. P8-D remains in progress until the complete deterministic
+run passed. iOS execution and complete exact-head Release evidence are pending. P8-D completion is proposed only; it becomes authoritative after the complete deterministic
 matrix, applicable local-live routing, required CI, independent review, guarded merge, and
 resulting-main checks pass. The closing PR owns the exact final head and run identities.
