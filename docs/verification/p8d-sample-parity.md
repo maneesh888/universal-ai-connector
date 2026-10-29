@@ -37,7 +37,8 @@ retains the same read-only and credential-free boundary. Result bundles stay out
   until explicit clearing, and permit the next host-owned action. This presentation difference
   does not change the shared connection sequence.
 - The iOS view model reuses a client for one configuration. Kotlin controllers close each operation's
-  client and close their credential store at controller shutdown. Client lifetime remains host-owned;
+  client. The shared JVM controller also closes its credential store at shutdown; Android's store
+  has no close contract. Client lifetime remains host-owned;
   cancellation and configuration replacement cannot let an old operation overwrite current state.
 - iOS Keychain, Android Keystore, and desktop secure-store persistence remain separate host services.
   Deterministic parity does not establish emulator hardware protection or native desktop service
