@@ -3,6 +3,12 @@
 ## Repository boundary
 
 - Treat `docs/plans/universal-ai-connector-v2.md` as the source of truth for milestone order and status.
+- Treat the root `README.md` as a stable public product overview, not as a milestone ledger or
+  agent-memory store. Put routine progress, work-package status, exact-head evidence, and closeout
+  chronology in the roadmap, active plans, verification records, and pull-request brief. Update
+  the README only when a user-visible capability, supported provider or host, installation or
+  quick-start path, security boundary, limitation, or product positioning changes. Never append
+  routine milestone histories or PR/CI evidence to it.
 - Implement only the active work package. Planning a future package does not activate it.
 - Explicitly requested repository maintenance may proceed outside a product milestone with `Milestone effect: none`; it must not introduce future milestone behavior.
 - Keep this package independent from OpenKeyboard, application storage/UI, provider DTOs, and Gateway V1 contracts.

@@ -50,7 +50,12 @@ separate. Include external review route, base/head, status, inspected dispositio
 references, and coverage limits per `docs/SECURITY_REVIEW.md`. Do not publish private report details.
 The reviewer validates external findings independently; app output is not the custom report.
 
-For `completes`, require consistent proposed roadmap, active-plan, affected README, and other required closeout updates in the candidate before final review. Merge makes that proposed transition authoritative.
+For `completes`, require consistent proposed roadmap, active-plan, and other required closeout
+updates in the candidate before final review. Require README consistency only when the milestone
+changes a user-visible capability, supported provider or host, installation path, security
+boundary, limitation, or product positioning. Never add routine closeout chronology, exact-head
+evidence, or PR/CI history to the README. Merge makes the proposed roadmap and plan transition
+authoritative.
 
 ## Review and verify
 
