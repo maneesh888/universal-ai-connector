@@ -1,5 +1,13 @@
 # Universal AI Connector
 
+<!--
+Maintenance note for agents and contributors: keep this file as the stable public product
+overview. The milestone/status source of truth is docs/plans/universal-ai-connector-v2.md.
+Record routine progress, exact-head evidence, and closeout history in plans, verification records,
+and pull-request briefs—not in this README. Update this page only for user-visible product or
+consumption changes.
+-->
+
 **One AI client for Kotlin and Swift, across OpenAI, Anthropic, OpenRouter, and OpenAI-compatible gateways.**
 
 [![CI](https://github.com/maneesh888/universal-ai-connector/actions/workflows/ci.yml/badge.svg)](https://github.com/maneesh888/universal-ai-connector/actions/workflows/ci.yml)
