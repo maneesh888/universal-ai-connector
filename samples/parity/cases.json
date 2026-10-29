@@ -184,7 +184,7 @@
         ],
         "ios": [
           "testProviderChangeResetsDiscoveryAndUsesProviderDefaultBaseURL",
-          "testInvalidBaseURLFailsBeforeCredentialPersistence"
+          "testValidEndpointChangeInvalidatesSelectionAndCannotReuseCredential"
         ]
       }
     }

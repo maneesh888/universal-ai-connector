@@ -183,10 +183,33 @@ class LiveAiControllerTest {
     }
 
     @Test fun endpointChangeCannotReuseCredentialAndCloseIsTerminal() = runTest {
-        val controller = LiveAiController(this, Store())
+        val store = Store()
+        val client = Client()
+        val controller = LiveAiController(this, store, LiveClientFactory { _, _ -> client })
         controller.saveCredential("synthetic-credential")
-        controller.configure(LiveProvider.OPENAI, "https://other.example/v1")
+        controller.loadModels(); advanceUntilIdle(); controller.selectModel("model-b")
+        assertEquals("model-b", controller.state.value.selectedModel)
+
+        val otherEndpoint = "https://other.example/v1"
+        controller.configure(LiveProvider.OPENAI, otherEndpoint)
         assertFalse(controller.state.value.credentialStored)
+        assertNull(controller.state.value.selectedModel)
+        assertEquals(Discovery.IDLE, controller.state.value.discovery)
+        controller.loadModels(); controller.testConnection(); advanceUntilIdle()
+        assertEquals(listOf("list"), client.calls)
+        assertEquals(listOf("synthetic-credential"), store.entries.values.toList())
+
+        controller.saveCredential("other-endpoint-credential")
+        controller.loadModels(); advanceUntilIdle(); controller.selectModel("model-b")
+        assertEquals("model-b", controller.state.value.selectedModel)
+        controller.configure(LiveProvider.ANTHROPIC, otherEndpoint)
+        assertFalse(controller.state.value.credentialStored)
+        assertNull(controller.state.value.selectedModel)
+        assertEquals(Discovery.IDLE, controller.state.value.discovery)
+        controller.loadModels(); controller.testConnection(); advanceUntilIdle()
+        assertEquals(listOf("list", "list"), client.calls)
+        assertEquals(2, store.entries.size)
+
         controller.close(); controller.close()
         controller.saveCredential("ignored")
         assertFalse(controller.state.value.credentialStored)

@@ -14,7 +14,7 @@ The catalog binds each case to existing host-native assertions in the iOS view m
 controller, and shared JVM/desktop controller. The case definitions describe shared outcomes;
 they do not require shared UI code or identical display strings. Supplemental bindings verify
 the real console orchestration and desktop secure-store adapter. P8-D adds explicit busy-action
-tests on all three controllers and an iOS failed-clear assertion. The busy-action check exposed
+tests on all three controllers and an iOS failed-clear assertion. Review follow-up exercises iOS clear during suspended discovery, including cancellation, close and rejection of its late result, and checks valid endpoint/provider isolation with an existing selection and credential on every controller. The busy-action check exposed
 Android closing a cancelled client both during discard and again in the retired operation's
 `finally` block. Android now matches the JVM controller: discard owns cancelled-client cleanup,
 the current operation owns normal completion cleanup, and cleanup exceptions cannot escape into
@@ -63,6 +63,6 @@ Gateway model was not recorded, so no exact Gateway-model identity is inferred f
 Catalog validation, three fail-closed checker regressions, repository hygiene, and all twelve
 Android/shared-JVM-controller cases pass locally. Console and desktop-storage bindings also pass.
 The first Android run exposed the cancellation cleanup difference described above; the corrected
-run passed. iOS execution and complete exact-head Release evidence are pending. P8-D completion is proposed only; it becomes authoritative after the complete deterministic
+run passed. The initial exact-head full gate and all four local live routes passed at `dd1ca480aca334287ac32388a3c77788a9e8f14c`. Independent review identified active-clear and configuration-isolation assertion gaps; the strengthened candidate requires fresh exact-head Release evidence. P8-D completion is proposed only; it becomes authoritative after the complete deterministic
 matrix, applicable local-live routing, required CI, independent review, guarded merge, and
 resulting-main checks pass. The closing PR owns the exact final head and run identities.
