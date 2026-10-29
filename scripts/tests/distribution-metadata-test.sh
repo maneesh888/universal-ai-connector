@@ -78,4 +78,15 @@ if run_fixture_checker "$NAMESPACE_DRIFT"; then
   exit 1
 fi
 
+PLAN_COORDINATE_DRIFT="$TEST_DIRECTORY/plan-coordinate-drift"
+copy_fixture "$PLAN_COORDINATE_DRIFT"
+sed -i.bak \
+  's/com.myadidi:universal-ai-connector:<version>/io.github.maneesh888:universal-ai-connector:<version>/' \
+  "$PLAN_COORDINATE_DRIFT/docs/plans/production-distribution-host-integration.md"
+rm "$PLAN_COORDINATE_DRIFT/docs/plans/production-distribution-host-integration.md.bak"
+if run_fixture_checker "$PLAN_COORDINATE_DRIFT"; then
+  echo "The distribution check must reject active-plan Maven coordinate drift." >&2
+  exit 1
+fi
+
 echo "Distribution metadata regression checks passed."

@@ -81,7 +81,7 @@ reduce the already accepted cross-platform package surface or authorize a new ho
 
 ### Kotlin and Android
 
-- The public root coordinate is `io.github.maneesh888:universal-ai-connector:<version>`.
+- The public root coordinate is `com.myadidi:universal-ai-connector:<version>`.
 - Maven Central is the supported remote repository. The Kotlin Multiplatform root publication owns
   Gradle metadata and selects the published JVM or Android variant for supported consumers.
 - The root, JVM, Android, `iosArm64`, and `iosSimulatorArm64` publications are uploaded together so

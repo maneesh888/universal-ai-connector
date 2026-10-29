@@ -175,6 +175,7 @@ done
 coordinate="$group:$(property_value "$RELEASE_PROPERTIES" MAVEN_ARTIFACT_ID):$version"
 require_literal "$GUIDE" "$coordinate"
 require_literal "$GUIDE" "v$version"
+require_literal "$PLAN" "\`$group:$(property_value "$RELEASE_PROPERTIES" MAVEN_ARTIFACT_ID):<version>\`"
 require_literal "$PLAN" '`gradle.properties` owns one canonical SemVer value'
 # Package activation is governed by the roadmap, not a metadata consistency check.
 require_literal "$PLAN" '### P8-E: Distribution contract and version freeze'
