@@ -25,9 +25,10 @@ Most multi-provider integrations spread provider-specific requests, responses, e
 - **Host-owned secrets.** Applications supply credentials at request time; the connector does not read app storage or environment files on its own.
 
 ```text
-Android · iOS · JVM · Desktop
-              │
-              ▼
+Android · iOS · Linux · Windows · macOS
+      Kotlin · Swift · JVM · Desktop
+                    │
+                    ▼
      Universal AI Connector
      request · stream · models
               │
