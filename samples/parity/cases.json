@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "P8D-01",
+      "expectation": "Supported non-empty discovery requires explicit selection; Test Connection rediscovers and sends only that exact model.",
+      "tests": {
+        "android": [
+          "exactSelectionIsRequiredAndConnectionRediscovers"
+        ],
+        "jvm-desktop": [
+          "exactSelectionIsRequiredAndConnectionRediscovers"
+        ],
+        "ios": [
+          "testSupportedDiscoveryRequiresExplicitSelectionAndReusesExactModel"
+        ]
+      }
+    },
+    {
+      "id": "P8D-02",
+      "expectation": "Supported empty discovery blocks response and never enables manual fallback.",
+      "tests": {
+        "android": [
+          "supportedEmptyBlocksRespondIncludingDirectTestAction"
+        ],
+        "jvm-desktop": [
+          "supportedEmptyBlocksRespondIncludingDirectTestAction"
+        ],
+        "ios": [
+          "testSupportedEmptyDiscoveryBlocksConnectionBeforeRespond"
+        ]
+      }
+    },
+    {
+      "id": "P8D-03",
+      "expectation": "Only explicit unsupported discovery permits a manually supplied exact model.",
+      "tests": {
+        "android": [
+          "onlyExplicitUnsupportedAllowsManualExactModel"
+        ],
+        "jvm-desktop": [
+          "onlyExplicitUnsupportedAllowsManualExactModel"
+        ],
+        "ios": [
+          "testManualModelEntryIsEnabledOnlyAfterExplicitUnsupportedResult"
+        ]
+      }
+    },
+    {
+      "id": "P8D-04",
+      "expectation": "A supported result removes manual fallback; unsupported-to-supported transitions never send the manual model.",
+      "tests": {
+        "android": [
+          "unsupportedToSupportedDoesNotSendManualModel"
+        ],
+        "jvm-desktop": [
+          "unsupportedToSupportedDoesNotSendManualModel"
+        ],
+        "ios": [
+          "testSupportedDiscoveryNeverUsesManualModelEntry"
+        ]
+      }
+    },
+    {
+      "id": "P8D-05",
+      "expectation": "Discovery errors use safe messages and allow explicit retry through retrying into supported discovery.",
+      "tests": {
+        "android": [
+          "failedDiscoveryRedactsErrorAndSupportsExplicitRetry"
+        ],
+        "jvm-desktop": [
+          "failedDiscoveryRedactsErrorAndSupportsExplicitRetry"
+        ],
+        "ios": [
+          "testFailureCanRetryIntoLoadedState",
+          "testUnknownCredentialFailureIsRedacted"
+        ]
+      }
+    },
+    {
+      "id": "P8D-06",
+      "expectation": "Cancellation rejects late discovery completions and does not overwrite a newer operation.",
+      "tests": {
+        "android": [
+          "cancelledLateDiscoveryCannotPublishOrOverwriteRetry"
+        ],
+        "jvm-desktop": [
+          "cancelledLateDiscoveryCannotPublishOrOverwriteRetry"
+        ],
+        "ios": [
+          "testDiscoveryCancellationHasExplicitCancelledState",
+          "testDiscoveryCompletionAfterCancellationRemainsCancelled",
+          "testProviderChangePreventsCancelledTaskFromOverwritingResetState"
+        ]
+      }
+    },
+    {
+      "id": "P8D-07",
+      "expectation": "Cancelling or deactivating an in-flight connection never publishes late success.",
+      "tests": {
+        "android": [
+          "backgroundDuringResponseCancelsWithoutPublishingLateSuccess"
+        ],
+        "jvm-desktop": [
+          "backgroundDuringResponseCancelsWithoutPublishingLateSuccess"
+        ],
+        "ios": [
+          "testConnectionRediscoveryCompletionAfterCancellationRemainsCancelled",
+          "testConnectionResponseCompletionAfterCancellationRemainsCancelled",
+          "testDeactivationCancelsLiveWorkAndDiscardsInteractionState"
+        ]
+      }
+    },
+    {
+      "id": "P8D-08",
+      "expectation": "A vanished selected model fails without substitution or response on another model.",
+      "tests": {
+        "android": [
+          "vanishedSelectionNeverSubstitutesAnotherDiscoveredModel"
+        ],
+        "jvm-desktop": [
+          "vanishedSelectionNeverSubstitutesAnotherDiscoveredModel"
+        ],
+        "ios": [
+          "testConnectionDoesNotSubstituteWhenSelectedModelDisappears"
+        ]
+      }
+    },
+    {
+      "id": "P8D-09",
+      "expectation": "Clearing configuration removes retained credentials, cancels active work, and does not expose credential content.",
+      "tests": {
+        "android": [
+          "clearCancelsDiscoveryRemovesAllCredentialsAndSeedPreference"
+        ],
+        "jvm-desktop": [
+          "clearCancelsDiscoveryRemovesAllCredentialsAndSeedPreference"
+        ],
+        "ios": [
+          "testCredentialSaveAndClearNeverExposeCredential",
+          "testKeychainStoreRoundTripUpdateAttributesIsolationAndClearAll"
+        ]
+      }
+    },
+    {
+      "id": "P8D-10",
+      "expectation": "Secure-storage failure is redacted and never reports successful credential deletion.",
+      "tests": {
+        "android": [
+          "clearFailureIsReportedWithoutClaimingDeletion"
+        ],
+        "jvm-desktop": [
+          "clearFailureIsReportedWithoutClaimingDeletion"
+        ],
+        "ios": [
+          "testFailedCredentialClearNeverClaimsDeletionOrExposesDetails"
+        ]
+      }
+    },
+    {
+      "id": "P8D-11",
+      "expectation": "Repeated discovery/retry/connection actions while busy start only one operation and cleanup follows cancellation.",
+      "tests": {
+        "android": [
+          "repeatedBusyActionsCannotStartAnotherOperation"
+        ],
+        "jvm-desktop": [
+          "repeatedBusyActionsCannotStartAnotherOperation"
+        ],
+        "ios": [
+          "testRepeatedBusyActionsCannotStartAnotherOperation"
+        ]
+      }
+    },
+    {
+      "id": "P8D-12",
+      "expectation": "Changing provider or endpoint invalidates selection and prevents credential reuse across configurations.",
+      "tests": {
+        "android": [
+          "endpointChangeCannotReuseCredentialAndCloseIsTerminal"
+        ],
+        "jvm-desktop": [
+          "endpointChangeCannotReuseCredentialAndCloseIsTerminal"
+        ],
+        "ios": [
+          "testProviderChangeResetsDiscoveryAndUsesProviderDefaultBaseURL",
+          "testValidEndpointChangeInvalidatesSelectionAndCannotReuseCredential"
+        ]
+      }
+    }
+  ],
+  "consumer_tests": {
+    "console": [
+      "rediscoveryUsesOnlyTheExactModelAndDiscardsResponseBodies",
+      "emptyFailureCancellationAndMissingSelectionBlockResponse",
+      "callerCancellationClosesClientAndClearsSession",
+      "unsupportedIsTheOnlyManualContinuation"
+    ],
+    "desktop-storage": [
+      "roundTripRequiresTheExactConfigurationAndClearRemovesProfile",
+      "unavailableServiceAndNativeLinkErrorsExposeOnlyStaticErrors",
+      "cancellingNativeWriteRemovesTheCredentialBeforeFinishing",
+      "failedWriteCleansUpPossiblePartialPersistence",
+      "clearFailureDoesNotClaimDeletion"
+    ]
+  }
+}

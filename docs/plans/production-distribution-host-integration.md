@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A through P8-C are completed; no subsequent package is active.
+Status: `In progress`; P8-A through P8-D are completed in this candidate; no subsequent package is active.
 
-P0-P7 and P8-A through P8-C are completed. P8 remains the sole roadmap milestone marked `In progress`.
-P8-D through P8-L remain `Not started`, and P9 remains inactive until P8 closes
+P0-P7 and P8-A through P8-C are authoritative; this candidate proposes P8-D completion. P8 remains the sole roadmap milestone marked `In progress`.
+P8-E through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -342,7 +342,14 @@ account UI, remote publication, or packaged distribution claim.
 
 ### P8-D: Cross-platform sample behavior parity
 
-Status: `Not started`.
+Status: `Completed` in this candidate. Completion becomes authoritative only after
+exact-head full and applicable live verification, required CI, independent review, guarded
+merge, and resulting-main verification pass. The closing PR owns those evidence identities.
+
+Activated October 29, 2026 for the requested release preparation. The authoritative
+[case catalog](../../samples/parity/cases.json) binds shared observable invariants to
+host-native deterministic assertions. [The verification record](../verification/p8d-sample-parity.md)
+records the gate, accepted host differences, provenance, and remaining proof.
 
 - Define one deterministic case catalog for supported non-empty discovery, supported empty,
   `.unsupported`, error, retry, cancellation, exact selection, manual fallback, credential

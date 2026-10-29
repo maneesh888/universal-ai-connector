@@ -82,6 +82,7 @@ Use the smallest commands that exercise the changed surface:
 | Android host behavior | `./gradlew :bridge:testAndroidHostTest` |
 | Android packaging or consumer | `./gradlew :bridge:bundleAndroidMainAar` and/or `./gradlew :samples:android:consumerCheck` |
 | Desktop and shared host controller | `./gradlew :samples:host-controller:test :samples:desktop:consumerCheck`; normal `:samples:desktop:run` for GUI proof |
+| Cross-platform sample behavior parity | `./scripts/check-sample-parity.sh` (or `--kotlin` / `--ios` for the affected host subset) |
 | JVM consumer | `./gradlew :samples:jvm-console:consumerCheck`; use `:samples:jvm-console:run` when runtime output matters |
 | Kotlin Apple bridge | `./gradlew :bridge:iosSimulatorArm64Test` |
 | Swift façade | `./scripts/test-swift-package.sh` |
@@ -93,7 +94,7 @@ Use the smallest commands that exercise the changed surface:
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
-The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM, Android, shared host controller, and desktop consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests, the locally signed simulator sample build, and unsigned generic-device link verification.
+The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM, Android, shared host controller, and desktop consumers. It validates the P8-D parity catalog against Kotlin test results. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests plus structured iOS parity evidence, the locally signed simulator sample build, and unsigned generic-device link verification.
 
 When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
 
