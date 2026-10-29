@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:universal-ai-connector:contract:v1:provider-capability-profile",
-  "title": "Universal AI Connector V1 Provider Capability Profile",
+  "title": "Adidi Universal AI Connector V1 Provider Capability Profile",
   "description": "Versioned provider-level capability defaults. Model-specific overrides are resolved in common Kotlin and are not a second wire DTO.",
   "type": "object",
   "properties": {

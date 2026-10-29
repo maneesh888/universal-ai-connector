@@ -34,6 +34,13 @@ Optional:
   UAC_LIVE_ENV_FILE      .env.live or .env.live.<name> in the primary checkout.
   UAC_IOS_SAMPLE_LIVE_PROOF=1
                          Build, install, and seed the Simulator sample for visible proof.
+  UAC_ANDROID_SAMPLE_LIVE_PROOF=1
+                         Build, install, and securely seed the Android debug sample.
+
+  UAC_JVM_SAMPLE_LIVE_PROOF=1
+                         Run the process-scoped console exact-model connection flow.
+  UAC_DESKTOP_SAMPLE_LIVE_PROOF=1
+                         Launch the real desktop app with session-only live inputs.
 
 Non-empty process environment values override the canonical ignored local file.
 EOF
@@ -60,7 +67,7 @@ Configure the ignored local file before retrying:
   Primary checkout: $PRIMARY_CHECKOUT
   Expected file: $LIVE_ENV_FILE_PATH
   Copy $PRIMARY_CHECKOUT/.env.live.example to that exact path.
-  chmod 600 "$LIVE_ENV_FILE_PATH"
+  ./scripts/local-config.sh secure-live-env
   Open the file in your local editor and set $input_names.
   ./scripts/check-live.sh $PROVIDER
 
@@ -95,6 +102,18 @@ if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "0" &&
       "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
   fail "UAC_IOS_SAMPLE_LIVE_PROOF must be 0 or 1."
 fi
+
+if [[ "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" != "0" &&
+      "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" != "1" ]]; then
+  fail "UAC_ANDROID_SAMPLE_LIVE_PROOF must be 0 or 1."
+fi
+for flag in UAC_JVM_SAMPLE_LIVE_PROOF UAC_DESKTOP_SAMPLE_LIVE_PROOF; do
+  if [[ "${!flag:-0}" != "0" && "${!flag:-0}" != "1" ]]; then
+    fail "$flag must be 0 or 1."
+  fi
+done
+
+unset UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL UAC_ANDROID_SAMPLE_PROOF_MODEL UAC_ANDROID_SAMPLE_PROOF_BASE_URL
 
 case "$PROVIDER" in
   openai)
@@ -330,6 +349,14 @@ echo "Running local $PROVIDER_LABEL live smoke tests for exact HEAD."
     --no-daemon \
     --no-configuration-cache \
     "-PuacLiveExpectedSha=$HEAD_SHA"
+  sample_provider="$PROVIDER"
+  if [[ "$sample_provider" == "gateway" ]]; then sample_provider="openai-compatible"; fi
+  if [[ "${UAC_JVM_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+    "$ROOT/gradlew" :samples:jvm-console:run --no-daemon --no-configuration-cache --args="--live $sample_provider"
+  fi
+  if [[ "${UAC_DESKTOP_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+    "$ROOT/gradlew" :samples:desktop:run --no-daemon --no-configuration-cache --args="--live $sample_provider"
+  fi
 )
 
 POST_LIVE_SHA="$(uac_git -C "$ROOT" rev-parse --verify HEAD 2>/dev/null)" ||
@@ -367,6 +394,19 @@ if [[ "${UAC_IOS_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
     fi
     export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
     "$IOS_SAMPLE_LAUNCHER" "$PROVIDER"
+  )
+fi
+
+if [[ "${UAC_ANDROID_SAMPLE_LIVE_PROOF:-0}" == "1" ]]; then
+  (
+    unset OPENAI_API_KEY OPENAI_LIVE_MODEL ANTHROPIC_API_KEY ANTHROPIC_LIVE_MODEL \
+      OPENROUTER_API_KEY OPENROUTER_LIVE_MODEL GATEWAY_API_KEY GATEWAY_LIVE_MODEL \
+      GATEWAY_LIVE_BASE_URL GATEWAY_LIVE_STRUCTURED_OUTPUT UAC_LIVE_ENV_FILE
+    export UAC_ANDROID_SAMPLE_PROOF_CREDENTIAL="$KEY_VALUE"
+    export UAC_ANDROID_SAMPLE_PROOF_MODEL="$MODEL_VALUE"
+    export UAC_ANDROID_SAMPLE_PROOF_BASE_URL="$BASE_URL_VALUE"
+    export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
+    "$ROOT/scripts/launch-android-live-sample.sh" "$PROVIDER"
   )
 fi
 

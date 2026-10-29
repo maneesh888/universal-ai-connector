@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:universal-ai-connector:contract:v1:capability-set",
-  "title": "Universal AI Connector V1 Capability Set",
+  "title": "Adidi Universal AI Connector V1 Capability Set",
   "description": "A raw-keyed set of provider or effective-model capability declarations. Known max_schema_bytes and max_schema_depth limits apply only to structured_output. Unknown valid names, support values, and limit names remain contract data.",
   "type": "object",
   "maxProperties": 64,

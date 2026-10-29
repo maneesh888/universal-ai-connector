@@ -1,107 +1,106 @@
-# Proposed P8-E Distribution Contract
+# P8-E distribution contract candidate
 
-This draft is staged for P8-E after P8-A through P8-D. It does not activate or complete a milestone, freeze a release version, or prove distribution readiness.
+This branch prepares one nonpublishing identity/version contract after accepted P8-D
+(PR #88, merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646`, with successful resulting-main
+CI). It does not publish a package, tag, release asset, or remote Swift manifest.
 
-The proposed disposable proof version is `0.1.0-0.p8.1`. It is valid SemVer and has lower
-precedence than the P9 target `0.1.0-alpha.1` because its first prerelease identifier is numeric
-`0`. The canonical value and Maven group live only in `gradle.properties`; builds generate the
-Kotlin runtime constant and derive host metadata from those properties.
+The proposed disposable proof version is `0.1.0-0.p8.1`, retained from the existing draft.
+Its first prerelease identifier is numeric, so it precedes P9's reserved `0.1.0-alpha.1`.
+`gradle.properties` owns the canonical group and version; builds derive Kotlin runtime and
+host version metadata from those properties. This candidate is reviewable preparation;
+the owner must approve the exact immutable version, destinations and artifacts before publication.
 
 ## Proposed identity
 
-| Item | P8 contract |
+| Item | Candidate contract |
 |---|---|
-| Public Maven coordinate | `io.github.maneesh888:universal-ai-connector:0.1.0-0.p8.1` |
+| Maven root coordinate | `com.myadidi:universal-ai-connector:0.1.0-0.p8.1` |
 | Git tag | `v0.1.0-0.p8.1` |
-| POM name | `Universal AI Connector` |
-| Project and SCM URL | `https://github.com/maneesh888/universal-ai-connector` |
-| License | MIT License |
-| Developer identity | `maneesh888` / `https://github.com/maneesh888` |
-| Swift product | `UniversalAiConnector` |
-| Swift binary target | `UniversalAiConnectorBridge` |
-| Apple release asset | `UniversalAiConnectorBridge.xcframework.zip` plus `.sha256` |
-| macOS desktop asset | `universal-ai-connector-desktop-{version}-macos-aarch64.dmg` plus `.sha256` |
-| Windows desktop asset | `universal-ai-connector-desktop-{version}-windows-x86_64.msi` plus `.sha256` |
-| Linux desktop asset | `universal-ai-connector-desktop-{version}-linux-x86_64.deb` plus `.sha256` |
-| Desktop application ID | `io.github.maneesh888.universalai.connector.desktop` |
-| Desktop package name | `universal-ai-connector-demo` |
+| Project and SCM | `https://github.com/maneesh888/universal-ai-connector` |
+| License / developer | MIT / `maneesh888` GitHub profile |
+| Swift product / binary target | `UniversalAiConnector` / `UniversalAiConnectorBridge` |
+| Apple asset | `UniversalAiConnectorBridge.xcframework.zip` plus `.sha256` |
+| Apple publisher-signing policy | Proposed unsigned proof; no publisher identity is configured |
+| Desktop application ID | `com.myadidi.universalai.connector.desktop` |
+| Desktop assets | Versioned macOS ARM64 DMG, Windows x86_64 MSI and Linux x86_64 DEB templates in `distribution/release.properties` |
 
-The full public POM, asset, package, and toolchain fields are machine-readable in
-`distribution/release.properties`. Release assets are immutable within their tag; a correction
-uses a new candidate version.
+The verified Central namespace is `com.myadidi`. The Portal displayed Verified on October 29,
+2026 at 19:14 UTC after domain verification for `myadidi.com`; the nonsecret evidence record is
+`distribution/namespace-verification.json`. This is historical ownership evidence, not a
+publishing-token authentication or deployment-validation claim. Do not repeat namespace setup
+merely because an older draft described it as missing.
 
-## Candidate baseline
+Public inspection on October 29 found no repository tags and returned HTTP 404 for this Maven
+artifact's public metadata. Recheck the exact tag/version and Portal deployment state before any
+immutable publication. A failed immutable candidate must use a new version.
 
-| Surface | Candidate build or consumer baseline |
+## Verified build baseline
+
+| Surface | Build baseline |
 |---|---|
-| JDK | 21 |
-| Gradle wrapper | 9.7.1 |
-| Kotlin Gradle plugin | 2.4.10 |
-| Android | API 24 minimum; compile/target API 36; Build Tools 36.1.0 |
-| Swift | Swift tools 6.0 |
-| Xcode | 16.4 proposed minimum; minimum-version validation remains pending |
-| iOS | 17.0 |
-| macOS build host | macOS 15 on Apple silicon |
-| Windows build host | Windows Server 2025 x86_64 |
-| Linux build host | Ubuntu 24.04 x86_64 |
+| JDK / Gradle / Kotlin | 21 / 9.7.1 / 2.4.10 |
+| Android library | Minimum 24, compile 36, Build Tools 36.1.0 |
+| Android sample | Minimum 24, compile 37, target 36 |
+| Swift / iOS | Swift tools 6.0 / iOS 17.0 |
+| Xcode | 16.4, proved by accepted-main CI run 40956077878 |
+| CI hosts | macOS 15; Windows Server 2025 x86_64; Ubuntu 24.04 x86_64 |
 
-The desktop runtime claim remains pending P8-I matching-host package and launch proof. These
-values are provisional until P8-E validates the minimum toolchains; they do not claim broader desktop operating
-system compatibility yet.
+These are build/proof baselines, not a claim that JVM consumers require those particular OS
+releases. Matching-host packaged-desktop proof remains later P8 work.
 
-## Release inputs
+## Scoped readiness and host inputs
 
-Release commands accept inputs only from the launching host and must validate presence without
-printing values. Ordinary CI and pull requests remain secretless.
-
-| Purpose | Required host input |
-|---|---|
-| Central Portal token username | `ORG_GRADLE_PROJECT_mavenCentralUsername` |
-| Central Portal token password | `ORG_GRADLE_PROJECT_mavenCentralPassword` |
-| ASCII-armored PGP private key | `ORG_GRADLE_PROJECT_signingInMemoryKey` |
-| PGP private-key password | `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword` |
-| Expected PGP fingerprint | `UAC_PGP_SIGNING_KEY_FINGERPRINT` |
-| macOS signing identity | `UAC_MACOS_SIGNING_IDENTITY` matching a Developer ID Application certificate |
-| Apple notarization credentials | `UAC_NOTARY_KEYCHAIN_PROFILE` referencing a local Keychain profile |
-| GitHub session | An authenticated `gh` session that can access the target repository |
-
-The Central account must show verified namespace `io.github.maneesh888`. macOS downloadable
-artifacts require a Developer ID Application identity and a working `notarytool` Keychain profile.
-Windows signing is optional for the internal alpha only when no trusted identity is available and
-must remain an explicit release limitation.
-
-## Verification
-
-Run the credential-free consistency gate on every platform:
+Ordinary CI is secretless. The metadata checker and fully stubbed readiness regressions never
+load real release credentials. Actual credential probes are separate opt-in host commands:
 
 ```bash
 ./scripts/check-distribution-metadata.sh
+./scripts/check-distribution-readiness.sh libraries
+./scripts/check-distribution-readiness.sh desktop
+./scripts/check-distribution-readiness.sh all
 ```
 
-This command checks canonical version derivation, the P8 SemVer boundary, POM and asset identity,
-toolchain pins, version expectations, CI host pins, and the absence of credential-bearing public
-metadata. It performs no publication, signing, notarization, or remote mutation.
+An explicit scope is required. `libraries` probes GitHub read access, unused public tag/Maven
+paths, a supplied Central token and supplied PGP signing material. It does not require or invoke
+Developer ID or notarization. `desktop` probes GitHub plus the configured macOS Developer ID
+identity and notary profile, without Maven credentials. `all` runs both for the current unified
+release plan. A scoped probe does not waive any required target in the actual publication plan.
 
-After the authenticated external prerequisites exist, run the separate read-only prerequisite
-probe:
+| Scope | Host inputs; values must never be printed or committed |
+|---|---|
+| Libraries | `ORG_GRADLE_PROJECT_mavenCentralUsername`, `ORG_GRADLE_PROJECT_mavenCentralPassword`, `ORG_GRADLE_PROJECT_signingInMemoryKey`, `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword`, `UAC_PGP_SIGNING_KEY_FINGERPRINT` |
+| macOS desktop | `UAC_MACOS_SIGNING_IDENTITY`, `UAC_NOTARY_KEYCHAIN_PROFILE` |
+| Both | Existing authenticated `gh` session for the verified repository |
+
+No real credential probe was run by this preparation. Token/PGP usability remains unverified.
+The dummy-deployment Central status probe is bounded authentication screening; it does not prove
+that a token can publish this namespace. Real deployment validation is required before release.
+PGP material is used only in a protected temporary directory and removed on success or failure.
+GitHub read access likewise does not prove release-write permission.
+
+## SwiftPM and signing boundaries
+
+The supported iOS path needs a release device/simulator XCFramework, ZIP, checksum, root remote
+`Package.swift`, immutable Git tag/asset and clean consumer proof. There is no separate mandatory
+central SwiftPM upload. No public asset URL or remote consumption is claimed by this candidate.
+
+Apple documents unsigned and self-signed XCFramework states. Publisher identity signing is a
+policy choice to finalize before archiving/checksum freeze; it is not the macOS notarization
+workflow. Developer ID and notarization requirements apply to the planned macOS desktop app,
+not this iOS-only binary package. No identity is generated, configured or used here.
+
+The existing local builder now accepts an explicit release configuration:
 
 ```bash
-./scripts/check-distribution-readiness.sh
+./scripts/build-xcframework.sh --release
 ```
 
-It authenticates the Central Portal token without uploading, verifies the unused tag and Maven
-path, confirms that the active GitHub session can read the target repository, proves that the
-expected PGP private key can sign with the supplied passphrase, and validates the installed
-Developer ID Application identity and notarization profile. It identifies missing input names but
-never prints their values. Authenticated repository access does not prove that the active GitHub
-token has `contents:write`; P8-J must validate that capability immediately before release creation.
+It validates the same iOS ARM64 device/simulator slices, minimum OS and private bridge boundaries.
+Local archive/runtime consistency proof is preparation, not remote SwiftPM distribution proof.
+The current roadmap still sequences desktop acceptance before unified publication; a libraries-first
+publication path requires an explicit roadmap/scope decision and must not silently skip those gates.
 
-The Portal exposes no documented read-only API that proves namespace ownership. The probe
-therefore exits blocked even after its locally verifiable checks pass. A release owner must inspect
-the authenticated Portal namespace page, record the resulting evidence in the P8-E review packet,
-and obtain independent review before P8-E can complete. Supplying the group name as an environment
-variable is not accepted as ownership proof.
-
-On August 12, 2026, the candidate tag and Maven path were both unused. Central namespace ownership,
-PGP signing readiness, a Developer ID Application identity, and a notarization profile still require
-authenticated external proof before P8-E can complete.
+References: [Central requirements](https://central.sonatype.org/publish/requirements/),
+[SwiftPM binary distribution](https://developer.apple.com/documentation/xcode/distributing-binary-frameworks-as-swift-packages),
+[XCFramework signatures](https://developer.apple.com/videos/play/wwdc2023/10061/),
+[macOS notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution).

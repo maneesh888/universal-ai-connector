@@ -1,4 +1,5 @@
 plugins {
+    id("org.jetbrains.compose") version "1.11.0" apply false
     kotlin("multiplatform") version "2.4.10" apply false
     kotlin("jvm") version "2.4.10" apply false
     kotlin("plugin.serialization") version "2.4.10" apply false
@@ -17,7 +18,7 @@ subprojects {
 
 if (JavaVersion.current() != JavaVersion.VERSION_21) {
     throw GradleException(
-        "Java 21 is required to build Universal AI Connector. " +
+        "Java 21 is required to build Adidi Universal AI Connector. " +
             "Current runtime: ${JavaVersion.current()}",
     )
 }

@@ -185,7 +185,7 @@ final class KeychainLiveAiCredentialStore: LiveAiCredentialStore, @unchecked Sen
     private let service: String
 
     init(
-        service: String = "com.maneesh.universalai.connector.sample.live-credentials"
+        service: String = "com.myadidi.universalai.connector.sample.live-credentials"
     ) {
         self.service = service
     }

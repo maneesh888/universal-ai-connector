@@ -118,7 +118,7 @@ Samples remain presentation-only. Shared behavior belongs in common Kotlin code,
 - Keep the initial JVM API Kotlin-first and verify the same sample on Linux, Windows, and macOS hosts.
 - Ensure cancellation tests use coroutine test primitives and do not depend on wall-clock sleeps.
 
-The console sample is non-interactive and imports only `com.maneesh.universalai.connector` from the public bridge module. `:samples:jvm-console:consumerCheck` compiles the dependency boundary, asserts the complete consumer-facing output with virtual coroutine time, and runs the application to deterministic termination.
+The console sample is non-interactive and imports only `com.myadidi.universalai.connector` from the public bridge module. `:samples:jvm-console:consumerCheck` compiles the dependency boundary, asserts the complete consumer-facing output with virtual coroutine time, and runs the application to deterministic termination.
 
 ### Android
 

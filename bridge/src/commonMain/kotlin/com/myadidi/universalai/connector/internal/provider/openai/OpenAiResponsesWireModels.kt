@@ -1,0 +1,149 @@
+package com.myadidi.universalai.connector.internal.provider.openai
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+
+@Serializable
+internal data class OpenAiModelListWire(
+    @SerialName("object")
+    val objectType: String? = null,
+    val data: List<OpenAiModelWire>? = null,
+)
+
+@Serializable
+internal data class OpenAiModelWire(
+    val id: String? = null,
+    @SerialName("object")
+    val objectType: String? = null,
+)
+
+@Serializable
+internal data class OpenAiCreateResponseWire(
+    val model: String,
+    val input: List<OpenAiInputMessageWire>,
+    val store: Boolean,
+    val stream: Boolean = false,
+    val text: OpenAiTextConfigurationWire? = null,
+    @SerialName("max_output_tokens")
+    val maxOutputTokens: Int? = null,
+    val temperature: Double? = null,
+    @SerialName("top_p")
+    val topP: Double? = null,
+)
+
+@Serializable
+internal data class OpenAiInputMessageWire(
+    val role: String,
+    val content: String,
+)
+
+@Serializable
+internal data class OpenAiTextConfigurationWire(
+    val format: OpenAiTextFormatWire,
+)
+
+@Serializable
+internal data class OpenAiTextFormatWire(
+    val type: String,
+    val name: String,
+    val schema: JsonElement,
+    val strict: Boolean,
+)
+
+@Serializable
+internal data class OpenAiResponseWire(
+    val id: String? = null,
+    @SerialName("object")
+    val objectType: String? = null,
+    val status: String? = null,
+    val model: String? = null,
+    val output: List<OpenAiOutputItemWire>? = null,
+    val usage: OpenAiUsageWire? = null,
+    val error: OpenAiErrorWire? = null,
+    @SerialName("incomplete_details")
+    val incompleteDetails: OpenAiIncompleteDetailsWire? = null,
+)
+
+@Serializable
+internal data class OpenAiOutputItemWire(
+    val id: String? = null,
+    val type: String,
+    val status: String? = null,
+    val role: String? = null,
+    val content: List<OpenAiOutputContentWire>? = null,
+)
+
+@Serializable
+internal data class OpenAiOutputContentWire(
+    val type: String,
+    val text: String? = null,
+    val refusal: String? = null,
+)
+
+@Serializable
+internal data class OpenAiIncompleteDetailsWire(
+    val reason: String? = null,
+)
+
+@Serializable
+internal data class OpenAiErrorEnvelopeWire(
+    val error: OpenAiErrorWire? = null,
+)
+
+@Serializable
+internal data class OpenAiErrorWire(
+    val code: String? = null,
+    val type: String? = null,
+    val message: String? = null,
+    val param: JsonElement? = null,
+)
+
+@Serializable
+internal data class OpenAiUsageWire(
+    @SerialName("input_tokens")
+    val inputTokens: Long? = null,
+    @SerialName("output_tokens")
+    val outputTokens: Long? = null,
+    @SerialName("total_tokens")
+    val totalTokens: Long? = null,
+    @SerialName("input_tokens_details")
+    val inputDetails: OpenAiInputTokenDetailsWire? = null,
+    @SerialName("output_tokens_details")
+    val outputDetails: OpenAiOutputTokenDetailsWire? = null,
+)
+
+@Serializable
+internal data class OpenAiInputTokenDetailsWire(
+    @SerialName("cached_tokens")
+    val cachedTokens: Long? = null,
+    @SerialName("cache_write_tokens")
+    val cacheWriteTokens: Long? = null,
+)
+
+@Serializable
+internal data class OpenAiOutputTokenDetailsWire(
+    @SerialName("reasoning_tokens")
+    val reasoningTokens: Long? = null,
+)
+
+@Serializable
+internal data class OpenAiStreamEventWire(
+    val type: String? = null,
+    @SerialName("sequence_number")
+    val sequenceNumber: Long? = null,
+    val response: OpenAiResponseWire? = null,
+    @SerialName("output_index")
+    val outputIndex: Int? = null,
+    @SerialName("item_id")
+    val itemId: String? = null,
+    @SerialName("content_index")
+    val contentIndex: Int? = null,
+    val item: OpenAiOutputItemWire? = null,
+    val part: OpenAiOutputContentWire? = null,
+    val delta: String? = null,
+    val text: String? = null,
+    val code: String? = null,
+    val message: String? = null,
+    val param: JsonElement? = null,
+)

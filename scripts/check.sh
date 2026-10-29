@@ -24,6 +24,8 @@ run_hygiene() {
     bash -n "$ROOT/$shell_file"
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
+  python3 -I "$ROOT/scripts/tests/verification-policy-test.py"
+  python3 -I -B "$ROOT/scripts/tests/sample-parity-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
@@ -34,6 +36,7 @@ run_hygiene() {
   "$ROOT/scripts/tests/distribution-metadata-test.sh"
   "$ROOT/scripts/tests/distribution-readiness-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
+  "$ROOT/scripts/check-sample-parity.sh" --catalog
   git -C "$ROOT" diff --check
 
   local temp_index_directory
@@ -60,12 +63,14 @@ run_hygiene() {
     git -C "$ROOT" diff --check
   rm -rf "$temp_index_directory"
 
-  echo "Universal AI Connector hygiene checks passed."
+  echo "Adidi Universal AI Connector hygiene checks passed."
 }
 
 run_script_tests() {
   "$ROOT/scripts/tests/check-live-test.sh"
   "$ROOT/scripts/tests/launch-ios-live-sample-test.sh"
+  "$ROOT/scripts/tests/ios-sample-result-test.sh"
+  python3 -B "$ROOT/scripts/tests/android-live-seed-test.py"
   "$ROOT/scripts/tests/live-impact-test.sh"
   "$ROOT/scripts/tests/pre-push-live-test.sh"
   "$ROOT/scripts/tests/live-workflow-policy-test.sh"
@@ -81,7 +86,11 @@ run_cross_platform_gradle_checks() {
   "$ROOT/gradlew" \
     :bridge:bundleAndroidMainAar \
     :samples:jvm-console:consumerCheck \
+    :samples:host-controller:test \
+    :samples:desktop:consumerCheck \
     :samples:android:consumerCheck
+
+  python3 -I "$ROOT/scripts/sample-parity.py" kotlin
 
   verify_platform_packaging_boundaries
 }
@@ -137,7 +146,7 @@ verify_platform_packaging_boundaries() {
     echo "Could not inspect JVM artifact: $jvm_jar" >&2
     return 1
   fi
-  if grep -q '^com/maneesh/universalai/apple/.*\.class$' "$jvm_listing"; then
+  if grep -q '^com/myadidi/universalai/apple/.*\.class$' "$jvm_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "JVM artifact must not contain Apple bridge classes: $jvm_jar" >&2
     return 1
@@ -149,7 +158,7 @@ verify_platform_packaging_boundaries() {
       return 1
     fi
   fi
-  if grep -q '^com/maneesh/universalai/poc/.*\.class$' "$jvm_listing"; then
+  if grep -q '^com/myadidi/universalai/poc/.*\.class$' "$jvm_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "JVM artifact must not contain retired POC classes: $jvm_jar" >&2
     return 1
@@ -177,7 +186,7 @@ verify_platform_packaging_boundaries() {
     echo "Could not inspect Android classes.jar from: $android_aar" >&2
     return 1
   fi
-  if grep -q '^com/maneesh/universalai/apple/.*\.class$' "$android_listing"; then
+  if grep -q '^com/myadidi/universalai/apple/.*\.class$' "$android_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Android artifact must not contain Apple bridge classes: $android_aar" >&2
     return 1
@@ -189,7 +198,7 @@ verify_platform_packaging_boundaries() {
       return 1
     fi
   fi
-  if grep -q '^com/maneesh/universalai/poc/.*\.class$' "$android_listing"; then
+  if grep -q '^com/myadidi/universalai/poc/.*\.class$' "$android_listing"; then
     rm -rf -- "$temp_artifact_directory"
     echo "Android artifact must not contain retired POC classes: $android_aar" >&2
     return 1
@@ -232,12 +241,12 @@ verify_public_artifact_signatures() {
   : > "$signatures"
   while IFS= read -r class_entry; do
     case "$class_entry" in
-      com/maneesh/universalai/connector/internal/* | *'$'* | module-info.class)
+      com/myadidi/universalai/connector/internal/* | *'$'* | module-info.class)
         continue
         ;;
-      com/maneesh/universalai/connector/*.class | \
-        com/maneesh/universalai/connector/contract/*.class | \
-        com/maneesh/universalai/connector/contract/*/*.class)
+      com/myadidi/universalai/connector/*.class | \
+        com/myadidi/universalai/connector/contract/*.class | \
+        com/myadidi/universalai/connector/contract/*/*.class)
         class_name="${class_entry%.class}"
         class_name="${class_name//\//.}"
         if ! "$javap_command" -public -classpath "$artifact" "$class_name" >> "$signatures"; then
@@ -249,7 +258,7 @@ verify_public_artifact_signatures() {
   done < "$listing"
 
   if grep -Eq \
-    'com\.maneesh\.universalai\.connector\.internal\.provider\.(openai|anthropic|openrouter|openaicompatible)\.|(OpenAi|Anthropic|OpenRouter)[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
+    'com\.myadidi\.universalai\.connector\.internal\.provider\.(openai|anthropic|openrouter|openaicompatible)\.|(OpenAi|Anthropic|OpenRouter)[A-Za-z0-9_]*(Wire|Adapter|Translator)' \
     "$signatures"; then
     echo "$label public artifact signatures expose a provider implementation or wire DTO." >&2
     return 1
@@ -266,7 +275,7 @@ run_quick() {
   run_hygiene --quick
   run_script_tests
   run_cross_platform_gradle_checks
-  echo "Universal AI Connector quick checks passed."
+  echo "Adidi Universal AI Connector quick checks passed."
 }
 
 run_full() {
@@ -277,12 +286,12 @@ run_full() {
   # Build once, then reuse the artifact for package and consumer checks.
   "$ROOT/scripts/build-xcframework.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-swift-package.sh"
-  UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-ios-sample.sh"
+  UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/check-sample-parity.sh" --ios
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-app-extension-consumer.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"
 
-  echo "Universal AI Connector complete deterministic checks passed."
+  echo "Adidi Universal AI Connector complete deterministic checks passed."
 }
 
 case "$MODE" in

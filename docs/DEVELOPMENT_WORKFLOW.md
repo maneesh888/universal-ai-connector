@@ -13,6 +13,12 @@ Keep these claims separate:
 3. **Consumer integration proof:** a thin host sample consumes the public package boundary and compiles or runs its documented first-use path.
 4. **Distribution proof:** a clean fixture resolves a published artifact from its documented location.
 
+Map each acceptance criterion to changed behavior and its required evidence class. Accept equivalent
+routes only when they establish the same observable result at that class. An independent reviewer
+must inspect that reasoning. A human observation is attributed as human evidence and cannot waive
+mandatory deterministic, live, packaging, or active-plan proof. No OpenKeyboard runtime approval
+exception is imported.
+
 Do not infer a stronger level from a weaker one. Distribution proof remains P8 work.
 
 ## Modes and cumulative gates
@@ -20,10 +26,14 @@ Do not infer a stronger level from a weaker one. Distribution proof remains P8 w
 Canonical-contract changes additionally require **contract conformance proof**: authoritative schemas are meta-valid, every fixture has one documented schema or semantic result, production encodings stay schema-valid for the governed corpus, and the embedded multiplatform mirror has zero drift from the tracked bundle.
 
 Run `./scripts/check-environment.sh` on a new clone before enabling hooks. It is a read-only
-preflight: `--hygiene` validates standard shell, Git, Ruby YAML parsing, and secret-scan tools;
+preflight: `--hygiene` validates standard shell, Git, Python 3, Ruby YAML parsing, and secret-scan tools;
 `--quick` also validates Java 21 and the Android SDK; and `--full` also validates the Apple
 toolchain. Normal repository gates invoke the matching preflight automatically. A preflight
 failure is a machine setup blocker, not permission to weaken the affected test or bypass a hook.
+
+Android checks require SDK platforms 36 (shared library) and 37.0 (Lifecycle 2.11 sample),
+plus Build Tools 36.1.0. The sample compiles against API 37 while retaining target API 36 and
+minimum API 24. Both Linux and macOS CI provision the same SDK components.
 
 Run targeted checks while editing, then run only the highest final gate required by the selected mode:
 
@@ -35,7 +45,31 @@ Run targeted checks while editing, then run only the highest final gate required
 
 Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
+Successful same-head hook evidence may satisfy the matching local gate when the command, scope, environment, and result are retained. Do not rerun an unchanged successful full gate merely to label it Release.
+
 Mandatory hooks may execute a higher cumulative gate at commit or push. Do not manually repeat the same gate immediately before the hook unless the intervening state changed.
+
+## Trusted docs-only exception
+
+`./scripts/verification-mode.sh staged` selects commit scope; `head` selects the complete PR scope
+against the merge base with fresh `origin/main`. It loads the classifier from that trusted base,
+never from the candidate. Only regular-file content modifications to `README.md` and
+`docs/PRODUCTION_CONSUMPTION.md` qualify as `docs`. Additions, deletions, renames, modes/symlinks,
+unknown paths, plans, ADRs, AGENTS/skills, workflow/security policy, config, source, and dependencies
+select `full`. A mixed diff is always full. A docs classification proves file scope, not correctness;
+review documentation claims against the actual API and required proof.
+
+Eligible prose uses hygiene at commit, push, and Release. Other commits use quick, and other pushes
+and Release heads use full. Explicit `check.sh --full` always runs full. Missing trusted base or
+classifier retains full locally; invalid classifier execution/output fails. CI requires a valid
+PR base/head and uses the same base-loaded classifier; a missing policy during rollout selects
+full. Push-to-main and manual CI always run all platforms. This policy/CI rollout therefore runs
+full, even if its files include Markdown.
+
+CI permits platform jobs to be skipped only after successful `docs` classification and hygiene.
+Missing/unknown classification, failed/cancelled jobs, or skipped hygiene fail `Required checks`.
+The separate provider-live classifier and selected exact-head gates remain unchanged. Neither this
+exception nor optional review availability weakens branch protection or independent review.
 
 ## Targeted check routing
 
@@ -47,6 +81,8 @@ Use the smallest commands that exercise the changed surface:
 | Shared Kotlin behavior | `./gradlew :bridge:jvmTest` |
 | Android host behavior | `./gradlew :bridge:testAndroidHostTest` |
 | Android packaging or consumer | `./gradlew :bridge:bundleAndroidMainAar` and/or `./gradlew :samples:android:consumerCheck` |
+| Desktop and shared host controller | `./gradlew :samples:host-controller:test :samples:desktop:consumerCheck`; normal `:samples:desktop:run` for GUI proof |
+| Cross-platform sample behavior parity | `./scripts/check-sample-parity.sh` (or `--kotlin` / `--ios` for the affected host subset) |
 | JVM consumer | `./gradlew :samples:jvm-console:consumerCheck`; use `:samples:jvm-console:run` when runtime output matters |
 | Kotlin Apple bridge | `./gradlew :bridge:iosSimulatorArm64Test` |
 | Swift façade | `./scripts/test-swift-package.sh` |
@@ -54,13 +90,14 @@ Use the smallest commands that exercise the changed surface:
 | iOS application integration | `./scripts/test-ios-sample.sh` and `./scripts/build-sample.sh`; add `./scripts/build-sample-device.sh` for device-slice link changes |
 | iOS app-extension integration | `./scripts/build-app-extension-consumer.sh` |
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
+| Android live state and bootstrap | `./gradlew :samples:android:consumerCheck`; `python3 -B scripts/tests/android-live-seed-test.py`; build `:samples:android:assembleRelease` when changing the debug-only bootstrap boundary |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
 | Distribution identity, version, POM, assets, or host baselines | `./scripts/check-distribution-metadata.sh` and its metadata/readiness regressions; run `./scripts/check-distribution-readiness.sh` only on a credentialed release host |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
-The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM and Android consumers. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests, the locally signed simulator sample build, and unsigned generic-device link verification.
+The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM, Android, shared host controller, and desktop consumers. It validates the P8-D parity catalog against Kotlin test results. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests plus structured iOS parity evidence, the locally signed simulator sample build, and unsigned generic-device link verification.
 
-When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior. The P8-E draft adds credential-free distribution metadata and regression checks to hygiene on its branch; these do not activate P8-E, validate real credentials, or establish remote publication.
+When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior. P8-E adds credential-free distribution metadata and fully stubbed readiness regressions to hygiene. Real target-scoped readiness probes are opt-in and do not run in ordinary CI; local artifact preparation establishes no remote distribution proof.
 
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
 `--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
@@ -73,7 +110,7 @@ documented provider input from the full deterministic gate and every non-selecte
 from a selected live gate. OpenAI, Anthropic, OpenRouter, and the Gateway are the delivered real
 gates after P7-B adds the Gateway runner, task, and selection to the existing three routes. A
 generic-adapter change selects both its representative OpenRouter proof and the Gateway proof. The
-P8 iOS live-sample surface selects every delivered gate because it can configure each one. The
+P8 iOS, Android, JVM console, shared host controller, and desktop live-sample surfaces select every delivered gate because they can configure each one. The
 initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.
@@ -125,8 +162,8 @@ git config --local --get core.hooksPath
 
 The path must be `.githooks`.
 
-- Pre-commit rejects unstaged tracked changes and untracked files, then runs `./scripts/check.sh --quick` against the proposed contents.
-- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs `./scripts/check.sh --full`. It then runs every exact-head provider gate selected relative to `origin/main` and fails closed when any selected gate, task, or required process input is absent.
+- Pre-commit rejects unstaged tracked changes and untracked files, then runs quick against the proposed contents, or hygiene for trusted docs-only scope.
+- Pre-push accepts only refs resolving to checked-out `HEAD`, requires a clean worktree before and after verification, and runs full, or hygiene for trusted docs-only scope. It then runs every exact-head provider gate selected relative to `origin/main` and fails closed when any selected gate, task, or required process input is absent.
 - Never use `--no-verify`. Missing toolchains and failed checks are blockers.
 
 These hook requirements are safety gates; they do not make every task a Release analysis task.
@@ -139,7 +176,8 @@ These hook requirements are safety gates; they do not make every task a Release 
 - `JVM + Android (Linux)` runs on Ubuntu 24.04 and checks shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer with Java 21.
 - `JVM (Windows)` runs on Windows Server 2025 and checks JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
 - `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
-- `Required checks` provides one stable branch-protection status.
+- `Classify verification` selects trusted docs-only scope; platform jobs run for every other PR.
+- `Required checks` provides one stable branch-protection status and validates classified skips.
 
 Pull-request jobs check out the exact PR head. Third-party actions remain pinned, workflow permissions remain read-only, and ordinary CI remains secretless. CI does not prove emulator/device execution, live providers, gateways, distribution, or release behavior without matching evidence.
 
@@ -168,6 +206,13 @@ When public API, packaging, or sample behavior changes:
 
 Remote dependency resolution starts only when P8 activates publication.
 
+## External review and security
+
+Follow [the advisory review workflow](SECURITY_REVIEW.md) and [threat model](../SECURITY.md).
+Maintain private, revision-bound findings and dispositions; optional service status does not
+replace mandatory local checks. The independent reviewer inspects external findings without
+adopting another reviewer's conclusion. Repository documentation does not activate account settings.
+
 ## External tools
 
 - Use `gh` for repository, PR, issue, review, workflow, log, artifact, and lifecycle state-changing operations. Use `gh api graphql` for review-thread state.
@@ -180,6 +225,7 @@ Remote dependency resolution starts only when P8 activates publication.
 
 - Do not create a separate plan when the user already supplied a clear bounded implementation.
 - A bounded implementation request starts the complete normal repository lifecycle unless the user states an explicit local, commit, push, PR, draft, or merge opt-out.
+- Finish the requested scope and all applicable local and host/live acceptance proof before opening its PR. A blocker means no PR yet; report what remains and the next action. A separate, independently complete task may advance an unfinished milestone, but relabeling unfinished requested work as a partial PR is not completion.
 - Do not pause for confirmations between branch creation, implementation, verification, commit, push, draft PR publication, in-scope review fixes, readiness, and guarded merge.
 - When planning is requested, invoke the read-only `work-package-planner` custom agent without inherited conversation. It uses `$plan-universal-ai-work-package`; pass its compact source-bound work order to implementation.
 - Verify work-order source digests; reread only changed or ambiguous source sections.
@@ -190,11 +236,11 @@ Remote dependency resolution starts only when P8 activates publication.
 
 ## Release pull requests
 
-Create pull requests as drafts. A Release candidate must have:
+Create pull requests as drafts only after the requested task passes its pre-PR completion gate. PR-triggered CI and independent review happen afterward; until guarded merge, report the repository task as in progress, explicitly handed off, or blocked—not delivered. A Release candidate must have:
 
 - a concise, current PR brief bound to the exact head SHA;
 - complete milestone-closeout documents when the milestone effect is `completes`;
-- successful full local verification for that head;
+- successful full local verification for that head, or hygiene for trusted docs-only scope;
 - successful exact-head required CI and applicable exact-head local-live policy status;
 - an independent exact-head review with no blocking finding;
 - no requested changes or unresolved threads;

@@ -13,7 +13,7 @@ TEST_REPOSITORY="$TEST_DIRECTORY/repository"
 CLASSIFIER="$TEST_REPOSITORY/scripts/live-impact.sh"
 MULTI_PROVIDER_CLASSIFIER="$TEST_REPOSITORY/scripts/live-impact-multi-provider.sh"
 DUPLICATE_PROVIDER_CLASSIFIER="$TEST_REPOSITORY/scripts/live-impact-duplicate-provider.sh"
-PROVIDER_DIRECTORY="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/internal/provider"
+PROVIDER_DIRECTORY="$TEST_REPOSITORY/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/internal/provider"
 OPENAI_DIRECTORY="$PROVIDER_DIRECTORY/openai"
 ANTHROPIC_DIRECTORY="$PROVIDER_DIRECTORY/anthropic"
 OPENROUTER_DIRECTORY="$PROVIDER_DIRECTORY/openrouter"
@@ -118,6 +118,31 @@ if [[ "$("$CLASSIFIER" "$SWIFT_SHA" "$IOS_SAMPLE_SHA")" != \
   exit 1
 fi
 
+ANDROID_SAMPLE_DIRECTORY="$TEST_REPOSITORY/samples/android/src/main"
+mkdir -p "$ANDROID_SAMPLE_DIRECTORY"
+printf '%s\n' "Android live marker" > "$ANDROID_SAMPLE_DIRECTORY/Live.kt"
+git -C "$TEST_REPOSITORY" add .
+git -C "$TEST_REPOSITORY" -c user.name="Live Impact Test" -c user.email="live-impact@example.invalid" commit -qm "change Android live sample"
+ANDROID_SAMPLE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+if [[ "$("$CLASSIFIER" "$IOS_SAMPLE_SHA" "$ANDROID_SAMPLE_SHA")" != "openai,anthropic,openrouter,gateway" ]]; then
+  echo "Android sample changes must require every delivered live gate." >&2
+  exit 1
+fi
+
+for sample in jvm-console host-controller desktop; do
+  host_base="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+  mkdir -p "$TEST_REPOSITORY/samples/$sample/src/main"
+  printf '%s\n' "host live sample marker" > "$TEST_REPOSITORY/samples/$sample/src/main/Host.kt"
+  git -C "$TEST_REPOSITORY" add .
+  git -C "$TEST_REPOSITORY" -c user.name="Live Impact Test" -c user.email="live-impact@example.invalid" commit -qm "change host live sample"
+  result="$(UAC_REPOSITORY_ROOT="$TEST_REPOSITORY" "$CLASSIFIER" "$host_base" HEAD)"
+  if [[ "$result" != "openai,anthropic,openrouter,gateway" ]]; then
+    echo "JVM host sample changes must require every delivered live gate." >&2
+    exit 1
+  fi
+done
+HOST_SAMPLE_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
+
 mkdir -p "$OPENAI_DIRECTORY"
 printf '%s\n' "internal adapter marker" > "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" add .
@@ -127,7 +152,7 @@ git -C "$TEST_REPOSITORY" \
   commit -qm "add adapter"
 ADAPTER_SHA="$(git -C "$TEST_REPOSITORY" rev-parse HEAD)"
 
-if [[ "$("$CLASSIFIER" "$IOS_SAMPLE_SHA" "$ADAPTER_SHA")" != "openai" ]]; then
+if [[ "$("$CLASSIFIER" "$HOST_SAMPLE_SHA" "$ADAPTER_SHA")" != "openai" ]]; then
   echo "Adding an adapter outside any sentinel package must require live verification." >&2
   exit 1
 fi
@@ -289,9 +314,14 @@ if [[ "$("$MULTI_PROVIDER_CLASSIFIER" "$SHARED_SHA" "$AMBIGUOUS_SHA")" != \
   exit 1
 fi
 
-rm "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
-ln -s "synthetic-adapter-target.kt" "$OPENAI_DIRECTORY/OpenAiResponsesAdapter.kt"
-git -C "$TEST_REPOSITORY" add -A
+SYMLINK_BLOB_SHA="$(
+  printf '%s' 'synthetic-adapter-target.kt' |
+    git -C "$TEST_REPOSITORY" hash-object -w --stdin
+)"
+git -C "$TEST_REPOSITORY" update-index \
+  --add \
+  --cacheinfo \
+  "120000,$SYMLINK_BLOB_SHA,bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/internal/provider/openai/OpenAiResponsesAdapter.kt"
 git -C "$TEST_REPOSITORY" \
   -c user.name="Live Impact Test" \
   -c user.email="live-impact@example.invalid" \

@@ -365,7 +365,7 @@ final class UniversalAiConnectorTests: XCTestCase {
                     category: .provider,
                     code: .simulatedFailure,
                     message:
-                        "The Universal AI Connector produced the requested simulated failure."
+                        "The Adidi Universal AI Connector produced the requested simulated failure."
                 )
             )
         } catch {
@@ -430,7 +430,7 @@ final class UniversalAiConnectorTests: XCTestCase {
                     category: .provider,
                     code: .simulatedFailure,
                     message:
-                        "The Universal AI Connector produced the requested simulated failure."
+                        "The Adidi Universal AI Connector produced the requested simulated failure."
                 )
             )
         } catch {
@@ -2279,7 +2279,7 @@ final class UniversalAiConnectorTests: XCTestCase {
         XCTAssertEqual(error.code, .invalidRequest, file: file, line: line)
         XCTAssertEqual(
             error.message,
-            "The Universal AI Connector is closed.",
+            "The Adidi Universal AI Connector is closed.",
             file: file,
             line: line
         )

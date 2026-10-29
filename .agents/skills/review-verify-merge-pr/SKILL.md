@@ -11,6 +11,7 @@ Bind every conclusion and state change to one exact PR head.
 
 - Review, readiness assessment, and blocker requests are read-only.
 - A bounded implementation request starts the normal autonomous repository lifecycle through guarded merge.
+- Before PR publication, apply the task-completion gate in `AGENTS.md`.
 - Only the root agent performs commits, pushes, PR updates, readiness, and merge actions.
 - The independent reviewer is always read-only.
 - Honor the latest explicit `local only`, `do not commit`, `do not push`, `do not create a PR`, `keep draft`, or `do not merge` instruction.
@@ -43,6 +44,12 @@ Keep the PR description concise and current:
 
 Immediately before independent review, assemble a neutral packet from the request, linked sources, PR brief, root diff, evidence, and exact SHA. Include requirements, observable acceptance criteria, decisions, out-of-scope behavior, status-document consequences, and proof boundaries. Do not include expected findings or a desired conclusion.
 
+Include a proportional requirement ledger: stable ID, source, observable acceptance criterion,
+required proof class, exact evidence, and VERIFIED/UNVERIFIED status. Keep independent requirements
+separate. Include external review route, base/head, status, inspected dispositions, private report
+references, and coverage limits per `docs/SECURITY_REVIEW.md`. Do not publish private report details.
+The reviewer validates external findings independently; app output is not the custom report.
+
 For `completes`, require consistent proposed roadmap, active-plan, affected README, and other required closeout updates in the candidate before final review. Merge makes that proposed transition authoritative.
 
 ## Review and verify
@@ -51,10 +58,10 @@ For `completes`, require consistent proposed roadmap, active-plan, affected READ
 2. Start independent review and GitHub checks concurrently.
 3. Inspect correctness, failure behavior, lifecycle, concurrency, cancellation, architecture, milestone scope, public API, packaging, compatibility, tests, security, dependencies, documentation claims, generated artifacts, and unrelated changes.
 4. Treat correctness, security, data-loss, public-contract, packaging, missing-material-test, and false-evidence findings as blockers.
-5. Run `./scripts/check.sh --full` on the exact Release head. Run additional active-plan proof only when applicable.
+5. Resolve trusted verification scope using `./scripts/verification-mode.sh head`. Run full on the exact Release head, or hygiene only for trusted docs scope. Reuse successful same-head hook evidence when its command, scope, environment, and result match. Run additional active-plan proof only when applicable.
 6. Confirm required security tools and regressions actually executed without revealing matched material.
 
-Review-only work reports findings and stops. During an autonomous implementation lifecycle, fix in-scope blockers while the PR remains draft. Any head change invalidates local Release evidence, the reviewer result, and GitHub gate conclusions. If the PR had already become ready, immediately disable any auto-merge request and return it to draft, including after a `do not merge` hold or a queued merge was disabled. Refresh the PR brief and repeat the exact-head cycle before readiness; in review-only work, report the required recovery without changing state.
+Review-only work reports findings and stops. During an autonomous implementation lifecycle, fix in-scope blockers while the PR remains draft. External review status is advisory, but validated in-scope findings remain blockers. Missing services must be recorded unavailable, never clean. Active user constraints retain their scope through phase transitions. Any head change invalidates local Release evidence, the reviewer result, and GitHub gate conclusions. If the PR had already become ready, immediately disable any auto-merge request and return it to draft, including after a `do not merge` hold or a queued merge was disabled. Refresh the PR brief and repeat the exact-head cycle before readiness; in review-only work, report the required recovery without changing state.
 
 ## Readiness gate
 
@@ -63,14 +70,14 @@ Before readiness, require:
 1. current PR brief and reviewer packet bound to the exact head;
 2. milestone effect consistent with the diff and status sources;
 3. independently reviewed SHA equal to GitHub's head;
-4. successful full local verification for that SHA;
+4. successful full local verification for that SHA, or hygiene for trusted docs-only scope;
 5. no blocking finding, requested change, or unresolved thread;
 6. in-scope diff with no secret or generated-artifact violation;
 7. no conflict or unsatisfied base-update policy;
 8. successful exact-head required checks, including `Required checks` and applicable protected live verification; and
 9. effective base protection requiring PRs, strict required checks, conversation resolution, administrator enforcement without bypass, and prohibiting force pushes and deletion.
 
-Verify protection through GitHub APIs and confirm `gh pr checks <number> --required`. Pending, skipped, missing, cancelled, timed-out, or failed mandatory checks block readiness and merge.
+Verify protection through GitHub APIs and confirm `gh pr checks <number> --required`. Pending, skipped, missing, cancelled, timed-out, or failed mandatory checks block readiness and merge. Only platform jobs explicitly skipped by successful trusted docs classification are non-applicable; `Required checks` and applicable live policy must succeed.
 
 ## Guarded merge
 

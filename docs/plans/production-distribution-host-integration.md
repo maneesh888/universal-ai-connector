@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A is active.
+Status: `In progress`; P8-A through P8-D are authoritative; P8-E nonpublishing contract preparation is active.
 
-P0-P7 are completed. P8-A activates P8 as the sole roadmap milestone marked `In progress`.
-Every later P8 package remains `Not started`, and P9 remains inactive until P8 closes
+P0-P7 and P8-A through P8-D are authoritative. PR #88 merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646` and resulting-main CI run 40956077878 passed. P8 remains the sole roadmap milestone marked `In progress`.
+P8-F through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -186,7 +186,25 @@ Execute one package at a time after activation.
 
 ### P8-A: iOS live sample and model discovery
 
-Status: `In progress`.
+Status: `Completed`.
+
+Acceptance evidence: PR [#69](https://github.com/maneesh888/universal-ai-connector/pull/69)
+records deterministic sample-state and Keychain checks, the full Apple build/link gates, all four
+delivered live gates, and normal iPhone 17 Pro / iOS 26.0 Simulator interaction on exact source head
+`38e9f735603ce12f18a7fefa3f52bc06e98cd66c` on September 10, 2026. The actual sample discovered
+and connected with exact selected models `gpt-5.6-luna` (OpenAI) and `claude-sonnet-5` (Anthropic)
+on that head, with masked credentials and no retained provider response bodies. Exact-head CI run
+[34508878215](https://github.com/maneesh888/universal-ai-connector/actions/runs/34508878215)
+and live-policy run [34508971278](https://github.com/maneesh888/universal-ai-connector/actions/runs/34508971278)
+passed. The PR merged as `32bca29d2f2baafa4a31c368630e9b47cdfaa574`; resulting-main run
+[34510228731](https://github.com/maneesh888/universal-ai-connector/actions/runs/34510228731)
+passed. This record relies on the contributor-attested runtime evidence in that PR; it does not
+claim a new live execution, physical-device execution, or distribution proof.
+
+The Android implementation candidate records this previously merged iOS acceptance before
+implementing and closing P8-B. Its proposed status transition becomes authoritative through its own
+exact-head full/live gates, emulator acceptance, independent review, CI, guarded merge, and
+resulting-main verification.
 
 - Activate P8 as the only `In progress` milestone while keeping every later P8 package
   `Not started`.
@@ -214,7 +232,24 @@ Android/JVM UI, release tag, or supported distribution claim.
 
 ### P8-B: Android live sample and model discovery
 
-Status: `Not started`.
+Status: `Completed`.
+
+PR [#75](https://github.com/maneesh888/universal-ai-connector/pull/75) owns the exact closing
+head, commands, September 18, 2026 runtime record, independent review, CI, merge, and resulting-main
+evidence. The candidate adds Compose discovery and exact-model connection controls, Android
+Keystore-backed host storage, and explicit debug-only credential seeding through the canonical
+live configuration loader. Deterministic state and bootstrap coverage includes empty/unsupported
+results, retry, cancellation, exact selection, redaction, clearing, and no substitution; emulator
+instrumentation covers protected storage recovery/deletion and socket teardown.
+
+Completion requires actual Pixel 9 Pro / Android 16 (API 36) emulator discovery and connection on
+at least two exact models, plus cancellation, background/foreground, and credential clearing on
+the same closing head. The PR records OpenAI, Anthropic, OpenRouter, and Gateway checks separately
+from host UI proof. Its proposed completion becomes authoritative only after the exact-head full
+and affected live gates, runtime acceptance, independent review, required CI, guarded merge, and
+resulting-main verification pass. No physical-device, hardware-backed emulator key, later-host,
+or distribution proof is implied; P8-C is activated separately below.
+
 
 - Preserve the Android sample's zero-configuration deterministic mode and add an explicit live
   Compose UI through the existing public Kotlin client; do not duplicate connector behavior in
@@ -235,7 +270,52 @@ new host target, or distribution claim.
 
 ### P8-C: Kotlin/JVM console and Compose desktop live samples
 
-Status: `Not started`.
+Status: `Completed`.
+
+The September 29, 2026 closeout adopts the user's explicit API-only acceptance scope. Library API
+functionality and deterministic consumer/controller coverage are required; interactive desktop UI
+and native credential-store exercises are optional. The [acceptance record](../verification/p8c-api-acceptance.md)
+binds Windows, macOS, and Ubuntu results to their actual tested revisions, records the actual
+Gateway deployment limits and first-attempt failures, and explains the accepted cross-revision
+evidence. It supersedes the former single-head interactive-host requirement for P8-C only.
+
+The documentation closing head must pass the full local gate, independent exact-head review,
+required CI, guarded merge, and resulting-main verification before this transition becomes
+authoritative. The closing PR brief owns those identifiers. P8-D remains `Not started`.
+
+Activated September 20, 2026 by the explicit desktop implementation request, from accepted
+main `49264f65ddfbcd452ee538ebb097c48e2fdaa7f7`, after checking P8-A/P8-B acceptance and
+concurrent ownership. The original matching-host runtime/live acceptance was narrowed to API
+functionality by the closeout decision above.
+
+Bounded Windows source proof was recorded on September 21, 2026 after the source hosts merged
+through PR #76. On Windows 10 x64 with JDK 21 and Gradle 9.7.1, the Windows CI-equivalent
+deterministic matrix passed and the Compose application opened a responsive window. A later
+interactive run found a blank surface after failed DirectX 12 initialization, so the desktop
+Gradle application now selects Skiko's software renderer on Windows.
+
+Exact commit `6722c705fbc1364508885e948142e937b382681f` added the Windows-safe
+contributor tooling and passed the complete quick gate on September 22, 2026. On that commit,
+the live adapter suites and JVM console discovery/connection flows passed for OpenAI
+`gpt-5.6-luna`, Anthropic `claude-sonnet-5`, and OpenRouter
+`google/gemini-2.5-flash-lite`. Anthropic required one immediate retry after a generated
+structured response missed the requested schema. The configured loopback Gateway was not
+listening and returned transport failures for every live case. Exact commit
+`f200c2a6e596fff6730e03446f25629eb26ba8ea` then passed all six Gateway adapter cases against the
+hosted OpenRouter service through the generic `openai-compatible` configuration. No credential or
+provider response body was retained.
+
+On September 28, 2026, the rebased Adidi-branded Windows PR head passed the complete quick gate and
+fresh live adapter verification for OpenAI, Anthropic, OpenRouter, and the hosted
+OpenAI-compatible Gateway path. The real JVM console visibly completed discovery and exact-model
+connection for OpenAI `gpt-5.6-luna` and Anthropic `claude-sonnet-5`. The normally launched Compose
+application visibly loaded OpenAI models, selected and connected with exact model `gpt-5.6-luna`,
+discarded the response body, exposed and completed cancellation, and cleared session plus
+saved-credential configuration. The launcher revalidated the exact source head after close. No
+credential or provider response body was retained. These historical observations are supplementary;
+the final Windows API evidence is bound to PR #77 head `3e1a71a3e26984750b234b3548ccd3238795c2c9`.
+The acceptance record adds the macOS/Ubuntu API results, including the actual configured Gateway,
+and successful PR #77 resulting-main CI. P8-D remains `Not started`.
 
 - Extend the Kotlin/JVM console with a zero-configuration deterministic path and an explicit
   headless `listModels` -> exact selection -> minimal `respond` connection flow. Only
@@ -249,16 +329,25 @@ Status: `Not started`.
   secure persistence is unavailable.
 - Add deterministic console/controller/state, redaction, cancellation, lifecycle, and secure-store
   availability tests, plus launchable UI semantics.
-- On one exact head, prove the real console flow and normally launched Compose application on
-  Linux, Windows, and macOS. Exercise at least two exact selected models across this live matrix,
-  with no fallback or substitution and with visible desktop connection evidence on each host.
+- Record successful library API suites on Linux, Windows, and macOS for the delivered OpenAI,
+  Anthropic, OpenRouter, and generic Gateway routes, with deterministic consumer/controller
+  coverage and exact source/model identities. At least two exact models must be exercised without
+  fallback or substitution. Accept the recorded September 28 runs on their distinct revisions
+  together with PR #77 resulting-main CI for this documentation-only closeout; do not relabel
+  those runs as live execution on the closing documentation head. Interactive desktop proof is
+  optional for this package; later distribution-package requirements remain unchanged.
 
 P8-C adds no native desktop library target, Java-specific façade, provider-specific public client,
 account UI, remote publication, or packaged distribution claim.
 
 ### P8-D: Cross-platform sample behavior parity
 
-Status: `Not started`.
+Status: `Completed`, authoritative through PR #88 and successful resulting-main CI run 40956077878. The closing PR records the exact reviewed head, local full/live proof and matching merge tree.
+
+Activated October 29, 2026 for the requested release preparation. The authoritative
+[case catalog](../../samples/parity/cases.json) binds shared observable invariants to
+host-native deterministic assertions. [The verification record](../verification/p8d-sample-parity.md)
+records the gate, accepted host differences, provenance, and remaining proof.
 
 - Define one deterministic case catalog for supported non-empty discovery, supported empty,
   `.unsupported`, error, retry, cancellation, exact selection, manual fallback, credential
@@ -276,7 +365,9 @@ claim.
 
 ### P8-E: Distribution contract and version freeze
 
-Status: `Not started`.
+Status: `In progress` for requested nonpublishing contract and Apple build preparation.
+
+The existing draft candidate is `0.1.0-0.p8.1`; owner approval of the exact immutable release version, artifacts and destinations remains required before publication. The namespace `com.myadidi` is already verified; see the nonsecret namespace evidence and target-scoped requirements in [the distribution contract](../DISTRIBUTION.md).
 
 - Freeze the disposable P8 proof version.
 - Add canonical group/version properties and record minimum JDK, Android, Kotlin, Swift, Xcode,
@@ -284,10 +375,16 @@ Status: `Not started`.
 - Freeze Maven coordinates, POM identity, Git tag and release-asset naming, desktop package IDs,
   signing identities, and required release inputs.
 - Add credential-free validation that versions and distribution metadata agree.
-- Confirm Central namespace ownership and macOS signing/notarization readiness without adding a
-  credential to the repository or ordinary CI.
+- Record verified Central namespace ownership and separate target-scoped credential readiness.
+  Library probes must not require desktop Developer ID/notarization; those remain requirements
+  for the macOS desktop publication path. Real authenticated probes require the appropriate
+  explicit host inputs and are separate from ordinary CI and local artifact preparation.
 
-P8-E adds no remote publication, remote Swift binary, desktop application, or release claim.
+P8-E adds no remote publication, remote Swift manifest, desktop application, or release claim.
+An existing release XCFramework build and temporary local archive/consumer may establish
+version consistency during preparation; they do not complete P8-G or remote distribution.
+The current unified publication prerequisites remain unchanged; a library-first shortcut must
+be an explicit scope/roadmap decision.
 
 ### P8-F: Reproducible Maven publication and Kotlin consumers
 

@@ -17,5 +17,10 @@ if [[ -n "$(git -C "$ROOT" ls-files --others --exclude-standard)" ]]; then
   exit 1
 fi
 
-echo "Running Universal AI Connector pre-commit checks..."
-"$ROOT/scripts/check.sh" --quick
+echo "Running Adidi Universal AI Connector pre-commit checks..."
+CLASS="$("$ROOT/scripts/verification-mode.sh" staged)"
+case "$CLASS" in
+  docs) "$ROOT/scripts/check.sh" --hygiene ;;
+  full) "$ROOT/scripts/check.sh" --quick ;;
+  *) echo "Unknown verification class." >&2; exit 1 ;;
+esac

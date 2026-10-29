@@ -168,13 +168,118 @@ uac_live_env_mode() {
   printf '%s\n' "$mode"
 }
 
-uac_validate_live_env_file() {
+uac_windows_live_env_permissions_are_private() {
+  local file_path="$1"
+  local windows_path
+
+  if ! command -v cygpath >/dev/null 2>&1 ||
+    ! command -v powershell.exe >/dev/null 2>&1; then
+    uac_local_config_error "Could not inspect local live configuration Windows ACLs."
+    return 2
+  fi
+  windows_path="$(cygpath -w "$file_path")" || return 2
+
+  UAC_LIVE_ENV_WINDOWS_PATH="$windows_path" powershell.exe \
+    -NoLogo \
+    -NoProfile \
+    -NonInteractive \
+    -Command '
+      $acl = [System.IO.File]::GetAccessControl($env:UAC_LIVE_ENV_WINDOWS_PATH)
+      if (-not $acl.AreAccessRulesProtected) { exit 1 }
+      $allowed = @(
+        [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value,
+        "S-1-5-18",
+        "S-1-5-32-544"
+      )
+      foreach ($rule in $acl.GetAccessRules(
+        $true,
+        $false,
+        [System.Security.Principal.SecurityIdentifier]
+      )) {
+        if ($rule.AccessControlType -eq "Allow" -and
+            $allowed -notcontains $rule.IdentityReference.Value) {
+          exit 1
+        }
+      }
+      exit 0
+    '
+}
+
+uac_live_env_permissions_are_private() {
+  local file_path="$1"
+  local mode
+
+  case "$(uname -s 2>/dev/null)" in
+    MINGW* | MSYS* | CYGWIN*)
+      uac_windows_live_env_permissions_are_private "$file_path"
+      ;;
+    *)
+      mode="$(uac_live_env_mode "$file_path")" || return $?
+      [[ "$mode" =~ ^[4567]00$ ]]
+      ;;
+  esac
+}
+
+uac_secure_live_env_permissions() {
+  local file_path="$1"
+  local windows_path
+
+  case "$(uname -s 2>/dev/null)" in
+    MINGW* | MSYS* | CYGWIN*)
+      if ! command -v cygpath >/dev/null 2>&1 ||
+        ! command -v powershell.exe >/dev/null 2>&1; then
+        uac_local_config_error "Could not secure local live configuration Windows ACLs."
+        return 2
+      fi
+      windows_path="$(cygpath -w "$file_path")" || return 2
+      UAC_LIVE_ENV_WINDOWS_PATH="$windows_path" powershell.exe \
+        -NoLogo \
+        -NoProfile \
+        -NonInteractive \
+        -Command '
+          $acl = [System.IO.File]::GetAccessControl($env:UAC_LIVE_ENV_WINDOWS_PATH)
+          $acl.SetAccessRuleProtection($true, $false)
+          foreach ($rule in @($acl.GetAccessRules(
+            $true,
+            $false,
+            [System.Security.Principal.SecurityIdentifier]
+          ))) {
+            $acl.RemoveAccessRuleSpecific($rule)
+          }
+          $allowed = @(
+            [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value,
+            "S-1-5-18",
+            "S-1-5-32-544"
+          )
+          foreach ($sidValue in $allowed) {
+            $sid = [System.Security.Principal.SecurityIdentifier]::new($sidValue)
+            $rule = [System.Security.AccessControl.FileSystemAccessRule]::new(
+              $sid,
+              [System.Security.AccessControl.FileSystemRights]::FullControl,
+              [System.Security.AccessControl.AccessControlType]::Allow
+            )
+            $null = $acl.AddAccessRule($rule)
+          }
+          [System.IO.File]::SetAccessControl($env:UAC_LIVE_ENV_WINDOWS_PATH, $acl)
+        ' || {
+          uac_local_config_error "Could not secure local live configuration Windows ACLs."
+          return 2
+        }
+      ;;
+    *)
+      chmod 600 "$file_path" || {
+        uac_local_config_error "Could not secure local live configuration permissions."
+        return 2
+      }
+      ;;
+  esac
+}
+
+uac_validate_live_env_file_location() {
   local repository_root="$1"
   local file_path="$2"
   local primary_checkout
   local file_name="${file_path##*/}"
-  local mode
-  local size
 
   primary_checkout="$(uac_primary_checkout "$repository_root")" || return $?
   if [[ "$file_path" != "$primary_checkout/$file_name" ]]; then
@@ -210,9 +315,16 @@ uac_validate_live_env_file() {
     uac_local_config_error "Local live configuration must be ignored by Git: $file_path"
     return 2
   fi
+}
 
-  mode="$(uac_live_env_mode "$file_path")" || return $?
-  if [[ ! "$mode" =~ ^[4567]00$ ]]; then
+uac_validate_live_env_file() {
+  local repository_root="$1"
+  local file_path="$2"
+  local size
+
+  uac_validate_live_env_file_location "$repository_root" "$file_path" || return $?
+
+  if ! uac_live_env_permissions_are_private "$file_path"; then
     uac_local_config_error \
       "Local live configuration permissions must deny group and other access: $file_path"
     return 2
@@ -266,6 +378,9 @@ uac_parse_live_env_file() {
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     line_number=$((line_number + 1))
+    if [[ "$line" == *$'\r' ]]; then
+      line="${line%$'\r'}"
+    fi
     if [[ "${#line}" -gt 8192 || "$line" == *$'\r'* ]]; then
       uac_local_config_error \
         "Local live configuration has an invalid line at line $line_number."
@@ -338,6 +453,7 @@ Usage: ./scripts/local-config.sh <command>
 Commands:
   primary-checkout  Print the dynamically resolved primary Git checkout.
   live-env-path     Print the canonical local live configuration path.
+  secure-live-env   Restrict the canonical file to the current user and OS admins.
   validate-live-env Validate the canonical file without displaying its values.
 EOF
 }
@@ -355,6 +471,14 @@ uac_local_config_main() {
     live-env-path)
       [[ "$#" -eq 1 ]] || return 2
       uac_live_env_path "$repository_root"
+      ;;
+    secure-live-env)
+      [[ "$#" -eq 1 ]] || return 2
+      file_path="$(uac_live_env_path "$repository_root")" || return $?
+      uac_validate_live_env_file_location "$repository_root" "$file_path" || return $?
+      uac_secure_live_env_permissions "$file_path" || return $?
+      uac_validate_live_env_file "$repository_root" "$file_path" || return $?
+      printf 'Local live configuration permissions secured: %s\n' "$file_path"
       ;;
     validate-live-env)
       [[ "$#" -eq 1 ]] || return 2

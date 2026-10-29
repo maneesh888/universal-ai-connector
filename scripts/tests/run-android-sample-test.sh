@@ -35,7 +35,7 @@ main
 grep -Fx "adb:-s emulator-5554 wait-for-device" "$TEST_LOG" >/dev/null
 grep -Fx "adb:-s emulator-5554 shell getprop sys.boot_completed" "$TEST_LOG" >/dev/null
 grep -Fx "gradle:ANDROID_SERIAL=emulator-5554::samples:android:installDebug" "$TEST_LOG" >/dev/null
-grep -Fx "adb:-s emulator-5554 shell am start -W -n com.maneesh.universalai.samples.android/.MainActivity" "$TEST_LOG" >/dev/null
+grep -Fx "adb:-s emulator-5554 shell am start -W -n com.myadidi.universalai.samples.android/.MainActivity" "$TEST_LOG" >/dev/null
 
 : > "$TEST_LOG"
 UAC_ANDROID_SERIAL=""
@@ -43,6 +43,6 @@ main
 
 grep -Fx "adb:wait-for-device" "$TEST_LOG" >/dev/null
 grep -Fx "gradle:ANDROID_SERIAL=<unset>::samples:android:installDebug" "$TEST_LOG" >/dev/null
-grep -Fx "adb:shell am start -W -n com.maneesh.universalai.samples.android/.MainActivity" "$TEST_LOG" >/dev/null
+grep -Fx "adb:shell am start -W -n com.myadidi.universalai.samples.android/.MainActivity" "$TEST_LOG" >/dev/null
 
 echo "Android sample launch script tests passed."

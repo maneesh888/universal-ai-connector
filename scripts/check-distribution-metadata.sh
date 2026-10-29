@@ -75,8 +75,8 @@ fi
 group="$(require_property "$GRADLE_PROPERTIES" GROUP)"
 version="$(require_property "$GRADLE_PROPERTIES" VERSION_NAME)"
 
-if [[ "$group" != "io.github.maneesh888" ]]; then
-  echo "P8 Maven group must remain io.github.maneesh888." >&2
+if [[ "$group" != "com.myadidi" ]]; then
+  echo "P8 Maven group must remain com.myadidi." >&2
   exit 1
 fi
 if [[ ! "$version" =~ ^0\.1\.0-0\.p8\.[1-9][0-9]*$ ]]; then
@@ -102,15 +102,32 @@ require_exact_release_property MACOS_ASSET_TEMPLATE 'universal-ai-connector-desk
 require_exact_release_property WINDOWS_ASSET_TEMPLATE 'universal-ai-connector-desktop-{version}-windows-x86_64.msi'
 require_exact_release_property LINUX_ASSET_TEMPLATE 'universal-ai-connector-desktop-{version}-linux-x86_64.deb'
 require_exact_release_property CHECKSUM_SUFFIX .sha256
-require_exact_release_property DESKTOP_APP_ID io.github.maneesh888.universalai.connector.desktop
+require_exact_release_property DESKTOP_APP_ID com.myadidi.universalai.connector.desktop
 require_exact_release_property DESKTOP_PACKAGE_NAME universal-ai-connector-demo
 require_exact_release_property MACOS_SIGNING_IDENTITY_TYPE "Developer ID Application"
 require_exact_release_property WINDOWS_SIGNING_POLICY optional-for-alpha
+require_exact_release_property APPLE_SIGNING_POLICY unsigned-proof
+require_exact_release_property CENTRAL_NAMESPACE_VERIFICATION_RECORD distribution/namespace-verification.json
+python3 - "$ROOT/distribution/namespace-verification.json" "$group" <<'NAMESPACE_PY'
+import datetime, json, sys
+from pathlib import Path
+try:
+    record = json.loads(Path(sys.argv[1]).read_text())
+    assert set(record) == {"namespace", "domain", "status", "verified_at", "method", "evidence"}
+    assert record["namespace"] == sys.argv[2] == "com.myadidi"
+    assert record["domain"] == "myadidi.com" and record["status"] == "verified"
+    date = datetime.datetime.fromisoformat(record["verified_at"].replace("Z", "+00:00"))
+    assert date.tzinfo and record["method"] and record["evidence"]
+except (OSError, ValueError, AssertionError, KeyError, TypeError):
+    print("Namespace evidence record is missing or inconsistent.", file=sys.stderr)
+    sys.exit(1)
+NAMESPACE_PY
 require_exact_release_property JDK_MIN_VERSION 21
 require_exact_release_property GRADLE_VERSION 9.7.1
 require_exact_release_property KOTLIN_VERSION 2.4.10
 require_exact_release_property ANDROID_MIN_SDK 24
-require_exact_release_property ANDROID_COMPILE_SDK 36
+require_exact_release_property ANDROID_LIBRARY_COMPILE_SDK 36
+require_exact_release_property ANDROID_SAMPLE_COMPILE_SDK 37
 require_exact_release_property ANDROID_TARGET_SDK 36
 require_exact_release_property ANDROID_BUILD_TOOLS_VERSION 36.1.0
 require_exact_release_property SWIFT_TOOLS_VERSION 6.0
@@ -128,13 +145,14 @@ fi
 require_literal "$ROOT/build.gradle.kts" 'group = providers.gradleProperty("GROUP").get()'
 require_literal "$ROOT/build.gradle.kts" 'version = providers.gradleProperty("VERSION_NAME").get()'
 require_literal "$ROOT/bridge/build.gradle.kts" 'providers.gradleProperty("VERSION_NAME")'
-require_literal "$ROOT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/UniversalAiConnector.kt" \
+require_literal "$ROOT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/UniversalAiConnector.kt" \
   'const val LIBRARY_VERSION: String = UNIVERSAL_AI_CONNECTOR_VERSION'
 require_literal "$ROOT/samples/android/build.gradle.kts" 'versionName = providers.gradleProperty("VERSION_NAME").get()'
 require_literal "$ROOT/scripts/check.sh" 'bridge-jvm-$library_version.jar'
 require_literal "$ROOT/bridge/build.gradle.kts" 'minSdk = 24'
 require_literal "$ROOT/bridge/build.gradle.kts" 'compileSdk = 36'
 require_literal "$ROOT/bridge/build.gradle.kts" 'buildToolsVersion = "36.1.0"'
+require_literal "$ROOT/samples/android/build.gradle.kts" 'compileSdk = 37'
 require_literal "$ROOT/samples/android/build.gradle.kts" 'targetSdk = 36'
 require_literal "$ROOT/swift-package/Package.swift" '// swift-tools-version: 6.0'
 require_literal "$ROOT/swift-package/Package.swift" '.iOS(.v17)'
@@ -145,11 +163,12 @@ require_literal "$ROOT/.github/workflows/ci.yml" 'runs-on: windows-2025'
 require_literal "$ROOT/.github/workflows/ci.yml" 'runs-on: macos-15'
 
 for expectation_file in \
-  "$ROOT/bridge/src/commonTest/kotlin/com/maneesh/universalai/connector/UniversalAiConnectorTests.kt" \
-  "$ROOT/bridge/src/iosTest/kotlin/com/maneesh/universalai/apple/AppleConnectorBridgeTests.kt" \
+  "$ROOT/samples/host-controller/src/test/kotlin/com/myadidi/universalai/samples/host/DemoControllerTest.kt" \
+  "$ROOT/bridge/src/commonTest/kotlin/com/myadidi/universalai/connector/UniversalAiConnectorTests.kt" \
+  "$ROOT/bridge/src/iosTest/kotlin/com/myadidi/universalai/apple/AppleConnectorBridgeTests.kt" \
   "$ROOT/swift-package/Tests/UniversalAiConnectorTests/UniversalAiConnectorTests.swift" \
-  "$ROOT/samples/jvm-console/src/test/kotlin/com/maneesh/universalai/samples/jvm/JvmConsoleSampleTests.kt" \
-  "$ROOT/samples/android/src/test/kotlin/com/maneesh/universalai/samples/android/AndroidSampleControllerTest.kt"; do
+  "$ROOT/samples/jvm-console/src/test/kotlin/com/myadidi/universalai/samples/jvm/JvmConsoleSampleTests.kt" \
+  "$ROOT/samples/android/src/test/kotlin/com/myadidi/universalai/samples/android/AndroidSampleControllerTest.kt"; do
   require_literal "$expectation_file" "$version"
 done
 

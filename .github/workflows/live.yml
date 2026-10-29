@@ -1,4 +1,4 @@
-name: Universal AI Connector Live Verification
+name: Adidi Universal AI Connector Live Verification
 
 on:
   pull_request:

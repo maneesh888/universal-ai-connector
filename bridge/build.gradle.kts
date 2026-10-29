@@ -18,12 +18,12 @@ val generatedVersionSource =
         doLast {
             val outputFile =
                 outputDirectory.get().file(
-                    "com/maneesh/universalai/connector/UniversalAiConnectorVersion.kt",
+                    "com/myadidi/universalai/connector/UniversalAiConnectorVersion.kt",
                 ).asFile
             outputFile.parentFile.mkdirs()
             outputFile.writeText(
                 """
-                package com.maneesh.universalai.connector
+                package com.myadidi.universalai.connector
 
                 internal const val UNIVERSAL_AI_CONNECTOR_VERSION: String = "${libraryVersion.get()}"
                 """.trimIndent() + "\n",
@@ -38,7 +38,7 @@ kotlin {
     jvm()
 
     androidLibrary {
-        namespace = "com.maneesh.universalai.connector.bridge"
+        namespace = "com.myadidi.universalai.connector.bridge"
         compileSdk = 36
         minSdk = 24
         buildToolsVersion = "36.1.0"
@@ -50,7 +50,7 @@ kotlin {
         binaries.framework {
             baseName = "UniversalAiConnectorBridge"
             isStatic = true
-            binaryOption("bundleId", "com.maneesh.universalai.connector.bridge")
+            binaryOption("bundleId", "com.myadidi.universalai.connector.bridge")
             freeCompilerArgs +=
                 "-Xoverride-konan-properties=minVersion.ios=17.0"
             xcframework.add(this)
@@ -61,7 +61,7 @@ kotlin {
         binaries.framework {
             baseName = "UniversalAiConnectorBridge"
             isStatic = true
-            binaryOption("bundleId", "com.maneesh.universalai.connector.bridge")
+            binaryOption("bundleId", "com.myadidi.universalai.connector.bridge")
             freeCompilerArgs +=
                 "-Xoverride-konan-properties=minVersion.ios=17.0"
             xcframework.add(this)

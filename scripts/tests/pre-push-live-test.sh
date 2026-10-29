@@ -22,6 +22,7 @@ mkdir -p \
   "$TEST_REPOSITORY/.githooks" \
   "$TEST_REPOSITORY/scripts" \
   "$TEST_REPOSITORY/bridge/src/commonMain/kotlin"
+cp "$ROOT/scripts/verification-mode.sh" "$TEST_REPOSITORY/scripts/verification-mode.sh"
 cp "$ROOT/.githooks/pre-push" "$TEST_REPOSITORY/.githooks/pre-push"
 awk '
   $0 == "DELIVERED_PROVIDERS=(\"openai\" \"anthropic\" \"openrouter\" \"gateway\")" {

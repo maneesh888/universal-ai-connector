@@ -136,6 +136,10 @@ require_android_sdk() {
     echo "Android SDK platform 36 is missing from: $sdk_root" >&2
     return 1
   fi
+  if [[ ! -d "$sdk_root/platforms/android-37.0" ]]; then
+    echo "Android SDK platform 37.0 is missing from: $sdk_root" >&2
+    return 1
+  fi
   if [[ ! -d "$sdk_root/build-tools/36.1.0" ]]; then
     echo "Android Build Tools 36.1.0 are missing from: $sdk_root" >&2
     return 1
@@ -180,8 +184,10 @@ require_command bash "Bash runs the committed repository scripts."
 require_command git "Git provides source and worktree checks."
 require_command rg "Ripgrep performs fail-closed secret scanning."
 require_command ruby "Ruby validates the parsed Dependabot YAML policy."
+require_command python3 "Python 3 validates verification and review policy."
 
 if [[ "$MODE" == "--quick" || "$MODE" == "--full" ]]; then
+  require_command python3 "Python 3 runs the Android bootstrap safety regressions."
   require_java_21
   require_command unzip "Android artifact-boundary checks inspect AAR contents."
   require_android_sdk

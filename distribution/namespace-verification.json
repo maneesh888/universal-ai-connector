@@ -1,0 +1,8 @@
+{
+  "namespace": "com.myadidi",
+  "domain": "myadidi.com",
+  "status": "verified",
+  "verified_at": "2026-10-29T19:14Z",
+  "method": "Central Portal status observed after DNS verification",
+  "evidence": "Verified in this release task; this historical record does not authenticate a publishing token."
+}

@@ -8,14 +8,14 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":bridge"))
+    implementation(project(":samples:host-controller"))
 
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
 
 application {
-    mainClass.set("com.maneesh.universalai.samples.jvm.MainKt")
+    mainClass.set("com.myadidi.universalai.samples.jvm.MainKt")
 }
 
 tasks.register("consumerCheck") {

@@ -44,6 +44,10 @@ The roadmap and active plan own product constraints. Do not copy them into a wor
 
 A bounded implementation request starts the normal repository lifecycle through guarded merge: branch/worktree preparation, edits, tests, commit, push, draft PR, in-scope review fixes, readiness, and merge. Continue without separate confirmation between those stages.
 
+Before opening a PR or reporting completion, apply the task-completion and delivery boundaries in `AGENTS.md`.
+
+Recompute phase-scoped authority after a completed checkpoint and clear implementation request; preserve active task-wide constraints. Evidence readiness never creates authority.
+
 Honor the latest explicit opt-out:
 
 - `local only`
@@ -62,7 +66,7 @@ Use `gh` for GitHub operations and `gh api graphql` for thread state. Do not swi
 - Run affected tests during iteration.
 - Run `./scripts/check.sh --hygiene` for a Fast handoff with file changes.
 - Run `./scripts/check.sh --quick` for Standard; let the pre-commit hook supply it when committing.
-- Run `./scripts/check.sh --full` for Release and every mandatory push hook.
+- Use the trusted docs-only selection from `docs/DEVELOPMENT_WORKFLOW.md`; all other Release/push scopes require `./scripts/check.sh --full`. Explicit full always means full.
 - Never bypass hooks or security scans.
 
 Create PRs as drafts with a concise brief containing scope, source links, verification, proof limits, exact head SHA, and one milestone effect. Build the detailed reviewer packet only when Release review begins.

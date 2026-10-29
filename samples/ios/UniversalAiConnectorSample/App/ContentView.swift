@@ -84,7 +84,7 @@ struct ContentView: View {
                     LiveAiConfigurationSections(viewModel: liveViewModel)
                 }
             }
-            .navigationTitle("Universal AI Connector")
+            .navigationTitle("Adidi Universal AI Connector")
             .onChange(of: mode) { _, mode in
                 if mode == .deterministic {
                     liveViewModel.deactivate()

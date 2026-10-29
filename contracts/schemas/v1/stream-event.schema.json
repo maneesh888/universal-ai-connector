@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:universal-ai-connector:contract:v1:stream-event",
-  "title": "Universal AI Connector V1 Stream Event",
+  "title": "Adidi Universal AI Connector V1 Stream Event",
   "description": "A versioned correlated stream event. Type-specific field rules and ordering are semantic constraints.",
   "allOf": [
     {

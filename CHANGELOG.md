@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Universal AI Connector will be documented in this file.
+All notable changes to Adidi Universal AI Connector will be documented in this file.
 
 The project follows Semantic Versioning once published artifacts begin.
 

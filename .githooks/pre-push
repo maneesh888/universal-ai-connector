@@ -41,7 +41,13 @@ require_pushed_refs_match_head() {
 
 require_clean_tree
 require_pushed_refs_match_head < "$PUSH_REFS_FILE"
-echo "Running Universal AI Connector pre-push checks..."
+CLASS="$("$ROOT/scripts/verification-mode.sh" head)"
+case "$CLASS" in
+  docs) CHECK_MODE=--hygiene ;;
+  full) CHECK_MODE=--full ;;
+  *) echo "Unknown verification class." >&2; exit 1 ;;
+esac
+echo "Running Adidi Universal AI Connector pre-push checks..."
 env \
   -u OPENAI_API_KEY \
   -u OPENAI_LIVE_MODEL \
@@ -54,7 +60,7 @@ env \
   -u GATEWAY_LIVE_MODEL \
   -u GATEWAY_LIVE_STRUCTURED_OUTPUT \
   -u UAC_LIVE_EXPECTED_SHA \
-  "$ROOT/scripts/check.sh" --full
+  "$ROOT/scripts/check.sh" "$CHECK_MODE"
 require_clean_tree
 
 LIVE_BASE_REF="${UAC_LIVE_BASE_REF:-origin/main}"

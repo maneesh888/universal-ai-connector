@@ -239,8 +239,8 @@ contracts/
     valid/
     invalid/
     compatibility/
-bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/contract/
-bridge/src/commonTest/kotlin/com/maneesh/universalai/connector/contract/
+bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/contract/
+bridge/src/commonTest/kotlin/com/myadidi/universalai/connector/contract/
 scripts/check-contracts.sh
 ```
 

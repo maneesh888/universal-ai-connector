@@ -58,10 +58,23 @@ SOURCE_DRIFT="$TEST_DIRECTORY/source-drift"
 copy_fixture "$SOURCE_DRIFT"
 sed -i.bak \
   's/const val LIBRARY_VERSION: String = UNIVERSAL_AI_CONNECTOR_VERSION/const val LIBRARY_VERSION: String = "0.1.0-alpha.1"/' \
-  "$SOURCE_DRIFT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/UniversalAiConnector.kt"
-rm "$SOURCE_DRIFT/bridge/src/commonMain/kotlin/com/maneesh/universalai/connector/UniversalAiConnector.kt.bak"
+  "$SOURCE_DRIFT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/UniversalAiConnector.kt"
+rm "$SOURCE_DRIFT/bridge/src/commonMain/kotlin/com/myadidi/universalai/connector/UniversalAiConnector.kt.bak"
 if run_fixture_checker "$SOURCE_DRIFT"; then
   echo "The distribution check must reject a hard-coded production version." >&2
+  exit 1
+fi
+
+NAMESPACE_DRIFT="$TEST_DIRECTORY/namespace-drift"
+copy_fixture "$NAMESPACE_DRIFT"
+python3 - "$NAMESPACE_DRIFT/distribution/namespace-verification.json" <<'NAMESPACE_PY'
+import json, sys
+from pathlib import Path
+p = Path(sys.argv[1]); record = json.loads(p.read_text()); record["status"] = "pending"
+p.write_text(json.dumps(record))
+NAMESPACE_PY
+if run_fixture_checker "$NAMESPACE_DRIFT"; then
+  echo "The distribution check must reject unverified namespace evidence." >&2
   exit 1
 fi
 

@@ -31,6 +31,16 @@ cleanup() {
 }
 trap cleanup EXIT
 
+write_command_proxy() {
+  local path="$1"
+  local target="$2"
+
+  printf '%s\n' \
+    '#!/bin/sh' \
+    "exec \"$target\" \"\$@\"" > "$path"
+  chmod +x "$path"
+}
+
 for documented_input in \
   OPENAI_API_KEY \
   OPENAI_LIVE_MODEL \
@@ -200,8 +210,8 @@ rm -f "$CONFIG_PROBE_FILE"
 FAKE_PATH="$TEST_DIRECTORY/path"
 MISSING_TOOL_OUTPUT="$TEST_DIRECTORY/missing-tool.log"
 mkdir -p "$FAKE_PATH"
-ln -s "$(command -v bash)" "$FAKE_PATH/bash"
-ln -s "$(command -v dirname)" "$FAKE_PATH/dirname"
+write_command_proxy "$FAKE_PATH/bash" "$(command -v bash)"
+write_command_proxy "$FAKE_PATH/dirname" "$(command -v dirname)"
 
 missing_tool_status=0
 env PATH="$FAKE_PATH" "$SCANNER_UNDER_TEST" > "$MISSING_TOOL_OUTPUT" 2>&1 || missing_tool_status=$?

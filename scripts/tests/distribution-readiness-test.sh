@@ -57,7 +57,7 @@ if env \
   -u UAC_PGP_SIGNING_KEY_FINGERPRINT \
   -u UAC_MACOS_SIGNING_IDENTITY \
   -u UAC_NOTARY_KEYCHAIN_PROFILE \
-  "$CHECKER" >"$MISSING_OUTPUT" 2>&1; then
+  "$CHECKER" libraries >"$MISSING_OUTPUT" 2>&1; then
   echo "Distribution readiness must fail when release inputs are absent." >&2
   exit 1
 fi
@@ -78,7 +78,7 @@ if env \
   UAC_PGP_SIGNING_KEY_FINGERPRINT="$SENTINEL" \
   UAC_MACOS_SIGNING_IDENTITY="Developer ID Application: $SENTINEL" \
   UAC_NOTARY_KEYCHAIN_PROFILE="$SENTINEL" \
-  "$CHECKER" >"$SENTINEL_OUTPUT" 2>&1; then
+  "$CHECKER" libraries >"$SENTINEL_OUTPUT" 2>&1; then
   echo "Synthetic release inputs must not satisfy distribution readiness." >&2
   exit 1
 fi
@@ -95,7 +95,9 @@ for required_literal in \
   'gh api "repos/$github_owner/$github_name"' \
   '--list-secret-keys' \
   '--pinentry-mode loopback' \
-  'P8-E remains blocked until authenticated Central Portal namespace ownership is recorded'; do
+  'needs_libraries' \
+  'needs_desktop' \
+  'Namespace ownership is recorded separately'; do
   if ! grep -Fq -- "$required_literal" "$CHECKER"; then
     echo "Distribution readiness is missing fail-closed validation: $required_literal" >&2
     exit 1
@@ -108,30 +110,52 @@ if grep -Fq 'Distribution release inputs are ready' "$CHECKER"; then
 fi
 
 LOCALLY_VALID_OUTPUT="$TEST_DIRECTORY/locally-valid-output.txt"
-if env \
-  PATH="$STUB_DIRECTORY:$PATH" \
+if ! env \
+  -u UAC_MACOS_SIGNING_IDENTITY \
+  -u UAC_NOTARY_KEYCHAIN_PROFILE \
   ORG_GRADLE_PROJECT_mavenCentralUsername=synthetic-central-user \
   ORG_GRADLE_PROJECT_mavenCentralPassword=synthetic-central-password \
   ORG_GRADLE_PROJECT_signingInMemoryKey=synthetic-private-key \
   ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=synthetic-key-password \
   UAC_PGP_SIGNING_KEY_FINGERPRINT=0123456789ABCDEF0123456789ABCDEF01234567 \
+  "$CHECKER" libraries >"$LOCALLY_VALID_OUTPUT" 2>&1; then
+  echo "Library probes must pass with valid stubs and no desktop identity/notary inputs." >&2
+  exit 1
+fi
+if ! grep -Fq 'Scoped distribution probes passed (libraries)' "$LOCALLY_VALID_OUTPUT"; then
+  echo "Library readiness did not exercise its complete scoped probe." >&2
+  exit 1
+fi
+if ! grep -Fq 'real deployment validation and publication were not performed' "$LOCALLY_VALID_OUTPUT"; then
+  echo "Readiness must preserve the real deployment proof boundary." >&2
+  exit 1
+fi
+assert_cleanup
+
+DESKTOP_OUTPUT="$TEST_DIRECTORY/desktop-output.txt"
+if ! env \
+  -u ORG_GRADLE_PROJECT_mavenCentralUsername \
+  -u ORG_GRADLE_PROJECT_mavenCentralPassword \
+  -u ORG_GRADLE_PROJECT_signingInMemoryKey \
+  -u ORG_GRADLE_PROJECT_signingInMemoryKeyPassword \
+  -u UAC_PGP_SIGNING_KEY_FINGERPRINT \
   UAC_MACOS_SIGNING_IDENTITY='Developer ID Application: UAC Test' \
   UAC_NOTARY_KEYCHAIN_PROFILE=synthetic-notary-profile \
-  "$CHECKER" >"$LOCALLY_VALID_OUTPUT" 2>&1; then
-  echo "Locally valid synthetic inputs must remain blocked without Portal namespace evidence." >&2
+  UAC_TEST_FAILURE=central \
+  "$CHECKER" desktop >"$DESKTOP_OUTPUT" 2>&1; then
+  echo "Desktop probes must not require or probe unrelated Maven credentials." >&2
   exit 1
 fi
-if ! grep -Fq 'Locally verifiable distribution prerequisites passed' "$LOCALLY_VALID_OUTPUT"; then
-  echo "The readiness regression did not exercise every locally verifiable prerequisite." >&2
-  exit 1
-fi
-if ! grep -Fq 'P8-E remains blocked until authenticated Central Portal namespace ownership is recorded' \
-  "$LOCALLY_VALID_OUTPUT"; then
-  echo "Distribution readiness must preserve the external namespace blocker." >&2
-  exit 1
-fi
-
 assert_cleanup
+
+if "$CHECKER" >"$TEST_DIRECTORY/no-scope.txt" 2>&1; then
+  echo "Readiness requires an explicit target scope." >&2
+  exit 1
+fi
+if "$CHECKER" unknown >"$TEST_DIRECTORY/unknown-scope.txt" 2>&1; then
+  echo "Readiness must reject unknown target scopes." >&2
+  exit 1
+fi
 
 # Authentication and signing errors must remain deterministic, redacted, and clean.
 for failure in github central signing; do
@@ -145,7 +169,7 @@ for failure in github central signing; do
     UAC_PGP_SIGNING_KEY_FINGERPRINT=0123456789ABCDEF0123456789ABCDEF01234567 \
     UAC_MACOS_SIGNING_IDENTITY='Developer ID Application: UAC Test' \
     UAC_NOTARY_KEYCHAIN_PROFILE="$SENTINEL" \
-    "$CHECKER" >"$FAILURE_OUTPUT" 2>&1; then
+    "$CHECKER" libraries >"$FAILURE_OUTPUT" 2>&1; then
     echo "Distribution readiness accepted a failed $failure prerequisite." >&2
     exit 1
   fi

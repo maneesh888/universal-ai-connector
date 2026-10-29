@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:universal-ai-connector:contract:v1:error",
-  "title": "Universal AI Connector V1 Error",
+  "title": "Adidi Universal AI Connector V1 Error",
   "description": "A stable provider-neutral failure. Caller cancellation is never represented by this contract. Single-line display and logging restrictions on message are semantic constraints.",
   "type": "object",
   "properties": {

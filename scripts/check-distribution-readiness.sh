@@ -5,6 +5,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GRADLE_PROPERTIES="$ROOT/gradle.properties"
 RELEASE_PROPERTIES="$ROOT/distribution/release.properties"
 TEMP_DIRECTORY=""
+SCOPE="${1:-}"
+case "$SCOPE" in
+  libraries|desktop|all) ;;
+  *) echo "Usage: $0 libraries|desktop|all" >&2; exit 2 ;;
+esac
+if [[ "$#" -ne 1 ]]; then
+  echo "Usage: $0 libraries|desktop|all" >&2
+  exit 2
+fi
+needs_libraries() { [[ "$SCOPE" == libraries || "$SCOPE" == all ]]; }
+needs_desktop() { [[ "$SCOPE" == desktop || "$SCOPE" == all ]]; }
+
 
 cleanup() {
   if [[ -n "$TEMP_DIRECTORY" && -d "$TEMP_DIRECTORY" ]]; then
@@ -36,16 +48,20 @@ require_input() {
 
 "$ROOT/scripts/check-distribution-metadata.sh" >/dev/null
 
-for input_name in \
-  ORG_GRADLE_PROJECT_mavenCentralUsername \
-  ORG_GRADLE_PROJECT_mavenCentralPassword \
-  ORG_GRADLE_PROJECT_signingInMemoryKey \
-  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword \
-  UAC_PGP_SIGNING_KEY_FINGERPRINT \
-  UAC_MACOS_SIGNING_IDENTITY \
-  UAC_NOTARY_KEYCHAIN_PROFILE; do
-  require_input "$input_name"
-done
+if needs_libraries; then
+  for input_name in \
+    ORG_GRADLE_PROJECT_mavenCentralUsername \
+    ORG_GRADLE_PROJECT_mavenCentralPassword \
+    ORG_GRADLE_PROJECT_signingInMemoryKey \
+    ORG_GRADLE_PROJECT_signingInMemoryKeyPassword \
+    UAC_PGP_SIGNING_KEY_FINGERPRINT; do
+    require_input "$input_name"
+  done
+fi
+if needs_desktop; then
+  require_input UAC_MACOS_SIGNING_IDENTITY
+  require_input UAC_NOTARY_KEYCHAIN_PROFILE
+fi
 
 group="$(property_value "$GRADLE_PROPERTIES" GROUP)"
 version="$(property_value "$GRADLE_PROPERTIES" VERSION_NAME)"
@@ -60,7 +76,10 @@ if [[ -z "$github_owner" || -z "$github_name" || "$github_name" == "$github_repo
   exit 1
 fi
 
-for command_name in base64 curl gh git gpg security xcrun; do
+required_commands=(gh git)
+if needs_libraries; then required_commands+=(base64 curl gpg); fi
+if needs_desktop; then required_commands+=(security xcrun); fi
+for command_name in "${required_commands[@]}"; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "Distribution readiness requires '$command_name'." >&2
     exit 1
@@ -82,6 +101,7 @@ if [[ -n "$(git -C "$ROOT" ls-remote --tags origin "refs/tags/v$version")" ]]; t
   exit 1
 fi
 
+if needs_libraries; then
 maven_status="$(
   curl -q \
     --silent \
@@ -171,6 +191,9 @@ if ! gpg \
   exit 1
 fi
 
+fi
+
+if needs_desktop; then
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "Apple distribution readiness must run on macOS." >&2
   exit 1
@@ -191,6 +214,7 @@ if ! xcrun notarytool history \
   exit 1
 fi
 
-echo "Locally verifiable distribution prerequisites passed for $group:$artifact_id:$version."
-echo "P8-E remains blocked until authenticated Central Portal namespace ownership is recorded and independently reviewed." >&2
-exit 2
+fi
+
+echo "Scoped distribution probes passed ($SCOPE) for $group:$artifact_id:$version."
+echo "Namespace ownership is recorded separately; real deployment validation and publication were not performed."

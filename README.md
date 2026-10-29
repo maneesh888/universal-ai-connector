@@ -1,13 +1,13 @@
-# Universal AI Connector
+# Adidi Universal AI Connector
 
 **Provider-neutral Kotlin Multiplatform AI connectivity for Swift, Android, and JVM applications**
 
-![Project stage](https://img.shields.io/badge/stage-P8--A%20in%20progress-f59e0b)
+![Project stage](https://img.shields.io/badge/stage-P8--B%20completed%20%7C%20P8%20in%20progress-f59e0b)
 ![Deterministic checks](https://img.shields.io/badge/deterministic%20checks-passing-16a34a)
 ![Current platforms](https://img.shields.io/badge/verified-iOS%20Simulator%20%2B%20device%20link%20%7C%20JVM%20consumer%20%7C%20Android%20app-111827)
 ![License](https://img.shields.io/badge/license-MIT-7c3aed)
 
-Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Android, iOS, and Kotlin/JVM applications. The initial JVM artifact is intended to provide portable Linux, Windows, and macOS consumption without requiring separate native desktop builds.
+Adidi Universal AI Connector is an independent Kotlin Multiplatform project for exposing one provider-neutral AI client API to Android, iOS, and Kotlin/JVM applications. The initial JVM artifact is intended to provide portable Linux, Windows, and macOS consumption without requiring separate native desktop builds.
 
 The repository has completed its P1 cross-platform baseline and P2 provider-neutral contract foundation. Apple applications use the product-facing `UniversalAiConnector` Swift Package product over one local XCFramework containing iOS ARM64 device and simulator slices. The Swift façade preserves asynchronous response, streaming, stable errors, cancellation, concurrency, and exactly-once terminal handling. Android and JVM share the product-facing Kotlin client through the public Gradle module boundary.
 
@@ -25,10 +25,12 @@ close-race, cleanup, consumer, secret-safety, and package-boundary acceptance. P
 authoritatively froze the external Gateway contract and deterministic compatibility fixtures, and
 P7-B added the demonstrated compatibility correction plus a dedicated local Gateway live gate.
 P7-C completed Gateway-representative concurrent lifecycle, cleanup, host-configuration, and
-package-boundary acceptance without another runtime adapter. P8-A is now active and upgrades the
+package-boundary acceptance without another runtime adapter. P8-A is accepted through PR #69 and upgrades the
 iOS sample with explicit live configuration, Keychain-backed credential storage, model discovery,
 exact selection, and no-substitution connection testing while retaining the original
-credential-free deterministic mode.
+credential-free deterministic mode. P8-B adds the same explicit live workflow to Android with
+Keystore-protected credentials, secure opt-in development seeding, and emulator acceptance
+recorded in [PR #75](https://github.com/maneesh888/universal-ai-connector/pull/75).
 
 > **Current phase:** P2 canonical core and JSON contracts and P3 provider-neutral HTTP transport
 > and registry are completed. P4 OpenAI Responses is completed through non-streaming, structured
@@ -37,8 +39,11 @@ credential-free deterministic mode.
 > P6 is completed authoritatively. P7 remains scoped as validation of the existing
 > generic OpenAI-compatible adapter against the independently maintained LLM Gateway rather than
 > a proprietary Gateway protocol. P7-A and P7-B are authoritative, and P7-C lifecycle integration
-> and acceptance complete P7. P8-A is the sole active package and is bounded to the iOS sample;
-> Android, JVM/desktop, parity, and distribution work remain sequential later packages.
+> and acceptance complete P7. P8-A iOS acceptance is complete.
+> P8-B Android and P8-C JVM/desktop are complete. P8-C closes under the user-approved API-only
+> acceptance scope; [revision-bound platform evidence](docs/verification/p8c-api-acceptance.md)
+> records Windows, macOS, and Ubuntu results. Parity and distribution remain not started.
+> PR #75 owns the P8-B exact closing-head acceptance and merge evidence.
 >
 > **P1 completion:** Closing head `fdf33e5d197f13f5ab32f23cfc290ad263451946` passed the complete local gate, independent review, and exact-head GitHub Actions run [29991895652](https://github.com/maneesh888/universal-ai-connector/actions/runs/29991895652). It merged through [PR #12](https://github.com/maneesh888/universal-ai-connector/pull/12) on July 23, 2026, and resulting `main` run [29993494307](https://github.com/maneesh888/universal-ai-connector/actions/runs/29993494307) passed.
 > Roadmap-closeout [PR #14](https://github.com/maneesh888/universal-ai-connector/pull/14) then recorded P1 as completed at `main` head `260345f1cd3d2f05faff1bdd6361b9ce58db1ddf`; resulting `main` run [30075847578](https://github.com/maneesh888/universal-ai-connector/actions/runs/30075847578) passed before P2 was activated separately.
@@ -77,7 +82,7 @@ Canonical AI contracts    ██████████████████
 HTTP client foundation    ████████████████████ 100%  ✅ Complete
 Provider adapters         ████████████████████ 100%  ✅ Complete
 Gateway compatibility     ████████████████████ 100%  ✅ Complete
-Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P8-A active
+Production distribution   ░░░░░░░░░░░░░░░░░░░░   0%  🚧 P8-A/B complete; later packages planned
 Alpha release             ░░░░░░░░░░░░░░░░░░░░   0%  ⏳ Planned
 ```
 
@@ -96,7 +101,8 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | Stable Kotlin-to-Swift error mapping | ✅ Verified |
 | Swift-to-Kotlin cancellation | ✅ Verified |
 | SwiftUI simulator sample compilation | ✅ Locally verified |
-| iOS live configuration and model-discovery sample | 🚧 P8-A in progress; implementation and acceptance evidence are recorded in PR #69 |
+| iOS live configuration and model-discovery sample | ✅ P8-A accepted; exact-head implementation and Simulator acceptance evidence are recorded in PR #69 |
+| Android live configuration and model discovery | ✅ P8-B complete: Compose live controls, Keystore-protected credentials, exact-model connection testing, and debug seeding; exact-head emulator acceptance is recorded in PR #75 |
 | Generic iOS-device sample link/build | ✅ Locally verified; no device execution |
 | JVM target and shared tests | ✅ Verified |
 | Android library, host tests, and AAR | ✅ Verified |
@@ -105,7 +111,7 @@ The percentage measures completed roadmap milestones, not production readiness. 
 | JVM console through the public Gradle module boundary | ✅ Verified locally |
 | JVM console on Linux, Windows, and macOS CI | ✅ Verified |
 | Android application consumer | ✅ Verified locally on API 36.1 emulator |
-| Graphical JVM desktop demonstration | ⏳ Planned for P8 distribution work |
+| Graphical JVM desktop demonstration | 🚧 Source implementation merged; Windows deterministic, console live, and interactive OpenAI desktop proof passed September 21-28, 2026; macOS and Linux matching-host acceptance pending |
 | Physical iOS-device execution | ⏳ Not exercised |
 | JVM sample client | ✅ Verified locally |
 | Canonical AI contracts | ✅ P2 completed with deterministic contract and host proof |
@@ -131,7 +137,7 @@ On July 20, 2026, the Android sample's 3 controller tests passed, its debug APK 
 | P5 | Anthropic adapter | ✅ Completed |
 | P6 | OpenRouter and compatible adapters | ✅ Completed |
 | P7 | OpenAI-compatible Gateway validation | ✅ Completed through PR #59 |
-| P8 | Production distribution and host integration | 🚧 P8-A in progress |
+| P8 | Production distribution and host integration | 🚧 P8-A/B/C completed; P8-D through P8-L not started |
 | P9 | Release hardening and internal alpha | ⏳ Planned |
 
 ### P1 completion
@@ -172,11 +178,11 @@ provider-neutral package-boundary acceptance.
 
 ## Architecture direction
 
-Applications will consume Universal AI Connector models rather than provider DTOs:
+Applications will consume Adidi Universal AI Connector models rather than provider DTOs:
 
 ```text
 Application
-    -> Universal AI Connector client
+    -> Adidi Universal AI Connector client
     -> provider adapter
     -> provider or OpenAI-compatible LLM Gateway endpoint
     -> canonical response/error/stream events
@@ -205,7 +211,7 @@ Native Linux, Windows, and macOS artifacts are demand-driven. The initial deskto
 
 P8 will add one installable Compose Multiplatform desktop demonstration for macOS, Windows, and Linux. It will preserve a zero-configuration deterministic mode and add an opt-in live mode only after the corresponding provider adapter or OpenAI-compatible Gateway validation is complete. The JVM console remains the headless and server-oriented verification path.
 
-The current Kotlin client is `com.maneesh.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond`, `listModels`, and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes. The complete source-revision integration contract is in [`docs/PRODUCTION_CONSUMPTION.md`](docs/PRODUCTION_CONSUMPTION.md).
+The current Kotlin client is `com.myadidi.universalai.connector.UniversalAiConnector`. It is reusable, concurrent, and thread-safe. It owns no coroutine scope: `respond`, `listModels`, and the cold `stream` flow run in the caller's coroutine context, and caller cancellation stops the active operation. Default construction does own the platform transport resources, so every connector must be closed at its host lifecycle boundary. `close()` is synchronous and idempotent. An injected Ktor engine remains caller-owned and usable after its connector closes. The complete source-revision integration contract is in [`docs/PRODUCTION_CONSUMPTION.md`](docs/PRODUCTION_CONSUMPTION.md).
 
 Provider configuration is immutable and provider-neutral. Applications supply a synchronous
 credential loader owned by the host; the connector invokes it once per network request and does
@@ -341,7 +347,7 @@ variables; it is not a credentials file and new contributors do not create it.
 | Git and Bash | Source control, hooks, and committed verification scripts |
 | Ripgrep (`rg`) | Fail-closed secret scanning |
 | Java 21 JDK | Gradle, Kotlin Multiplatform, Android, and JVM builds |
-| Android SDK platform 36 and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
+| Android SDK platforms 36 and 37.0, and Build Tools 36.1.0 | Shared Android artifact and consumer checks |
 | Xcode on Apple silicon macOS | Kotlin/Native, Swift Package, and iOS sample verification |
 | iOS 17 or newer simulator runtime | Apple simulator tests and sample build |
 
@@ -349,6 +355,13 @@ GitHub Apple verification currently runs with Xcode 16.4, and the complete local
 passed with Xcode 26.0. The minimum supported Xcode version has not been established; the
 preflight checks that the selected Xcode can run and resolve the iOS Simulator SDK, and the actual
 build remains the compatibility authority.
+
+The shared Android library compiles against API 36. The sample compiles against API 37 for
+Lifecycle 2.11 while retaining target API 36 and minimum API 24. Install both SDK platforms:
+
+```bash
+sdkmanager "platforms;android-36" "platforms;android-37.0" "build-tools;36.1.0"
+```
 
 After installing those tools, run the read-only preflight before enabling hooks:
 
@@ -463,7 +476,7 @@ checkout from the shared Git metadata and reuses that canonical per-machine file
 ```bash
 LIVE_ENV_FILE="$(./scripts/local-config.sh live-env-path)"
 cp .env.live.example "$LIVE_ENV_FILE"
-chmod 600 "$LIVE_ENV_FILE"
+./scripts/local-config.sh secure-live-env
 ${EDITOR:-vi} "$LIVE_ENV_FILE"
 ./scripts/local-config.sh validate-live-env
 
@@ -509,13 +522,13 @@ The console sample declares only `implementation(project(":bridge"))` for connec
 The first-use path is:
 
 ```kotlin
-import com.maneesh.universalai.connector.UniversalAiConnector
-import com.maneesh.universalai.connector.contract.ModelId
-import com.maneesh.universalai.connector.contract.ProviderId
-import com.maneesh.universalai.connector.contract.UniversalAiInputRole
-import com.maneesh.universalai.connector.contract.UniversalAiRequest
-import com.maneesh.universalai.connector.contract.UniversalAiTarget
-import com.maneesh.universalai.connector.contract.UniversalAiTextInput
+import com.myadidi.universalai.connector.UniversalAiConnector
+import com.myadidi.universalai.connector.contract.ModelId
+import com.myadidi.universalai.connector.contract.ProviderId
+import com.myadidi.universalai.connector.contract.UniversalAiInputRole
+import com.myadidi.universalai.connector.contract.UniversalAiRequest
+import com.myadidi.universalai.connector.contract.UniversalAiTarget
+import com.myadidi.universalai.connector.contract.UniversalAiTextInput
 
 fun request(content: String) =
     UniversalAiRequest(
@@ -682,6 +695,100 @@ Provider and gateway work begins only after the cross-platform package foundatio
 
 ## License
 
-Universal AI Connector is available under the MIT License. See [`LICENSE`](LICENSE).
+Adidi Universal AI Connector is available under the MIT License. See [`LICENSE`](LICENSE).
 
-This draft branch repairs the proposed [P8-E distribution contract](docs/DISTRIBUTION.md). It does not activate P8-E or change the accepted iOS-first package order; distribution remains unverified and must not merge before its activation prerequisites are satisfied.
+## P8-C desktop and console live testing
+
+P8-C is complete under the [API-only acceptance decision](docs/verification/p8c-api-acceptance.md).
+The Compose desktop sample and JVM console share the
+sample-only `samples/host-controller` module and use the existing public Kotlin connector.
+Android and iOS retain their accepted interfaces. Maven publication and desktop packaging
+remain later packages; these commands consume the public repository module boundary.
+
+With JDK 21 and the existing repository toolchain:
+
+```bash
+./gradlew :samples:desktop:run
+./gradlew :samples:host-controller:test :samples:desktop:consumerCheck :samples:jvm-console:consumerCheck
+```
+
+On Windows PowerShell, use the wrapper batch file:
+
+```powershell
+.\gradlew.bat :samples:desktop:run
+.\gradlew.bat :bridge:jvmTest :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck --stacktrace
+```
+
+On September 21, 2026, Windows 10 x64 with JDK 21 and Gradle 9.7.1 passed the
+Windows CI-equivalent deterministic matrix and opened a responsive **Universal AI Connector**
+window. A later interactive run found that Skiko's DirectX fallback could leave this Windows host
+with a blank surface, so the desktop Gradle application now selects the software renderer on
+Windows while preserving explicit renderer overrides for direct JVM launches.
+
+On September 22, 2026, exact commit `6722c705fbc1364508885e948142e937b382681f`
+passed the Windows live adapter and JVM console discovery/connection flows for OpenAI
+`gpt-5.6-luna`, Anthropic `claude-sonnet-5`, and OpenRouter
+`google/gemini-2.5-flash-lite`. One Anthropic structured-response assertion failed on the first
+attempt and passed on the immediate exact-head retry. The configured loopback Gateway was not
+listening, so its first six live cases returned transport failures. Exact commit
+`f200c2a6e596fff6730e03446f25629eb26ba8ea` then passed all six Gateway adapter cases against the
+hosted OpenRouter service through the generic `openai-compatible` configuration. No credential or
+provider response body was retained.
+
+On September 28, 2026, the rebased Adidi-branded Windows head passed the complete quick gate and
+fresh live adapter verification for OpenAI, Anthropic, OpenRouter, and the hosted
+OpenAI-compatible Gateway path. The actual JVM console connected with OpenAI `gpt-5.6-luna` and
+Anthropic `claude-sonnet-5`. The normally launched Compose desktop then visibly loaded models,
+selected and connected with exact model `gpt-5.6-luna`, discarded the response body, exposed and
+completed cancellation, and cleared its session and saved-credential configuration. The live
+launcher revalidated the exact source head after the window closed. No credential or provider
+response body was retained. The final Windows API suites are recorded in merged PR #77;
+macOS and Ubuntu API suites, including the actual configured Gateway, also passed. See the
+[acceptance record](docs/verification/p8c-api-acceptance.md) for exact revisions, counts, first-attempt
+failures, Gateway scope, and successful PR #77 post-merge CI. These are contributor-attested
+API results, not new live executions on the documentation closeout head.
+
+The desktop starts in deterministic mode with no environment inputs, credentials, network,
+or OS-store access. Run all checks, or use the individual response, stream, typed-error,
+and cancellation controls. The Live tab supports OpenAI, Anthropic, OpenRouter, and the
+generic OpenAI-compatible Gateway. Supply its `/v1` URL where required, enter the masked
+credential, and choose **Use for session**. Load models, select an exact model, and press
+**Test Connection**. This always rediscovers before responding. Only explicit unsupported
+discovery enables manual entry; empty, failed, or cancelled discovery blocks responding.
+There is no fallback, alias replacement, or routing substitution. Connection results show
+status and the exact model, never a provider response body.
+
+Credentials default to process memory. **Remember securely** stores one profile through
+macOS Keychain, Windows Credential Manager, or Linux Secret Service (not KWallet or a file).
+**Restore saved** requires the same provider/base URL. If the matching service fails,
+persistence is disabled and the credential stays session-only. **Clear configuration**
+clears the session and requests removal of the saved profile, reporting deletion failure
+without claiming success. Closing cancels client work and clears session memory; intentionally
+remembered credentials survive until cleared. OS stores protect persistence; this development
+JVM sample does not claim isolation from other programs running as the same OS user.
+
+The console remains deterministic without arguments. Explicit live mode accepts only
+`--live <provider-id>` as arguments. Set `<PROVIDER>_API_KEY` and `<PROVIDER>_LIVE_MODEL` in
+the process environment, or enter the credential through a real terminal's non-echoing
+password prompt. The Gateway uses `GATEWAY_API_KEY`, `GATEWAY_LIVE_MODEL`, and
+`GATEWAY_LIVE_BASE_URL`. Never put a credential in command arguments or shell history.
+The console reports discovery and connection status, fails with a nonzero exit when blocked,
+and discards the response body.
+
+For canonical local configuration, on a clean committed head, use the existing loader:
+
+```bash
+UAC_JVM_SAMPLE_LIVE_PROOF=1 ./scripts/check-live.sh openai
+UAC_DESKTOP_SAMPLE_LIVE_PROOF=1 ./scripts/check-live.sh openai
+```
+
+The same opt-in flags support `anthropic`, `openrouter`, and `gateway`. The loader first
+runs the selected provider gate, then launches the actual host with only that provider's
+process-scoped inputs and configuration caching disabled. Desktop import selects the exact
+configured model only after discovery; the user still presses Load models and Test Connection.
+Closing the desktop lets the loader recheck the source head. When claiming optional GUI
+proof, record actual visible discovery/connection, cancellation, clearing, and exact source/model
+identities; launch or compilation alone does not establish interaction proof. P8-C acceptance
+requires API functionality and deterministic consumer/controller coverage on macOS, Windows, and
+Linux, as recorded above. Interactive UI and native credential-store tests are not P8-C closeout
+blockers. Packaged desktop launch and lifecycle proof remains future distribution work.

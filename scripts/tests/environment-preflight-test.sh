@@ -24,6 +24,15 @@ write_executable() {
   chmod +x "$path"
 }
 
+write_command_proxy() {
+  local path="$1"
+  local target="$2"
+
+  write_executable "$path" \
+    '#!/bin/sh' \
+    "exec \"$target\" \"\$@\""
+}
+
 write_java() {
   local path="$1"
   local version="$2"
@@ -52,20 +61,22 @@ record_failure() {
 mkdir -p \
   "$FAKE_PATH" \
   "$FAKE_ANDROID_SDK/platforms/android-36" \
+  "$FAKE_ANDROID_SDK/platforms/android-37.0" \
   "$FAKE_ANDROID_SDK/build-tools/36.1.0" \
   "$FAKE_JAVA_17_HOME/bin" \
   "$FAKE_JAVA_21_HOME/bin" \
   "$FAKE_PATH_JAVA_HOME/bin"
-ln -s /usr/bin/env "$FAKE_PATH/env"
-ln -s "$(command -v bash)" "$FAKE_PATH/bash"
-ln -s "$(command -v dirname)" "$FAKE_PATH/dirname"
-ln -s "$(command -v git)" "$FAKE_PATH/git"
-ln -s "$(command -v head)" "$FAKE_PATH/head"
-ln -s "$(command -v rg)" "$FAKE_PATH/rg"
-ln -s "$(command -v ruby)" "$FAKE_PATH/ruby"
-ln -s "$(command -v sed)" "$FAKE_PATH/sed"
-ln -s "$(command -v uname)" "$FAKE_PATH/uname"
-ln -s "$(command -v unzip)" "$FAKE_PATH/unzip"
+write_command_proxy "$FAKE_PATH/env" /usr/bin/env
+write_command_proxy "$FAKE_PATH/bash" "$(command -v bash)"
+write_command_proxy "$FAKE_PATH/dirname" "$(command -v dirname)"
+write_command_proxy "$FAKE_PATH/git" "$(command -v git)"
+write_command_proxy "$FAKE_PATH/head" "$(command -v head)"
+write_command_proxy "$FAKE_PATH/rg" "$(command -v rg)"
+write_command_proxy "$FAKE_PATH/ruby" "$(command -v ruby)"
+write_command_proxy "$FAKE_PATH/python3" "$(command -v python3)"
+write_command_proxy "$FAKE_PATH/sed" "$(command -v sed)"
+write_command_proxy "$FAKE_PATH/uname" "$(command -v uname)"
+write_command_proxy "$FAKE_PATH/unzip" "$(command -v unzip)"
 
 write_java "$FAKE_JAVA_17_HOME/bin/java" 17 "$FAKE_JAVA_17_HOME"
 write_executable "$FAKE_JAVA_17_HOME/bin/jar" '#!/bin/sh' 'exit 0'
@@ -99,7 +110,7 @@ if ! grep -Fq "Contributor environment has a non-standard 'env' command:" "$PREF
 fi
 
 rm -f "$FAKE_PATH/env"
-ln -s /usr/bin/env "$FAKE_PATH/env"
+write_command_proxy "$FAKE_PATH/env" /usr/bin/env
 
 java_status=0
 JAVA_HOME="$FAKE_JAVA_17_HOME" \
@@ -150,6 +161,23 @@ JAVA_HOME="" \
 if [[ "$java_status" -ne 0 ]]; then
   record_failure "Contributor environment rejected the complete PATH-selected Java 21 JDK."
 fi
+
+for missing_platform in 36 37.0; do
+  rmdir "$FAKE_ANDROID_SDK/platforms/android-$missing_platform"
+  android_status=0
+  JAVA_HOME="$FAKE_JAVA_21_HOME" \
+    ANDROID_HOME="$FAKE_ANDROID_SDK" \
+    PATH="$FAKE_PATH" \
+    /bin/bash "$ROOT/scripts/check-environment.sh" --quick \
+    > "$PREFLIGHT_OUTPUT" 2>&1 || android_status=$?
+  if [[ "$android_status" -ne 1 ]]; then
+    record_failure "Contributor environment preflight did not reject missing Android platform $missing_platform."
+  fi
+  if ! grep -Fq "Android SDK platform $missing_platform is missing from:" "$PREFLIGHT_OUTPUT"; then
+    record_failure "Contributor environment preflight did not identify missing Android platform $missing_platform."
+  fi
+  mkdir -p "$FAKE_ANDROID_SDK/platforms/android-$missing_platform"
+done
 
 rm -f "$FAKE_PATH/uname"
 write_executable "$FAKE_PATH/uname" '#!/bin/sh' 'printf "%s\n" Darwin'
