@@ -25,6 +25,7 @@ run_hygiene() {
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
   python3 -I "$ROOT/scripts/tests/verification-policy-test.py"
+  python3 -I -B "$ROOT/scripts/tests/sample-parity-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
@@ -32,6 +33,7 @@ run_hygiene() {
   "$ROOT/scripts/tests/gradle-wrapper-policy-test.sh"
   "$ROOT/scripts/tests/dependabot-policy-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
+  "$ROOT/scripts/check-sample-parity.sh" --catalog
   git -C "$ROOT" diff --check
 
   local temp_index_directory
@@ -83,6 +85,8 @@ run_cross_platform_gradle_checks() {
     :samples:host-controller:test \
     :samples:desktop:consumerCheck \
     :samples:android:consumerCheck
+
+  python3 -I "$ROOT/scripts/sample-parity.py" kotlin
 
   verify_platform_packaging_boundaries
 }
@@ -263,7 +267,7 @@ run_full() {
   # Build once, then reuse the artifact for package and consumer checks.
   "$ROOT/scripts/build-xcframework.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-swift-package.sh"
-  UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/test-ios-sample.sh"
+  UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/check-sample-parity.sh" --ios
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-app-extension-consumer.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"

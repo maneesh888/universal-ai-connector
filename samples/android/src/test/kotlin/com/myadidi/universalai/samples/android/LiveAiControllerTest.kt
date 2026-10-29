@@ -33,6 +33,20 @@ class LiveAiControllerTest {
         override fun close() { closes++ }
     }
 
+    @Test fun repeatedBusyActionsCannotStartAnotherOperation() = runTest {
+        val client = Client().apply { discovery = { awaitCancellation() } }
+        val controller = LiveAiController(this, Store(), LiveClientFactory { _, _ -> client })
+        controller.saveCredential("synthetic-credential")
+        controller.loadModels(); runCurrent()
+        controller.loadModels(retry = true)
+        controller.testConnection(); runCurrent()
+        assertEquals(listOf("list"), client.calls)
+        assertTrue(controller.state.value.busy)
+        controller.close(); runCurrent()
+        assertFalse(controller.state.value.busy)
+        assertEquals(1, client.closes)
+    }
+
     @Test fun exactSelectionIsRequiredAndConnectionRediscovers() = runTest {
         val client = Client()
         val controller = LiveAiController(this, Store(), LiveClientFactory { _, _ -> client })

@@ -276,8 +276,8 @@ class LiveAiController(
                     )
                 }
             } finally {
-                client?.close()
                 if (id == operationId) {
+                    runCatching { client?.close() }
                     activeClient = null
                     activeJob = null
                     mutableState.value = state.value.copy(busy = false)
@@ -323,7 +323,7 @@ class LiveAiController(
         operationId++
         activeJob?.cancel()
         activeJob = null
-        activeClient?.close()
+        runCatching { activeClient?.close() }
         activeClient = null
         mutableState.value = state.value.copy(busy = false)
     }

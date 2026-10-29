@@ -6,6 +6,43 @@ import XCTest
 
 @MainActor
 final class LiveAiConfigurationViewModelTests: XCTestCase {
+    func testRepeatedBusyActionsCannotStartAnotherOperation() async {
+        let client = FakeLiveAiConnectorClient(
+            discoverySteps: [.waitForRelease(.supported([]))]
+        )
+        let (viewModel, _) = configuredViewModel(client: client)
+        viewModel.loadModels()
+        await client.waitUntilDiscoveryIsSuspended()
+        viewModel.loadModels()
+        viewModel.retryModelDiscovery()
+        viewModel.testConnection()
+        let calls = await client.listCallCount()
+        XCTAssertEqual(calls, 1)
+        XCTAssertTrue(viewModel.isBusy)
+        viewModel.cancelCurrentOperation()
+        await client.releaseNextDiscovery()
+        await viewModel.waitForCurrentOperationForTesting()
+        XCTAssertEqual(viewModel.discoveryState, .cancelled)
+        XCTAssertFalse(viewModel.isBusy)
+        let testedModels = await client.testedModelIDs()
+        XCTAssertEqual(testedModels, [])
+    }
+
+    func testFailedCredentialClearNeverClaimsDeletionOrExposesDetails() {
+        let detail = "synthetic-storage-error-detail"
+        let viewModel = LiveAiConfigurationViewModel(
+            credentialStore: FailingLiveAiCredentialStore(secret: detail),
+            clientFactory: FakeLiveAiConnectorClientFactory(
+                client: FakeLiveAiConnectorClient(discoverySteps: [])
+            )
+        )
+        viewModel.clearConfiguration()
+        XCTAssertEqual(viewModel.configurationStatus,
+                       "The live operation failed without exposing provider details.")
+        XCTAssertFalse(viewModel.configurationStatus.contains(detail))
+        XCTAssertFalse(viewModel.configurationStatus.contains("cleared"))
+    }
+
     func testSupportedDiscoveryRequiresExplicitSelectionAndReusesExactModel() async {
         let models = [
             LiveAiModelOption(id: "model-a", displayName: "Model A"),
