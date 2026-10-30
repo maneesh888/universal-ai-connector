@@ -160,6 +160,8 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; P8-C is complete under the API-only acceptance decision, using revision-bound Windows PR #77 and macOS/Ubuntu evidence plus successful PR #77 resulting-main CI; see [P8-C acceptance](../verification/p8c-api-acceptance.md); P8-D parity closeout is proposed by this candidate; distribution packages remain not started |
 | P9 | Release hardening and internal alpha | Not started | |
 | P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
+| P11 | Native on-device AI | Not started | Direct Apple Foundation Models and Android ML Kit integration; lightweight adapters and explicit output-format semantics |
+| P12 | Downloaded local models | Not started | Evaluate llama.cpp and LiteRT-LM first; optional runtime dependencies, plain-text defaults, and local-only inference |
 
 Only one row may be `In progress` at a time.
 
@@ -362,6 +364,143 @@ Documents (including PDF and office formats), video, generated media output, rea
 sessions, local transcoding/DSP, and media storage are not initial P10 acceptance. They remain
 separate future extensions and require their own provider-intersection, extraction, lifecycle, and
 proof decisions before activation.
+
+## P11: Native on-device AI
+
+P11 is future work after P10 and remains `Not started`. A separate activation change must define
+bounded work packages and make P11 the sole milestone marked `In progress` before implementation.
+Recording this milestone has `Milestone effect: none`; it does not activate native inference or
+change P8 distribution, P9 alpha-release, or P10 multimodal acceptance.
+
+Start with direct access to OS-managed models through Apple Foundation Models on supported iOS,
+iPadOS, and macOS hosts, and the Android ML Kit GenAI Prompt API backed by AICore. Use small,
+optional platform adapters and only the necessary official SDK dependencies. Keep platform-neutral
+semantics in Kotlin `commonMain`, preserve the single Kotlin client and Swift façade, and keep
+Swift/native bridging and platform SDK types internal. Before implementation, resolve and document
+the macOS consumption/packaging path: the current desktop consumer uses Kotlin/JVM, so native
+Apple access is not automatically covered by existing desktop proof.
+
+Adopt useful availability, streaming, cancellation, and lifecycle patterns from existing projects
+such as [ondevice-ai](https://github.com/adrianczuczka/ondevice-ai),
+[Apfel](https://github.com/Arthur-Ficial/apfel), and
+[Google's GenAI samples](https://github.com/googlesamples/mlkit/tree/master/android/genai),
+with source provenance and license obligations recorded for reused code. These are research
+references, not approved runtime dependencies. Do not add full wrapper libraries, agent frameworks,
+local HTTP servers, or bundled-model inference engines for this bounded OS-model support.
+
+Output-format acceptance is explicit:
+
+- Plain-text requests must use the native text-generation path. Do not inject JSON instructions,
+  schemas, or wrapper-specific JSON formatting when the caller has not requested structured output.
+- Distinguish a transport's JSON envelope from generated model content: normal protocol encoding
+  is acceptable, but it must not force the answer itself into JSON or leak an envelope as answer text.
+- Avoid any wrapper or integration mode, including an Apfel path, that imposes unrequested JSON
+  content. Do not work around that behavior by silently stripping JSON or changing the prompt.
+  This is an integration acceptance rule, not a claim that every Apfel mode behaves this way.
+- Structured generation is opt-in and capability-gated. Reject unsupported guarantees explicitly;
+  JSON prompting with validation/retry must not be advertised as native schema-constrained generation.
+- Cover both plain-text and explicitly structured requests with deterministic tests and targeted
+  device proof, including streaming. Preserve model-authored content rather than assuming that
+  text resembling JSON is necessarily a wrapper defect.
+
+Acceptance also requires:
+
+- runtime availability and readiness states that distinguish unsupported, disabled, not ready,
+  downloadable/downloading where supported, and ready, without promising app-controlled downloads
+  on platforms that do not expose them;
+- explicit on-device execution with no silent cloud fallback or model substitution; distinguish
+  model provisioning/network setup from offline inference after the model is ready;
+- conservative per-platform capability reporting, documented OS/SDK/hardware/language/region
+  requirements, and stable errors for policy restrictions, quotas, refusals, and context limits;
+- correct conversion of native streaming semantics, including Apple's accumulated snapshots,
+  plus cancellation propagation, exactly-once termination, request isolation, and cleanup;
+- verification of Android foreground restrictions and Apple host/extension restrictions before
+  claiming background or keyboard support; OpenKeyboard integration remains separate deferred work;
+- deterministic fake-backed coverage and targeted real-device/native-host proof on each claimed
+  platform, with no inference proof inferred from compilation, simulator, or emulator success alone.
+
+Revalidate [Apple Foundation Models](https://developer.apple.com/foundation-models-framework/)
+and [Android ML Kit Prompt API](https://developers.google.com/ml-kit/genai/prompt/android)
+requirements at activation. Windows native AI, additional OS AI tasks, custom model downloads,
+MLX/llama.cpp/LiteRT-LM backends, automatic cloud routing, and native multimodal parity are outside
+the initial P11 scope. P12 reserves downloaded-model inference and its initial runtime evaluation;
+all other extensions require separate bounded decisions.
+
+## P12: Downloaded local models
+
+P12 follows P11 and remains `Not started`. A separate activation change must define bounded work
+packages and make P12 the sole milestone marked `In progress` before implementation. Recording
+this milestone has `Milestone effect: none`; no runtime dependency, model download, or inference
+behavior is activated by this roadmap entry.
+
+Support host-provided downloaded models running inside the application on iPhone/iPad and Android,
+separately from P11's OS-managed models. Evaluate
+[llama.cpp](https://github.com/ggml-org/llama.cpp) and
+[LiteRT-LM](https://developers.google.com/edge/litert-lm/overview) first. Select an engine only after
+comparing supported model formats and architectures, licensing, native package size, Kotlin/Swift
+integration, hardware acceleration, cancellation, and actual device behavior. Evaluation does not
+commit the package to shipping both engines or supporting arbitrary model files.
+
+Keep inference engines in optional backend modules with explicit host opt-in. The core connector
+and consumers using remote or OS-native models must not transitively acquire these runtimes or
+model weights. Preserve the single Kotlin client and Swift façade; keep engine types, native
+handles, and platform bridges internal. Reuse focused upstream patterns with provenance and
+license obligations recorded, without importing entire application or orchestration frameworks.
+
+Acceptance requires:
+
+- host-owned model acquisition, consent, storage, and deletion; the backend accepts a prepared
+  model through a documented boundary, validates compatibility/integrity before loading, and
+  reports missing, invalid, unsupported, and insufficient-resource failures explicitly;
+- local-only inference with no cloud fallback, remote inference, automatic model substitution,
+  or prompt/response transmission; network access for explicit model acquisition is separate
+  from inference, and offline operation is proved after provisioning;
+- plain-text generation by default, with no injected JSON instructions, schema, or grammar unless
+  structured output is explicitly requested; reject wrappers that force JSON answer content and
+  never silently strip JSON to disguise that behavior;
+- separation of internal configuration/response envelopes from model-authored answer text;
+  preserve legitimate model-authored JSON as content, and capability-gate requested structured
+  output without claiming validation/retry is equivalent to constrained generation;
+- documented memory budgets for each supported device/model/runtime configuration, covering
+  model weights, conversation/KV caches, temporary computation buffers, native/GPU allocations,
+  and host-app headroom; measure peak whole-process footprint as well as runtime counters,
+  because model file size and advertised device RAM are not safe allocation budgets;
+- admission checks before loading and generation, using tested budgets and current platform
+  memory signals where available; treat available-memory readings as estimates, not reservations,
+  and reject unsupported workloads with stable insufficient-resource errors rather than relying
+  on memory-limit entitlements, allocation failure, or OS termination;
+- on-demand loading only after an explicit inference/load request, separate from downloading or
+  validating a model; coalesce concurrent loads of the same model, bound resident models and
+  active generations, and begin with one resident model and one active generation per backend
+  instance until broader concurrency has measured resource and isolation proof;
+- bounded input/context, output tokens, conversation/KV-cache growth, and generation concurrency;
+  reject over-budget requests explicitly without silent history truncation, model substitution,
+  forced output-format changes, or cloud fallback;
+- explicit load/unload ownership and a documented idle/background/memory-pressure policy that
+  the host can invoke; cancellation and unloading must await or safely terminate active native
+  work before releasing model/session handles, buffers, and unused runtime caches, with no
+  use-after-free, leaked allocations, duplicate terminal events, or cross-request state sharing;
+- safe recovery from cancellation, failed or partial loading, repeated load/unload cycles, memory
+  pressure, and background/foreground transitions; do not depend on receiving a memory warning
+  before termination, and do not promise unrestricted background inference;
+- deterministic fake-backed tests plus real iPhone/iPad and Android evidence for each claimed
+  runtime/platform combination, using identified model artifacts, quantization, context settings,
+  engine versions, hardware, and OS versions; exercise load, first generation, long bounded
+  contexts, budget rejection, cancellation during loading and generation, unload/reload, repeated
+  cycles, memory pressure, and background/foreground recovery on real iOS/iPadOS and Android
+  devices; record peak memory and post-unload retained memory to detect growth or unreleased
+  resources, and never substitute simulator/emulator or compile-only results for device proof;
+- comparative evaluation of task quality, time to first output, sustained generation speed, peak
+  memory, installed runtime/model footprint, thermal/battery effects, cancellation, and
+  background/foreground recovery before selecting defaults or making performance claims;
+- consumer packaging checks proving optional dependency isolation, and documentation of supported
+  models, model licenses, minimum device requirements, and known limitations.
+
+Start the evaluation with small quantized text models and bounded contexts; model size alone does
+not establish usable performance or safe memory requirements. Desktop support, additional engines
+such as MLX or MLC LLM, multimodal inference, model training, model catalogs/download UI, and
+keyboard/background execution guarantees require separate scoped decisions. P12 does not activate
+these extensions or change the host-owned storage and UI boundary.
 
 ## Deferred work
 
