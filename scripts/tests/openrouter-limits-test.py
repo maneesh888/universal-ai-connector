@@ -72,6 +72,10 @@ class LimitsTests(unittest.TestCase):
             self.assertNotIn("private", json.dumps(result))
         self.assertIsNone(probe.NoRedirect().redirect_request(None, None, 302, "", {}, "https://untrusted.invalid"))
 
+    def test_reset_time_overflow_is_unknown(self):
+        for value in ["0001-01-01T00:00:00+23:00", "9999-12-31T23:59:59-23:00"]:
+            self.assertIsNone(probe.reset_time(value))
+
     def test_oversized_and_invalid_json_are_bounded_failures(self):
         for body, reason in [(b"x" * (probe.MAX_BODY + 1), "oversized_response"),
                              (b"private-not-json", "invalid_response"),

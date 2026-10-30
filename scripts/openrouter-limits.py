@@ -39,7 +39,7 @@ def reset_time(value):
         if parsed.tzinfo is None:
             return None
         return parsed.astimezone(datetime.timezone.utc).isoformat()
-    except ValueError:
+    except (ValueError, OverflowError):
         return None
 
 
