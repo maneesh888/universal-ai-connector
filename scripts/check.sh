@@ -26,6 +26,7 @@ run_hygiene() {
 
   python3 -I "$ROOT/scripts/tests/verification-policy-test.py"
   python3 -I -B "$ROOT/scripts/tests/sample-parity-test.py"
+  python3 -I -B "$ROOT/scripts/tests/openrouter-limits-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"

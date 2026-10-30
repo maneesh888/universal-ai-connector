@@ -124,6 +124,12 @@ headers and provider bodies. These fields cannot distinguish every upstream thro
 account quota. Pacing is outside the cancellation tests' observation windows and does not alter
 their assertions or production retry behavior. Coordinate separate live processes explicitly;
 this fixture does not impose a cross-process lock or control other applications' traffic.
+`./scripts/check-live.sh openrouter --limits` makes one read-only HTTPS self-key request, without
+Gradle or inference. It uses the same validated canonical configuration and clean-head checks,
+disables redirects, bounds response size/time, and reports only allowlisted quota counters and
+exhaustion/reset indicators. It never prints key labels, balances, model values or raw responses.
+Unknown or missing fields remain unknown; the endpoint cannot establish per-minute or upstream
+capacity. Account quota, model throttling and successful inference remain distinct claims.
 
 Machine-local live inputs persist only in the primary checkout path printed by
 `./scripts/local-config.sh live-env-path`. The helper derives that checkout from

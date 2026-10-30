@@ -80,6 +80,17 @@ printf '%s\n' \
 cp "$ROOT/.env.live.example" "$TEST_REPOSITORY/.env.live.example"
 TEST_REPOSITORY_PHYSICAL="$(cd "$TEST_REPOSITORY" && pwd -P)"
 
+cat > "$TEST_REPOSITORY/scripts/openrouter-limits.py" <<'LIMITS_PY'
+import json, os
+assert os.environ["OPENROUTER_API_KEY"] == os.environ["UAC_TEST_EXPECTED_KEY"]
+assert os.environ["OPENROUTER_LIVE_MODEL"] == os.environ["UAC_TEST_EXPECTED_MODEL"]
+assert os.environ["UAC_LIVE_EXPECTED_SHA"] == os.environ["UAC_TEST_EXPECTED_SHA"]
+assert all(not os.environ.get(k) for k in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GATEWAY_API_KEY", "UAC_LIVE_ENV_FILE"])
+with open(os.environ["UAC_TEST_CALL_LOG"], "a") as f:
+    f.write("limits\n")
+print(json.dumps({"probe": "read_only_limits", "inference_calls": 0}))
+LIMITS_PY
+
 cat > "$TEST_REPOSITORY/gradlew" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -843,5 +854,23 @@ for proof_flag in UAC_JVM_SAMPLE_LIVE_PROOF UAC_DESKTOP_SAMPLE_LIVE_PROOF; do
     exit 1
   fi
 done
+
+# The limits mode uses the same isolated inputs and never invokes Gradle or host proof.
+: > "$CALL_LOG"
+env OPENAI_API_KEY="$SYNTHETIC_KEY" ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$OPENROUTER_SYNTHETIC_KEY" UAC_TEST_EXPECTED_MODEL="$OPENROUTER_MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" UAC_JVM_SAMPLE_LIVE_PROOF=1 \
+  "$RUNNER" openrouter --limits > "$OUTPUT" 2>&1
+if [[ "$(cat "$CALL_LOG")" != "limits" ]] || ! grep -Fq 'read_only_limits' "$OUTPUT"; then
+  echo "Limits mode must make only the isolated read-only probe." >&2
+  exit 1
+fi
+if grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" || grep -Fq "$OPENROUTER_MODEL" "$OUTPUT"; then
+  echo "Limits mode exposed local configuration values." >&2
+  exit 1
+fi
 
 echo "Live verification runner regression tests passed."
