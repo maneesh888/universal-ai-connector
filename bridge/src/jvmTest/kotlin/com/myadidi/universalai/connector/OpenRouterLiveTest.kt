@@ -18,7 +18,10 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -46,7 +49,7 @@ class OpenRouterLiveTest {
             connector(providerId).use { connector ->
                 val supported =
                     assertIs<UniversalAiModelListResult.Supported>(
-                        connector.listModels(providerId),
+                        requestGuard.request { connector.listModels(providerId) },
                     )
 
                 assertTrue(
@@ -62,7 +65,7 @@ class OpenRouterLiveTest {
     fun minimalNonStreamingResponseTranslatesToCanonicalOutput(): Unit = runBlocking {
         connector(OPENROUTER_PROVIDER_ID).use { connector ->
             val response =
-                connector.respond(
+                connector.pacedRespond(
                     liveRequest("Reply with exactly one short word: ready."),
                 )
 
@@ -85,7 +88,7 @@ class OpenRouterLiveTest {
     fun selectedOpenRouterModelAcceptsTheGenericCompatibleAdapter(): Unit = runBlocking {
         connector(OPENAI_COMPATIBLE_PROVIDER_ID).use { connector ->
             val response =
-                connector.respond(
+                connector.pacedRespond(
                     liveRequest(
                         prompt = "Reply with exactly one short word: ready.",
                         providerId = OPENAI_COMPATIBLE_PROVIDER_ID,
@@ -111,7 +114,7 @@ class OpenRouterLiveTest {
     fun selectedModelReturnsRevalidatedStructuredOutputThroughBothAdapters(): Unit = runBlocking {
         listOf(OPENROUTER_PROVIDER_ID, OPENAI_COMPATIBLE_PROVIDER_ID).forEach { providerId ->
             connector(providerId).use { connector ->
-                val response = connector.respond(structuredLiveRequest(providerId))
+                val response = connector.pacedRespond(structuredLiveRequest(providerId))
                 val output = response.outputs.single()
                 assertNull(output.text)
                 val structured = assertNotNull(output.structuredJson)
@@ -126,7 +129,7 @@ class OpenRouterLiveTest {
             connector(providerId).use { connector ->
                 val events =
                     connector
-                        .stream(
+                        .pacedStream(
                             liveRequest(
                                 prompt = "Reply with exactly one short word: ready.",
                                 providerId = providerId,
@@ -170,7 +173,7 @@ class OpenRouterLiveTest {
         connector(OPENROUTER_PROVIDER_ID).use { connector ->
             val failure =
                 assertFailsWith<com.myadidi.universalai.connector.contract.UniversalAiException> {
-                    connector.respond(
+                    connector.pacedRespond(
                         liveRequest(
                             prompt = "Reply with ready.",
                             modelId = "universal-ai-connector/definitely-not-a-real-model",
@@ -192,6 +195,7 @@ class OpenRouterLiveTest {
 
     @Test
     fun cancellingPendingResponseRemainsCallerCancellation(): Unit = runBlocking {
+        requestGuard.awaitSlot()
         val credentialResolved = CompletableDeferred<Unit>()
         configuredConnector {
             credentialResolved.complete(Unit)
@@ -199,11 +203,13 @@ class OpenRouterLiveTest {
         }.use { connector ->
             val pending =
                 async(start = CoroutineStart.UNDISPATCHED) {
-                    connector.respond(
-                        liveRequest(
-                            "Write a concise explanation of why cancellation matters.",
-                        ),
-                    )
+                    requestGuard.observe {
+                        connector.respond(
+                            liveRequest(
+                                "Write a concise explanation of why cancellation matters.",
+                            ),
+                        )
+                    }
                 }
 
             withTimeout(5_000) {
@@ -218,13 +224,14 @@ class OpenRouterLiveTest {
 
     @Test
     fun cancellingActiveDirectStreamAfterContentEmitsNoLaterConsumerEvent(): Unit = runBlocking {
+        requestGuard.awaitSlot()
         connector(OPENROUTER_PROVIDER_ID).use { connector ->
             val events = mutableListOf<UniversalAiStreamEvent>()
             val deltaSeen = CompletableDeferred<Unit>()
             val pending =
                 async(start = CoroutineStart.UNDISPATCHED) {
                     connector
-                        .stream(
+                        .diagnosedStream(
                             liveRequest(
                                 "Write several short sentences about cancellation propagation.",
                             ),
@@ -248,6 +255,20 @@ class OpenRouterLiveTest {
             delay(250)
             assertEquals(eventCountAtCancellation, events.size)
             assertFalse(events.any(UniversalAiStreamEvent::terminal))
+        }
+    }
+
+    private suspend fun UniversalAiConnector.pacedRespond(request: UniversalAiRequest) =
+        requestGuard.request { respond(request) }
+
+    private fun UniversalAiConnector.pacedStream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> = flow {
+        requestGuard.awaitSlot()
+        emitAll(diagnosedStream(request))
+    }
+
+    private fun UniversalAiConnector.diagnosedStream(request: UniversalAiRequest): Flow<UniversalAiStreamEvent> = flow {
+        requestGuard.observe {
+            stream(request).collect { emit(it) }
         }
     }
 
@@ -327,6 +348,7 @@ class OpenRouterLiveTest {
         )
 
     private companion object {
+        val requestGuard = OpenRouterLiveRequestGuard()
         val OPENROUTER_PROVIDER_ID: ProviderId = ProviderId.of("openrouter")
         val OPENAI_COMPATIBLE_PROVIDER_ID: ProviderId = ProviderId.of("openai-compatible")
 

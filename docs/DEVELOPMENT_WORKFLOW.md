@@ -115,6 +115,16 @@ initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.
 
+The OpenRouter live fixture shares a four-second request-start cadence across both adapter paths
+within its JVM, including discovery. It never retries a generation. A rate-limit response stops
+further fixture requests and leaves the gate failed; rerun only after diagnosing availability.
+Failure diagnostics retain only the rate-limit classification, bounded numeric status and
+`retryAfterMillis` when supplied. They exclude messages, request IDs, local configuration values,
+headers and provider bodies. These fields cannot distinguish every upstream throttle from an
+account quota. Pacing is outside the cancellation tests' observation windows and does not alter
+their assertions or production retry behavior. Coordinate separate live processes explicitly;
+this fixture does not impose a cross-process lock or control other applications' traffic.
+
 Machine-local live inputs persist only in the primary checkout path printed by
 `./scripts/local-config.sh live-env-path`. The helper derives that checkout from
 `git rev-parse --path-format=absolute --git-common-dir` and the shared worktree metadata, so the
