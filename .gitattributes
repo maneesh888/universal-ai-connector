@@ -1,2 +1,5 @@
 gradlew.bat text eol=lf
 contracts/**/*.json text eol=lf
+
+# Kotlin ABI dumps require their generated final separator; keep all other whitespace checks.
+bridge/api/jvm/*.api text eol=lf whitespace=-blank-at-eof

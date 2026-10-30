@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A through P8-D are authoritative; P8-E nonpublishing contract preparation is active.
+Status: `In progress`; P8-A through P8-D are authoritative; the explicitly requested P8-F unsigned local Maven preparation is active, building on the unmerged P8-E contract candidate.
 
 P0-P7 and P8-A through P8-D are authoritative. PR #88 merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646` and resulting-main CI run 40956077878 passed. P8 remains the sole roadmap milestone marked `In progress`.
-P8-F through P8-L remain `Not started`, and P9 remains inactive until P8 closes
+P8-G through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -365,7 +365,7 @@ claim.
 
 ### P8-E: Distribution contract and version freeze
 
-Status: `In progress` for requested nonpublishing contract and Apple build preparation.
+Status: Contract candidate prepared in draft PR #62; final version/signing decisions and authoritative acceptance remain pending. This is not a completed version freeze.
 
 The existing draft candidate is `0.1.0-0.p8.1`; owner approval of the exact immutable release version, artifacts and destinations remains required before publication. The namespace `com.myadidi` is already verified; see the nonsecret namespace evidence and target-scoped requirements in [the distribution contract](../DISTRIBUTION.md).
 
@@ -388,7 +388,7 @@ be an explicit scope/roadmap decision.
 
 ### P8-F: Reproducible Maven publication and Kotlin consumers
 
-Status: `Not started`.
+Status: `In progress` for the explicit October 30 request to finish unsigned local Maven publication, metadata, inventory and standalone consumers. This requested nonpublishing preparation may build on the unmerged P8-E candidate; it does not make E authoritative, approve an immutable version, import signing keys or permit upload/publication. Signing and remote distribution remain unverified.
 
 - Configure the Kotlin Multiplatform root and every referenced JVM, Android, `iosArm64`, and
   `iosSimulatorArm64` publication with complete POM, sources, Central-compatible Javadoc, Gradle
@@ -400,6 +400,12 @@ Status: `Not started`.
   sample that presents a Kotlin/Native publication as the supported Apple entry point.
 - Add public API compatibility validation for the supported Kotlin surface.
 - Keep remote credentials optional for deterministic checks and fail closed for remote commands.
+
+Implemented validation routes are `./scripts/check-maven-distribution.sh local` (Mac publication graph,
+checksums, docs/source inventory, Kotlin ABI, standalone JVM runtime and Android compilation), and
+`local --android-runtime <emulator-serial>` for separate no-network Android construction/closure
+acceptance. These remain unsigned local proofs; actual signing, Portal validation and public
+resolution are not completed by this package preparation.
 
 ### P8-G: Reproducible Apple binary distribution
 

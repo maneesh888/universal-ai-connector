@@ -98,6 +98,7 @@ jobs:
         run: >-
           ./gradlew
           :bridge:jvmTest
+          :bridge:checkKotlinAbi
           :bridge:testAndroidHostTest
           :bridge:bundleAndroidMainAar
           :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck
@@ -144,7 +145,7 @@ jobs:
           validate-wrappers: true
 
       - name: Run JVM checks
-        run: ./gradlew.bat :bridge:jvmTest :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck --stacktrace
+        run: ./gradlew.bat :bridge:jvmTest :bridge:checkKotlinAbi :samples:jvm-console:consumerCheck :samples:host-controller:test :samples:desktop:consumerCheck --stacktrace
 
       - name: Verify JVM sample parity evidence
         run: python -I scripts/sample-parity.py jvm

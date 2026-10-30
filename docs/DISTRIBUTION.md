@@ -1,6 +1,6 @@
-# P8-E distribution contract candidate
+# P8 unpublished distribution preparation
 
-This branch prepares one nonpublishing identity/version contract after accepted P8-D
+This branch prepares one nonpublishing identity/version contract and explicitly requested unsigned local Maven validation after accepted P8-D
 (PR #88, merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646`, with successful resulting-main
 CI). It does not publish a package, tag, release asset, or remote Swift manifest.
 
@@ -104,3 +104,73 @@ References: [Central requirements](https://central.sonatype.org/publish/requirem
 [SwiftPM binary distribution](https://developer.apple.com/documentation/xcode/distributing-binary-frameworks-as-swift-packages),
 [XCFramework signatures](https://developer.apple.com/videos/play/wwdc2023/10061/),
 [macOS notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution).
+
+
+## Unsigned local Maven publication and coordinate consumers
+
+P8-F preparation now uses Gradle's built-in `maven-publish` and opt-in `signing` plugins. The only
+configured publication repository is `bridge/build/distribution/maven`, an ignored file repository.
+No Central upload task or write-enabled CI workflow is introduced. `publish` does not publish to
+Central in this project. Do not use shared `mavenLocal` as distribution proof.
+
+```bash
+./scripts/check-maven-distribution.sh local
+./scripts/check-api-compatibility.sh kotlin
+```
+
+The complete local graph is built on macOS: root `universal-ai-connector`, `-jvm`, `-android`,
+`-iosarm64`, and `-iossimulatorarm64`. Every publication includes complete POM fields, sources,
+Gradle metadata and a documentation JAR. Official Dokka 2.2.0 generates real Kotlin HTML docs
+under the Maven `javadoc` classifier; its Java-lookalike Javadoc mode does not support KMP.
+Native publications complete the metadata graph; the supported Apple entry remains the Swift
+façade, and Apple bridge internals are excluded from these Kotlin API docs.
+
+The inventory checks the root/target graph, safe local metadata URLs, required artifacts,
+canonical version sources, nonempty documentation/license, binary contents and all emitted
+MD5/SHA-1/SHA-256/SHA-512 checksums. It rejects missing targets, tampering, unexpected artifacts,
+and signatures in this unsigned proof route. It does not verify PGP signatures or public
+resolution. Private generated logs and receipts stay under `bridge/build/distribution`.
+
+Standalone builds under `distribution/consumers` resolve the **root coordinate** exclusively from
+an injected repository for `com.myadidi`; other groups use their normal repositories. They have
+no producer project/composite/source dependency and never use `mavenLocal`. The JVM fixture
+constructs, checks version and closes the client, and verifies the loaded JAR hash against the
+inventoried publication. Android compiles real first-use construction/closure into app/test APKs.
+Both consumers pin Kotlin 2.4.10; AGP's default built-in compiler alone may be older and cannot
+consume this metadata. No metadata-version check is disabled.
+
+Optional explicit emulator proof performs one no-network construction/version/closure test:
+
+```bash
+./scripts/check-maven-distribution.sh local --android-runtime emulator-5580
+```
+
+This installs only the named standalone fixture APKs on that emulator. Without this option,
+Android proof is compilation only. It establishes neither physical-device nor remote-distribution
+proof. The verifier never starts, wipes or selects a physical device. Runtime proof is recorded
+separately from ordinary CI's compilation route.
+
+Kotlin compiler ABI baselines live in `bridge/api`; normal validation uses `checkKotlinAbi` and
+never updates them automatically. Filters include the supported connector namespace, excluding
+the separate Apple bridge namespace. JVM and Klib dumps are checked; on non-Apple hosts the Kotlin
+tool may preserve/infer unsupported native target data, so complete native ABI proof is the Mac
+route. Swift API compatibility remains assigned to Apple distribution preparation.
+
+### Signing and publication boundary
+
+Unsigned local builds require no Central token or PGP key, and the verification driver removes
+provider and publishing inputs from child environments. Signing is disabled unless explicitly
+requested with `-PuacSignPublication=true`. That route requires approved host-supplied in-memory
+key/passphrase inputs and `--no-configuration-cache`; use `--no-daemon` as well. Do not run it until
+the owner has approved the precise key action. This preparation has not parsed/imported a key or
+signed anything. The public key/fingerprint and real signature validation still need a secure
+approved handoff, followed by credentialed Portal validation before any upload or release.
+
+The proof version remains proposed, the contract PR remains held, and the unified publication
+scope has not been changed. These local operations create no immutable public artifacts.
+
+Sources: [KMP publication](https://kotlinlang.org/docs/multiplatform/multiplatform-publish-lib-setup.html),
+[Android KMP publication](https://developer.android.com/kotlin/multiplatform/plugin),
+[Dokka formats](https://kotlinlang.org/docs/dokka-gradle.html),
+[Kotlin ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html),
+[Gradle signing](https://docs.gradle.org/9.7.1/userguide/signing_plugin.html).

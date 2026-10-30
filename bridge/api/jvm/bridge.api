@@ -1,0 +1,867 @@
+public final class com/myadidi/universalai/connector/UniversalAiConnector : java/lang/AutoCloseable {
+	public static final field Companion Lcom/myadidi/universalai/connector/UniversalAiConnector$Companion;
+	public static final field LIBRARY_VERSION Ljava/lang/String;
+	public static final field SIMULATED_ERROR_INPUT Ljava/lang/String;
+	public fun <init> ()V
+	public fun <init> (Lcom/myadidi/universalai/connector/UniversalAiConnectorConfiguration;)V
+	public fun <init> (Lcom/myadidi/universalai/connector/UniversalAiConnectorConfiguration;Lio/ktor/client/engine/HttpClientEngine;)V
+	public fun <init> (Lio/ktor/client/engine/HttpClientEngine;)V
+	public fun close ()V
+	public final fun getVersion ()Ljava/lang/String;
+	public final fun listModels-TBJU6P8 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun respond (Lcom/myadidi/universalai/connector/contract/UniversalAiRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun stream (Lcom/myadidi/universalai/connector/contract/UniversalAiRequest;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class com/myadidi/universalai/connector/UniversalAiConnector$Companion {
+}
+
+public final class com/myadidi/universalai/connector/UniversalAiConnectorConfiguration {
+	public static final field Companion Lcom/myadidi/universalai/connector/UniversalAiConnectorConfiguration$Companion;
+	public static final field DEFAULT_CONNECT_TIMEOUT_MILLIS J
+	public static final field DEFAULT_REQUEST_TIMEOUT_MILLIS J
+	public static final field MAX_TIMEOUT_MILLIS J
+	public fun <init> (Ljava/util/List;JJ)V
+	public synthetic fun <init> (Ljava/util/List;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getConnectTimeoutMillis ()J
+	public final fun getProviders ()Ljava/util/List;
+	public final fun getRequestTimeoutMillis ()J
+}
+
+public final class com/myadidi/universalai/connector/UniversalAiConnectorConfiguration$Companion {
+	public final fun getEmpty ()Lcom/myadidi/universalai/connector/UniversalAiConnectorConfiguration;
+}
+
+public abstract class com/myadidi/universalai/connector/UniversalAiModelListResult {
+	public abstract fun getProviderId-8eAif04 ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/UniversalAiModelListResult$Supported : com/myadidi/universalai/connector/UniversalAiModelListResult {
+	public final fun getModels ()Ljava/util/List;
+	public fun getProviderId-8eAif04 ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/UniversalAiModelListResult$Unsupported : com/myadidi/universalai/connector/UniversalAiModelListResult {
+	public fun getProviderId-8eAif04 ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/UniversalAiProviderConfiguration {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBaseUrl ()Ljava/lang/String;
+	public final fun getProviderId-8eAif04 ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/ModelId {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/ModelId$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/ModelId;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/ModelId$Companion {
+	public final fun of-BBjpWc4 (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/OutputId {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/OutputId$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/OutputId;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/OutputId$Companion {
+	public final fun of-2qaXBE8 (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/ProviderId {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/ProviderId$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/ProviderId;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/ProviderId$Companion {
+	public final fun of-ODAvVo4 (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/RequestId {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/RequestId$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/RequestId;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/RequestId$Companion {
+	public final fun of-7PuCnu0 (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/ResponseId {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/ResponseId$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/ResponseId;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/ResponseId$Companion {
+	public final fun of-PQJLeGw (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/StructuredOutputSchema {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/StructuredOutputSchema$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/StructuredOutputSchema$Companion {
+	public final fun parse (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/StructuredOutputSchema;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/StructuredOutputValue {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/StructuredOutputValue$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/StructuredOutputValue$Companion {
+	public final fun parse (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/StructuredOutputValue;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilityDeclaration {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilityDeclaration$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Lcom/myadidi/universalai/connector/contract/extension/Extensions;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getLimits ()Ljava/util/Map;
+	public final fun getSupport-bSTnV7E ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilityDeclaration$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilityLimitName {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilityLimitName$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilityLimitName;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilityLimitName$Companion {
+	public final fun getMaxSchemaBytes-lFIZLzo ()Ljava/lang/String;
+	public final fun getMaxSchemaDepth-lFIZLzo ()Ljava/lang/String;
+	public final fun of-ZygMk1M (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilityName {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilityName$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilityName;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilityName$Companion {
+	public final fun getStreaming-FUU1Ic4 ()Ljava/lang/String;
+	public final fun getStructuredOutput-FUU1Ic4 ()Ljava/lang/String;
+	public final fun of-q1LOInI (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilitySet {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun get-j4_avKg (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilityDeclaration;
+	public final fun getDeclarations ()Ljava/util/Map;
+	public final fun getSize ()I
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public final fun supportState-j4_avKg (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilitySet$Companion {
+	public final fun getEmpty ()Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public final fun of (Ljava/util/Map;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public final fun of ([Lkotlin/Pair;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public final fun resolve (Lcom/myadidi/universalai/connector/contract/UniversalAiProviderCapabilityProfile;Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public static synthetic fun resolve$default (Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet$Companion;Lcom/myadidi/universalai/connector/contract/UniversalAiProviderCapabilityProfile;Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;ILjava/lang/Object;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilitySupport {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupport$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupport;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public static final fun getSemanticState-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilitySupport$Companion {
+	public final fun getSupported-bSTnV7E ()Ljava/lang/String;
+	public final fun getUnknown-bSTnV7E ()Ljava/lang/String;
+	public final fun getUnsupported-bSTnV7E ()Ljava/lang/String;
+	public final fun of-oUSdPBc (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState : java/lang/Enum {
+	public static final field SUPPORTED Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+	public static final field UNKNOWN Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+	public static final field UNSUPPORTED Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+	public static fun values ()[Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySupportState;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCompletionReason {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiCompletionReason$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiCompletionReason;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiCompletionReason$Companion {
+	public final fun getContentFilter-HqZTQUk ()Ljava/lang/String;
+	public final fun getMaxOutputTokens-HqZTQUk ()Ljava/lang/String;
+	public final fun getStop-HqZTQUk ()Ljava/lang/String;
+	public final fun of-GFqJYMA (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiError {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiError$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;Lcom/myadidi/universalai/connector/contract/extension/Extensions;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCategory-c6lRe_Q ()Ljava/lang/String;
+	public final fun getCode-V6ZKjOU ()Ljava/lang/String;
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getMetadata ()Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiError$Companion {
+	public final fun fromJson (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiError;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiErrorCategory {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiErrorCategory$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiErrorCategory;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiErrorCategory$Companion {
+	public final fun getAuthentication-c6lRe_Q ()Ljava/lang/String;
+	public final fun getAuthorization-c6lRe_Q ()Ljava/lang/String;
+	public final fun getInternal-c6lRe_Q ()Ljava/lang/String;
+	public final fun getNotFound-c6lRe_Q ()Ljava/lang/String;
+	public final fun getProtocol-c6lRe_Q ()Ljava/lang/String;
+	public final fun getProvider-c6lRe_Q ()Ljava/lang/String;
+	public final fun getRateLimit-c6lRe_Q ()Ljava/lang/String;
+	public final fun getTransport-c6lRe_Q ()Ljava/lang/String;
+	public final fun getValidation-c6lRe_Q ()Ljava/lang/String;
+	public final fun of-0aHF2Ws (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiErrorCode {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiErrorCode$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiErrorCode;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiErrorCode$Companion {
+	public final fun getConnectionTimeout-V6ZKjOU ()Ljava/lang/String;
+	public final fun getConnectorFailure-V6ZKjOU ()Ljava/lang/String;
+	public final fun getIncompleteStream-V6ZKjOU ()Ljava/lang/String;
+	public final fun getInvalidInput-V6ZKjOU ()Ljava/lang/String;
+	public final fun getInvalidRequest-V6ZKjOU ()Ljava/lang/String;
+	public final fun getInvalidStreamSequence-V6ZKjOU ()Ljava/lang/String;
+	public final fun getRequestTimeout-V6ZKjOU ()Ljava/lang/String;
+	public final fun getSimulatedFailure-V6ZKjOU ()Ljava/lang/String;
+	public final fun getTransportFailure-V6ZKjOU ()Ljava/lang/String;
+	public final fun getUnsupportedTerminalEvent-V6ZKjOU ()Ljava/lang/String;
+	public final fun of-2S7o8rI (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiException : java/lang/Exception {
+	public fun <init> (Lcom/myadidi/universalai/connector/contract/UniversalAiError;)V
+	public final fun getError ()Lcom/myadidi/universalai/connector/contract/UniversalAiError;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiGenerationParameters {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiGenerationParameters$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMaxOutputTokens ()Ljava/lang/Integer;
+	public final fun getStopSequences ()Ljava/util/List;
+	public final fun getTemperature ()Ljava/lang/Double;
+	public final fun getTopP ()Ljava/lang/Double;
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiGenerationParameters$Companion {
+	public final fun getDefault ()Lcom/myadidi/universalai/connector/contract/UniversalAiGenerationParameters;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiInputRole {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiInputRole$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiInputRole;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiInputRole$Companion {
+	public final fun getAssistant-vpXlmGY ()Ljava/lang/String;
+	public final fun getDeveloper-vpXlmGY ()Ljava/lang/String;
+	public final fun getSystem-vpXlmGY ()Ljava/lang/String;
+	public final fun getUser-vpXlmGY ()Ljava/lang/String;
+	public final fun of-lASNTWM (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiModelDescriptor {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiModelDescriptor$Companion;
+	public fun <init> (Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiModelTokenLimits;Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;Lcom/myadidi/universalai/connector/contract/extension/Extensions;)V
+	public synthetic fun <init> (Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiModelTokenLimits;Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public final fun getContractVersion ()Ljava/lang/String;
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getLimits ()Lcom/myadidi/universalai/connector/contract/UniversalAiModelTokenLimits;
+	public final fun getTarget ()Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiModelDescriptor$Companion {
+	public final fun fromJson (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiModelDescriptor;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiModelTokenLimits {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiModelTokenLimits$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Long;Ljava/lang/Long;Ljava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/Long;Ljava/lang/Long;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContextWindowTokens ()Ljava/lang/Long;
+	public final fun getMaxInputTokens ()Ljava/lang/Long;
+	public final fun getMaxOutputTokens ()Ljava/lang/Long;
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiModelTokenLimits$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiOutput {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiOutput$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getId-KRC8atg ()Ljava/lang/String;
+	public final fun getIndex ()I
+	public final fun getKind-XBSDxz0 ()Ljava/lang/String;
+	public final fun getStructuredJson ()Lcom/myadidi/universalai/connector/contract/StructuredOutputValue;
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiOutput$Companion {
+	public final fun future-0a0F_cI (Ljava/lang/String;ILjava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/Extensions;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+	public static synthetic fun future-0a0F_cI$default (Lcom/myadidi/universalai/connector/contract/UniversalAiOutput$Companion;Ljava/lang/String;ILjava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILjava/lang/Object;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public final fun structuredJson-vub5WEI (Ljava/lang/String;ILcom/myadidi/universalai/connector/contract/StructuredOutputValue;Lcom/myadidi/universalai/connector/contract/extension/Extensions;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+	public static synthetic fun structuredJson-vub5WEI$default (Lcom/myadidi/universalai/connector/contract/UniversalAiOutput$Companion;Ljava/lang/String;ILcom/myadidi/universalai/connector/contract/StructuredOutputValue;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILjava/lang/Object;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+	public final fun text-vub5WEI (Ljava/lang/String;ILjava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/Extensions;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+	public static synthetic fun text-vub5WEI$default (Lcom/myadidi/universalai/connector/contract/UniversalAiOutput$Companion;Ljava/lang/String;ILjava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILjava/lang/Object;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiOutputKind {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiOutputKind$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiOutputKind;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiOutputKind$Companion {
+	public final fun getStructuredJson-XBSDxz0 ()Ljava/lang/String;
+	public final fun getText-XBSDxz0 ()Ljava/lang/String;
+	public final fun of-q3YN5ro (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiProviderCapabilityProfile {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiProviderCapabilityProfile$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;Lcom/myadidi/universalai/connector/contract/extension/Extensions;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCapabilities ()Lcom/myadidi/universalai/connector/contract/UniversalAiCapabilitySet;
+	public final fun getContractVersion ()Ljava/lang/String;
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getProviderId-8eAif04 ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiProviderCapabilityProfile$Companion {
+	public final fun fromJson (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiProviderCapabilityProfile;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiRequest {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiRequest$Companion;
+	public fun <init> (Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/util/List;Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat;Lcom/myadidi/universalai/connector/contract/UniversalAiGenerationParameters;Lcom/myadidi/universalai/connector/contract/extension/Extensions;)V
+	public synthetic fun <init> (Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/util/List;Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat;Lcom/myadidi/universalai/connector/contract/UniversalAiGenerationParameters;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContractVersion ()Ljava/lang/String;
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getGeneration ()Lcom/myadidi/universalai/connector/contract/UniversalAiGenerationParameters;
+	public final fun getInput ()Ljava/util/List;
+	public final fun getResponseFormat ()Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat;
+	public final fun getTarget ()Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiRequest$Companion {
+	public final fun fromJson (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiRequest;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiResponse {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiResponse$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/util/List;Lcom/myadidi/universalai/connector/contract/UniversalAiUsage;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/util/List;Lcom/myadidi/universalai/connector/contract/UniversalAiUsage;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/Extensions;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCompletionReason-HqZTQUk ()Ljava/lang/String;
+	public final fun getContractVersion ()Ljava/lang/String;
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getId-tZDm7Ro ()Ljava/lang/String;
+	public final fun getOutputs ()Ljava/util/List;
+	public final fun getRequestId-1KG9kfE ()Ljava/lang/String;
+	public final fun getTarget ()Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;
+	public final fun getUsage ()Lcom/myadidi/universalai/connector/contract/UniversalAiUsage;
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiResponse$Companion {
+	public final fun fromJson (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiResponse;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiResponseFormat {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKind-293izjI ()Ljava/lang/String;
+	public final fun getSchema ()Lcom/myadidi/universalai/connector/contract/StructuredOutputSchema;
+	public fun hashCode ()I
+	public final fun isKnown ()Z
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiResponseFormat$Companion {
+	public final fun future-3b4p_6c (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat;
+	public final fun getPlainText ()Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat;
+	public final fun jsonSchema (Lcom/myadidi/universalai/connector/contract/StructuredOutputSchema;)Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormat;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiResponseFormatKind {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormatKind$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiResponseFormatKind;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiResponseFormatKind$Companion {
+	public final fun getJsonSchema-293izjI ()Ljava/lang/String;
+	public final fun getPlainText-293izjI ()Ljava/lang/String;
+	public final fun of-LC6G5io (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiStreamEvent {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiStreamEvent$Companion;
+	public synthetic fun <init> (Ljava/lang/String;ZJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;Lcom/myadidi/universalai/connector/contract/UniversalAiUsage;Lcom/myadidi/universalai/connector/contract/UniversalAiResponse;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;ZJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;Lcom/myadidi/universalai/connector/contract/UniversalAiUsage;Lcom/myadidi/universalai/connector/contract/UniversalAiResponse;Lcom/myadidi/universalai/connector/contract/extension/Extensions;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContractVersion ()Ljava/lang/String;
+	public final fun getDelta ()Ljava/lang/String;
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getOutput ()Lcom/myadidi/universalai/connector/contract/UniversalAiOutput;
+	public final fun getOutputId-QqLJItg ()Ljava/lang/String;
+	public final fun getOutputIndex ()Ljava/lang/Integer;
+	public final fun getRequestId-1KG9kfE ()Ljava/lang/String;
+	public final fun getResponse ()Lcom/myadidi/universalai/connector/contract/UniversalAiResponse;
+	public final fun getResponseId-tZDm7Ro ()Ljava/lang/String;
+	public final fun getSequence ()J
+	public final fun getTerminal ()Z
+	public final fun getType-frzlWcY ()Ljava/lang/String;
+	public final fun getUsage ()Lcom/myadidi/universalai/connector/contract/UniversalAiUsage;
+	public fun hashCode ()I
+	public final fun toJson ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiStreamEvent$Companion {
+	public final fun fromJson (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiStreamEvent;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiStreamEventType {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiStreamEventType$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiStreamEventType;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun isKnown-impl (Ljava/lang/String;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiStreamEventType$Companion {
+	public final fun getOutputCompleted-frzlWcY ()Ljava/lang/String;
+	public final fun getOutputDelta-frzlWcY ()Ljava/lang/String;
+	public final fun getOutputStarted-frzlWcY ()Ljava/lang/String;
+	public final fun getResponseCompleted-frzlWcY ()Ljava/lang/String;
+	public final fun getResponseStarted-frzlWcY ()Ljava/lang/String;
+	public final fun getUsageUpdated-frzlWcY ()Ljava/lang/String;
+	public final fun of-0mBloxw (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiStreamSequenceValidator {
+	public fun <init> ()V
+	public final fun accept (Lcom/myadidi/universalai/connector/contract/UniversalAiStreamEvent;)V
+	public final fun finish ()V
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiTarget {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiTarget$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-8eAif04 ()Ljava/lang/String;
+	public final fun component2-v7mc3Ec ()Ljava/lang/String;
+	public final fun copy-_s67rz8 (Ljava/lang/String;Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;
+	public static synthetic fun copy-_s67rz8$default (Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getModelId-v7mc3Ec ()Ljava/lang/String;
+	public final fun getProviderId-8eAif04 ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/myadidi/universalai/connector/contract/UniversalAiTarget$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/myadidi/universalai/connector/contract/UniversalAiTarget$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/myadidi/universalai/connector/contract/UniversalAiTarget;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiTarget$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiTextInput {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-vpXlmGY ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy-OelAyw8 (Ljava/lang/String;Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput;
+	public static synthetic fun copy-OelAyw8$default (Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContent ()Ljava/lang/String;
+	public final fun getRole-vpXlmGY ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/myadidi/universalai/connector/contract/UniversalAiTextInput$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/myadidi/universalai/connector/contract/UniversalAiTextInput;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiTextInput$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiUsage {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/UniversalAiUsage$Companion;
+	public fun <init> (JJJLjava/util/Map;Ljava/util/Map;Lcom/myadidi/universalai/connector/contract/extension/Extensions;)V
+	public synthetic fun <init> (JJJLjava/util/Map;Ljava/util/Map;Lcom/myadidi/universalai/connector/contract/extension/Extensions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getExtensions ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun getInputDetails ()Ljava/util/Map;
+	public final fun getInputTokens ()J
+	public final fun getOutputDetails ()Ljava/util/Map;
+	public final fun getOutputTokens ()J
+	public final fun getTotalTokens ()J
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/UniversalAiUsage$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionNamespace {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/extension/ExtensionNamespace$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionNamespace;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionNamespace$Companion {
+	public final fun of-I5trZEU (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionNumber {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/extension/ExtensionNumber$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionNumber;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getRawValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public static final fun toFiniteDoubleOrNull-impl (Ljava/lang/String;)Ljava/lang/Double;
+	public static final fun toLongOrNull-impl (Ljava/lang/String;)Ljava/lang/Long;
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionNumber$Companion {
+	public final fun of-f3GCLgw (D)Ljava/lang/String;
+	public final fun of-f3GCLgw (I)Ljava/lang/String;
+	public final fun of-f3GCLgw (J)Ljava/lang/String;
+	public final fun of-f3GCLgw (Ljava/lang/String;)Ljava/lang/String;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract class com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$Companion;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$ArrayValue : com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValues ()Ljava/util/List;
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$BooleanValue : com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Z
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$Companion {
+	public final fun array (Ljava/util/List;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ArrayValue;
+	public final fun array ([Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ArrayValue;
+	public final fun boolean (Z)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$BooleanValue;
+	public final fun number (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$NumberValue;
+	public final fun number-S6L7ICs (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$NumberValue;
+	public final fun objectValue (Ljava/util/Map;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;
+	public final fun objectValue ([Lkotlin/Pair;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public final fun string (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$StringValue;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$Null : com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public static final field INSTANCE Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$Null;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$NumberValue : com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue-QT03nZA ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue : com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public final fun array (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ArrayValue;
+	public final fun boolean (Ljava/lang/String;)Ljava/lang/Boolean;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun get (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue;
+	public final fun getMembers ()Ljava/util/Map;
+	public fun hashCode ()I
+	public final fun number-J6-frNs (Ljava/lang/String;)Ljava/lang/String;
+	public final fun objectValue (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;
+	public final fun string (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/ExtensionValue$StringValue : com/myadidi/universalai/connector/contract/extension/ExtensionValue {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/Extensions {
+	public static final field Companion Lcom/myadidi/universalai/connector/contract/extension/Extensions$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun get-AtckIGs (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;
+	public final fun getEntries ()Ljava/util/Map;
+	public final fun getSize ()I
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public final fun with-Q1bBTHM (Ljava/lang/String;Lcom/myadidi/universalai/connector/contract/extension/ExtensionValue$ObjectValue;)Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun without-AtckIGs (Ljava/lang/String;)Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+}
+
+public final class com/myadidi/universalai/connector/contract/extension/Extensions$Companion {
+	public final fun getEmpty ()Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun of (Ljava/util/Map;)Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun of ([Lkotlin/Pair;)Lcom/myadidi/universalai/connector/contract/extension/Extensions;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
