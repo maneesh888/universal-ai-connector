@@ -92,11 +92,12 @@ Use the smallest commands that exercise the changed surface:
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
 | Android live state and bootstrap | `./gradlew :samples:android:consumerCheck`; `python3 -B scripts/tests/android-live-seed-test.py`; build `:samples:android:assembleRelease` when changing the debug-only bootstrap boundary |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
+| Distribution identity, version, POM, assets, or host baselines | `./scripts/check-distribution-metadata.sh` and its metadata/readiness regressions; run `./scripts/check-distribution-readiness.sh` only on a credentialed release host |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
 The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM, Android, shared host controller, and desktop consumers. It validates the P8-D parity catalog against Kotlin test results. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests plus structured iOS parity evidence, the locally signed simulator sample build, and unsigned generic-device link verification.
 
-When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
+When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior. P8-E adds credential-free distribution metadata and fully stubbed readiness regressions to hygiene. Real target-scoped readiness probes are opt-in and do not run in ordinary CI; local artifact preparation establishes no remote distribution proof.
 
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
 `--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
@@ -113,6 +114,16 @@ P8 iOS, Android, JVM console, shared host controller, and desktop live-sample su
 initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.
+
+The OpenRouter live fixture shares a four-second request-start cadence across both adapter paths
+within its JVM, including discovery. It never retries a generation. A rate-limit response stops
+further fixture requests and leaves the gate failed; rerun only after diagnosing availability.
+Failure diagnostics retain only the rate-limit classification, bounded numeric status and
+`retryAfterMillis` when supplied. They exclude messages, request IDs, local configuration values,
+headers and provider bodies. These fields cannot distinguish every upstream throttle from an
+account quota. Pacing is outside the cancellation tests' observation windows and does not alter
+their assertions or production retry behavior. Coordinate separate live processes explicitly;
+this fixture does not impose a cross-process lock or control other applications' traffic.
 
 Machine-local live inputs persist only in the primary checkout path printed by
 `./scripts/local-config.sh live-env-path`. The helper derives that checkout from
@@ -172,8 +183,8 @@ These hook requirements are safety gates; they do not make every task a Release 
 `.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch:
 
 - `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
-- `JVM + Android (Linux)` runs shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer check with Java 21.
-- `JVM (Windows)` runs JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
+- `JVM + Android (Linux)` runs on Ubuntu 24.04 and checks shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer with Java 21.
+- `JVM (Windows)` runs on Windows Server 2025 and checks JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
 - `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
 - `Classify verification` selects trusted docs-only scope; platform jobs run for every other PR.
 - `Required checks` provides one stable branch-protection status and validates classified skips.

@@ -8,7 +8,13 @@ plugins {
     id("com.android.kotlin.multiplatform.library") version "9.3.1" apply false
 }
 
-group = "com.myadidi"
+group = providers.gradleProperty("GROUP").get()
+version = providers.gradleProperty("VERSION_NAME").get()
+
+subprojects {
+    group = rootProject.group
+    version = rootProject.version
+}
 
 if (JavaVersion.current() != JavaVersion.VERSION_21) {
     throw GradleException(

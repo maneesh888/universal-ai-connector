@@ -2,10 +2,10 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A through P8-D are completed in this candidate; no subsequent package is active.
+Status: `In progress`; P8-A through P8-D are authoritative; P8-E nonpublishing contract preparation is active.
 
-P0-P7 and P8-A through P8-C are authoritative; this candidate proposes P8-D completion. P8 remains the sole roadmap milestone marked `In progress`.
-P8-E through P8-L remain `Not started`, and P9 remains inactive until P8 closes
+P0-P7 and P8-A through P8-D are authoritative. PR #88 merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646` and resulting-main CI run 40956077878 passed. P8 remains the sole roadmap milestone marked `In progress`.
+P8-F through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
@@ -81,7 +81,7 @@ reduce the already accepted cross-platform package surface or authorize a new ho
 
 ### Kotlin and Android
 
-- The public root coordinate is `io.github.maneesh888:universal-ai-connector:<version>`.
+- The public root coordinate is `com.myadidi:universal-ai-connector:<version>`.
 - Maven Central is the supported remote repository. The Kotlin Multiplatform root publication owns
   Gradle metadata and selects the published JVM or Android variant for supported consumers.
 - The root, JVM, Android, `iosArm64`, and `iosSimulatorArm64` publications are uploaded together so
@@ -342,9 +342,7 @@ account UI, remote publication, or packaged distribution claim.
 
 ### P8-D: Cross-platform sample behavior parity
 
-Status: `Completed` in this candidate. Completion becomes authoritative only after
-exact-head full and applicable live verification, required CI, independent review, guarded
-merge, and resulting-main verification pass. The closing PR owns those evidence identities.
+Status: `Completed`, authoritative through PR #88 and successful resulting-main CI run 40956077878. The closing PR records the exact reviewed head, local full/live proof and matching merge tree.
 
 Activated October 29, 2026 for the requested release preparation. The authoritative
 [case catalog](../../samples/parity/cases.json) binds shared observable invariants to
@@ -367,7 +365,9 @@ claim.
 
 ### P8-E: Distribution contract and version freeze
 
-Status: `Not started`.
+Status: `In progress` for requested nonpublishing contract and Apple build preparation.
+
+The existing draft candidate is `0.1.0-0.p8.1`; owner approval of the exact immutable release version, artifacts and destinations remains required before publication. The namespace `com.myadidi` is already verified; see the nonsecret namespace evidence and target-scoped requirements in [the distribution contract](../DISTRIBUTION.md).
 
 - Freeze the disposable P8 proof version.
 - Add canonical group/version properties and record minimum JDK, Android, Kotlin, Swift, Xcode,
@@ -375,10 +375,16 @@ Status: `Not started`.
 - Freeze Maven coordinates, POM identity, Git tag and release-asset naming, desktop package IDs,
   signing identities, and required release inputs.
 - Add credential-free validation that versions and distribution metadata agree.
-- Confirm Central namespace ownership and macOS signing/notarization readiness without adding a
-  credential to the repository or ordinary CI.
+- Record verified Central namespace ownership and separate target-scoped credential readiness.
+  Library probes must not require desktop Developer ID/notarization; those remain requirements
+  for the macOS desktop publication path. Real authenticated probes require the appropriate
+  explicit host inputs and are separate from ordinary CI and local artifact preparation.
 
-P8-E adds no remote publication, remote Swift binary, desktop application, or release claim.
+P8-E adds no remote publication, remote Swift manifest, desktop application, or release claim.
+An existing release XCFramework build and temporary local archive/consumer may establish
+version consistency during preparation; they do not complete P8-G or remote distribution.
+The current unified publication prerequisites remain unchanged; a library-first shortcut must
+be an explicit scope/roadmap decision.
 
 ### P8-F: Reproducible Maven publication and Kotlin consumers
 

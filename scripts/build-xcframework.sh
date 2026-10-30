@@ -2,14 +2,23 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE="$ROOT/bridge/build/XCFrameworks/debug/UniversalAiConnectorBridge.xcframework"
+case "${1:---debug}" in
+  --debug) BUILD_TYPE=debug; BUILD_TASK=assembleUniversalAiConnectorBridgeDebugXCFramework ;;
+  --release) BUILD_TYPE=release; BUILD_TASK=assembleUniversalAiConnectorBridgeReleaseXCFramework ;;
+  *) echo "Usage: $0 [--debug|--release]" >&2; exit 2 ;;
+esac
+if [[ "$#" -gt 1 ]]; then
+  echo "Usage: $0 [--debug|--release]" >&2
+  exit 2
+fi
+SOURCE="$ROOT/bridge/build/XCFrameworks/$BUILD_TYPE/UniversalAiConnectorBridge.xcframework"
 DESTINATION="$ROOT/swift-package/Artifacts/UniversalAiConnectorBridge.xcframework"
 XCFRAMEWORK_INFO="$DESTINATION/Info.plist"
 
 # shellcheck source=xcframework-header-audit.sh
 source "$ROOT/scripts/xcframework-header-audit.sh"
 
-"$ROOT/gradlew" :bridge:assembleUniversalAiConnectorBridgeDebugXCFramework
+"$ROOT/gradlew" ":bridge:$BUILD_TASK"
 
 if [[ ! -d "$SOURCE" ]]; then
   echo "Expected XCFramework was not generated at: $SOURCE" >&2

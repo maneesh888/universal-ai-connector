@@ -7,7 +7,29 @@ plugins {
     id("com.android.kotlin.multiplatform.library")
 }
 
-group = "com.myadidi"
+val generatedVersionSource =
+    tasks.register("generateUniversalAiConnectorVersion") {
+        val outputDirectory = layout.buildDirectory.dir("generated/sources/uacVersion/commonMain/kotlin")
+        val libraryVersion = providers.gradleProperty("VERSION_NAME")
+
+        inputs.property("libraryVersion", libraryVersion)
+        outputs.dir(outputDirectory)
+
+        doLast {
+            val outputFile =
+                outputDirectory.get().file(
+                    "com/myadidi/universalai/connector/UniversalAiConnectorVersion.kt",
+                ).asFile
+            outputFile.parentFile.mkdirs()
+            outputFile.writeText(
+                """
+                package com.myadidi.universalai.connector
+
+                internal const val UNIVERSAL_AI_CONNECTOR_VERSION: String = "${libraryVersion.get()}"
+                """.trimIndent() + "\n",
+            )
+        }
+    }
 
 kotlin {
     val xcframework = XCFramework("UniversalAiConnectorBridge")
@@ -47,6 +69,10 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            kotlin.srcDir(generatedVersionSource)
+        }
+
         commonMain.dependencies {
             api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")

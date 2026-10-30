@@ -17,6 +17,13 @@ for forbidden in \
   'GATEWAY_API_KEY' \
   'GATEWAY_LIVE_MODEL' \
   'GATEWAY_LIVE_STRUCTURED_OUTPUT' \
+  'ORG_GRADLE_PROJECT_mavenCentralUsername' \
+  'ORG_GRADLE_PROJECT_mavenCentralPassword' \
+  'ORG_GRADLE_PROJECT_signingInMemoryKey' \
+  'ORG_GRADLE_PROJECT_signingInMemoryKeyPassword' \
+  'UAC_PGP_SIGNING_KEY_FINGERPRINT' \
+  'UAC_MACOS_SIGNING_IDENTITY' \
+  'UAC_NOTARY_KEYCHAIN_PROFILE' \
   '.env.live' \
   './scripts/check-live.sh' \
   ':bridge:openAiLiveTest' \
