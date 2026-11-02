@@ -18,7 +18,6 @@ import com.myadidi.universalai.connector.internal.provider.openaicompatible.Open
 import com.myadidi.universalai.connector.internal.transport.ConnectorTransport
 import com.myadidi.universalai.connector.internal.transport.ConnectorTransportRequest
 import com.myadidi.universalai.connector.internal.transport.ConnectorTransportResponse
-import com.myadidi.universalai.connector.internal.transport.createDefaultKtorTransport
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
@@ -169,7 +168,7 @@ class GatewayLiveTest {
     @Test
     fun cancellingActiveGatewayResponseRemainsCallerCancellation(): Unit = runBlocking {
         val gatewayResponseStarted = CompletableDeferred<Unit>()
-        val delegate = createDefaultKtorTransport()
+        val delegate = createGatewayDiagnosticTransport(sensitiveValues = { listOf(requiredEnvironment("GATEWAY_API_KEY"), requiredEnvironment("GATEWAY_LIVE_MODEL")) })
         val trackingTransport =
             object : ConnectorTransport {
                 override suspend fun <Result> execute(
@@ -218,11 +217,12 @@ class GatewayLiveTest {
 
     private fun connector(
         credential: String = requiredEnvironment("GATEWAY_API_KEY"),
-    ): UniversalAiConnector =
-        UniversalAiConnector(
+    ): GatewayDiagnosticClient =
+        GatewayDiagnosticClient(
             UniversalAiConnectorConfiguration(
                 providers = listOf(providerConfiguration(credential)),
             ),
+            sensitiveValues = { listOf(credential, requiredEnvironment("GATEWAY_LIVE_MODEL")) },
         )
 
     private fun providerConfiguration(credential: String): UniversalAiProviderConfiguration =

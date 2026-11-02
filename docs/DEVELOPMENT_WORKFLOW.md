@@ -160,6 +160,18 @@ Network failure has uncertain execution status and must not be retried automatic
 redaction/one-call fixtures run before live execution and in normal hygiene; only an explicit
 `--diagnose-once` invocation makes the one generation request. Never use a full push to trigger it.
 
+
+Gateway live fixtures additionally observe the platform engine's pre-response failure boundary
+before the production transport maps I/O errors to a fixed public exception. The test-only
+observer emits at most four allowlisted exception classes and fixed network-message
+classifications, a UTC timestamp and transport-attempt ordinal. It never copies raw messages,
+URLs, headers, credentials, model values, prompts or responses; secret-value collisions redact
+the result. Public exception mapping and request/response behavior remain unchanged. The
+fixture owns and closes its injected CIO engine and client wrapper. Caller cancellation remains
+cancellation; the observer adds no retry or request. This diagnostic covers failures before the
+engine returns a response, not arbitrary later response-body errors. Offline mock-engine proof
+establishes capture/redaction/cleanup behavior, not a live failure's cause.
+
 References: [OpenRouter limits](https://openrouter.ai/docs/api_reference/limits),
 [OpenRouter error fields](https://openrouter.ai/docs/api_reference/errors-and-debugging).
 
