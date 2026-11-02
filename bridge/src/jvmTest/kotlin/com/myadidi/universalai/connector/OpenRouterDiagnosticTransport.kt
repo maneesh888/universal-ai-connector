@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -67,8 +69,10 @@ internal class OpenRouterDiagnosticTransport(
                                 withTimeoutOrNull(1_000) {
                                     while (!complete && captured < prefix.size) reader.readChunk() ?: break
                                 }
-                            } catch (cancellation: CancellationException) {
-                                throw cancellation
+                            } catch (_: CancellationException) {
+                                // A reader-local cancellation must not mask the known HTTP failure
+                                // or prevent the rate-limit guard from latching.
+                                currentCoroutineContext().ensureActive()
                             } catch (_: Exception) { /* Keep original error and available metadata. */ }
                         }
                         val envelope = buildJsonObject {

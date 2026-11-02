@@ -18,6 +18,10 @@ import com.myadidi.universalai.connector.internal.transport.ConnectorTransportHe
 import com.myadidi.universalai.connector.internal.transport.ConnectorTransportRequest
 import com.myadidi.universalai.connector.internal.transport.ConnectorTransportResponse
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -103,6 +107,48 @@ class OpenRouterDiagnosticTransportTest {
     }
 
     @Test
+    fun readerLocalCancellationPreserves429AndFailStopGuard(): Unit = runBlocking {
+        val records = mutableListOf<String>()
+        val fake = FakeTransport(429, ERROR.encodeToByteArray(), onRead = { throw CancellationException("fixture reader-local cancellation") })
+        val configuration = UniversalAiProviderConfiguration(ProviderId.of("openai-compatible"), "https://openrouter.ai/api/v1") { KEY }
+        val guard = OpenRouterLiveRequestGuard(diagnostic = {})
+        UniversalAiConnector.createForTesting(
+            engineFactory = ::DeterministicConnectorEngine,
+            transport = OpenRouterDiagnosticTransport(fake, records::add),
+            ownership = ConnectorResourceOwnership.Owned,
+            providerRegistrations = listOf(builtInProviderRegistration(configuration)),
+        ).use { client ->
+            val failure = assertFailsWith<UniversalAiException> {
+                guard.request { client.respond(UniversalAiRequest(
+                    target = UniversalAiTarget(ProviderId.of("openai-compatible"), ModelId.of(MODEL)),
+                    input = listOf(UniversalAiTextInput(UniversalAiInputRole.User, PROMPT)),
+                )) }
+            }
+            assertEquals(UniversalAiErrorCategory.RateLimit, failure.error.category)
+            var reached = false
+            assertFailsWith<IllegalStateException> { guard.request { reached = true } }
+            assertFalse(reached)
+        }
+        assertEquals(1, fake.executions)
+        assertTrue(records.single().contains("\"http_status\":429"))
+    }
+
+    @Test
+    fun realCallerCancellationDuringDrainRemainsCancellationWithoutLogging(): Unit = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val records = mutableListOf<String>()
+        val fake = FakeTransport(429, ERROR.encodeToByteArray(), onRead = { started.complete(Unit); awaitCancellation() })
+        val transport = OpenRouterDiagnosticTransport(fake, records::add)
+        val pending = async { transport.execute(request()) { error("fixture original error") } }
+        withTimeout(2_000) { started.await() }
+        pending.cancel()
+        assertFailsWith<CancellationException> { pending.await() }
+        assertTrue(records.isEmpty())
+        transport.close()
+        assertEquals(1, fake.closes)
+    }
+
+    @Test
     fun stuckFormatterCannotBlockOriginalFailureOrLeakAChild(): Unit = runBlocking {
         for (program in listOf("import time; time.sleep(60)", "import sys,time; sys.stdout.write('x'*100000);sys.stdout.flush();time.sleep(60)")) {
             val records = mutableListOf<String>()
@@ -145,7 +191,7 @@ class OpenRouterDiagnosticTransportTest {
         assertFalse(records.single().contains("Google"))
     }
 
-    private class FakeTransport(private val status: Int, private val bytes: ByteArray) : ConnectorTransport {
+    private class FakeTransport(private val status: Int, private val bytes: ByteArray, private val onRead: (suspend () -> ByteArray?)? = null) : ConnectorTransport {
         var executions = 0
         var reads = 0
         var closes = 0
@@ -158,7 +204,7 @@ class OpenRouterDiagnosticTransportTest {
                 ConnectorTransportHeader("Set-Cookie", PRIVATE),
             ), ConnectorTransportChunkReader {
                 reads++
-                if (index >= bytes.size) null else bytes.copyOfRange(index, minOf(index + 1024, bytes.size)).also { index += it.size }
+                if (onRead != null) onRead() else if (index >= bytes.size) null else bytes.copyOfRange(index, minOf(index + 1024, bytes.size)).also { index += it.size }
             }))
         }
         override fun close() { closes++ }

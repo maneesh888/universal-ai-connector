@@ -195,6 +195,7 @@ if (signPublication) {
 
 
 tasks.withType<Test>().configureEach {
+    inputs.file(rootProject.file("scripts/openrouter-diagnostic.py"))
     systemProperty("uac.openrouter.diagnostic.script", rootProject.file("scripts/openrouter-diagnostic.py").absolutePath)
     val contractsDirectory = rootProject.layout.projectDirectory.dir("contracts")
     inputs.dir(contractsDirectory)
