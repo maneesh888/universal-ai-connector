@@ -196,6 +196,11 @@ bytes: its receipt records whether the archive matches the publisher checksum wi
 frozen-asset acceptance. It never updates the manifest, baseline or strict publisher receipt.
 This adds packaging proof and does not waive any existing deterministic gate.
 
+If Swift API extraction or comparison fails, CI retains its compiler log and normalized public
+API comparison/actual-surface reports with the failure evidence. These contain public declarations,
+not local configuration or provider content. The exact reviewed baseline assertion remains required;
+diagnostic collection never updates or accepts a different API.
+
 Strict `local --rebuild-check` requires the produced archive to match the frozen remote checksum
 and a forced Release rebuild to reproduce it. ZIP order, timestamps/modes and plist serialization/
 library-record ordering are canonicalized; compiler binaries and legal texts are not patched.

@@ -40,7 +40,11 @@ done
 for required in \
   'permissions:' \
   'contents: read' \
-  './scripts/check.sh --full'; do
+  './scripts/check.sh --full' \
+  'bridge/build/distribution/apple/*.log' \
+  'bridge/build/distribution/apple/swift-api-comparison.json' \
+  'bridge/build/distribution/apple/swift-public-api-actual.json' \
+  'bridge/build/distribution/apple/local-consumer/consumer.xcresult'; do
   if ! grep -Fq "$required" "$WORKFLOW"; then
     echo "Ordinary CI omitted a required read-only deterministic policy: $required" >&2
     exit 1

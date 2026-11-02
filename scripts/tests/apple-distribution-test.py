@@ -154,6 +154,25 @@ class AppleTests(unittest.TestCase):
             with self.assertRaises(apple.AppleError):
                 apple.verify_pins(record, version, revision)
 
+    def test_api_mismatch_retains_public_differences_without_accepting_or_rewriting_baseline(self):
+        expected = {"module": apple.PRODUCT, "symbols": {"s:kept": {"declaration": "func kept()"}, "s:removed": {}}, "relationships": []}
+        actual = {"module": apple.PRODUCT, "symbols": {"s:kept": {"declaration": "func kept() -> Int"}, "s:added": {}}, "relationships": [{"kind": "conformsTo", "source": "s:added", "target": "s:Sendable"}]}
+        untouched = copy.deepcopy(expected)
+        with self.assertRaises(apple.AppleError):
+            apple.verify_api(expected, actual, self.root)
+        report = json.loads((self.root / "swift-api-comparison.json").read_text())
+        self.assertEqual(report["addedSymbols"], ["s:added"])
+        self.assertEqual(report["removedSymbols"], ["s:removed"])
+        self.assertEqual(report["changedSymbols"], ["s:kept"])
+        self.assertTrue(report["relationshipsChanged"])
+        self.assertEqual(json.loads((self.root / "swift-public-api-actual.json").read_text()), actual)
+        self.assertEqual(expected, untouched)
+        apple.verify_api(expected, expected, self.root)
+        self.assertFalse((self.root / "swift-api-comparison.json").exists())
+        (self.root / "swift-api-comparison.json").symlink_to(self.root / "outside")
+        with self.assertRaises(apple.AppleError):
+            apple.verify_api(expected, actual, self.root)
+
     def test_build_proof_is_distinct_from_strict_publisher_and_remote_checksum_binding(self):
         actual = self.config | {"sha256": "a" * 64}
         frozen = self.config | {"sha256": "b" * 64}

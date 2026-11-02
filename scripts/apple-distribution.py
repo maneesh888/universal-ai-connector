@@ -287,8 +287,32 @@ def api_check(root, output, derived, create=False):
     if create and not baseline.exists():
         baseline.parent.mkdir(exist_ok=True)
         baseline.write_text(json.dumps(actual, indent=2) + "\n")
-    require(baseline.is_file() and not baseline.is_symlink() and json.loads(baseline.read_text()) == actual, "Supported Swift API differs from its reviewed baseline.")
+    require(baseline.is_file() and not baseline.is_symlink(), "Missing or linked supported Swift API baseline.")
+    verify_api(json.loads(baseline.read_text()), actual, output)
     return len(actual["symbols"])
+
+
+def verify_api(expected, actual, output):
+    """Retain public API evidence only; never relax the exact compatibility assertion."""
+    for name in ["swift-api-comparison.json", "swift-public-api-actual.json"]:
+        require(not (output / name).is_symlink(), "Linked API comparison output.")
+        (output / name).unlink(missing_ok=True)
+    if expected == actual:
+        return
+    old, new = expected["symbols"], actual["symbols"]
+    report = {
+        "expectedSymbols": len(old), "actualSymbols": len(new),
+        "addedSymbols": sorted(new.keys() - old.keys()),
+        "removedSymbols": sorted(old.keys() - new.keys()),
+        "changedSymbols": sorted(k for k in old.keys() & new.keys() if old[k] != new[k]),
+        "relationshipsChanged": expected["relationships"] != actual["relationships"],
+        "assertion": "exact reviewed public API equality remains required",
+    }
+    for name, value in [("swift-api-comparison.json", report), ("swift-public-api-actual.json", actual)]:
+        descriptor = os.open(output / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(descriptor, "w") as stream:
+            stream.write(json.dumps(value, indent=2) + "\n")
+    raise AppleError("Supported Swift API differs from its reviewed baseline; inspect generated public API comparison evidence.")
 
 
 def verify_pins(record, version, revision):
@@ -428,6 +452,10 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (AppleError, OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, subprocess.SubprocessError):
+    except AppleError as error:
+        # AppleError messages are fixed internal validation/stage labels, never upstream text.
+        print("Apple distribution validation failed: " + str(error) + " No publication was performed.", file=sys.stderr)
+        sys.exit(1)
+    except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, subprocess.SubprocessError):
         print("Apple distribution validation failed; inspect private generated diagnostics. No publication was performed.", file=sys.stderr)
         sys.exit(1)
