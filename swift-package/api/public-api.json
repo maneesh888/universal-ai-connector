@@ -1596,12 +1596,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB10ExtensionsV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB10ExtensionsV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1615,12 +1609,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB10JsonNumberV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB10JsonNumberV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1638,12 +1626,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB10JsonObjectV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB10JsonObjectV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1663,12 +1645,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB10OutputKindV",
       "target": "s:SY",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB10OutputKindV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1698,12 +1674,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB10ProviderIdV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB10ProviderIdV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1723,12 +1693,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB10ResponseIdV",
       "target": "s:SY",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB10ResponseIdV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1746,12 +1710,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB11StreamEventV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB11StreamEventV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1759,12 +1717,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB13CapabilitySetV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB13CapabilitySetV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1788,12 +1740,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB13ErrorCategoryV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1812,12 +1758,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB14CapabilityNameV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB14CapabilityNameV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1830,12 +1770,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB14ResponseFormatV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB14ResponseFormatV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1843,12 +1777,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB15ModelDescriptorV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1861,12 +1789,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB15ModelListResultO",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB15ModelListResultO",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1896,12 +1818,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB15StreamEventTypeV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1926,12 +1842,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB16CompletionReasonV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB16CompletionReasonV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1939,12 +1849,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -1968,12 +1872,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB17CapabilitySupportV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -1987,12 +1885,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2022,12 +1914,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2046,12 +1932,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2059,12 +1939,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB20GenerationParametersV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB20GenerationParametersV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2082,19 +1956,7 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
       "target": "s:s8SendableP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB21ProviderConfigurationV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2112,12 +1974,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2136,12 +1992,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2154,12 +2004,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2167,12 +2011,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2196,12 +2034,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2209,12 +2041,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB5UsageV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB5UsageV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2232,12 +2058,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB6OutputV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB6OutputV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2245,12 +2065,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB6TargetV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB6TargetV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2275,12 +2089,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB7ModelIdV",
       "target": "s:SY",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB7ModelIdV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2298,12 +2106,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB7RequestV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB7RequestV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2328,12 +2130,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB8OutputIdV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB8OutputIdV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2341,12 +2137,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB8ResponseV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB8ResponseV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2365,12 +2155,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB9ErrorCodeV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB9ErrorCodeV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2400,12 +2184,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB9InputRoleV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB9InputRoleV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2413,12 +2191,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB9JsonValueO",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB9JsonValueO",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2448,12 +2220,6 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB9RequestIdV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB9RequestIdV",
       "target": "s:s8SendableP",
       "constraints": []
     },
@@ -2466,19 +2232,7 @@
     {
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0aB9TextInputV",
-      "target": "s:s16SendableMetatypeP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0aB9TextInputV",
       "target": "s:s8SendableP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0abC13ConfigurationV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2491,12 +2245,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0abC5ErrorV",
       "target": "s:SQ",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnector0abC5ErrorV",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {
@@ -2509,12 +2257,6 @@
       "kind": "conformsTo",
       "source": "s:20UniversalAiConnector0abC5ErrorV",
       "target": "s:s8SendableP",
-      "constraints": []
-    },
-    {
-      "kind": "conformsTo",
-      "source": "s:20UniversalAiConnectorAAC",
-      "target": "s:s16SendableMetatypeP",
       "constraints": []
     },
     {

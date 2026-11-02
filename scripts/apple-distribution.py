@@ -150,7 +150,25 @@ def public_api(graphs):
             value = {k: relation[k] for k in ["kind", "source", "target"]} | {"constraints": relation.get("swiftConstraints", [])}
             relationships[json.dumps(value, sort_keys=True)] = value
     require(symbols, "Empty public Swift API.")
-    return {"module": PRODUCT, "symbols": dict(sorted(symbols.items())), "relationships": [relationships[k] for k in sorted(relationships) if relationships[k]["source"] in symbols]}
+    return {"module": PRODUCT, "symbols": dict(sorted(symbols.items())), "relationships": canonical_relationships([relationships[k] for k in sorted(relationships) if relationships[k]["source"] in symbols])}
+
+
+def canonical_relationships(records):
+    """SE-0470: Sendable already implies SendableMetatype on Swift 6.2.
+
+    Omit only that redundant edge when its otherwise-identical Sendable edge
+    remains. Explicit metatype-only API and differing conditional constraints stay.
+    """
+    entries = {json.dumps(row, sort_keys=True): row for row in records}
+    result = []
+    for key in sorted(entries):
+        row = entries[key]
+        redundant = (row.get("kind") == "conformsTo" and
+                     row.get("target") == "s:s16SendableMetatypeP" and
+                     json.dumps(row | {"target": "s:s8SendableP"}, sort_keys=True) in entries)
+        if not redundant:
+            result.append(row)
+    return result
 
 
 def run(root, output, name, command):

@@ -201,6 +201,13 @@ API comparison/actual-surface reports with the failure evidence. These contain p
 not local configuration or provider content. The exact reviewed baseline assertion remains required;
 diagnostic collection never updates or accepts a different API.
 
+The canonical surface omits only a redundant `SendableMetatype` conformance when an
+otherwise-identical `Sendable` conformance (same source and constraints) remains. Swift 6.2
+introduced that inherited relationship; Swift 6.1 omits it. Explicit metatype-only conformances,
+`Sendable` itself, declarations, generic/conditional constraints, availability and every other
+relationship remain checked. The reviewed migration removed exactly 43 redundant edges and changed
+none of the 264 symbols. See [Swift Evolution SE-0470](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0470-isolated-conformances.md).
+
 Strict `local --rebuild-check` requires the produced archive to match the frozen remote checksum
 and a forced Release rebuild to reproduce it. ZIP order, timestamps/modes and plist serialization/
 library-record ordering are canonicalized; compiler binaries and legal texts are not patched.

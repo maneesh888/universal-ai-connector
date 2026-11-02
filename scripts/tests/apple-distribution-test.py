@@ -19,6 +19,12 @@ apple = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(apple)
 
 
+def portability_graph(relationships):
+    return {"module": {"name": apple.PRODUCT}, "symbols": [
+        {"identifier": {"precise": name}, "accessLevel": "public", "kind": {"identifier": "swift.struct"}, "declarationFragments": [{"spelling": "struct " + name}]} for name in ["s:fixture", "s:other"]
+    ], "relationships": relationships}
+
+
 class AppleTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -172,6 +178,41 @@ class AppleTests(unittest.TestCase):
         (self.root / "swift-api-comparison.json").symlink_to(self.root / "outside")
         with self.assertRaises(apple.AppleError):
             apple.verify_api(expected, actual, self.root)
+
+    def test_swift_61_and_62_redundant_metatype_relationships_have_one_portable_form(self):
+        sendable = {"kind": "conformsTo", "source": "s:fixture", "target": "s:s8SendableP"}
+        metatype = sendable | {"target": "s:s16SendableMetatypeP"}
+        older = portability_graph([sendable])
+        newer = portability_graph([metatype, sendable])
+        expected = apple.public_api([older])
+        self.assertEqual(apple.public_api([newer]), expected)
+        newer["relationships"].reverse()
+        newer["symbols"].reverse()
+        self.assertEqual(apple.public_api([newer, older]), expected)
+        self.assertEqual(apple.public_api([older, newer]), expected)
+        self.assertEqual(expected["relationships"][0]["target"], "s:s8SendableP")
+
+    def test_portability_retains_explicit_metatype_and_different_source_constraint_kind_or_protocol(self):
+        sendable = {"kind": "conformsTo", "source": "s:fixture", "target": "s:s8SendableP"}
+        metatype = sendable | {"target": "s:s16SendableMetatypeP"}
+        self.assertEqual(apple.public_api([portability_graph([metatype])])["relationships"][0]["target"], metatype["target"])
+        for variant in [metatype | {"source": "s:other"}, metatype | {"swiftConstraints": [{"kind": "conformance", "lhs": "T", "rhs": "P"}]}, metatype | {"kind": "inheritsFrom"}, metatype | {"target": "s:other16SendableMetatypeP"}]:
+            actual = apple.public_api([portability_graph([sendable, variant])])
+            self.assertEqual(len(actual["relationships"]), 2)
+
+    def test_portability_cannot_hide_sendable_loss_or_other_public_api_changes(self):
+        sendable = {"kind": "conformsTo", "source": "s:fixture", "target": "s:s8SendableP"}
+        metatype = sendable | {"target": "s:s16SendableMetatypeP"}
+        base = portability_graph([sendable, metatype])
+        expected = apple.public_api([base])
+        variants = [portability_graph([metatype]), portability_graph([]), portability_graph([sendable | {"swiftConstraints": [{"kind": "conformance", "lhs": "T", "rhs": "Q"}]}, metatype]), portability_graph([sendable, metatype, sendable | {"target": "s:Hashable"}])]
+        for field, value in [("declarationFragments", [{"spelling": "struct Changed"}]), ("availability", [{"domain": "iOS", "introduced": {"major": 18}}]), ("swiftGenerics", {"constraints": [{"kind": "conformance", "lhs": "T", "rhs": "P"}]})]:
+            changed = copy.deepcopy(base)
+            changed["symbols"][0][field] = value
+            variants.append(changed)
+        for graph in variants:
+            with self.assertRaises(apple.AppleError):
+                apple.verify_api(expected, apple.public_api([graph]), self.root)
 
     def test_build_proof_is_distinct_from_strict_publisher_and_remote_checksum_binding(self):
         actual = self.config | {"sha256": "a" * 64}
