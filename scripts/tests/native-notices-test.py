@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('notices', ROOT / 'scripts/native-notices.py')
@@ -16,7 +17,9 @@ spec.loader.exec_module(notices)
 class NativeNoticesTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name)
+        # Match the CLI's canonical repository root; macOS TMPDIR can live below
+        # /var -> /private/var. Links inside the reviewed tree remain forbidden.
+        self.root = Path(self.temp.name).resolve()
         shutil.copytree(ROOT / 'distribution', self.root / 'distribution')
         shutil.copyfile(ROOT / 'LICENSE', self.root / 'LICENSE')
         self.manifest = self.root / 'distribution/licenses/manifest.json'
@@ -28,6 +31,20 @@ class NativeNoticesTest(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def test_legitimate_temp_parent_alias_uses_canonical_fixture_root(self):
+        real = self.root / 'real-temp-parent'
+        real.mkdir()
+        alias = self.root / 'temp-parent-alias'
+        alias.symlink_to(real, target_is_directory=True)
+        with patch.object(tempfile, 'tempdir', str(alias)):
+            fixture = NativeNoticesTest('test_stage_and_verify_exact_files')
+            try:
+                fixture.setUp()
+                self.assertEqual(fixture.root, fixture.root.resolve())
+                fixture.test_stage_and_verify_exact_files()
+            finally:
+                fixture.tearDown()
 
     def test_stage_and_verify_exact_files(self):
         notices.validate(self.root, self.resolved, self.destination)
