@@ -393,29 +393,42 @@ tasks.register<Test>("gatewayLiveTest") {
 // Bind bundled-native notice review to the actual resolved iOS link inputs.
 abstract class NativeNoticeInputs : DefaultTask() {
     @get:Input
-    abstract val rows: ListProperty<String>
+    abstract val identities: ListProperty<String>
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val artifacts: ConfigurableFileCollection
 
     @get:OutputFile
     abstract val destination: RegularFileProperty
 
     @TaskAction
     fun writeInventory() {
+        val filesByName = artifacts.files.groupBy { it.name }
+        val rows = identities.get().map { identity ->
+            val name = identity.substringAfterLast('\t')
+            val file = filesByName[name]?.singleOrNull()
+                ?: throw GradleException("Expected one native input for $name")
+            val hash = MessageDigest.getInstance("SHA-256")
+                .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
+            "$identity\t$hash"
+        }
         destination.get().asFile.apply {
             parentFile.mkdirs()
-            writeText(rows.get().sorted().joinToString("\n", postfix = "\n"))
+            writeText(rows.sorted().joinToString("\n", postfix = "\n"))
         }
     }
 }
 
 tasks.register<NativeNoticeInputs>("releaseNativeNoticeInputs") {
     destination.set(layout.buildDirectory.file("distribution/native-notice-inputs.tsv"))
-    rows.set(listOf("iosArm64CompileKlibraries", "iosSimulatorArm64CompileKlibraries").map { configurationName ->
+    artifacts.from(listOf("iosArm64CompileKlibraries", "iosSimulatorArm64CompileKlibraries")
+        .map { configurations.getByName(it).incoming.artifacts.artifactFiles })
+    identities.set(listOf("iosArm64CompileKlibraries", "iosSimulatorArm64CompileKlibraries").map { configurationName ->
         configurations.getByName(configurationName).incoming.artifacts.resolvedArtifacts.map { artifacts ->
             artifacts.map { artifact ->
                 val id = artifact.id.componentIdentifier as org.gradle.api.artifacts.component.ModuleComponentIdentifier
-                val hash = MessageDigest.getInstance("SHA-256")
-                    .digest(artifact.file.readBytes()).joinToString("") { "%02x".format(it) }
-                "$configurationName\t${id.group}:${id.module}:${id.version}\t${artifact.file.name}\t$hash"
+                "$configurationName\t${id.group}:${id.module}:${id.version}\t${artifact.file.name}"
             }
         }
     }.let { providersList ->

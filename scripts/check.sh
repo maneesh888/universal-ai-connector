@@ -73,6 +73,7 @@ run_hygiene() {
 }
 
 run_script_tests() {
+  "$ROOT/scripts/tests/native-notice-cache-test.sh"
   "$ROOT/scripts/tests/check-live-test.sh"
   "$ROOT/scripts/tests/launch-ios-live-sample-test.sh"
   "$ROOT/scripts/tests/ios-sample-result-test.sh"
