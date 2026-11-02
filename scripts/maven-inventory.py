@@ -35,6 +35,11 @@ def properties(path):
     return result
 
 
+def digest(manifest):
+    """Bind verification to the entire validated graph, including every payload hash."""
+    return hashlib.sha256(json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
 def reference(directory, url, repository):
     parsed = urllib.parse.urlsplit(url)
     require(not any([parsed.scheme, parsed.netloc, parsed.query, parsed.fragment]), "Metadata reference must be a local relative path.")
@@ -132,7 +137,10 @@ def verify_project_license(path, license_bytes):
 def validate(repository, group, version, metadata):
     require(group == "com.myadidi" and re.fullmatch(r"0\.1\.0-alpha\.0\.p8\.[1-9][0-9]*", version), "Invalid candidate identity.")
     require(metadata.get("RELEASE_SCOPE") == "libraries-first", "Publication scope is not the approved library scope.")
-    repository = Path(repository).resolve()
+    repository = Path(repository)
+    require(repository.is_dir() and not repository.is_symlink(), "Unsafe repository root.")
+    require(not any(p.is_symlink() for p in repository.rglob("*")), "Unsafe repository link.")
+    repository = repository.resolve()
     base = metadata["MAVEN_ARTIFACT_ID"]
     expected = {base: "jar", base + "-jvm": "jar", base + "-android": "aar", base + "-iosarm64": "klib", base + "-iossimulatorarm64": "klib"}
     group_dir = repository / group.replace(".", "/")

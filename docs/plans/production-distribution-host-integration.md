@@ -2,14 +2,16 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A through P8-D are authoritative; the explicitly requested P8-F unsigned local Maven preparation is active, building on the unmerged P8-E contract candidate.
+Status: `In progress`; P8-A through P8-D are authoritative; P8-F local Maven publication/signing preparation is active. PR #62 merged the unsigned preparation; signing readiness and final P8-E artifact/source freeze remain pending.
 
 P0-P7 and P8-A through P8-D are authoritative. PR #88 merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646` and resulting-main CI run 40956077878 passed. P8 remains the sole roadmap milestone marked `In progress`.
 P8-G through P8-L remain `Not started`, and P9 remains inactive until P8 closes
 authoritatively. On November 2 the owner approved a first public library prerelease at
 `0.1.0-alpha.0.p8.1`: Maven Central under `com.myadidi` and GitHub-hosted iOS SwiftPM,
 with unsigned iOS XCFrameworks. Desktop publication is deferred from that release, not
-removed from P8 completion. Credential setup, merge, upload and publication remain separately gated.
+removed from P8 completion. The later end-to-end release request authorizes routine repository and
+approved-version publication steps; private credential entry and sensitive transmissions still
+require their specific secure handoffs. Preparation merge is not a completed distribution freeze.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
 iOS sample-host workflow but adds no publication task, remote artifact, release tag, or supported
@@ -370,7 +372,7 @@ claim.
 
 ### P8-E: Distribution contract and version freeze
 
-Status: Version and libraries-first scope approved for preparation on November 2; signing identity, final artifact/source freeze and authoritative acceptance remain pending in draft PR #62. This is not a completed distribution freeze.
+Status: Version and libraries-first scope approved on November 2; unsigned preparation merged through PR #62 as `1732ee2d3b30ea153f075e27ae2c007d68175649`. Signing readiness, final artifact/source freeze and authoritative distribution acceptance remain pending. This is not a completed distribution freeze.
 
 The approved preparation version is `0.1.0-alpha.0.p8.1`, targeting public Maven Central and a public GitHub-hosted SwiftPM prerelease. This replaces the earlier numeric-first proof label to preserve ordering below P9 alpha.1 across ecosystems. Exact final artifacts, signing actions, merge, upload and publication still require their applicable gates. The namespace `com.myadidi` is already verified; see the nonsecret namespace evidence and target-scoped requirements in [the distribution contract](../DISTRIBUTION.md).
 
@@ -394,7 +396,7 @@ for later desktop publication and overall P8 closeout; no other verification gat
 
 ### P8-F: Reproducible Maven publication and Kotlin consumers
 
-Status: `In progress` for the explicit October 30 request to finish unsigned local Maven publication, metadata, inventory and standalone consumers. This requested nonpublishing preparation may build on the unmerged P8-E candidate; it does not make E authoritative, approve an immutable version, import signing keys or permit upload/publication. Signing and remote distribution remain unverified.
+Status: `In progress`. The unsigned local metadata/inventory/consumer preparation merged through PR #62 after full, all 28 selected live cases, independent review and exact-head CI. The November 2 end-to-end release request extends active F work to owner-operated prepared-byte signing. The local signing route is offline and does not create/import a key, upload a public identity or contact Central. Real signatures require the approved owner's private Terminal input and remain unverified; E/F completion and remote distribution are not claimed.
 
 - Configure the Kotlin Multiplatform root and every referenced JVM, Android, `iosArm64`, and
   `iosSimulatorArm64` publication with complete POM, sources, Central-compatible Javadoc, Gradle

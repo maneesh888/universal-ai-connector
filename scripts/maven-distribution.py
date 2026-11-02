@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unsigned local build/inventory/coordinate consumers. No remote publication route."""
+"""Local Maven build/inventory/consumers and owner-operated signing. Never uploads."""
 import argparse
 import hashlib
 import importlib.util
@@ -79,9 +79,24 @@ def android_test_passed(output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=["local"])
+    parser.add_argument("mode", choices=["local", "sign-local"])
     parser.add_argument("--android-runtime", metavar="EMULATOR_SERIAL")
     args = parser.parse_args()
+    if args.mode == "sign-local":
+        if args.android_runtime:
+            parser.error("sign-local does not install or run consumers.")
+        signing_spec = importlib.util.spec_from_file_location("maven_signing", ROOT / "scripts/maven-signing.py")
+        signing = importlib.util.module_from_spec(signing_spec)
+        signing_spec.loader.exec_module(signing)
+        try:
+            signing.main(ROOT, inventory, safe_environment())
+        except signing.CleanupError:
+            print("Dedicated signing agent cleanup failed or timed out. No signed output accepted; stop and clear only the dedicated signing home's agent before retrying. No upload occurred.", file=sys.stderr)
+            sys.exit(1)
+        except (signing.SigningError, OSError, ValueError, subprocess.SubprocessError, EOFError, KeyboardInterrupt, Warning):
+            print("Local signing stopped safely; no upload occurred. Check the public setup receipt and prepared source; do not paste secrets.", file=sys.stderr)
+            sys.exit(1)
+        return
     if sys.platform != "darwin":
         raise RuntimeError("Complete local publication proof currently requires a Mac for the accepted Apple targets.")
     props = inventory.properties(ROOT / "gradle.properties")
@@ -106,6 +121,7 @@ def main():
     inventory.prepare_unsigned(repository, (ROOT / "LICENSE").read_bytes())
     stages["license-preparation"] = "passed; unchanged MIT in all own archives"
     result = inventory.validate(repository, props["GROUP"], version, metadata)
+    inventory_digest = inventory.digest(result)
     (output / "inventory.json").write_text(json.dumps(result, indent=2) + "\n")
     jar = repository / props["GROUP"].replace(".", "/") / (metadata["MAVEN_ARTIFACT_ID"] + "-jvm") / version / (metadata["MAVEN_ARTIFACT_ID"] + "-jvm-" + version + ".jar")
     digest = hashlib.sha256(jar.read_bytes()).hexdigest()
@@ -127,8 +143,11 @@ def main():
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     if head != start_head:
         raise RuntimeError("HEAD changed during local Maven verification.")
+    verified = inventory.validate(repository, props["GROUP"], version, metadata)
+    if inventory.digest(verified) != inventory_digest:
+        raise RuntimeError("Prepared Maven bytes changed during consumer verification.")
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT))
-    receipt = {"head": head, "working_tree_dirty": start_dirty or dirty, "mode": "unsigned-local", "version": version, "stages": stages, "android_runtime": "passed" if args.android_runtime else "not run; compilation only", "signing_verified": False, "remote_distribution_verified": False}
+    receipt = {"head": head, "working_tree_dirty": start_dirty or dirty, "mode": "unsigned-local", "version": version, "inventory_sha256": inventory_digest, "stages": stages, "android_runtime": "passed" if args.android_runtime else "not run; compilation only", "signing_verified": False, "remote_distribution_verified": False}
     (output / "verification.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print(json.dumps(receipt))
 

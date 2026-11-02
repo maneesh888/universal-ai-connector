@@ -9,8 +9,11 @@ The shared `alpha` qualifier with numeric `0` keeps this P8 proof before P9's re
 `0.1.0-alpha.1` under SemVer and Maven's documented qualifier ordering.
 `gradle.properties` owns the canonical group and version; builds derive Kotlin runtime and
 host version metadata from those properties. This candidate is reviewable preparation;
-version/scope approval does not authorize credential creation/import, signing, merge, upload or
-publication. Final artifact/source identity and those actions retain their separate approval gates.
+version/scope approval alone does not authorize credential or release operations. The owner's later
+end-to-end release instruction authorizes routine repository and approved-version publication steps;
+private credential entry and sensitive transmission still require their applicable secure handoffs.
+PR #62 merged the preparation as `1732ee2d3b30ea153f075e27ae2c007d68175649` after exact-head full,
+all 28 selected live tests, independent review and required CI. This is not distribution acceptance.
 
 ## Approved preparation identity
 
@@ -171,9 +174,50 @@ the owner has approved the precise key action. This preparation has not parsed/i
 signed anything. The public key/fingerprint and real signature validation still need a secure
 approved handoff, followed by credentialed Portal validation before any upload or release.
 
-The version and libraries-first scope are approved for preparation. The contract PR remains held;
-no signing-key/token creation or import, merge, upload or publication has been approved. These
-local operations create no immutable public artifacts.
+The version and libraries-first scope are approved. Preparation PR #62 is merged; the owner's
+release-completion instruction supersedes its earlier draft hold. Owner-operated private signing-key
+setup is approved, but key availability and token readiness have not been confirmed by this preparation.
+Sensitive token transmission and public-key identity upload retain specific handoffs. These local
+operations create no immutable public artifacts.
+
+### Owner-operated signing of prepared bytes
+
+The local signing route consumes the license-prepared graph, without invoking Gradle publication
+again or rewriting signed payloads:
+
+```bash
+./scripts/check-maven-distribution.sh local
+./scripts/check-maven-distribution.sh sign-local
+```
+
+Run the second command yourself in an interactive Mac Terminal, from a clean frozen commit after
+unsigned verification succeeds on that exact head. It requires the approved setup helper's protected
+`setup-complete.json` under the dedicated `~/.config/universal-ai-connector/signing` folder. It
+compares the public receipt with the existing RSA-4096 signing primary, identity and expiration;
+the identity is not embedded in repository configuration. It neither creates nor imports a key.
+Enter the existing passphrase at the hidden prompt. No passphrase is accepted in command arguments,
+environment inputs or a credential file; the script does not export the private key.
+
+Unsigned verification records the canonical inventory digest and rechecks it after all consumers.
+Signing requires a fresh match to those accepted bytes; a valid same-version rebuild cannot reuse
+an older consumer receipt. Older receipts without the digest require fresh unsigned verification.
+
+The route serializes owner sessions across linked worktrees using the shared protected signing
+store, copies the 28 inventoried payloads and their checksums, signs
+each copy with an armored SHA-512 detached signature, verifies its exact fingerprint and bytes,
+and checks source stability. It stops only the dedicated home's agent before accepting output.
+Tampering, wrong identity, signature failure or failed agent cleanup leaves no accepted signed
+output. Existing output is never overwritten. Inspect an existing result or interrupted lock
+before retrying; do not remove it blindly.
+
+Successful output is confined to ignored `bridge/build/distribution/signed-maven`: the repository,
+`central-bundle.zip` and a public verification receipt containing source/tree identities and hashes.
+The bundle excludes the receipt and repository-managed Maven metadata. Offline fixtures validate
+these controls with synthetic signatures and mocked GnuPG, not a real signing key. Actual signing
+and Portal validation remain unverified until the owner-operated path runs successfully. The route
+has no HTTP, keyserver, token or upload action; a local signed bundle is not public resolution proof.
+
+Signing reference: [Central PGP requirements](https://central.sonatype.org/publish/requirements/gpg/).
 
 Sources: [KMP publication](https://kotlinlang.org/docs/multiplatform/multiplatform-publish-lib-setup.html),
 [Android KMP publication](https://developer.android.com/kotlin/multiplatform/plugin),

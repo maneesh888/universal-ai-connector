@@ -94,6 +94,21 @@ class InventoryTests(unittest.TestCase):
         self.assertFalse(result["signatures_verified"])
         self.assertFalse(result["remote_distribution_verified"])
 
+    def test_inventory_identity_changes_for_an_otherwise_valid_same_version_rebuild(self):
+        before = inv.digest(self.run_check())
+        docs = self.root_file("-javadoc.jar")
+        docs.write_bytes(zipped({"index.html": "API documentation", "client.html": "rebuilt documentation", "META-INF/LICENSE": (inv.ROOT / "LICENSE").read_bytes()}))
+        self.rehash()
+        after = self.run_check()
+        self.assertEqual(len(after["artifacts"]), 28)
+        self.assertNotEqual(before, inv.digest(after))
+
+    def test_linked_repository_root_is_not_validated(self):
+        alias = self.repo.parent / "alias"
+        alias.symlink_to(self.repo, target_is_directory=True)
+        with self.assertRaises(inv.InventoryError):
+            inv.validate(alias, GROUP, VERSION, META)
+
     def test_license_preparation_is_idempotent_and_ordinary_consumer_gets_license(self):
         before = {str(p): p.read_bytes() for p in self.repo.rglob('*') if p.is_file()}
         inv.prepare_unsigned(self.repo, (inv.ROOT / 'LICENSE').read_bytes())

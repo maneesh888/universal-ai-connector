@@ -2,10 +2,10 @@
 
 ## Status
 
-- Repository stage: P0-P7 are completed; P8 is in progress with P8-A through P8-D authoritative and P8-F unsigned local Maven preparation active on the unmerged P8-E contract candidate; P9 remains not started
+- Repository stage: P0-P7 are completed; P8 is in progress with P8-A through P8-D authoritative and P8-F local Maven publication/signing preparation active; P9 remains not started
 - Current implementation: the accepted P1 host baseline, P2 canonical-contract baseline, completed P3 provider-neutral transport foundation, completed P4 OpenAI Responses adapter, completed P5 Anthropic adapter, completed P6 direct OpenRouter and generic OpenAI-compatible adapters, completed P7 Gateway validation, and the accepted P8-A iOS, P8-B Android, and P8-C Kotlin/JVM console and Compose desktop implementations
-- Active requested work package: P8-F unsigned local Maven publication and coordinate-consumer preparation; P8-E remains an unmerged contract candidate with version/scope approved and signing/final artifact acceptance pending. P8-D is authoritative through PR #88, merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646`, and successful resulting-main CI run 40956077878. P8-G through P8-L remain not started.
-- Approved release preparation (November 2, 2026): `0.1.0-alpha.0.p8.1` for public Maven Central and GitHub-hosted SwiftPM, with unsigned iOS XCFrameworks; desktop publication is deferred from this libraries-first prerelease and remains required for P8 completion. No credential creation/import, merge, upload or publication authority is implied.
+- Active requested work package: P8-F local Maven publication, coordinate consumers and owner-operated prepared-byte signing. PR #62 merged the validated unsigned preparation as `1732ee2d3b30ea153f075e27ae2c007d68175649`; resulting-main verification is tracked by [CI run 41447350341](https://github.com/maneesh888/universal-ai-connector/actions/runs/41447350341). P8-E version/scope is approved, but signing readiness and final artifact/source acceptance remain pending. P8-D is authoritative through PR #88, merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646`, and successful resulting-main CI run 40956077878. P8-G through P8-L remain not started.
+- Approved release scope (November 2, 2026): `0.1.0-alpha.0.p8.1` for public Maven Central and GitHub-hosted SwiftPM, with unsigned iOS XCFrameworks; desktop publication is deferred from this libraries-first prerelease and remains required for P8 completion. The later release-completion instruction authorizes routine repository/release steps; private credential entry and sensitive transmissions retain their specific secure handoffs.
 - P8-C closeout authority: the API-only acceptance decision and revision-bound Windows/macOS/Ubuntu evidence are recorded in [the closeout record](../verification/p8c-api-acceptance.md); completion becomes authoritative after the documentation closing head passes full verification, independent review, required CI, guarded merge, and resulting-main verification, recorded in the closing PR brief
 - P8-B closeout authority: the Android completion proposed in PR #75 becomes authoritative only after exact-head full/live and emulator acceptance, independent review, required CI, guarded merge, and resulting-main verification; the PR brief owns the closing SHA and evidence
 - Accepted Apple surface: PR [#9](https://github.com/maneesh888/universal-ai-connector/pull/9) passed local full verification, independent exact-head review, and exact-head GitHub Actions run [29826390650](https://github.com/maneesh888/universal-ai-connector/actions/runs/29826390650), then merged July 21, 2026
@@ -45,7 +45,7 @@
 - Initial host surfaces: Android, iOS, and Kotlin/JVM on Linux, Windows, and macOS
 - OpenAI-compatible Gateway validation is complete. P8 is delivering live model discovery and
   exact-model connection flows sequentially, with P8-A iOS, P8-B Android, and P8-C Kotlin/JVM
-  console and Compose desktop completed. Cross-platform parity is authoritative; P8-F unsigned local Maven preparation is active; the P8-E contract candidate is not yet authoritative. OpenKeyboard integration remains deferred.
+  console and Compose desktop completed. Cross-platform parity is authoritative; P8-F Maven preparation is active; P8-E final freeze remains pending. OpenKeyboard integration remains deferred.
 
 This document is the package repository's source of truth for implementation order. Complete one work package at a time and record verification evidence before advancing. Task modes, lifecycle automation, and reporting are defined in `AGENTS.md` and `docs/DEVELOPMENT_WORKFLOW.md`.
 
@@ -157,7 +157,7 @@ After the draft pull request is created, a separate secretless workflow must cla
 | P5 | Anthropic adapter | Completed | Internal Messages request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P6 | OpenRouter and OpenAI-compatible adapters | Completed | Internal direct and generic Chat Completions request, response, structured-output, error, capability, streaming, cancellation, lifecycle, secret-safety, live-evidence, and package-boundary behavior; exact-head closeout evidence belongs in the milestone-closing pull-request brief |
 | P7 | OpenAI-compatible Gateway validation | Completed | P7-A through P7-C are authoritative; PR #59 closed the lifecycle and acceptance milestone; see `openai-compatible-gateway-validation.md` |
-| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; P8-C is complete under the API-only acceptance decision, using revision-bound Windows PR #77 and macOS/Ubuntu evidence plus successful PR #77 resulting-main CI; see [P8-C acceptance](../verification/p8c-api-acceptance.md); P8-D parity is authoritative through PR #88 and successful resulting-main CI; P8-F unsigned local Maven preparation is active on the unmerged E candidate; publication remains unverified |
+| P8 | Production distribution and host integration | In progress | P8-A iOS is accepted through PR #69; P8-B Android closeout is recorded in PR #75; P8-C is complete under the API-only acceptance decision, using revision-bound Windows PR #77 and macOS/Ubuntu evidence plus successful PR #77 resulting-main CI; see [P8-C acceptance](../verification/p8c-api-acceptance.md); P8-D parity is authoritative through PR #88 and successful resulting-main CI; unsigned Maven preparation merged through PR #62, with P8-F prepared-byte signing active and E final freeze pending; publication remains unverified |
 | P9 | Release hardening and internal alpha | Not started | |
 | P10 | Multimodal inputs | Not started | Image and audio are the initial priority; document and video extensions remain deferred |
 | P11 | Native on-device AI | Not started | Direct Apple Foundation Models and Android ML Kit integration; lightweight adapters and explicit output-format semantics |
@@ -276,7 +276,7 @@ package boundaries without activating P8.
 ## P8: Production distribution and host integration
 
 Use the bounded work packages in `production-distribution-host-integration.md`. P8-A activated P8
-as the sole milestone marked `In progress`. P8-A through P8-D are authoritative. P8-F unsigned local Maven preparation is active; P8-G through P8-L
+as the sole milestone marked `In progress`. P8-A through P8-D are authoritative. P8-F local Maven publication/signing preparation is active; P8-G through P8-L
 remain `Not started`.
 
 Harden and distribute the product-facing Swift façade and combined device-and-simulator XCFramework established in P1. Publish Android/JVM artifacts through documented Maven coordinates and Apple artifacts through a remote Swift Package. Add an installable Compose Multiplatform desktop demonstration application for macOS, Windows, and Linux. Define signing and checksums where required, synchronized versioning, API compatibility policy, and clean-consumer compatibility tests.

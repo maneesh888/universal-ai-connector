@@ -32,6 +32,7 @@ run_hygiene() {
   python3 -I -B "$ROOT/scripts/tests/native-notices-test.py"
   python3 -I -B "$ROOT/scripts/tests/maven-inventory-test.py"
   python3 -I -B "$ROOT/scripts/tests/maven-distribution-test.py"
+  python3 -I -B "$ROOT/scripts/tests/maven-signing-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
