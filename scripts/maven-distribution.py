@@ -103,17 +103,24 @@ def main():
     stages = {}
     run("metadata", [str(ROOT / "scripts/check-distribution-metadata.sh")], logs, environment, stages)
     run("producer", [str(ROOT / "gradlew"), ":bridge:publishAllPublicationsToLocalReleaseRepository", ":bridge:checkKotlinAbi", "-PuacSignPublication=false"], logs, environment, stages)
+    inventory.prepare_unsigned(repository, (ROOT / "LICENSE").read_bytes())
+    stages["license-preparation"] = "passed; unchanged MIT in all own archives"
     result = inventory.validate(repository, props["GROUP"], version, metadata)
     (output / "inventory.json").write_text(json.dumps(result, indent=2) + "\n")
     jar = repository / props["GROUP"].replace(".", "/") / (metadata["MAVEN_ARTIFACT_ID"] + "-jvm") / version / (metadata["MAVEN_ARTIFACT_ID"] + "-jvm-" + version + ".jar")
     digest = hashlib.sha256(jar.read_bytes()).hexdigest()
-    for host in ("jvm", "android"):
+    for host in ("jvm", "android", "native"):
         fixture = output / "consumers" / host
         if fixture.exists():
             shutil.rmtree(fixture)
         shutil.copytree(ROOT / "distribution/consumers" / host, fixture)
         command = [str(ROOT / "gradlew"), "-p", str(fixture), "--refresh-dependencies", "-PuacVersion=" + version, "-PuacRepository=" + repository.as_uri()]
-        command += ["run", "-PuacExpectedJarSha256=" + digest] if host == "jvm" else ["assembleDebug", "assembleDebugAndroidTest"]
+        commands = {
+            "jvm": ["run", "-PuacExpectedJarSha256=" + digest],
+            "android": ["assembleDebug", "assembleDebugAndroidTest"],
+            "native": ["compileKotlinIosArm64", "compileKotlinIosSimulatorArm64"],
+        }
+        command += commands[host]
         run(host + "-consumer", command, logs, environment, stages)
         if host == "android" and args.android_runtime:
             android_runtime(fixture, args.android_runtime, logs, environment, stages)

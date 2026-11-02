@@ -46,10 +46,10 @@ def validate(root, resolved=None, destination=None, verify=False):
             raise ValueError('Packaging requires resolved dependency evidence')
         if not destination.is_dir() or destination.is_symlink():
             raise ValueError('Expected regular XCFramework directory')
+        notices = destination / 'THIRD_PARTY_NOTICES'
+        if notices.is_symlink() or any(path.is_symlink() for path in notices.rglob('*')):
+            raise ValueError('Unsafe notice destination')
         if not verify:
-            notices = destination / 'THIRD_PARTY_NOTICES'
-            if notices.is_symlink():
-                raise ValueError('Unsafe notice destination')
             if notices.exists():
                 shutil.rmtree(notices)
             for relative, original in files.items():

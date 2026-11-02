@@ -61,8 +61,10 @@ class InventoryTests(unittest.TestCase):
                 binary = zipped({client: "bytecode"})
             primary = directory / (stem + "." + extension)
             primary.write_bytes(binary)
+            if extension == "klib":
+                (directory / (stem + "-metadata.jar")).write_bytes(zipped({"metadata.knm": "metadata"}))
             (directory / (stem + "-sources.jar")).write_bytes(zipped({"UniversalAiConnector.kt": "public API", "UniversalAiConnectorVersion.kt": f'internal const val UNIVERSAL_AI_CONNECTOR_VERSION: String = "{VERSION}"'}))
-            (directory / (stem + "-javadoc.jar")).write_bytes(zipped({"index.html": "API documentation", "client.html": "client", "META-INF/LICENSE": "MIT"}))
+            (directory / (stem + "-javadoc.jar")).write_bytes(zipped({"index.html": "API documentation", "client.html": "client", "META-INF/LICENSE": (inv.ROOT / "LICENSE").read_bytes()}))
             component = {"group": GROUP, "module": BASE, "version": VERSION}
             if module != BASE:
                 component["url"] = f"../../{BASE}/{VERSION}/{BASE}-{VERSION}.module"
@@ -71,13 +73,14 @@ class InventoryTests(unittest.TestCase):
                 variants += [{"available-at": {"group": GROUP, "module": m, "version": VERSION, "url": f"../../{m}/{VERSION}/{m}-{VERSION}.module"}} for m in self.modules if m != BASE]
                 (directory / (stem + "-kotlin-tooling-metadata.json")).write_text('{"schemaVersion":"1.1.0"}')
             (directory / (stem + ".module")).write_text(json.dumps({"component": component, "variants": variants}))
+        inv.prepare_unsigned(self.repo, (inv.ROOT / "LICENSE").read_bytes())
         self.rehash()
 
     def rehash(self):
         for path in self.repo.rglob("*"):
             if path.is_file() and path.suffix in {".pom", ".module", ".jar", ".aar", ".klib", ".json"}:
                 for algorithm in ["md5", "sha1", "sha256", "sha512"]:
-                    path.with_name(path.name + "." + algorithm).write_text(hashlib.new(algorithm, path.read_bytes()).hexdigest())
+                    path.with_name(path.name + "." + algorithm).write_text(hashlib.new(algorithm, path.read_bytes()).hexdigest() + "\n")
 
     def run_check(self):
         return inv.validate(self.repo, GROUP, VERSION, META)
@@ -90,6 +93,25 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(len(result["publications"]), 5)
         self.assertFalse(result["signatures_verified"])
         self.assertFalse(result["remote_distribution_verified"])
+
+    def test_license_preparation_is_idempotent_and_ordinary_consumer_gets_license(self):
+        before = {str(p): p.read_bytes() for p in self.repo.rglob('*') if p.is_file()}
+        inv.prepare_unsigned(self.repo, (inv.ROOT / 'LICENSE').read_bytes())
+        self.assertEqual(before, {str(p): p.read_bytes() for p in self.repo.rglob('*') if p.is_file()})
+        self.run_check()
+        path = self.root_file('-sources.jar')
+        with zipfile.ZipFile(path) as archive:
+            values = {n: archive.read(n) for n in archive.namelist() if n != 'META-INF/LICENSE'}
+        path.write_bytes(zipped(values)); self.rehash()
+        with self.assertRaises(inv.InventoryError): self.run_check()
+
+    def test_signed_or_symlink_repository_is_not_rewritten(self):
+        target = self.root_file('.jar')
+        original = target.read_bytes()
+        self.root_file('.jar.asc').write_text('fixture signature')
+        with self.assertRaises(inv.InventoryError):
+            inv.prepare_unsigned(self.repo, (inv.ROOT / 'LICENSE').read_bytes())
+        self.assertEqual(target.read_bytes(), original)
 
     def test_missing_referenced_target_fails(self):
         next((self.group / (BASE + "-jvm")).rglob("*.module")).unlink()

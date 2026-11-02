@@ -67,6 +67,21 @@ class NativeNoticesTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             notices.validate(self.root, self.resolved, self.destination)
 
+    def test_verify_rejects_matching_external_tree(self):
+        notices.validate(self.root, self.resolved, self.destination)
+        tree = self.destination / 'THIRD_PARTY_NOTICES'
+        external = self.root / 'external-notices'
+        tree.rename(external)
+        tree.symlink_to(external, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            notices.validate(self.root, self.resolved, self.destination, verify=True)
+
+    def test_verify_rejects_dangling_extra_link(self):
+        notices.validate(self.root, self.resolved, self.destination)
+        (self.destination / 'THIRD_PARTY_NOTICES/extra').symlink_to(self.root / 'absent')
+        with self.assertRaises(ValueError):
+            notices.validate(self.root, self.resolved, self.destination, verify=True)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,6 +3,8 @@
 import hashlib
 import io
 import json
+import stat
+from pathlib import PurePosixPath
 from pathlib import Path
 import re
 import sys
@@ -50,6 +52,81 @@ def archive_entries(path):
             return names
     except zipfile.BadZipFile:
         raise InventoryError("Invalid artifact archive.") from None
+
+
+
+def licensed_archive(body, license_bytes, nested_android=False):
+    """Retain every original entry, adding only the unchanged project license."""
+    source = io.BytesIO(body)
+    output = io.BytesIO()
+    try:
+        opened = zipfile.ZipFile(source)
+    except zipfile.BadZipFile:
+        raise InventoryError("Invalid artifact archive.") from None
+    with opened as archive:
+        infos = archive.infolist()
+        require(len(infos) == len({entry.filename for entry in infos}) and len(infos) < 100_000, "Invalid archive entries.")
+        require(sum(entry.file_size for entry in infos) < 128 * 1024 * 1024, "Oversized archive.")
+        for entry in infos:
+            path = PurePosixPath(entry.filename)
+            require(not path.is_absolute() and ".." not in path.parts and "\\" not in entry.filename and not stat.S_ISLNK(entry.external_attr >> 16), "Unsafe archive path.")
+        has_license = "META-INF/LICENSE" in archive.namelist()
+        if has_license:
+            require(archive.read("META-INF/LICENSE") == license_bytes, "Existing project license differs.")
+        changed = not has_license
+        require(not any(re.fullmatch(r"META-INF/[^/]+\.(SF|RSA|DSA|EC)", entry.filename, re.I) for entry in infos), "Refusing to rewrite a signed archive.")
+        with zipfile.ZipFile(output, "w") as prepared:
+            prepared.comment = archive.comment
+            for entry in infos:
+                data = archive.read(entry)
+                if nested_android and entry.filename == "classes.jar":
+                    transformed = licensed_archive(data, license_bytes)
+                    changed = changed or transformed != data
+                    data = transformed
+                prepared.writestr(entry, data)
+            if not has_license:
+                entry = zipfile.ZipInfo("META-INF/LICENSE", (1980, 1, 1, 0, 0, 0))
+                entry.compress_type = zipfile.ZIP_DEFLATED
+                entry.external_attr = (stat.S_IFREG | 0o644) << 16
+                prepared.writestr(entry, license_bytes)
+    return output.getvalue() if changed else body
+
+
+def prepare_unsigned(repository, license_bytes):
+    """Prepare only the managed local unsigned graph; never sign or upload."""
+    repository = Path(repository)
+    require(repository.is_dir() and not repository.is_symlink(), "Unsafe local repository.")
+    entries = list(repository.rglob("*"))
+    require(not any(path.is_symlink() for path in entries), "Unsafe repository entry.")
+    require(not any(path.suffix == ".asc" for path in entries), "Refusing to rewrite signed artifacts.")
+    payloads = [path for path in entries if path.is_file() and path.suffix in {".pom", ".module", ".jar", ".aar", ".klib", ".json"}]
+    for path in payloads:
+        if path.suffix in {".jar", ".aar", ".klib"}:
+            body = licensed_archive(path.read_bytes(), license_bytes, nested_android=path.suffix == ".aar")
+            path.write_bytes(body)
+    for path in payloads:
+        if path.suffix != ".module":
+            continue
+        module = json.loads(path.read_text())
+        for variant in module["variants"]:
+            for file in variant.get("files", []):
+                target = reference(path.parent, file["url"], repository)
+                require(target.parent == path.parent.resolve(), "Variant artifact escaped its coordinate.")
+                body = target.read_bytes()
+                file["size"] = len(body)
+                for algorithm in ("md5", "sha1", "sha256", "sha512"):
+                    if algorithm in file or algorithm == "sha256":
+                        file[algorithm] = hashlib.new(algorithm, body).hexdigest()
+        path.write_text(json.dumps(module, indent=2) + "\n")
+    for path in payloads:
+        body = path.read_bytes()
+        for algorithm in ("md5", "sha1", "sha256", "sha512"):
+            path.with_name(path.name + "." + algorithm).write_text(hashlib.new(algorithm, body).hexdigest() + "\n")
+
+
+def verify_project_license(path, license_bytes):
+    with zipfile.ZipFile(path) as archive:
+        require("META-INF/LICENSE" in archive.namelist() and archive.read("META-INF/LICENSE") == license_bytes, "Missing or changed project license.")
 
 
 def validate(repository, group, version, metadata):
@@ -127,6 +204,12 @@ def validate(repository, group, version, metadata):
             require(tooling.is_file() and isinstance(json.loads(tooling.read_text()), dict), "Missing or invalid Kotlin tooling metadata.")
         allowed_names = expected_names | {n + "." + h for n in expected_names for h in ["md5", "sha1", "sha256", "sha512"]}
         require(all(p.name in allowed_names for p in directory.iterdir()), "Unexpected artifact or signature in unsigned repository.")
+        license_bytes = (ROOT / "LICENSE").read_bytes()
+        for name in expected_names:
+            candidate = directory / name
+            if candidate.suffix in {".jar", ".aar", ".klib"}:
+                archive_entries(candidate)
+                verify_project_license(candidate, license_bytes)
         source_names = archive_entries(sources)
         require(any(n.endswith("UniversalAiConnector.kt") for n in source_names) and any(n.endswith("UniversalAiConnectorVersion.kt") for n in source_names), "Incomplete canonical sources.")
         version_files = [n for n in source_names if n.endswith("UniversalAiConnectorVersion.kt")]
@@ -145,6 +228,7 @@ def validate(repository, group, version, metadata):
             require("classes.jar" in names and "AndroidManifest.xml" in names, "Invalid Android AAR.")
             with zipfile.ZipFile(primary) as aar, zipfile.ZipFile(io.BytesIO(aar.read("classes.jar"))) as classes:
                 require("com/myadidi/universalai/connector/UniversalAiConnector.class" in classes.namelist(), "Public Android client is missing.")
+                require("META-INF/LICENSE" in classes.namelist() and classes.read("META-INF/LICENSE") == license_bytes, "Android classes project license is missing.")
         if extension == "klib":
             require(any(n.endswith("/manifest") for n in names) and any("linkdata" in n for n in names), "Invalid native publication.")
         for path in sorted(directory.iterdir()):

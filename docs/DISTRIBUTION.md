@@ -193,3 +193,12 @@ archive provenance and separate Kotlin standard-library/runtime attribution. Con
 retention is documented in that directory; resolved inputs do not prove final binary inclusion.
 Release ZIP verification must preserve this notice tree. A locally staged archive is not hosted
 SwiftPM resolution proof.
+
+The unsigned local Maven driver embeds the unchanged root MIT text in every own primary,
+source, metadata and documentation archive, including the Android AAR and its classes JAR.
+It then updates Gradle variant sizes/hashes and all four repository checksums before validating
+or consuming that graph. It refuses signatures and symlinks; signed artifacts must never be
+rewritten. JVM runtime, Android compilation and both native coordinate-compilation fixtures use
+this prepared graph. Thin Maven artifacts do not bundle their external runtime dependencies.
+Direct Gradle local publication is intermediate output; only the prepared, validated graph may
+be considered for a later explicitly authorized signing/upload step.
