@@ -32,6 +32,10 @@ run_hygiene() {
   python3 -I -B "$ROOT/scripts/tests/native-notices-test.py"
   python3 -I -B "$ROOT/scripts/tests/maven-inventory-test.py"
   python3 -I -B "$ROOT/scripts/tests/maven-distribution-test.py"
+  python3 -I -B "$ROOT/scripts/tests/maven-signing-test.py"
+  python3 -I -B "$ROOT/scripts/tests/central-publication-test.py"
+  python3 -I -B "$ROOT/scripts/tests/apple-distribution-test.py"
+  "$ROOT/scripts/check-apple-distribution.sh" metadata
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
@@ -299,6 +303,7 @@ run_full() {
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"
   "$ROOT/scripts/check-maven-distribution.sh" local
+  "$ROOT/scripts/check-apple-distribution.sh" build
 
   echo "Adidi Universal AI Connector complete deterministic checks passed."
 }

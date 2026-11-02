@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Consumer proof and secret-isolation regressions without SDK, network or signing."""
 import importlib.util
+import io
+import json
 import os
 from pathlib import Path
 import tempfile
+import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -13,6 +17,52 @@ spec.loader.exec_module(driver)
 
 
 class DriverTests(unittest.TestCase):
+    def test_consumer_receipt_binds_stable_inventory_and_rejects_changes_during_consumers(self):
+        for tamper in [False, True]:
+            with self.subTest(tamper=tamper), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                (root / "distribution").mkdir()
+                version = "0.1.0-alpha.0.p8.1"
+                (root / "gradle.properties").write_text("GROUP=com.myadidi\nVERSION_NAME=" + version + "\n")
+                (root / "distribution/release.properties").write_text("MAVEN_ARTIFACT_ID=universal-ai-connector\n")
+                (root / "LICENSE").write_text("synthetic license")
+                for host in ["jvm", "android", "native"]:
+                    (root / "distribution/consumers" / host).mkdir(parents=True)
+                output = root / "bridge/build/distribution"
+                jar = output / "maven/com/myadidi/universal-ai-connector-jvm" / version / ("universal-ai-connector-jvm-" + version + ".jar")
+                state = {"revision": "synthetic original graph"}
+                def run(stage, command, logs, environment, stages):
+                    stages[stage] = "passed"
+                    if stage == "producer":
+                        jar.parent.mkdir(parents=True)
+                        jar.write_bytes(b"synthetic jar")
+                    if stage == "native-consumer" and tamper:
+                        state["revision"] = "synthetic rebuilt graph"
+                def validate(*args):
+                    return {"mode": "unsigned-local", "version": version, "artifacts": [{"path": "synthetic", "sha256": state["revision"]}]}
+                def git(command, **kwargs):
+                    return "1" * 40 if "rev-parse" in command else b""
+                with patch.object(driver, "ROOT", root), patch.object(driver.sys, "platform", "darwin"), patch.object(driver.sys, "argv", ["driver", "local"]), patch.object(driver.subprocess, "check_output", side_effect=git), patch.object(driver, "run", side_effect=run), patch.object(driver.inventory, "prepare_unsigned"), patch.object(driver.inventory, "validate", side_effect=validate), patch("sys.stdout", new_callable=io.StringIO):
+                    if tamper:
+                        with self.assertRaisesRegex(RuntimeError, "bytes changed"):
+                            driver.main()
+                    else:
+                        driver.main()
+                receipt = output / "verification.json"
+                if tamper:
+                    self.assertFalse(receipt.exists())
+                else:
+                    self.assertEqual(json.loads(receipt.read_text())["inventory_sha256"], driver.inventory.digest(validate()))
+
+    def test_noninteractive_signing_fails_without_emitting_environment_values(self):
+        environment = dict(os.environ)
+        value = "synthetic-publishing-secret-must-not-be-printed"
+        environment["ORG_GRADLE_PROJECT_mavenCentralPassword"] = value
+        result = subprocess.run([sys.executable, "-I", "-B", str(Path(driver.__file__)), "sign-local"], input="", capture_output=True, text=True, env=environment, timeout=15)
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn(value, result.stdout + result.stderr)
+        self.assertIn("no upload occurred", result.stderr.lower())
+
     def test_private_logs_restrict_existing_files_and_refuse_symlinks(self):
         with tempfile.TemporaryDirectory() as temporary:
             logs = Path(temporary)

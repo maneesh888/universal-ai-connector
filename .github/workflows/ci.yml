@@ -215,6 +215,11 @@ jobs:
           name: apple-failure-evidence
           path: |
             ${{ runner.temp }}/uac-swift-package.xcresult
+            bridge/build/distribution/apple/*.log
+            bridge/build/distribution/apple/*verification.json
+            bridge/build/distribution/apple/swift-api-comparison.json
+            bridge/build/distribution/apple/swift-public-api-actual.json
+            bridge/build/distribution/apple/local-consumer/consumer.xcresult
             bridge/build/reports/tests/
             samples/jvm-console/build/reports/tests/
             samples/android/build/reports/tests/

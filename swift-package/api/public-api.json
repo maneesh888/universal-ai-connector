@@ -1,0 +1,3595 @@
+{
+  "module": "UniversalAiConnector",
+  "symbols": {
+    "s:20UniversalAiConnector0aB10ExtensionsV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ExtensionsV5emptyACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let empty: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ExtensionsV7entriesSDyAA0aB18ExtensionNamespaceVAA0aB10JsonObjectVGvp": {
+      "kind": "swift.property",
+      "declaration": "let entries: [UniversalAiExtensionNamespace : UniversalAiJsonObject]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ExtensionsV8removing9namespaceAcA0aB18ExtensionNamespaceV_tF": {
+      "kind": "swift.method",
+      "declaration": "func removing(namespace: UniversalAiExtensionNamespace) -> UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ExtensionsV9replacing9namespace7payloadAcA0aB18ExtensionNamespaceV_AA0aB10JsonObjectVtKF": {
+      "kind": "swift.method",
+      "declaration": "func replacing(namespace: UniversalAiExtensionNamespace, payload: UniversalAiJsonObject) throws -> UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ExtensionsVyACSDyAA0aB18ExtensionNamespaceVAA0aB10JsonObjectVGKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(_ entries: [UniversalAiExtensionNamespace : UniversalAiJsonObject] = [:]) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonNumberV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiJsonNumber",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonNumberV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonNumberV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonObjectV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiJsonObject",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonObjectV7membersSDySSAA0abD5ValueOGvp": {
+      "kind": "swift.property",
+      "declaration": "let members: [String : UniversalAiJsonValue]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonObjectVyAA0abD5ValueOSgSScip": {
+      "kind": "swift.subscript",
+      "declaration": "subscript(name: String) -> UniversalAiJsonValue? { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10JsonObjectVyACSDySSAA0abD5ValueOGcfc": {
+      "kind": "swift.init",
+      "declaration": "init(_ members: [String : UniversalAiJsonValue] = [:])",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10OutputKindV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiOutputKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10OutputKindV14structuredJsonACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let structuredJson: UniversalAiOutputKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10OutputKindV4textACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let text: UniversalAiOutputKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10OutputKindV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10OutputKindV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ProviderIdV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiProviderId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ProviderIdV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ProviderIdV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ResponseIdV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiResponseId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ResponseIdV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB10ResponseIdV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiStreamEvent",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV10responseIdAA0ab8ResponseG0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let responseId: UniversalAiResponseId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV11outputIndexSiSgvp": {
+      "kind": "swift.property",
+      "declaration": "let outputIndex: Int?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV15contractVersion4type8terminal8sequence10responseId07requestL006outputL00N5Index5delta0N05usage0K010extensionsACSS_AA0abdE4TypeVSbs5Int64VAA0ab8ResponseL0VAA0ab7RequestL0VSgAA0ab6OutputL0VSgSiSgSSSgAA0abW0VSgAA0aB5UsageVSgAA0abU0VSgAA0aB10ExtensionsVtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(contractVersion: String, type: UniversalAiStreamEventType, terminal: Bool, sequence: Int64, responseId: UniversalAiResponseId, requestId: UniversalAiRequestId? = nil, outputId: UniversalAiOutputId? = nil, outputIndex: Int? = nil, delta: String? = nil, output: UniversalAiOutput? = nil, usage: UniversalAiUsage? = nil, response: UniversalAiResponse? = nil, extensions: UniversalAiExtensions = .empty)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV15contractVersionSSvp": {
+      "kind": "swift.property",
+      "declaration": "let contractVersion: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV4typeAA0abdE4TypeVvp": {
+      "kind": "swift.property",
+      "declaration": "let type: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV5deltaSSSgvp": {
+      "kind": "swift.property",
+      "declaration": "let delta: String?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV5usageAA0aB5UsageVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let usage: UniversalAiUsage?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV6outputAA0aB6OutputVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let output: UniversalAiOutput?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV8outputIdAA0ab6OutputG0VSgvp": {
+      "kind": "swift.property",
+      "declaration": "let outputId: UniversalAiOutputId?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV8responseAA0aB8ResponseVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let response: UniversalAiResponse?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV8sequences5Int64Vvp": {
+      "kind": "swift.property",
+      "declaration": "let sequence: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV8terminalSbvp": {
+      "kind": "swift.property",
+      "declaration": "let terminal: Bool",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB11StreamEventV9requestIdAA0ab7RequestG0VSgvp": {
+      "kind": "swift.property",
+      "declaration": "let requestId: UniversalAiRequestId?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiCapabilitySet",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV12declarationsSDyAA0abD4NameVAA0abD11DeclarationVGvp": {
+      "kind": "swift.property",
+      "declaration": "let declarations: [UniversalAiCapabilityName : UniversalAiCapabilityDeclaration]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV12supportState3forAA0abd7SupportG0OAA0abD4NameV_tF": {
+      "kind": "swift.method",
+      "declaration": "func supportState(for name: UniversalAiCapabilityName) -> UniversalAiCapabilitySupportState",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV5countSivp": {
+      "kind": "swift.property",
+      "declaration": "var count: Int { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV5emptyACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let empty: UniversalAiCapabilitySet",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV7isEmptySbvp": {
+      "kind": "swift.property",
+      "declaration": "var isEmpty: Bool { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetV7resolve15providerProfile11modelTarget0I9OverridesAcA0ab8ProviderdH0V_AA0abJ0VACtKFZ": {
+      "kind": "swift.type.method",
+      "declaration": "static func resolve(providerProfile: UniversalAiProviderCapabilityProfile, modelTarget: UniversalAiTarget, modelOverrides: UniversalAiCapabilitySet = .empty) throws -> UniversalAiCapabilitySet",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetVyAA0abD11DeclarationVSgAA0abD4NameVcip": {
+      "kind": "swift.subscript",
+      "declaration": "subscript(name: UniversalAiCapabilityName) -> UniversalAiCapabilityDeclaration? { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13CapabilitySetVyACSDyAA0abD4NameVAA0abD11DeclarationVGKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(_ declarations: [UniversalAiCapabilityName : UniversalAiCapabilityDeclaration] = [:]) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV10validationACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let validation: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV13authorizationACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let authorization: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV14authenticationACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let authentication: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV8internalACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let `internal`: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV8notFoundACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let notFound: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV8protocolACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let `protocol`: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV8providerACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let provider: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV9rateLimitACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let rateLimit: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB13ErrorCategoryV9transportACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let transport: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14CapabilityNameV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiCapabilityName",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14CapabilityNameV16structuredOutputACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let structuredOutput: UniversalAiCapabilityName",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14CapabilityNameV7isKnownSbvp": {
+      "kind": "swift.property",
+      "declaration": "var isKnown: Bool { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14CapabilityNameV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14CapabilityNameV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14CapabilityNameV9streamingACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let streaming: UniversalAiCapabilityName",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14ResponseFormatV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiResponseFormat",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14ResponseFormatV10jsonSchemayAcA0ab16StructuredOutputG0VFZ": {
+      "kind": "swift.type.method",
+      "declaration": "static func jsonSchema(_ schema: UniversalAiStructuredOutputSchema) -> UniversalAiResponseFormat",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14ResponseFormatV4kind6schemaAcA0abdE4KindV_AA0aB22StructuredOutputSchemaVSgtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(kind: UniversalAiResponseFormatKind, schema: UniversalAiStructuredOutputSchema? = nil)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14ResponseFormatV4kindAA0abdE4KindVvp": {
+      "kind": "swift.property",
+      "declaration": "let kind: UniversalAiResponseFormatKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14ResponseFormatV6schemaAA0aB22StructuredOutputSchemaVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let schema: UniversalAiStructuredOutputSchema?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB14ResponseFormatV9plainTextACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let plainText: UniversalAiResponseFormat",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiModelDescriptor",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV11displayNameSSSgvp": {
+      "kind": "swift.property",
+      "declaration": "let displayName: String?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV12capabilitiesAA0aB13CapabilitySetVvp": {
+      "kind": "swift.property",
+      "declaration": "let capabilities: UniversalAiCapabilitySet",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV15contractVersion6target11displayName6limits12capabilities10extensionsACSS_AA0aB6TargetVSSSgAA0abD11TokenLimitsVSgAA0aB13CapabilitySetVAA0aB10ExtensionsVtKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(contractVersion: String = UniversalAiRequest.currentContractVersion, target: UniversalAiTarget, displayName: String? = nil, limits: UniversalAiModelTokenLimits? = nil, capabilities: UniversalAiCapabilitySet = .empty, extensions: UniversalAiExtensions = .empty) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV15contractVersionSSvp": {
+      "kind": "swift.property",
+      "declaration": "let contractVersion: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV6limitsAA0abD11TokenLimitsVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let limits: UniversalAiModelTokenLimits?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelDescriptorV6targetAA0aB6TargetVvp": {
+      "kind": "swift.property",
+      "declaration": "let target: UniversalAiTarget",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelListResultO": {
+      "kind": "swift.enum",
+      "declaration": "enum UniversalAiModelListResult",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelListResultO10providerIdAA0ab8ProviderH0Vvp": {
+      "kind": "swift.property",
+      "declaration": "var providerId: UniversalAiProviderId { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelListResultO11unsupportedyAcA0aB10ProviderIdV_tcACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case unsupported(providerId: UniversalAiProviderId)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15ModelListResultO9supportedyAcA0aB10ProviderIdV_SayAA0abD10DescriptorVGtcACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case supported(providerId: UniversalAiProviderId, models: [UniversalAiModelDescriptor])",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV11outputDeltaACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let outputDelta: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV12usageUpdatedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let usageUpdated: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV13outputStartedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let outputStarted: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV15outputCompletedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let outputCompleted: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV15responseStartedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let responseStarted: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV17responseCompletedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let responseCompleted: UniversalAiStreamEventType",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB15StreamEventTypeV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16CompletionReasonV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiCompletionReason",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16CompletionReasonV13contentFilterACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let contentFilter: UniversalAiCompletionReason",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16CompletionReasonV15maxOutputTokensACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let maxOutputTokens: UniversalAiCompletionReason",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16CompletionReasonV4stopACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let stop: UniversalAiCompletionReason",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16CompletionReasonV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16CompletionReasonV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16ModelTokenLimitsV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiModelTokenLimits",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16ModelTokenLimitsV14maxInputTokenss5Int64VSgvp": {
+      "kind": "swift.property",
+      "declaration": "let maxInputTokens: Int64?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16ModelTokenLimitsV15maxOutputTokenss5Int64VSgvp": {
+      "kind": "swift.property",
+      "declaration": "let maxOutputTokens: Int64?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16ModelTokenLimitsV19contextWindowTokens08maxInputI00j6OutputI0ACs5Int64VSg_A2ItKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(contextWindowTokens: Int64? = nil, maxInputTokens: Int64? = nil, maxOutputTokens: Int64? = nil) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB16ModelTokenLimitsV19contextWindowTokenss5Int64VSgvp": {
+      "kind": "swift.property",
+      "declaration": "let contextWindowTokens: Int64?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiCapabilitySupport",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV11unsupportedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let unsupported: UniversalAiCapabilitySupport",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV13semanticStateAA0abdeG0Ovp": {
+      "kind": "swift.property",
+      "declaration": "var semanticState: UniversalAiCapabilitySupportState { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV7isKnownSbvp": {
+      "kind": "swift.property",
+      "declaration": "var isKnown: Bool { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV7unknownACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let unknown: UniversalAiCapabilitySupport",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB17CapabilitySupportV9supportedACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let supported: UniversalAiCapabilitySupport",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ExtensionNamespaceV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiExtensionNamespace",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ExtensionNamespaceV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ExtensionNamespaceV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ResponseFormatKindV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiResponseFormatKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ResponseFormatKindV10jsonSchemaACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let jsonSchema: UniversalAiResponseFormatKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ResponseFormatKindV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ResponseFormatKindV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB18ResponseFormatKindV9plainTextACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let plainText: UniversalAiResponseFormatKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB19CapabilityLimitNameV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiCapabilityLimitName",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB19CapabilityLimitNameV14maxSchemaBytesACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let maxSchemaBytes: UniversalAiCapabilityLimitName",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB19CapabilityLimitNameV14maxSchemaDepthACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let maxSchemaDepth: UniversalAiCapabilityLimitName",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB19CapabilityLimitNameV7isKnownSbvp": {
+      "kind": "swift.property",
+      "declaration": "var isKnown: Bool { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB19CapabilityLimitNameV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB19CapabilityLimitNameV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiGenerationParameters",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV11temperatureSdSgvp": {
+      "kind": "swift.property",
+      "declaration": "let temperature: Double?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV13stopSequencesSaySSGvp": {
+      "kind": "swift.property",
+      "declaration": "let stopSequences: [String]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV15maxOutputTokens11temperature4topP13stopSequencesACSiSg_SdSgAISaySSGtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(maxOutputTokens: Int? = nil, temperature: Double? = nil, topP: Double? = nil, stopSequences: [String] = [])",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV15maxOutputTokensSiSgvp": {
+      "kind": "swift.property",
+      "declaration": "let maxOutputTokens: Int?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV4topPSdSgvp": {
+      "kind": "swift.property",
+      "declaration": "let topP: Double?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB20GenerationParametersV7defaultACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let `default`: UniversalAiGenerationParameters",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21CapabilityDeclarationV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiCapabilityDeclaration",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21CapabilityDeclarationV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21CapabilityDeclarationV6limitsSDyAA0abD9LimitNameVs5Int64VGvp": {
+      "kind": "swift.property",
+      "declaration": "let limits: [UniversalAiCapabilityLimitName : Int64]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21CapabilityDeclarationV7support6limits10extensionsAcA0abD7SupportV_SDyAA0abD9LimitNameVs5Int64VGAA0aB10ExtensionsVtKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(support: UniversalAiCapabilitySupport, limits: [UniversalAiCapabilityLimitName : Int64] = [:], extensions: UniversalAiExtensions = .empty) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21CapabilityDeclarationV7supportAA0abD7SupportVvp": {
+      "kind": "swift.property",
+      "declaration": "let support: UniversalAiCapabilitySupport",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21ProviderConfigurationV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiProviderConfiguration",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21ProviderConfigurationV10providerId7baseURL18credentialSupplierAcA0abdG0V_S2SyYbKctcfc": {
+      "kind": "swift.init",
+      "declaration": "init(providerId: UniversalAiProviderId, baseURL: String, credentialSupplier: @escaping () throws -> String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21ProviderConfigurationV10providerIdAA0abdG0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let providerId: UniversalAiProviderId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21ProviderConfigurationV7baseURLSSvp": {
+      "kind": "swift.property",
+      "declaration": "let baseURL: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21StructuredOutputValueV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiStructuredOutputValue",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21StructuredOutputValueV2eeoiySbAC_ACtFZ": {
+      "kind": "swift.func.op",
+      "declaration": "static func == (lhs: UniversalAiStructuredOutputValue, rhs: UniversalAiStructuredOutputValue) -> Bool",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21StructuredOutputValueV5valueAA0ab4JsonF0Ovp": {
+      "kind": "swift.property",
+      "declaration": "let value: UniversalAiJsonValue",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB21StructuredOutputValueV5valueAcA0ab4JsonF0O_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(value: UniversalAiJsonValue)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22CapabilitySupportStateO": {
+      "kind": "swift.enum",
+      "declaration": "enum UniversalAiCapabilitySupportState",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22CapabilitySupportStateO11unsupportedyA2CmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case unsupported",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22CapabilitySupportStateO7unknownyA2CmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case unknown",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22CapabilitySupportStateO9supportedyA2CmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case supported",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22StructuredOutputSchemaV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiStructuredOutputSchema",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22StructuredOutputSchemaV2eeoiySbAC_ACtFZ": {
+      "kind": "swift.func.op",
+      "declaration": "static func == (lhs: UniversalAiStructuredOutputSchema, rhs: UniversalAiStructuredOutputSchema) -> Bool",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22StructuredOutputSchemaV5valueAA0aB9JsonValueOvp": {
+      "kind": "swift.property",
+      "declaration": "let value: UniversalAiJsonValue",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB22StructuredOutputSchemaV5valueAcA0aB9JsonValueO_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(value: UniversalAiJsonValue)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB23ContractValidationErrorV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiContractValidationError",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB23ContractValidationErrorV4code4path7messageACSS_S2Stcfc": {
+      "kind": "swift.init",
+      "declaration": "init(code: String, path: String, message: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB23ContractValidationErrorV4codeSSvp": {
+      "kind": "swift.property",
+      "declaration": "let code: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB23ContractValidationErrorV4pathSSvp": {
+      "kind": "swift.property",
+      "declaration": "let path: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB23ContractValidationErrorV7messageSSvp": {
+      "kind": "swift.property",
+      "declaration": "let message: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiProviderCapabilityProfile",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV10providerIdAA0abdH0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let providerId: UniversalAiProviderId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV12capabilitiesAA0abE3SetVvp": {
+      "kind": "swift.property",
+      "declaration": "let capabilities: UniversalAiCapabilitySet",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV15contractVersion10providerId12capabilities10extensionsACSS_AA0abdJ0VAA0abE3SetVAA0aB10ExtensionsVtKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(contractVersion: String = UniversalAiRequest.currentContractVersion, providerId: UniversalAiProviderId, capabilities: UniversalAiCapabilitySet = .empty, extensions: UniversalAiExtensions = .empty) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV15contractVersionSSvp": {
+      "kind": "swift.property",
+      "declaration": "let contractVersion: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiUsage",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV11inputTokens06outputF005totalF00E7Details0gI010extensionsACs5Int64V_A2KSDySSAKGAlA0aB10ExtensionsVtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(inputTokens: Int64, outputTokens: Int64, totalTokens: Int64, inputDetails: [String : Int64] = [:], outputDetails: [String : Int64] = [:], extensions: UniversalAiExtensions = .empty)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV11inputTokenss5Int64Vvp": {
+      "kind": "swift.property",
+      "declaration": "let inputTokens: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV11totalTokenss5Int64Vvp": {
+      "kind": "swift.property",
+      "declaration": "let totalTokens: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV12inputDetailsSDySSs5Int64VGvp": {
+      "kind": "swift.property",
+      "declaration": "let inputDetails: [String : Int64]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV12outputTokenss5Int64Vvp": {
+      "kind": "swift.property",
+      "declaration": "let outputTokens: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB5UsageV13outputDetailsSDySSs5Int64VGvp": {
+      "kind": "swift.property",
+      "declaration": "let outputDetails: [String : Int64]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiOutput",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV14structuredJsonAA0ab10StructuredD5ValueVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let structuredJson: UniversalAiStructuredOutputValue?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV2id5index4kind4text14structuredJson10extensionsAcA0abD2IdV_SiAA0abD4KindVSSSgAA0ab10StructuredD5ValueVSgAA0aB10ExtensionsVtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(id: UniversalAiOutputId, index: Int, kind: UniversalAiOutputKind, text: String? = nil, structuredJson: UniversalAiStructuredOutputValue? = nil, extensions: UniversalAiExtensions = .empty)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV2idAA0abD2IdVvp": {
+      "kind": "swift.property",
+      "declaration": "let id: UniversalAiOutputId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV4kindAA0abD4KindVvp": {
+      "kind": "swift.property",
+      "declaration": "let kind: UniversalAiOutputKind",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV4textSSSgvp": {
+      "kind": "swift.property",
+      "declaration": "let text: String?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6OutputV5indexSivp": {
+      "kind": "swift.property",
+      "declaration": "let index: Int",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6TargetV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiTarget",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6TargetV10providerId05modelF0AcA0ab8ProviderF0V_AA0ab5ModelF0Vtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(providerId: UniversalAiProviderId, modelId: UniversalAiModelId)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6TargetV10providerIdAA0ab8ProviderF0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let providerId: UniversalAiProviderId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB6TargetV7modelIdAA0ab5ModelF0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let modelId: UniversalAiModelId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7ModelIdV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiModelId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7ModelIdV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7ModelIdV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiRequest",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV10generationAA0aB20GenerationParametersVvp": {
+      "kind": "swift.property",
+      "declaration": "let generation: UniversalAiGenerationParameters",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV14responseFormatAA0ab8ResponseF0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let responseFormat: UniversalAiResponseFormat",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV15contractVersion6target5input14responseFormat10generation10extensionsACSS_AA0aB6TargetVSayAA0aB9TextInputVGAA0ab8ResponseJ0VAA0aB20GenerationParametersVAA0aB10ExtensionsVtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(contractVersion: String = Self.currentContractVersion, target: UniversalAiTarget, input: [UniversalAiTextInput], responseFormat: UniversalAiResponseFormat = .plainText, generation: UniversalAiGenerationParameters = .default, extensions: UniversalAiExtensions = .empty)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV15contractVersionSSvp": {
+      "kind": "swift.property",
+      "declaration": "let contractVersion: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV22currentContractVersionSSvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let currentContractVersion: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV5inputSayAA0aB9TextInputVGvp": {
+      "kind": "swift.property",
+      "declaration": "let input: [UniversalAiTextInput]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB7RequestV6targetAA0aB6TargetVvp": {
+      "kind": "swift.property",
+      "declaration": "let target: UniversalAiTarget",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8OutputIdV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiOutputId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8OutputIdV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8OutputIdV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiResponse",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV15contractVersion2id9requestId6target7outputs5usage16completionReason10extensionsACSS_AA0abdI0VAA0ab7RequestI0VSgAA0aB6TargetVSayAA0aB6OutputVGAA0aB5UsageVSgAA0ab10CompletionN0VAA0aB10ExtensionsVtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(contractVersion: String, id: UniversalAiResponseId, requestId: UniversalAiRequestId? = nil, target: UniversalAiTarget, outputs: [UniversalAiOutput], usage: UniversalAiUsage? = nil, completionReason: UniversalAiCompletionReason, extensions: UniversalAiExtensions = .empty)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV15contractVersionSSvp": {
+      "kind": "swift.property",
+      "declaration": "let contractVersion: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV16completionReasonAA0ab10CompletionF0Vvp": {
+      "kind": "swift.property",
+      "declaration": "let completionReason: UniversalAiCompletionReason",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV2idAA0abD2IdVvp": {
+      "kind": "swift.property",
+      "declaration": "let id: UniversalAiResponseId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV5usageAA0aB5UsageVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let usage: UniversalAiUsage?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV6targetAA0aB6TargetVvp": {
+      "kind": "swift.property",
+      "declaration": "let target: UniversalAiTarget",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV7outputsSayAA0aB6OutputVGvp": {
+      "kind": "swift.property",
+      "declaration": "let outputs: [UniversalAiOutput]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB8ResponseV9requestIdAA0ab7RequestF0VSgvp": {
+      "kind": "swift.property",
+      "declaration": "let requestId: UniversalAiRequestId?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV12invalidInputACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let invalidInput: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV14invalidRequestACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let invalidRequest: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV16connectorFailureACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let connectorFailure: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV16incompleteStreamACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let incompleteStream: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV16simulatedFailureACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let simulatedFailure: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV21invalidStreamSequenceACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let invalidStreamSequence: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV24unsupportedTerminalEventACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let unsupportedTerminalEvent: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV8rawValueACSS_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9ErrorCodeV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiInputRole",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV4userACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let user: UniversalAiInputRole",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV6systemACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let system: UniversalAiInputRole",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV9assistantACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let assistant: UniversalAiInputRole",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9InputRoleV9developerACvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let developer: UniversalAiInputRole",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO": {
+      "kind": "swift.enum",
+      "declaration": "indirect enum UniversalAiJsonValue",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO4nullyA2CmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case null",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO5arrayyACSayACGcACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case array([UniversalAiJsonValue])",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO6numberyAcA0abD6NumberVcACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case number(UniversalAiJsonNumber)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO6objectyAcA0abD6ObjectVcACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case object(UniversalAiJsonObject)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO6stringyACSScACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case string(String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9JsonValueO7booleanyACSbcACmF": {
+      "kind": "swift.enum.case",
+      "declaration": "case boolean(Bool)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9RequestIdV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiRequestId",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9RequestIdV8rawValueACSS_tcfc": {
+      "kind": "swift.init",
+      "declaration": "init(rawValue: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9RequestIdV8rawValueSSvp": {
+      "kind": "swift.property",
+      "declaration": "let rawValue: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9TextInputV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiTextInput",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9TextInputV4role7contentAcA0abE4RoleV_SStcfc": {
+      "kind": "swift.init",
+      "declaration": "init(role: UniversalAiInputRole, content: String)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9TextInputV4roleAA0abE4RoleVvp": {
+      "kind": "swift.property",
+      "declaration": "let role: UniversalAiInputRole",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0aB9TextInputV7contentSSvp": {
+      "kind": "swift.property",
+      "declaration": "let content: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiConnectorConfiguration",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV20connectTimeoutMilliss5Int64Vvp": {
+      "kind": "swift.property",
+      "declaration": "let connectTimeoutMillis: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV20maximumTimeoutMilliss5Int64VvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let maximumTimeoutMillis: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV20requestTimeoutMilliss5Int64Vvp": {
+      "kind": "swift.property",
+      "declaration": "let requestTimeoutMillis: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV27defaultConnectTimeoutMilliss5Int64VvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let defaultConnectTimeoutMillis: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV27defaultRequestTimeoutMilliss5Int64VvpZ": {
+      "kind": "swift.type.property",
+      "declaration": "static let defaultRequestTimeoutMillis: Int64",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV9providers20connectTimeoutMillis07requestgH0ACSayAA0ab8ProviderD0VG_s5Int64VAKtcfc": {
+      "kind": "swift.init",
+      "declaration": "init(providers: [UniversalAiProviderConfiguration] = [], connectTimeoutMillis: Int64 = Self.defaultConnectTimeoutMillis, requestTimeoutMillis: Int64 = Self.defaultRequestTimeoutMillis)",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC13ConfigurationV9providersSayAA0ab8ProviderD0VGvp": {
+      "kind": "swift.property",
+      "declaration": "let providers: [UniversalAiProviderConfiguration]",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV": {
+      "kind": "swift.struct",
+      "declaration": "struct UniversalAiConnectorError",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV10extensionsAA0aB10ExtensionsVvp": {
+      "kind": "swift.property",
+      "declaration": "let extensions: UniversalAiExtensions",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV4codeAA0abD4CodeVvp": {
+      "kind": "swift.property",
+      "declaration": "let code: UniversalAiErrorCode",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV7messageSSvp": {
+      "kind": "swift.property",
+      "declaration": "let message: String",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV8category4code7message8metadata10extensionsAcA0abD8CategoryV_AA0abD4CodeVSSAA0aB10JsonObjectVSgAA0aB10ExtensionsVtKcfc": {
+      "kind": "swift.init",
+      "declaration": "init(category: UniversalAiErrorCategory, code: UniversalAiErrorCode, message: String, metadata: UniversalAiJsonObject? = nil, extensions: UniversalAiExtensions = .empty) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV8categoryAA0abD8CategoryVvp": {
+      "kind": "swift.property",
+      "declaration": "let category: UniversalAiErrorCategory",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnector0abC5ErrorV8metadataAA0aB10JsonObjectVSgvp": {
+      "kind": "swift.property",
+      "declaration": "let metadata: UniversalAiJsonObject?",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC": {
+      "kind": "swift.class",
+      "declaration": "final class UniversalAiConnector",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC10listModels10providerIdAA0aB15ModelListResultOAA0ab8ProviderG0V_tYaKF": {
+      "kind": "swift.method",
+      "declaration": "func listModels(providerId: UniversalAiProviderId) async throws -> UniversalAiModelListResult",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC13configurationAbA0abC13ConfigurationV_tKcfc": {
+      "kind": "swift.init",
+      "declaration": "convenience init(configuration: UniversalAiConnectorConfiguration) throws",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC5closeyyF": {
+      "kind": "swift.method",
+      "declaration": "func close()",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC6stream7requestScsyAA0aB11StreamEventVs5Error_pGAA0aB7RequestV_tF": {
+      "kind": "swift.method",
+      "declaration": "func stream(request: UniversalAiRequest) -> AsyncThrowingStream<UniversalAiStreamEvent, any Error>",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC7respond2toAA0aB8ResponseVAA0aB7RequestV_tYaKF": {
+      "kind": "swift.method",
+      "declaration": "func respond(to request: UniversalAiRequest) async throws -> UniversalAiResponse",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAAC7versionSSvp": {
+      "kind": "swift.property",
+      "declaration": "var version: String { get }",
+      "generics": {},
+      "availability": []
+    },
+    "s:20UniversalAiConnectorAACABycfc": {
+      "kind": "swift.init",
+      "declaration": "convenience init()",
+      "generics": {},
+      "availability": []
+    }
+  },
+  "relationships": [
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10JsonNumberV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10JsonNumberV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10JsonNumberV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10JsonObjectV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10JsonObjectV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ProviderIdV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ProviderIdV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ProviderIdV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ProviderIdV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ResponseIdV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ResponseIdV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ResponseIdV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB10ResponseIdV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15ModelListResultO",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15ModelListResultO",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB21ProviderConfigurationV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "target": "s:s5ErrorP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB5UsageV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB5UsageV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB6OutputV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB6OutputV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB6TargetV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB6TargetV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB7ModelIdV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB7ModelIdV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB7ModelIdV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB7ModelIdV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB7RequestV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB7RequestV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB8OutputIdV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB8OutputIdV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB8OutputIdV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB8OutputIdV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB8ResponseV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB8ResponseV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9RequestIdV",
+      "target": "s:SH",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9RequestIdV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9RequestIdV",
+      "target": "s:SY",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9RequestIdV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9TextInputV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0aB9TextInputV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0abC5ErrorV",
+      "target": "s:SQ",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0abC5ErrorV",
+      "target": "s:s5ErrorP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnector0abC5ErrorV",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:20UniversalAiConnectorAAC",
+      "target": "s:s8SendableP",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsV5emptyACvpZ",
+      "target": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsV7entriesSDyAA0aB18ExtensionNamespaceVAA0aB10JsonObjectVGvp",
+      "target": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsV8removing9namespaceAcA0aB18ExtensionNamespaceV_tF",
+      "target": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsV9replacing9namespace7payloadAcA0aB18ExtensionNamespaceV_AA0aB10JsonObjectVtKF",
+      "target": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ExtensionsVyACSDyAA0aB18ExtensionNamespaceVAA0aB10JsonObjectVGKcfc",
+      "target": "s:20UniversalAiConnector0aB10ExtensionsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10JsonNumberV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB10JsonNumberV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10JsonNumberV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB10JsonNumberV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10JsonObjectV7membersSDySSAA0abD5ValueOGvp",
+      "target": "s:20UniversalAiConnector0aB10JsonObjectV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10JsonObjectVyAA0abD5ValueOSgSScip",
+      "target": "s:20UniversalAiConnector0aB10JsonObjectV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10JsonObjectVyACSDySSAA0abD5ValueOGcfc",
+      "target": "s:20UniversalAiConnector0aB10JsonObjectV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV14structuredJsonACvpZ",
+      "target": "s:20UniversalAiConnector0aB10OutputKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV4textACvpZ",
+      "target": "s:20UniversalAiConnector0aB10OutputKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB10OutputKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10OutputKindV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB10OutputKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ProviderIdV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB10ProviderIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ProviderIdV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB10ProviderIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ResponseIdV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB10ResponseIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB10ResponseIdV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB10ResponseIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV10responseIdAA0ab8ResponseG0Vvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV11outputIndexSiSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV15contractVersion4type8terminal8sequence10responseId07requestL006outputL00N5Index5delta0N05usage0K010extensionsACSS_AA0abdE4TypeVSbs5Int64VAA0ab8ResponseL0VAA0ab7RequestL0VSgAA0ab6OutputL0VSgSiSgSSSgAA0abW0VSgAA0aB5UsageVSgAA0abU0VSgAA0aB10ExtensionsVtcfc",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV15contractVersionSSvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV4typeAA0abdE4TypeVvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV5deltaSSSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV5usageAA0aB5UsageVSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV6outputAA0aB6OutputVSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV8outputIdAA0ab6OutputG0VSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV8responseAA0aB8ResponseVSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV8sequences5Int64Vvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV8terminalSbvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB11StreamEventV9requestIdAA0ab7RequestG0VSgvp",
+      "target": "s:20UniversalAiConnector0aB11StreamEventV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV12declarationsSDyAA0abD4NameVAA0abD11DeclarationVGvp",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV12supportState3forAA0abd7SupportG0OAA0abD4NameV_tF",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV5countSivp",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV5emptyACvpZ",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV7isEmptySbvp",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetV7resolve15providerProfile11modelTarget0I9OverridesAcA0ab8ProviderdH0V_AA0abJ0VACtKFZ",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetVyAA0abD11DeclarationVSgAA0abD4NameVcip",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13CapabilitySetVyACSDyAA0abD4NameVAA0abD11DeclarationVGKcfc",
+      "target": "s:20UniversalAiConnector0aB13CapabilitySetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV10validationACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV13authorizationACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV14authenticationACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV8internalACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV8notFoundACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV8protocolACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV8providerACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV9rateLimitACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB13ErrorCategoryV9transportACvpZ",
+      "target": "s:20UniversalAiConnector0aB13ErrorCategoryV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV16structuredOutputACvpZ",
+      "target": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV7isKnownSbvp",
+      "target": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14CapabilityNameV9streamingACvpZ",
+      "target": "s:20UniversalAiConnector0aB14CapabilityNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV10jsonSchemayAcA0ab16StructuredOutputG0VFZ",
+      "target": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV4kind6schemaAcA0abdE4KindV_AA0aB22StructuredOutputSchemaVSgtcfc",
+      "target": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV4kindAA0abdE4KindVvp",
+      "target": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV6schemaAA0aB22StructuredOutputSchemaVSgvp",
+      "target": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB14ResponseFormatV9plainTextACvpZ",
+      "target": "s:20UniversalAiConnector0aB14ResponseFormatV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV11displayNameSSSgvp",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV12capabilitiesAA0aB13CapabilitySetVvp",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV15contractVersion6target11displayName6limits12capabilities10extensionsACSS_AA0aB6TargetVSSSgAA0abD11TokenLimitsVSgAA0aB13CapabilitySetVAA0aB10ExtensionsVtKcfc",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV15contractVersionSSvp",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV6limitsAA0abD11TokenLimitsVSgvp",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelDescriptorV6targetAA0aB6TargetVvp",
+      "target": "s:20UniversalAiConnector0aB15ModelDescriptorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelListResultO10providerIdAA0ab8ProviderH0Vvp",
+      "target": "s:20UniversalAiConnector0aB15ModelListResultO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelListResultO11unsupportedyAcA0aB10ProviderIdV_tcACmF",
+      "target": "s:20UniversalAiConnector0aB15ModelListResultO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15ModelListResultO9supportedyAcA0aB10ProviderIdV_SayAA0abD10DescriptorVGtcACmF",
+      "target": "s:20UniversalAiConnector0aB15ModelListResultO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV11outputDeltaACvpZ",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV12usageUpdatedACvpZ",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV13outputStartedACvpZ",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV15outputCompletedACvpZ",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV15responseStartedACvpZ",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV17responseCompletedACvpZ",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB15StreamEventTypeV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB15StreamEventTypeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV13contentFilterACvpZ",
+      "target": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV15maxOutputTokensACvpZ",
+      "target": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV4stopACvpZ",
+      "target": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16CompletionReasonV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB16CompletionReasonV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV14maxInputTokenss5Int64VSgvp",
+      "target": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV15maxOutputTokenss5Int64VSgvp",
+      "target": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV19contextWindowTokens08maxInputI00j6OutputI0ACs5Int64VSg_A2ItKcfc",
+      "target": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB16ModelTokenLimitsV19contextWindowTokenss5Int64VSgvp",
+      "target": "s:20UniversalAiConnector0aB16ModelTokenLimitsV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV11unsupportedACvpZ",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV13semanticStateAA0abdeG0Ovp",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV7isKnownSbvp",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV7unknownACvpZ",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB17CapabilitySupportV9supportedACvpZ",
+      "target": "s:20UniversalAiConnector0aB17CapabilitySupportV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB18ExtensionNamespaceV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB18ExtensionNamespaceV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV10jsonSchemaACvpZ",
+      "target": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB18ResponseFormatKindV9plainTextACvpZ",
+      "target": "s:20UniversalAiConnector0aB18ResponseFormatKindV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV14maxSchemaBytesACvpZ",
+      "target": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV14maxSchemaDepthACvpZ",
+      "target": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV7isKnownSbvp",
+      "target": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB19CapabilityLimitNameV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB19CapabilityLimitNameV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV11temperatureSdSgvp",
+      "target": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV13stopSequencesSaySSGvp",
+      "target": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV15maxOutputTokens11temperature4topP13stopSequencesACSiSg_SdSgAISaySSGtcfc",
+      "target": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV15maxOutputTokensSiSgvp",
+      "target": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV4topPSdSgvp",
+      "target": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB20GenerationParametersV7defaultACvpZ",
+      "target": "s:20UniversalAiConnector0aB20GenerationParametersV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV6limitsSDyAA0abD9LimitNameVs5Int64VGvp",
+      "target": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV7support6limits10extensionsAcA0abD7SupportV_SDyAA0abD9LimitNameVs5Int64VGAA0aB10ExtensionsVtKcfc",
+      "target": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21CapabilityDeclarationV7supportAA0abD7SupportVvp",
+      "target": "s:20UniversalAiConnector0aB21CapabilityDeclarationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21ProviderConfigurationV10providerId7baseURL18credentialSupplierAcA0abdG0V_S2SyYbKctcfc",
+      "target": "s:20UniversalAiConnector0aB21ProviderConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21ProviderConfigurationV10providerIdAA0abdG0Vvp",
+      "target": "s:20UniversalAiConnector0aB21ProviderConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21ProviderConfigurationV7baseURLSSvp",
+      "target": "s:20UniversalAiConnector0aB21ProviderConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV2eeoiySbAC_ACtFZ",
+      "target": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV5valueAA0ab4JsonF0Ovp",
+      "target": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB21StructuredOutputValueV5valueAcA0ab4JsonF0O_tcfc",
+      "target": "s:20UniversalAiConnector0aB21StructuredOutputValueV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO11unsupportedyA2CmF",
+      "target": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO7unknownyA2CmF",
+      "target": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB22CapabilitySupportStateO9supportedyA2CmF",
+      "target": "s:20UniversalAiConnector0aB22CapabilitySupportStateO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV2eeoiySbAC_ACtFZ",
+      "target": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV5valueAA0aB9JsonValueOvp",
+      "target": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV5valueAcA0aB9JsonValueO_tcfc",
+      "target": "s:20UniversalAiConnector0aB22StructuredOutputSchemaV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV4code4path7messageACSS_S2Stcfc",
+      "target": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV4codeSSvp",
+      "target": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV4pathSSvp",
+      "target": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB23ContractValidationErrorV7messageSSvp",
+      "target": "s:20UniversalAiConnector0aB23ContractValidationErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV10providerIdAA0abdH0Vvp",
+      "target": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV12capabilitiesAA0abE3SetVvp",
+      "target": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV15contractVersion10providerId12capabilities10extensionsACSS_AA0abdJ0VAA0abE3SetVAA0aB10ExtensionsVtKcfc",
+      "target": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV15contractVersionSSvp",
+      "target": "s:20UniversalAiConnector0aB25ProviderCapabilityProfileV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV11inputTokens06outputF005totalF00E7Details0gI010extensionsACs5Int64V_A2KSDySSAKGAlA0aB10ExtensionsVtcfc",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV11inputTokenss5Int64Vvp",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV11totalTokenss5Int64Vvp",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV12inputDetailsSDySSs5Int64VGvp",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV12outputTokenss5Int64Vvp",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB5UsageV13outputDetailsSDySSs5Int64VGvp",
+      "target": "s:20UniversalAiConnector0aB5UsageV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV14structuredJsonAA0ab10StructuredD5ValueVSgvp",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV2id5index4kind4text14structuredJson10extensionsAcA0abD2IdV_SiAA0abD4KindVSSSgAA0ab10StructuredD5ValueVSgAA0aB10ExtensionsVtcfc",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV2idAA0abD2IdVvp",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV4kindAA0abD4KindVvp",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV4textSSSgvp",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6OutputV5indexSivp",
+      "target": "s:20UniversalAiConnector0aB6OutputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6TargetV10providerId05modelF0AcA0ab8ProviderF0V_AA0ab5ModelF0Vtcfc",
+      "target": "s:20UniversalAiConnector0aB6TargetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6TargetV10providerIdAA0ab8ProviderF0Vvp",
+      "target": "s:20UniversalAiConnector0aB6TargetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB6TargetV7modelIdAA0ab5ModelF0Vvp",
+      "target": "s:20UniversalAiConnector0aB6TargetV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7ModelIdV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB7ModelIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7ModelIdV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB7ModelIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV10generationAA0aB20GenerationParametersVvp",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV14responseFormatAA0ab8ResponseF0Vvp",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV15contractVersion6target5input14responseFormat10generation10extensionsACSS_AA0aB6TargetVSayAA0aB9TextInputVGAA0ab8ResponseJ0VAA0aB20GenerationParametersVAA0aB10ExtensionsVtcfc",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV15contractVersionSSvp",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV22currentContractVersionSSvpZ",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV5inputSayAA0aB9TextInputVGvp",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB7RequestV6targetAA0aB6TargetVvp",
+      "target": "s:20UniversalAiConnector0aB7RequestV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8OutputIdV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB8OutputIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8OutputIdV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB8OutputIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV15contractVersion2id9requestId6target7outputs5usage16completionReason10extensionsACSS_AA0abdI0VAA0ab7RequestI0VSgAA0aB6TargetVSayAA0aB6OutputVGAA0aB5UsageVSgAA0ab10CompletionN0VAA0aB10ExtensionsVtcfc",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV15contractVersionSSvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV16completionReasonAA0ab10CompletionF0Vvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV2idAA0abD2IdVvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV5usageAA0aB5UsageVSgvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV6targetAA0aB6TargetVvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV7outputsSayAA0aB6OutputVGvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB8ResponseV9requestIdAA0ab7RequestF0VSgvp",
+      "target": "s:20UniversalAiConnector0aB8ResponseV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV12invalidInputACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV14invalidRequestACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV16connectorFailureACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV16incompleteStreamACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV16simulatedFailureACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV21invalidStreamSequenceACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV24unsupportedTerminalEventACvpZ",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV8rawValueACSS_tKcfc",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9ErrorCodeV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB9ErrorCodeV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV4userACvpZ",
+      "target": "s:20UniversalAiConnector0aB9InputRoleV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV6systemACvpZ",
+      "target": "s:20UniversalAiConnector0aB9InputRoleV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB9InputRoleV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB9InputRoleV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV9assistantACvpZ",
+      "target": "s:20UniversalAiConnector0aB9InputRoleV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9InputRoleV9developerACvpZ",
+      "target": "s:20UniversalAiConnector0aB9InputRoleV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO4nullyA2CmF",
+      "target": "s:20UniversalAiConnector0aB9JsonValueO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO5arrayyACSayACGcACmF",
+      "target": "s:20UniversalAiConnector0aB9JsonValueO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO6numberyAcA0abD6NumberVcACmF",
+      "target": "s:20UniversalAiConnector0aB9JsonValueO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO6objectyAcA0abD6ObjectVcACmF",
+      "target": "s:20UniversalAiConnector0aB9JsonValueO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO6stringyACSScACmF",
+      "target": "s:20UniversalAiConnector0aB9JsonValueO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9JsonValueO7booleanyACSbcACmF",
+      "target": "s:20UniversalAiConnector0aB9JsonValueO",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9RequestIdV8rawValueACSS_tcfc",
+      "target": "s:20UniversalAiConnector0aB9RequestIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9RequestIdV8rawValueSSvp",
+      "target": "s:20UniversalAiConnector0aB9RequestIdV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9TextInputV4role7contentAcA0abE4RoleV_SStcfc",
+      "target": "s:20UniversalAiConnector0aB9TextInputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9TextInputV4roleAA0abE4RoleVvp",
+      "target": "s:20UniversalAiConnector0aB9TextInputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0aB9TextInputV7contentSSvp",
+      "target": "s:20UniversalAiConnector0aB9TextInputV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV20connectTimeoutMilliss5Int64Vvp",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV20maximumTimeoutMilliss5Int64VvpZ",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV20requestTimeoutMilliss5Int64Vvp",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV27defaultConnectTimeoutMilliss5Int64VvpZ",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV27defaultRequestTimeoutMilliss5Int64VvpZ",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV9providers20connectTimeoutMillis07requestgH0ACSayAA0ab8ProviderD0VG_s5Int64VAKtcfc",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC13ConfigurationV9providersSayAA0ab8ProviderD0VGvp",
+      "target": "s:20UniversalAiConnector0abC13ConfigurationV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC5ErrorV10extensionsAA0aB10ExtensionsVvp",
+      "target": "s:20UniversalAiConnector0abC5ErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC5ErrorV4codeAA0abD4CodeVvp",
+      "target": "s:20UniversalAiConnector0abC5ErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC5ErrorV7messageSSvp",
+      "target": "s:20UniversalAiConnector0abC5ErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC5ErrorV8category4code7message8metadata10extensionsAcA0abD8CategoryV_AA0abD4CodeVSSAA0aB10JsonObjectVSgAA0aB10ExtensionsVtKcfc",
+      "target": "s:20UniversalAiConnector0abC5ErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC5ErrorV8categoryAA0abD8CategoryVvp",
+      "target": "s:20UniversalAiConnector0abC5ErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnector0abC5ErrorV8metadataAA0aB10JsonObjectVSgvp",
+      "target": "s:20UniversalAiConnector0abC5ErrorV",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAAC10listModels10providerIdAA0aB15ModelListResultOAA0ab8ProviderG0V_tYaKF",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAAC13configurationAbA0abC13ConfigurationV_tKcfc",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAAC5closeyyF",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAAC6stream7requestScsyAA0aB11StreamEventVs5Error_pGAA0aB7RequestV_tF",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAAC7respond2toAA0aB8ResponseVAA0aB7RequestV_tYaKF",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAAC7versionSSvp",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:20UniversalAiConnectorAACABycfc",
+      "target": "s:20UniversalAiConnectorAAC",
+      "constraints": []
+    }
+  ]
+}

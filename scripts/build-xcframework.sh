@@ -7,8 +7,11 @@ case "${1:---debug}" in
   --release) BUILD_TYPE=release; BUILD_TASK=assembleUniversalAiConnectorBridgeReleaseXCFramework ;;
   *) echo "Usage: $0 [--debug|--release]" >&2; exit 2 ;;
 esac
-if [[ "$#" -gt 1 ]]; then
-  echo "Usage: $0 [--debug|--release]" >&2
+REBUILD=0
+if [[ "$#" -eq 2 && "$1" == "--release" && "$2" == "--rebuild" ]]; then
+  REBUILD=1
+elif [[ "$#" -gt 1 ]]; then
+  echo "Usage: $0 [--debug|--release [--rebuild]]" >&2
   exit 2
 fi
 SOURCE="$ROOT/bridge/build/XCFrameworks/$BUILD_TYPE/UniversalAiConnectorBridge.xcframework"
@@ -18,7 +21,11 @@ XCFRAMEWORK_INFO="$DESTINATION/Info.plist"
 # shellcheck source=xcframework-header-audit.sh
 source "$ROOT/scripts/xcframework-header-audit.sh"
 
-"$ROOT/gradlew" ":bridge:$BUILD_TASK" :bridge:releaseNativeNoticeInputs
+if [[ "$REBUILD" == 1 ]]; then
+  "$ROOT/gradlew" ":bridge:$BUILD_TASK" :bridge:releaseNativeNoticeInputs --rerun-tasks
+else
+  "$ROOT/gradlew" ":bridge:$BUILD_TASK" :bridge:releaseNativeNoticeInputs
+fi
 
 if [[ ! -d "$SOURCE" ]]; then
   echo "Expected XCFramework was not generated at: $SOURCE" >&2

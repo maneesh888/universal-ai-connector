@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import shutil
 import tempfile
+import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -98,6 +100,19 @@ class NativeNoticesTest(unittest.TestCase):
         (self.destination / 'THIRD_PARTY_NOTICES/extra').symlink_to(self.root / 'absent')
         with self.assertRaises(ValueError):
             notices.validate(self.root, self.resolved, self.destination, verify=True)
+
+    def test_archive_only_cli_is_read_only_and_does_not_waive_staging_resolution(self):
+        notices.validate(self.root, self.resolved, self.destination)
+        command = [sys.executable, '-I', '-B', str(ROOT / 'scripts/native-notices.py'), '--root', str(self.root), '--destination', str(self.destination)]
+        before = {str(p.relative_to(self.destination)): p.read_bytes() for p in self.destination.rglob('*') if p.is_file()}
+        result = subprocess.run(command + ['--verify', '--archive-verify'], capture_output=True, text=True, timeout=15)
+        self.assertEqual(result.returncode, 0)
+        self.assertIn('no local resolution asserted', result.stdout)
+        self.assertEqual(before, {str(p.relative_to(self.destination)): p.read_bytes() for p in self.destination.rglob('*') if p.is_file()})
+        for options in [[], ['--verify'], ['--archive-verify'], ['--verify', '--archive-verify', '--resolved', str(self.resolved)]]:
+            self.assertNotEqual(subprocess.run(command + options, capture_output=True, timeout=15).returncode, 0)
+        (self.destination / 'LICENSE').write_text('tampered')
+        self.assertNotEqual(subprocess.run(command + ['--verify', '--archive-verify'], capture_output=True, timeout=15).returncode, 0)
 
 
 if __name__ == '__main__':
