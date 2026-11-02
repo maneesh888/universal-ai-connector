@@ -1,0 +1,30 @@
+===== Source attribution (1 files; example commonMain/io/ktor/utils/io/pool/ByteArrayPool.kt) =====
+/*
+ * Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (1 files; example commonMain/io/ktor/utils/io/core/internal/CharArraySequence.kt) =====
+/*
+ * Copyright 2014-2022 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example commonMain/io/ktor/utils/io/Deprecation.kt) =====
+/*
+ * Copyright 2014-2023 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (45 files; example posixMain/io/ktor/utils/io/ByteChannel.posix.kt) =====
+/*
+ * Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (11 files; example posixMain/io/ktor/utils/io/IODispatcher.posix.kt) =====
+/*
+ * Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example darwinMain/CharsetDarwin.kt) =====
+/*
+ * Copyright 2014-2026 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+

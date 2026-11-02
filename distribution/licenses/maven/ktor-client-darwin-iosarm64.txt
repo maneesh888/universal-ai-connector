@@ -1,0 +1,35 @@
+===== Source attribution (2 files; example darwinMain/io/ktor/client/engine/darwin/Darwin.kt) =====
+/*
+ * Copyright 2014-2019 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example darwinMain/io/ktor/client/engine/ios/Ios.kt) =====
+/*
+ * Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example darwinMain/io/ktor/client/engine/darwin/internal/DarwinRequestUtils.kt) =====
+/*
+ * Copyright 2014-2022 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example darwinMain/io/ktor/client/engine/darwin/DarwinClientEngineConfig.kt) =====
+/*
+ * Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example darwinMain/io/ktor/client/engine/darwin/KtorNSURLSessionDelegate.kt) =====
+/*
+ * Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example darwinMain/io/ktor/client/engine/darwin/DarwinClientEngine.kt) =====
+/*
+ * Copyright 2014-2026 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example darwinMain/io/ktor/client/engine/darwin/TimeoutUtils.kt) =====
+/*
+* Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+

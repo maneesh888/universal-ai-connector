@@ -1,0 +1,50 @@
+===== Source attribution (2 files; example posixMain/io/ktor/client/plugins/DefaultTransformIos.kt) =====
+/*
+ * Copyright 2014-2019 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (7 files; example commonMain/io/ktor/client/content/ObservableContent.kt) =====
+/*
+ * Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example posixMain/io/ktor/client/plugins/observer/ResponseObserverContextPosix.kt) =====
+/*
+ * Copyright 2014-2022 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (4 files; example commonMain/io/ktor/client/plugins/sse/ClientSSESession.kt) =====
+/*
+ * Copyright 2014-2023 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (18 files; example posixMain/io/ktor/client/HttpClient.kt) =====
+/*
+ * Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (16 files; example jvmAndPosixMain/UnixSockets.jvmAndPosix.kt) =====
+/*
+ * Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (15 files; example posixMain/io/ktor/client/utils/CoroutineUtilsPosix.kt) =====
+/*
+ * Copyright 2014-2026 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (36 files; example commonMain/io/ktor/client/HttpClientConfig.kt) =====
+/*
+* Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+
+===== Source attribution (1 files; example commonMain/io/ktor/client/request/builders.kt) =====
+/*
+* Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+
+===== Source attribution (1 files; example commonMain/io/ktor/client/plugins/websocket/WebSocketContent.kt) =====
+/*
+* Copyright 2014-2026 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+

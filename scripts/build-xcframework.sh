@@ -18,7 +18,7 @@ XCFRAMEWORK_INFO="$DESTINATION/Info.plist"
 # shellcheck source=xcframework-header-audit.sh
 source "$ROOT/scripts/xcframework-header-audit.sh"
 
-"$ROOT/gradlew" ":bridge:$BUILD_TASK"
+"$ROOT/gradlew" ":bridge:$BUILD_TASK" :bridge:releaseNativeNoticeInputs
 
 if [[ ! -d "$SOURCE" ]]; then
   echo "Expected XCFramework was not generated at: $SOURCE" >&2
@@ -213,5 +213,9 @@ validate_xcframework_metadata 0
 validate_xcframework_metadata 1
 validate_framework_slice ios-arm64
 validate_framework_slice ios-arm64-simulator
+
+python3 -I -B "$ROOT/scripts/native-notices.py" \
+  --resolved "$ROOT/bridge/build/distribution/native-notice-inputs.tsv" \
+  --destination "$DESTINATION"
 
 echo "XCFramework ready with ios-arm64 and ios-arm64-simulator slices: $DESTINATION"

@@ -48,7 +48,7 @@ class DriverTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "distribution").mkdir()
-            (root / "gradle.properties").write_text("GROUP=com.myadidi\nVERSION_NAME=0.1.0-0.p8.1\n")
+            (root / "gradle.properties").write_text("GROUP=com.myadidi\nVERSION_NAME=0.1.0-alpha.0.p8.1\n")
             (root / "distribution/release.properties").write_text("MAVEN_ARTIFACT_ID=universal-ai-connector\n")
             output = root / "bridge/build/distribution"
             output.mkdir(parents=True)

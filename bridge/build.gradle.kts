@@ -1,6 +1,7 @@
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import java.util.Properties
+import java.security.MessageDigest
 
 plugins {
     kotlin("multiplatform")
@@ -387,4 +388,37 @@ tasks.register<Test>("gatewayLiveTest") {
             )
         }
     }
+}
+
+// Bind bundled-native notice review to the actual resolved iOS link inputs.
+abstract class NativeNoticeInputs : DefaultTask() {
+    @get:Input
+    abstract val rows: ListProperty<String>
+
+    @get:OutputFile
+    abstract val destination: RegularFileProperty
+
+    @TaskAction
+    fun writeInventory() {
+        destination.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(rows.get().sorted().joinToString("\n", postfix = "\n"))
+        }
+    }
+}
+
+tasks.register<NativeNoticeInputs>("releaseNativeNoticeInputs") {
+    destination.set(layout.buildDirectory.file("distribution/native-notice-inputs.tsv"))
+    rows.set(listOf("iosArm64CompileKlibraries", "iosSimulatorArm64CompileKlibraries").map { configurationName ->
+        configurations.getByName(configurationName).incoming.artifacts.resolvedArtifacts.map { artifacts ->
+            artifacts.map { artifact ->
+                val id = artifact.id.componentIdentifier as org.gradle.api.artifacts.component.ModuleComponentIdentifier
+                val hash = MessageDigest.getInstance("SHA-256")
+                    .digest(artifact.file.readBytes()).joinToString("") { "%02x".format(it) }
+                "$configurationName\t${id.group}:${id.module}:${id.version}\t${artifact.file.name}\t$hash"
+            }
+        }
+    }.let { providersList ->
+        providersList[0].zip(providersList[1]) { first, second -> first + second }
+    })
 }

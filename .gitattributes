@@ -3,3 +3,8 @@ contracts/**/*.json text eol=lf
 
 # Kotlin ABI dumps require their generated final separator; keep all other whitespace checks.
 bridge/api/jvm/*.api text eol=lf whitespace=-blank-at-eof
+
+# Preserve upstream legal texts byte-for-byte, including their original line endings/spacing.
+distribution/licenses/**/*.txt -text -whitespace
+distribution/licenses/**/LICENSE* -text -whitespace
+distribution/licenses/**/NOTICE* -text -whitespace

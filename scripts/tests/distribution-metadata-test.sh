@@ -37,6 +37,32 @@ if run_fixture_checker "$VERSION_DRIFT"; then
   exit 1
 fi
 
+LEGACY_VERSION="$TEST_DIRECTORY/legacy-version"
+copy_fixture "$LEGACY_VERSION"
+python3 - "$LEGACY_VERSION" <<'LEGACY_PY'
+from pathlib import Path
+import sys
+for path in Path(sys.argv[1]).rglob('*'):
+    if not path.is_file() or path.is_symlink(): continue
+    try: text = path.read_text()
+    except UnicodeError: continue
+    if '0.1.0-alpha.0.p8.1' in text:
+        path.write_text(text.replace('0.1.0-alpha.0.p8.1', '0.1.0-0.p8.1'))
+LEGACY_PY
+if run_fixture_checker "$LEGACY_VERSION"; then
+  echo "The distribution check must reject the coherent legacy version with different Maven ordering." >&2
+  exit 1
+fi
+
+SCOPE_DRIFT="$TEST_DIRECTORY/scope-drift"
+copy_fixture "$SCOPE_DRIFT"
+sed -i.bak 's/^RELEASE_SCOPE=.*/RELEASE_SCOPE=all/' "$SCOPE_DRIFT/distribution/release.properties"
+rm "$SCOPE_DRIFT/distribution/release.properties.bak"
+if run_fixture_checker "$SCOPE_DRIFT"; then
+  echo "The distribution check must reject expansion beyond the approved libraries-first scope." >&2
+  exit 1
+fi
+
 ASSET_DRIFT="$TEST_DIRECTORY/asset-drift"
 copy_fixture "$ASSET_DRIFT"
 sed -i.bak 's/^APPLE_ASSET_NAME=.*/APPLE_ASSET_NAME=mutable.zip/' "$ASSET_DRIFT/distribution/release.properties"

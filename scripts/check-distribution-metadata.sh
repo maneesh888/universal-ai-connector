@@ -79,8 +79,8 @@ if [[ "$group" != "com.myadidi" ]]; then
   echo "P8 Maven group must remain com.myadidi." >&2
   exit 1
 fi
-if [[ ! "$version" =~ ^0\.1\.0-0\.p8\.[1-9][0-9]*$ ]]; then
-  echo "P8 VERSION_NAME must be a SemVer candidate shaped 0.1.0-0.p8.N." >&2
+if [[ ! "$version" =~ ^0\.1\.0-alpha\.0\.p8\.[1-9][0-9]*$ ]]; then
+  echo "P8 VERSION_NAME must be a SemVer candidate shaped 0.1.0-alpha.0.p8.N." >&2
   exit 1
 fi
 
@@ -97,6 +97,7 @@ require_exact_release_property POM_DEVELOPER_ID maneesh888
 require_exact_release_property POM_DEVELOPER_NAME maneesh888
 require_exact_release_property POM_DEVELOPER_URL https://github.com/maneesh888
 require_exact_release_property RELEASE_TAG_TEMPLATE 'v{version}'
+require_exact_release_property RELEASE_SCOPE libraries-first
 require_exact_release_property APPLE_ASSET_NAME UniversalAiConnectorBridge.xcframework.zip
 require_exact_release_property MACOS_ASSET_TEMPLATE 'universal-ai-connector-desktop-{version}-macos-aarch64.dmg'
 require_exact_release_property WINDOWS_ASSET_TEMPLATE 'universal-ai-connector-desktop-{version}-windows-x86_64.msi'

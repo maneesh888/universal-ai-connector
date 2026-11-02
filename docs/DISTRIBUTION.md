@@ -4,25 +4,27 @@ This branch prepares one nonpublishing identity/version contract and explicitly 
 (PR #88, merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646`, with successful resulting-main
 CI). It does not publish a package, tag, release asset, or remote Swift manifest.
 
-The proposed disposable proof version is `0.1.0-0.p8.1`, retained from the existing draft.
-Its first prerelease identifier is numeric, so it precedes P9's reserved `0.1.0-alpha.1`.
+The owner approved `0.1.0-alpha.0.p8.1` and the public libraries-first scope on November 2, 2026.
+The shared `alpha` qualifier with numeric `0` keeps this P8 proof before P9's reserved
+`0.1.0-alpha.1` under SemVer and Maven's documented qualifier ordering.
 `gradle.properties` owns the canonical group and version; builds derive Kotlin runtime and
 host version metadata from those properties. This candidate is reviewable preparation;
-the owner must approve the exact immutable version, destinations and artifacts before publication.
+version/scope approval does not authorize credential creation/import, signing, merge, upload or
+publication. Final artifact/source identity and those actions retain their separate approval gates.
 
-## Proposed identity
+## Approved preparation identity
 
 | Item | Candidate contract |
 |---|---|
-| Maven root coordinate | `com.myadidi:universal-ai-connector:0.1.0-0.p8.1` |
-| Git tag | `v0.1.0-0.p8.1` |
+| Maven root coordinate | `com.myadidi:universal-ai-connector:0.1.0-alpha.0.p8.1` |
+| Git tag | `v0.1.0-alpha.0.p8.1` |
 | Project and SCM | `https://github.com/maneesh888/universal-ai-connector` |
 | License / developer | MIT / `maneesh888` GitHub profile |
 | Swift product / binary target | `UniversalAiConnector` / `UniversalAiConnectorBridge` |
 | Apple asset | `UniversalAiConnectorBridge.xcframework.zip` plus `.sha256` |
-| Apple publisher-signing policy | Proposed unsigned proof; no publisher identity is configured |
+| Apple publisher-signing policy | Approved unsigned iOS prerelease scope; no publisher identity is configured |
 | Desktop application ID | `com.myadidi.universalai.connector.desktop` |
-| Desktop assets | Versioned macOS ARM64 DMG, Windows x86_64 MSI and Linux x86_64 DEB templates in `distribution/release.properties` |
+| Desktop assets | Deferred from the first library release; future DMG/MSI/DEB templates remain recorded in `distribution/release.properties` |
 
 The verified Central namespace is `com.myadidi`. The Portal displayed Verified on October 29,
 2026 at 19:14 UTC after domain verification for `myadidi.com`; the nonsecret evidence record is
@@ -30,8 +32,8 @@ The verified Central namespace is `com.myadidi`. The Portal displayed Verified o
 publishing-token authentication or deployment-validation claim. Do not repeat namespace setup
 merely because an older draft described it as missing.
 
-Public inspection on October 29 found no repository tags and returned HTTP 404 for this Maven
-artifact's public metadata. Recheck the exact tag/version and Portal deployment state before any
+Public inspection on November 2 found no proposed tag and returned HTTP 404 for all five
+`0.1.0-alpha.0.p8.1` public POM paths. Recheck the exact tag/version and Portal deployment state before any
 immutable publication. A failed immutable candidate must use a new version.
 
 ## Verified build baseline
@@ -63,8 +65,9 @@ load real release credentials. Actual credential probes are separate opt-in host
 An explicit scope is required. `libraries` probes GitHub read access, unused public tag/Maven
 paths, a supplied Central token and supplied PGP signing material. It does not require or invoke
 Developer ID or notarization. `desktop` probes GitHub plus the configured macOS Developer ID
-identity and notary profile, without Maven credentials. `all` runs both for the current unified
-release plan. A scoped probe does not waive any required target in the actual publication plan.
+identity and notary profile, without Maven credentials. `all` runs both sets of probes. The
+approved first publication scope is `libraries-first`; desktop probes remain for separately
+authorized later work. This scope does not waive desktop requirements for eventual P8 completion.
 
 | Scope | Host inputs; values must never be printed or committed |
 |---|---|
@@ -97,8 +100,10 @@ The existing local builder now accepts an explicit release configuration:
 
 It validates the same iOS ARM64 device/simulator slices, minimum OS and private bridge boundaries.
 Local archive/runtime consistency proof is preparation, not remote SwiftPM distribution proof.
-The current roadmap still sequences desktop acceptance before unified publication; a libraries-first
-publication path requires an explicit roadmap/scope decision and must not silently skip those gates.
+The owner explicitly approved libraries-first publication. Maven and iOS SwiftPM preparation may
+precede desktop distribution; Developer ID, notarization and matching-host installers are deferred
+from this prerelease and remain required for the later desktop/P8 closeout. Ordinary desktop code
+verification remains part of the existing checks.
 
 References: [Central requirements](https://central.sonatype.org/publish/requirements/),
 [SwiftPM binary distribution](https://developer.apple.com/documentation/xcode/distributing-binary-frameworks-as-swift-packages),
@@ -166,11 +171,25 @@ the owner has approved the precise key action. This preparation has not parsed/i
 signed anything. The public key/fingerprint and real signature validation still need a secure
 approved handoff, followed by credentialed Portal validation before any upload or release.
 
-The proof version remains proposed, the contract PR remains held, and the unified publication
-scope has not been changed. These local operations create no immutable public artifacts.
+The version and libraries-first scope are approved for preparation. The contract PR remains held;
+no signing-key/token creation or import, merge, upload or publication has been approved. These
+local operations create no immutable public artifacts.
 
 Sources: [KMP publication](https://kotlinlang.org/docs/multiplatform/multiplatform-publish-lib-setup.html),
 [Android KMP publication](https://developer.android.com/kotlin/multiplatform/plugin),
 [Dokka formats](https://kotlinlang.org/docs/dokka-gradle.html),
 [Kotlin ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html),
 [Gradle signing](https://docs.gradle.org/9.7.1/userguide/signing_plugin.html).
+
+Version precedence reference: [Maven version ordering](https://maven.apache.org/pom.html#Version_Order_Specification).
+
+### Bundled native notices
+
+XCFramework preparation copies the unchanged project MIT `LICENSE` and the reviewed
+`distribution/licenses` texts into the artifact. `releaseNativeNoticeInputs` binds both iOS
+Klib graphs to the SHA-256 inventory; `scripts/native-notices.py` rejects dependency drift or
+missing/modified notices before the artifact is accepted. The inventory includes exact source
+archive provenance and separate Kotlin standard-library/runtime attribution. Conservative notice
+retention is documented in that directory; resolved inputs do not prove final binary inclusion.
+Release ZIP verification must preserve this notice tree. A locally staged archive is not hosted
+SwiftPM resolution proof.

@@ -53,7 +53,8 @@ def archive_entries(path):
 
 
 def validate(repository, group, version, metadata):
-    require(group == "com.myadidi" and re.fullmatch(r"0\.1\.0-0\.p8\.[1-9][0-9]*", version), "Invalid candidate identity.")
+    require(group == "com.myadidi" and re.fullmatch(r"0\.1\.0-alpha\.0\.p8\.[1-9][0-9]*", version), "Invalid candidate identity.")
+    require(metadata.get("RELEASE_SCOPE") == "libraries-first", "Publication scope is not the approved library scope.")
     repository = Path(repository).resolve()
     base = metadata["MAVEN_ARTIFACT_ID"]
     expected = {base: "jar", base + "-jvm": "jar", base + "-android": "aar", base + "-iosarm64": "klib", base + "-iossimulatorarm64": "klib"}

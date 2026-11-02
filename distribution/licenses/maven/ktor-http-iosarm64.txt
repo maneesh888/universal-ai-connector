@@ -1,0 +1,35 @@
+===== Source attribution (4 files; example commonMain/io/ktor/http/Url.kt) =====
+/*
+ * Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (1 files; example commonMain/io/ktor/http/content/CompressedContent.kt) =====
+/*
+ * Copyright 2014-2023 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (6 files; example commonMain/io/ktor/http/Codecs.kt) =====
+/*
+ * Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example commonMain/io/ktor/http/ContentTypes.kt) =====
+/*
+ * Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example commonMain/io/ktor/http/HttpHeaders.kt) =====
+/*
+ * Copyright 2014-2026 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (44 files; example posixMain/io/ktor/http/URLBuilderPosix.kt) =====
+/*
+* Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+
+===== Source attribution (1 files; example commonMain/io/ktor/http/HttpStatusCode.kt) =====
+/*
+* Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+

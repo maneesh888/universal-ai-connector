@@ -15,7 +15,7 @@ inv = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(inv)
 META = inv.properties(inv.ROOT / "distribution/release.properties")
 GROUP = "com.myadidi"
-VERSION = "0.1.0-0.p8.1"
+VERSION = "0.1.0-alpha.0.p8.1"
 BASE = "universal-ai-connector"
 
 

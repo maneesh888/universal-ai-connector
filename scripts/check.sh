@@ -28,6 +28,8 @@ run_hygiene() {
   python3 -I -B "$ROOT/scripts/tests/sample-parity-test.py"
   python3 -I -B "$ROOT/scripts/tests/openrouter-limits-test.py"
   python3 -I -B "$ROOT/scripts/tests/openrouter-diagnostic-test.py"
+  python3 -I -B "$ROOT/scripts/native-notices.py"
+  python3 -I -B "$ROOT/scripts/tests/native-notices-test.py"
   python3 -I -B "$ROOT/scripts/tests/maven-inventory-test.py"
   python3 -I -B "$ROOT/scripts/tests/maven-distribution-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
