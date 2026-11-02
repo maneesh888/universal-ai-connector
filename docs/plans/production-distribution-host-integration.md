@@ -2,11 +2,14 @@
 
 ## Status and activation gate
 
-Status: `In progress`; P8-A through P8-D are completed in this candidate; no subsequent package is active.
+Status: `In progress`; P8-A through P8-D are authoritative; the explicitly requested P8-F unsigned local Maven preparation is active, building on the unmerged P8-E contract candidate.
 
-P0-P7 and P8-A through P8-C are authoritative; this candidate proposes P8-D completion. P8 remains the sole roadmap milestone marked `In progress`.
-P8-E through P8-L remain `Not started`, and P9 remains inactive until P8 closes
-authoritatively.
+P0-P7 and P8-A through P8-D are authoritative. PR #88 merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646` and resulting-main CI run 40956077878 passed. P8 remains the sole roadmap milestone marked `In progress`.
+P8-G through P8-L remain `Not started`, and P9 remains inactive until P8 closes
+authoritatively. On November 2 the owner approved a first public library prerelease at
+`0.1.0-alpha.0.p8.1`: Maven Central under `com.myadidi` and GitHub-hosted iOS SwiftPM,
+with unsigned iOS XCFrameworks. Desktop publication is deferred from that release, not
+removed from P8 completion. Credential setup, merge, upload and publication remain separately gated.
 
 The earlier plan-authoring change had `Milestone effect: none`. P8-A advances the roadmap with the
 iOS sample-host workflow but adds no publication task, remote artifact, release tag, or supported
@@ -81,7 +84,7 @@ reduce the already accepted cross-platform package surface or authorize a new ho
 
 ### Kotlin and Android
 
-- The public root coordinate is `io.github.maneesh888:universal-ai-connector:<version>`.
+- The public root coordinate is `com.myadidi:universal-ai-connector:<version>`.
 - Maven Central is the supported remote repository. The Kotlin Multiplatform root publication owns
   Gradle metadata and selects the published JVM or Android variant for supported consumers.
 - The root, JVM, Android, `iosArm64`, and `iosSimulatorArm64` publications are uploaded together so
@@ -147,10 +150,12 @@ a URL-based binary target, and a checksum produced by `swift package compute-che
 - `gradle.properties` owns one canonical SemVer value used by Maven publications, Swift release
   assets, documentation, and desktop metadata. Scripts may derive platform-safe package versions
   but must reject semantic drift.
-- P8 remote proof uses a disposable version that has lower SemVer precedence than
-  `0.1.0-alpha.1`; the exact value is frozen in P8-E after confirming that it is unused remotely.
-- Tags use `v<version>`. No immutable remote publication occurs until Kotlin, Apple, and desktop
-  distribution-producing changes are frozen together. Publication commands fail closed unless the
+- P8 library proof uses the owner-approved `0.1.0-alpha.0.p8.1`, below the reserved
+  `0.1.0-alpha.1` under SemVer and Maven qualifier ordering. Recheck unused immutable destinations
+  and finalize source/artifact identity before publication; version approval is not upload authority.
+- Tags use `v<version>`. For the approved first libraries-only release, Kotlin and Apple
+  distribution-producing changes must be frozen together. Desktop-producing changes are deferred
+  to a separately verified publication; all remain required for P8 completion. Commands fail closed unless the
   tag, Gradle version, remote Swift manifest, archives, and exact `HEAD` agree and the worktree is
   clean.
 - Published Maven versions, Git tags, release assets, checksums, and Swift binary-target URLs are
@@ -342,9 +347,7 @@ account UI, remote publication, or packaged distribution claim.
 
 ### P8-D: Cross-platform sample behavior parity
 
-Status: `Completed` in this candidate. Completion becomes authoritative only after
-exact-head full and applicable live verification, required CI, independent review, guarded
-merge, and resulting-main verification pass. The closing PR owns those evidence identities.
+Status: `Completed`, authoritative through PR #88 and successful resulting-main CI run 40956077878. The closing PR records the exact reviewed head, local full/live proof and matching merge tree.
 
 Activated October 29, 2026 for the requested release preparation. The authoritative
 [case catalog](../../samples/parity/cases.json) binds shared observable invariants to
@@ -367,7 +370,9 @@ claim.
 
 ### P8-E: Distribution contract and version freeze
 
-Status: `Not started`.
+Status: Version and libraries-first scope approved for preparation on November 2; signing identity, final artifact/source freeze and authoritative acceptance remain pending in draft PR #62. This is not a completed distribution freeze.
+
+The approved preparation version is `0.1.0-alpha.0.p8.1`, targeting public Maven Central and a public GitHub-hosted SwiftPM prerelease. This replaces the earlier numeric-first proof label to preserve ordering below P9 alpha.1 across ecosystems. Exact final artifacts, signing actions, merge, upload and publication still require their applicable gates. The namespace `com.myadidi` is already verified; see the nonsecret namespace evidence and target-scoped requirements in [the distribution contract](../DISTRIBUTION.md).
 
 - Freeze the disposable P8 proof version.
 - Add canonical group/version properties and record minimum JDK, Android, Kotlin, Swift, Xcode,
@@ -375,14 +380,21 @@ Status: `Not started`.
 - Freeze Maven coordinates, POM identity, Git tag and release-asset naming, desktop package IDs,
   signing identities, and required release inputs.
 - Add credential-free validation that versions and distribution metadata agree.
-- Confirm Central namespace ownership and macOS signing/notarization readiness without adding a
-  credential to the repository or ordinary CI.
+- Record verified Central namespace ownership and separate target-scoped credential readiness.
+  Library probes must not require desktop Developer ID/notarization; those remain requirements
+  for the macOS desktop publication path. Real authenticated probes require the appropriate
+  explicit host inputs and are separate from ordinary CI and local artifact preparation.
 
-P8-E adds no remote publication, remote Swift binary, desktop application, or release claim.
+P8-E adds no remote publication, remote Swift manifest, desktop application, or release claim.
+An existing release XCFramework build and temporary local archive/consumer may establish
+version consistency during preparation; they do not complete P8-G or remote distribution.
+The owner-approved libraries-first decision defers desktop publication prerequisites from the
+first library release. Desktop signing/notarization and matching-host acceptance remain required
+for later desktop publication and overall P8 closeout; no other verification gate is waived.
 
 ### P8-F: Reproducible Maven publication and Kotlin consumers
 
-Status: `Not started`.
+Status: `In progress` for the explicit October 30 request to finish unsigned local Maven publication, metadata, inventory and standalone consumers. This requested nonpublishing preparation may build on the unmerged P8-E candidate; it does not make E authoritative, approve an immutable version, import signing keys or permit upload/publication. Signing and remote distribution remain unverified.
 
 - Configure the Kotlin Multiplatform root and every referenced JVM, Android, `iosArm64`, and
   `iosSimulatorArm64` publication with complete POM, sources, Central-compatible Javadoc, Gradle
@@ -394,6 +406,12 @@ Status: `Not started`.
   sample that presents a Kotlin/Native publication as the supported Apple entry point.
 - Add public API compatibility validation for the supported Kotlin surface.
 - Keep remote credentials optional for deterministic checks and fail closed for remote commands.
+
+Implemented validation routes are `./scripts/check-maven-distribution.sh local` (Mac publication graph,
+checksums, docs/source inventory, Kotlin ABI, standalone JVM runtime and Android compilation), and
+`local --android-runtime <emulator-serial>` for separate no-network Android construction/closure
+acceptance. These remain unsigned local proofs; actual signing, Portal validation and public
+resolution are not completed by this package preparation.
 
 ### P8-G: Reproducible Apple binary distribution
 
@@ -431,22 +449,26 @@ Status: `Not started`.
 - Prepare package checksums and the required signing/notarization path without publishing an
   immutable artifact.
 
-### P8-J: Unified release-candidate freeze and publication
+### P8-J: Release-candidate freeze and publication (libraries first)
 
 Status: `Not started`.
 
-- Freeze one exact candidate head only after Maven, Apple, and desktop distribution-producing
-  changes are complete. Finalize the remote Swift checksum in that head and require a rebuild from
+- Freeze the first exact library candidate only after Maven and Apple distribution-producing
+  changes are complete. The deferred desktop candidate additionally requires P8-H/P8-I and its
+  separately approved version/source. Finalize the remote Swift checksum and require a rebuild from
   the tagged head to reproduce it.
-- Run the complete deterministic, API, packaging, secret, matching-host desktop, and affected-live
-  gates, exact-head ordinary CI and live policy, and independent exact-head review while the
-  candidate pull request remains a draft. Create no tag or immutable remote artifact yet.
+- Run the complete deterministic, API, packaging, secret and affected-live gates, exact-head
+  ordinary CI and live policy, and independent exact-head review. Matching-host desktop package
+  proof additionally applies when desktop publication is in scope. Existing desktop code checks
+  remain part of ordinary verification. Keep the candidate pull request draft. Create no tag
+  or immutable remote artifact yet.
 - Guardedly merge the reviewed candidate, wait for the resulting `main` CI to pass, and prove the
   resulting squash commit has the identical Git tree as the reviewed PR head. The resulting `main`
   commit becomes the publication source identity; a tree mismatch invalidates the candidate.
 - From a clean checkout of that accepted `main` commit, rebuild and revalidate every artifact, then
-  create the disposable P8 tag and GitHub prerelease. Upload the checksummed XCFramework and
-  matching-source desktop packages through the reviewed local release path; do not add a
+  create the approved P8 tag and GitHub prerelease. Upload the checksummed XCFramework for the
+  library release; matching-source desktop packages apply only to a later approved desktop scope.
+  Use the reviewed local release path; do not add a
   write-enabled publication workflow.
 - Publish the same version and accepted `main` source identity to Maven Central, verify every
   required root and target publication, Javadoc/source artifact, checksum, and signature, then
@@ -454,8 +476,9 @@ Status: `Not started`.
 - Record artifact URLs, version, source head, commands, dates, signing/notarization results, and
   proof limits without retaining credentials or build directories.
 
-Missing namespace ownership, portal credentials, signing material, notarization inputs, Central
-validation, GitHub release assets, or checksum agreement is a blocker, not a skipped success. A
+Missing namespace ownership, portal credentials, signing material, Central validation, GitHub
+release assets or checksum agreement blocks the library release. Missing notarization and
+matching-host package proof blocks desktop publication. None is a skipped success. A
 failed immutable candidate is never overwritten; fixes use a new lower-than-alpha.1 candidate
 version and repeat P8-J.
 

@@ -1,0 +1,1 @@
+No embedded copyright or license comment blocks occur in this target source archive. Apache-2.0 terms and project-level notices are retained separately.

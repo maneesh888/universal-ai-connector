@@ -1,0 +1,958 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.myadidi:bridge>
+final enum class com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState : kotlin/Enum<com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState> { // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState|null[0]
+    enum entry SUPPORTED // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.SUPPORTED|null[0]
+    enum entry UNKNOWN // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.UNKNOWN|null[0]
+    enum entry UNSUPPORTED // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.UNSUPPORTED|null[0]
+
+    final val entries // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState> // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState> // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState.values|values#static(){}[0]
+}
+
+final class com.myadidi.universalai.connector.contract.extension/Extensions { // com.myadidi.universalai.connector.contract.extension/Extensions|null[0]
+    final val entries // com.myadidi.universalai.connector.contract.extension/Extensions.entries|{}entries[0]
+        final fun <get-entries>(): kotlin.collections/Map<com.myadidi.universalai.connector.contract.extension/ExtensionNamespace, com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue> // com.myadidi.universalai.connector.contract.extension/Extensions.entries.<get-entries>|<get-entries>(){}[0]
+    final val isEmpty // com.myadidi.universalai.connector.contract.extension/Extensions.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/Extensions.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val size // com.myadidi.universalai.connector.contract.extension/Extensions.size|{}size[0]
+        final fun <get-size>(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/Extensions.size.<get-size>|<get-size>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/Extensions.equals|equals(kotlin.Any?){}[0]
+    final fun get(com.myadidi.universalai.connector.contract.extension/ExtensionNamespace): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue? // com.myadidi.universalai.connector.contract.extension/Extensions.get|get(com.myadidi.universalai.connector.contract.extension.ExtensionNamespace){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/Extensions.hashCode|hashCode(){}[0]
+    final fun with(com.myadidi.universalai.connector.contract.extension/ExtensionNamespace, com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract.extension/Extensions.with|with(com.myadidi.universalai.connector.contract.extension.ExtensionNamespace;com.myadidi.universalai.connector.contract.extension.ExtensionValue.ObjectValue){}[0]
+    final fun without(com.myadidi.universalai.connector.contract.extension/ExtensionNamespace): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract.extension/Extensions.without|without(com.myadidi.universalai.connector.contract.extension.ExtensionNamespace){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract.extension/Extensions.Companion|null[0]
+        final val Empty // com.myadidi.universalai.connector.contract.extension/Extensions.Companion.Empty|{}Empty[0]
+            final fun <get-Empty>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract.extension/Extensions.Companion.Empty.<get-Empty>|<get-Empty>(){}[0]
+
+        final fun of(kotlin.collections/Map<com.myadidi.universalai.connector.contract.extension/ExtensionNamespace, com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue>): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract.extension/Extensions.Companion.of|of(kotlin.collections.Map<com.myadidi.universalai.connector.contract.extension.ExtensionNamespace,com.myadidi.universalai.connector.contract.extension.ExtensionValue.ObjectValue>){}[0]
+        final fun of(kotlin/Array<out kotlin/Pair<com.myadidi.universalai.connector.contract.extension/ExtensionNamespace, com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue>>...): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract.extension/Extensions.Companion.of|of(kotlin.Array<out|kotlin.Pair<com.myadidi.universalai.connector.contract.extension.ExtensionNamespace,com.myadidi.universalai.connector.contract.extension.ExtensionValue.ObjectValue>>...){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract.extension/Extensions> // com.myadidi.universalai.connector.contract.extension/Extensions.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/StructuredOutputSchema { // com.myadidi.universalai.connector.contract/StructuredOutputSchema|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/StructuredOutputSchema.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/StructuredOutputSchema.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/StructuredOutputSchema.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/StructuredOutputSchema.Companion|null[0]
+        final fun parse(kotlin/String): com.myadidi.universalai.connector.contract/StructuredOutputSchema // com.myadidi.universalai.connector.contract/StructuredOutputSchema.Companion.parse|parse(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/StructuredOutputSchema> // com.myadidi.universalai.connector.contract/StructuredOutputSchema.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/StructuredOutputValue { // com.myadidi.universalai.connector.contract/StructuredOutputValue|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/StructuredOutputValue.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/StructuredOutputValue.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/StructuredOutputValue.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/StructuredOutputValue.Companion|null[0]
+        final fun parse(kotlin/String): com.myadidi.universalai.connector.contract/StructuredOutputValue // com.myadidi.universalai.connector.contract/StructuredOutputValue.Companion.parse|parse(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/StructuredOutputValue> // com.myadidi.universalai.connector.contract/StructuredOutputValue.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration { // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport, kotlin.collections/Map<com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName, kotlin/Long> = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiCapabilitySupport;kotlin.collections.Map<com.myadidi.universalai.connector.contract.UniversalAiCapabilityLimitName,kotlin.Long>;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val limits // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.limits|{}limits[0]
+        final fun <get-limits>(): kotlin.collections/Map<com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName, kotlin/Long> // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.limits.<get-limits>|<get-limits>(){}[0]
+    final val support // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.support|{}support[0]
+        final fun <get-support>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.support.<get-support>|<get-support>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.hashCode|hashCode(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration> // com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet { // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet|null[0]
+    final val declarations // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.declarations|{}declarations[0]
+        final fun <get-declarations>(): kotlin.collections/Map<com.myadidi.universalai.connector.contract/UniversalAiCapabilityName, com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration> // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.declarations.<get-declarations>|<get-declarations>(){}[0]
+    final val isEmpty // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val size // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.size|{}size[0]
+        final fun <get-size>(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.size.<get-size>|<get-size>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.equals|equals(kotlin.Any?){}[0]
+    final fun get(com.myadidi.universalai.connector.contract/UniversalAiCapabilityName): com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration? // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.get|get(com.myadidi.universalai.connector.contract.UniversalAiCapabilityName){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.hashCode|hashCode(){}[0]
+    final fun supportState(com.myadidi.universalai.connector.contract/UniversalAiCapabilityName): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.supportState|supportState(com.myadidi.universalai.connector.contract.UniversalAiCapabilityName){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion|null[0]
+        final val Empty // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion.Empty|{}Empty[0]
+            final fun <get-Empty>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion.Empty.<get-Empty>|<get-Empty>(){}[0]
+
+        final fun of(kotlin.collections/Map<com.myadidi.universalai.connector.contract/UniversalAiCapabilityName, com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration>): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion.of|of(kotlin.collections.Map<com.myadidi.universalai.connector.contract.UniversalAiCapabilityName,com.myadidi.universalai.connector.contract.UniversalAiCapabilityDeclaration>){}[0]
+        final fun of(kotlin/Array<out kotlin/Pair<com.myadidi.universalai.connector.contract/UniversalAiCapabilityName, com.myadidi.universalai.connector.contract/UniversalAiCapabilityDeclaration>>...): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion.of|of(kotlin.Array<out|kotlin.Pair<com.myadidi.universalai.connector.contract.UniversalAiCapabilityName,com.myadidi.universalai.connector.contract.UniversalAiCapabilityDeclaration>>...){}[0]
+        final fun resolve(com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile, com.myadidi.universalai.connector.contract/UniversalAiTarget, com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet = ...): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion.resolve|resolve(com.myadidi.universalai.connector.contract.UniversalAiProviderCapabilityProfile;com.myadidi.universalai.connector.contract.UniversalAiTarget;com.myadidi.universalai.connector.contract.UniversalAiCapabilitySet){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet> // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiError { // com.myadidi.universalai.connector.contract/UniversalAiError|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiErrorCategory, com.myadidi.universalai.connector.contract/UniversalAiErrorCode, kotlin/String, com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue? = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiError.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiErrorCategory;com.myadidi.universalai.connector.contract.UniversalAiErrorCode;kotlin.String;com.myadidi.universalai.connector.contract.extension.ExtensionValue.ObjectValue?;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val category // com.myadidi.universalai.connector.contract/UniversalAiError.category|{}category[0]
+        final fun <get-category>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiError.category.<get-category>|<get-category>(){}[0]
+    final val code // com.myadidi.universalai.connector.contract/UniversalAiError.code|{}code[0]
+        final fun <get-code>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiError.code.<get-code>|<get-code>(){}[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiError.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiError.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val message // com.myadidi.universalai.connector.contract/UniversalAiError.message|{}message[0]
+        final fun <get-message>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiError.message.<get-message>|<get-message>(){}[0]
+    final val metadata // com.myadidi.universalai.connector.contract/UniversalAiError.metadata|{}metadata[0]
+        final fun <get-metadata>(): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue? // com.myadidi.universalai.connector.contract/UniversalAiError.metadata.<get-metadata>|<get-metadata>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiError.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiError.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiError.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiError.Companion|null[0]
+        final fun fromJson(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiError // com.myadidi.universalai.connector.contract/UniversalAiError.Companion.fromJson|fromJson(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiError> // com.myadidi.universalai.connector.contract/UniversalAiError.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiException : kotlin/Exception { // com.myadidi.universalai.connector.contract/UniversalAiException|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiError) // com.myadidi.universalai.connector.contract/UniversalAiException.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiError){}[0]
+
+    final val error // com.myadidi.universalai.connector.contract/UniversalAiException.error|{}error[0]
+        final fun <get-error>(): com.myadidi.universalai.connector.contract/UniversalAiError // com.myadidi.universalai.connector.contract/UniversalAiException.error.<get-error>|<get-error>(){}[0]
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters { // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters|null[0]
+    constructor <init>(kotlin/Int? = ..., kotlin/Double? = ..., kotlin/Double? = ..., kotlin.collections/List<kotlin/String> = ...) // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.<init>|<init>(kotlin.Int?;kotlin.Double?;kotlin.Double?;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val isEmpty // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val maxOutputTokens // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.maxOutputTokens|{}maxOutputTokens[0]
+        final fun <get-maxOutputTokens>(): kotlin/Int? // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.maxOutputTokens.<get-maxOutputTokens>|<get-maxOutputTokens>(){}[0]
+    final val stopSequences // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.stopSequences|{}stopSequences[0]
+        final fun <get-stopSequences>(): kotlin.collections/List<kotlin/String> // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.stopSequences.<get-stopSequences>|<get-stopSequences>(){}[0]
+    final val temperature // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.temperature|{}temperature[0]
+        final fun <get-temperature>(): kotlin/Double? // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.temperature.<get-temperature>|<get-temperature>(){}[0]
+    final val topP // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.topP|{}topP[0]
+        final fun <get-topP>(): kotlin/Double? // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.topP.<get-topP>|<get-topP>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.hashCode|hashCode(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.Companion|null[0]
+        final val Default // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.Companion.Default|{}Default[0]
+            final fun <get-Default>(): com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.Companion.Default.<get-Default>|<get-Default>(){}[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters> // com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor { // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiTarget, kotlin/String? = ..., com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits? = ..., com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiTarget;kotlin.String?;com.myadidi.universalai.connector.contract.UniversalAiModelTokenLimits?;com.myadidi.universalai.connector.contract.UniversalAiCapabilitySet;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val capabilities // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.capabilities|{}capabilities[0]
+        final fun <get-capabilities>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.capabilities.<get-capabilities>|<get-capabilities>(){}[0]
+    final val contractVersion // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.contractVersion|{}contractVersion[0]
+        final fun <get-contractVersion>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.contractVersion.<get-contractVersion>|<get-contractVersion>(){}[0]
+    final val displayName // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.displayName|{}displayName[0]
+        final fun <get-displayName>(): kotlin/String? // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.displayName.<get-displayName>|<get-displayName>(){}[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val limits // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.limits|{}limits[0]
+        final fun <get-limits>(): com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits? // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.limits.<get-limits>|<get-limits>(){}[0]
+    final val target // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.target|{}target[0]
+        final fun <get-target>(): com.myadidi.universalai.connector.contract/UniversalAiTarget // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.target.<get-target>|<get-target>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.Companion|null[0]
+        final fun fromJson(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.Companion.fromJson|fromJson(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor> // com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits { // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits|null[0]
+    constructor <init>(kotlin/Long? = ..., kotlin/Long? = ..., kotlin/Long? = ...) // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.<init>|<init>(kotlin.Long?;kotlin.Long?;kotlin.Long?){}[0]
+
+    final val contextWindowTokens // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.contextWindowTokens|{}contextWindowTokens[0]
+        final fun <get-contextWindowTokens>(): kotlin/Long? // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.contextWindowTokens.<get-contextWindowTokens>|<get-contextWindowTokens>(){}[0]
+    final val maxInputTokens // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.maxInputTokens|{}maxInputTokens[0]
+        final fun <get-maxInputTokens>(): kotlin/Long? // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.maxInputTokens.<get-maxInputTokens>|<get-maxInputTokens>(){}[0]
+    final val maxOutputTokens // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.maxOutputTokens|{}maxOutputTokens[0]
+        final fun <get-maxOutputTokens>(): kotlin/Long? // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.maxOutputTokens.<get-maxOutputTokens>|<get-maxOutputTokens>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.hashCode|hashCode(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits> // com.myadidi.universalai.connector.contract/UniversalAiModelTokenLimits.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiOutput { // com.myadidi.universalai.connector.contract/UniversalAiOutput|null[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiOutput.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiOutput.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val id // com.myadidi.universalai.connector.contract/UniversalAiOutput.id|{}id[0]
+        final fun <get-id>(): com.myadidi.universalai.connector.contract/OutputId // com.myadidi.universalai.connector.contract/UniversalAiOutput.id.<get-id>|<get-id>(){}[0]
+    final val index // com.myadidi.universalai.connector.contract/UniversalAiOutput.index|{}index[0]
+        final fun <get-index>(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiOutput.index.<get-index>|<get-index>(){}[0]
+    final val kind // com.myadidi.universalai.connector.contract/UniversalAiOutput.kind|{}kind[0]
+        final fun <get-kind>(): com.myadidi.universalai.connector.contract/UniversalAiOutputKind // com.myadidi.universalai.connector.contract/UniversalAiOutput.kind.<get-kind>|<get-kind>(){}[0]
+    final val structuredJson // com.myadidi.universalai.connector.contract/UniversalAiOutput.structuredJson|{}structuredJson[0]
+        final fun <get-structuredJson>(): com.myadidi.universalai.connector.contract/StructuredOutputValue? // com.myadidi.universalai.connector.contract/UniversalAiOutput.structuredJson.<get-structuredJson>|<get-structuredJson>(){}[0]
+    final val text // com.myadidi.universalai.connector.contract/UniversalAiOutput.text|{}text[0]
+        final fun <get-text>(): kotlin/String? // com.myadidi.universalai.connector.contract/UniversalAiOutput.text.<get-text>|<get-text>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiOutput.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiOutput.hashCode|hashCode(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiOutput.Companion|null[0]
+        final fun future(com.myadidi.universalai.connector.contract/OutputId, kotlin/Int, com.myadidi.universalai.connector.contract/UniversalAiOutputKind, com.myadidi.universalai.connector.contract.extension/Extensions = ...): com.myadidi.universalai.connector.contract/UniversalAiOutput // com.myadidi.universalai.connector.contract/UniversalAiOutput.Companion.future|future(com.myadidi.universalai.connector.contract.OutputId;kotlin.Int;com.myadidi.universalai.connector.contract.UniversalAiOutputKind;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiOutput> // com.myadidi.universalai.connector.contract/UniversalAiOutput.Companion.serializer|serializer(){}[0]
+        final fun structuredJson(com.myadidi.universalai.connector.contract/OutputId, kotlin/Int, com.myadidi.universalai.connector.contract/StructuredOutputValue, com.myadidi.universalai.connector.contract.extension/Extensions = ...): com.myadidi.universalai.connector.contract/UniversalAiOutput // com.myadidi.universalai.connector.contract/UniversalAiOutput.Companion.structuredJson|structuredJson(com.myadidi.universalai.connector.contract.OutputId;kotlin.Int;com.myadidi.universalai.connector.contract.StructuredOutputValue;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+        final fun text(com.myadidi.universalai.connector.contract/OutputId, kotlin/Int, kotlin/String, com.myadidi.universalai.connector.contract.extension/Extensions = ...): com.myadidi.universalai.connector.contract/UniversalAiOutput // com.myadidi.universalai.connector.contract/UniversalAiOutput.Companion.text|text(com.myadidi.universalai.connector.contract.OutputId;kotlin.Int;kotlin.String;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile { // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/ProviderId, com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.<init>|<init>(com.myadidi.universalai.connector.contract.ProviderId;com.myadidi.universalai.connector.contract.UniversalAiCapabilitySet;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val capabilities // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.capabilities|{}capabilities[0]
+        final fun <get-capabilities>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySet // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.capabilities.<get-capabilities>|<get-capabilities>(){}[0]
+    final val contractVersion // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.contractVersion|{}contractVersion[0]
+        final fun <get-contractVersion>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.contractVersion.<get-contractVersion>|<get-contractVersion>(){}[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val providerId // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.providerId|{}providerId[0]
+        final fun <get-providerId>(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.providerId.<get-providerId>|<get-providerId>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.Companion|null[0]
+        final fun fromJson(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.Companion.fromJson|fromJson(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile> // com.myadidi.universalai.connector.contract/UniversalAiProviderCapabilityProfile.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiRequest { // com.myadidi.universalai.connector.contract/UniversalAiRequest|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiTarget, kotlin.collections/List<com.myadidi.universalai.connector.contract/UniversalAiTextInput>, com.myadidi.universalai.connector.contract/UniversalAiResponseFormat = ..., com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiRequest.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiTarget;kotlin.collections.List<com.myadidi.universalai.connector.contract.UniversalAiTextInput>;com.myadidi.universalai.connector.contract.UniversalAiResponseFormat;com.myadidi.universalai.connector.contract.UniversalAiGenerationParameters;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val contractVersion // com.myadidi.universalai.connector.contract/UniversalAiRequest.contractVersion|{}contractVersion[0]
+        final fun <get-contractVersion>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiRequest.contractVersion.<get-contractVersion>|<get-contractVersion>(){}[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiRequest.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiRequest.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val generation // com.myadidi.universalai.connector.contract/UniversalAiRequest.generation|{}generation[0]
+        final fun <get-generation>(): com.myadidi.universalai.connector.contract/UniversalAiGenerationParameters // com.myadidi.universalai.connector.contract/UniversalAiRequest.generation.<get-generation>|<get-generation>(){}[0]
+    final val input // com.myadidi.universalai.connector.contract/UniversalAiRequest.input|{}input[0]
+        final fun <get-input>(): kotlin.collections/List<com.myadidi.universalai.connector.contract/UniversalAiTextInput> // com.myadidi.universalai.connector.contract/UniversalAiRequest.input.<get-input>|<get-input>(){}[0]
+    final val responseFormat // com.myadidi.universalai.connector.contract/UniversalAiRequest.responseFormat|{}responseFormat[0]
+        final fun <get-responseFormat>(): com.myadidi.universalai.connector.contract/UniversalAiResponseFormat // com.myadidi.universalai.connector.contract/UniversalAiRequest.responseFormat.<get-responseFormat>|<get-responseFormat>(){}[0]
+    final val target // com.myadidi.universalai.connector.contract/UniversalAiRequest.target|{}target[0]
+        final fun <get-target>(): com.myadidi.universalai.connector.contract/UniversalAiTarget // com.myadidi.universalai.connector.contract/UniversalAiRequest.target.<get-target>|<get-target>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiRequest.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiRequest.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiRequest.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiRequest.Companion|null[0]
+        final fun fromJson(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiRequest // com.myadidi.universalai.connector.contract/UniversalAiRequest.Companion.fromJson|fromJson(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiRequest> // com.myadidi.universalai.connector.contract/UniversalAiRequest.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiResponse { // com.myadidi.universalai.connector.contract/UniversalAiResponse|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/ResponseId, com.myadidi.universalai.connector.contract/RequestId? = ..., com.myadidi.universalai.connector.contract/UniversalAiTarget, kotlin.collections/List<com.myadidi.universalai.connector.contract/UniversalAiOutput>, com.myadidi.universalai.connector.contract/UniversalAiUsage? = ..., com.myadidi.universalai.connector.contract/UniversalAiCompletionReason, com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiResponse.<init>|<init>(com.myadidi.universalai.connector.contract.ResponseId;com.myadidi.universalai.connector.contract.RequestId?;com.myadidi.universalai.connector.contract.UniversalAiTarget;kotlin.collections.List<com.myadidi.universalai.connector.contract.UniversalAiOutput>;com.myadidi.universalai.connector.contract.UniversalAiUsage?;com.myadidi.universalai.connector.contract.UniversalAiCompletionReason;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val completionReason // com.myadidi.universalai.connector.contract/UniversalAiResponse.completionReason|{}completionReason[0]
+        final fun <get-completionReason>(): com.myadidi.universalai.connector.contract/UniversalAiCompletionReason // com.myadidi.universalai.connector.contract/UniversalAiResponse.completionReason.<get-completionReason>|<get-completionReason>(){}[0]
+    final val contractVersion // com.myadidi.universalai.connector.contract/UniversalAiResponse.contractVersion|{}contractVersion[0]
+        final fun <get-contractVersion>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiResponse.contractVersion.<get-contractVersion>|<get-contractVersion>(){}[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiResponse.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiResponse.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val id // com.myadidi.universalai.connector.contract/UniversalAiResponse.id|{}id[0]
+        final fun <get-id>(): com.myadidi.universalai.connector.contract/ResponseId // com.myadidi.universalai.connector.contract/UniversalAiResponse.id.<get-id>|<get-id>(){}[0]
+    final val outputs // com.myadidi.universalai.connector.contract/UniversalAiResponse.outputs|{}outputs[0]
+        final fun <get-outputs>(): kotlin.collections/List<com.myadidi.universalai.connector.contract/UniversalAiOutput> // com.myadidi.universalai.connector.contract/UniversalAiResponse.outputs.<get-outputs>|<get-outputs>(){}[0]
+    final val requestId // com.myadidi.universalai.connector.contract/UniversalAiResponse.requestId|{}requestId[0]
+        final fun <get-requestId>(): com.myadidi.universalai.connector.contract/RequestId? // com.myadidi.universalai.connector.contract/UniversalAiResponse.requestId.<get-requestId>|<get-requestId>(){}[0]
+    final val target // com.myadidi.universalai.connector.contract/UniversalAiResponse.target|{}target[0]
+        final fun <get-target>(): com.myadidi.universalai.connector.contract/UniversalAiTarget // com.myadidi.universalai.connector.contract/UniversalAiResponse.target.<get-target>|<get-target>(){}[0]
+    final val usage // com.myadidi.universalai.connector.contract/UniversalAiResponse.usage|{}usage[0]
+        final fun <get-usage>(): com.myadidi.universalai.connector.contract/UniversalAiUsage? // com.myadidi.universalai.connector.contract/UniversalAiResponse.usage.<get-usage>|<get-usage>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiResponse.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiResponse.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiResponse.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiResponse.Companion|null[0]
+        final fun fromJson(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiResponse // com.myadidi.universalai.connector.contract/UniversalAiResponse.Companion.fromJson|fromJson(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiResponse> // com.myadidi.universalai.connector.contract/UniversalAiResponse.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiResponseFormat { // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val kind // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.kind|{}kind[0]
+        final fun <get-kind>(): com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.kind.<get-kind>|<get-kind>(){}[0]
+    final val schema // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.schema|{}schema[0]
+        final fun <get-schema>(): com.myadidi.universalai.connector.contract/StructuredOutputSchema? // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.schema.<get-schema>|<get-schema>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.hashCode|hashCode(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.Companion|null[0]
+        final val PlainText // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.Companion.PlainText|{}PlainText[0]
+            final fun <get-PlainText>(): com.myadidi.universalai.connector.contract/UniversalAiResponseFormat // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.Companion.PlainText.<get-PlainText>|<get-PlainText>(){}[0]
+
+        final fun future(com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind): com.myadidi.universalai.connector.contract/UniversalAiResponseFormat // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.Companion.future|future(com.myadidi.universalai.connector.contract.UniversalAiResponseFormatKind){}[0]
+        final fun jsonSchema(com.myadidi.universalai.connector.contract/StructuredOutputSchema): com.myadidi.universalai.connector.contract/UniversalAiResponseFormat // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.Companion.jsonSchema|jsonSchema(com.myadidi.universalai.connector.contract.StructuredOutputSchema){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiResponseFormat> // com.myadidi.universalai.connector.contract/UniversalAiResponseFormat.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiStreamEvent { // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiStreamEventType, kotlin/Boolean, kotlin/Long, com.myadidi.universalai.connector.contract/ResponseId, com.myadidi.universalai.connector.contract/RequestId? = ..., com.myadidi.universalai.connector.contract/OutputId? = ..., kotlin/Int? = ..., kotlin/String? = ..., com.myadidi.universalai.connector.contract/UniversalAiOutput? = ..., com.myadidi.universalai.connector.contract/UniversalAiUsage? = ..., com.myadidi.universalai.connector.contract/UniversalAiResponse? = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiStreamEventType;kotlin.Boolean;kotlin.Long;com.myadidi.universalai.connector.contract.ResponseId;com.myadidi.universalai.connector.contract.RequestId?;com.myadidi.universalai.connector.contract.OutputId?;kotlin.Int?;kotlin.String?;com.myadidi.universalai.connector.contract.UniversalAiOutput?;com.myadidi.universalai.connector.contract.UniversalAiUsage?;com.myadidi.universalai.connector.contract.UniversalAiResponse?;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val contractVersion // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.contractVersion|{}contractVersion[0]
+        final fun <get-contractVersion>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.contractVersion.<get-contractVersion>|<get-contractVersion>(){}[0]
+    final val delta // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.delta|{}delta[0]
+        final fun <get-delta>(): kotlin/String? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.delta.<get-delta>|<get-delta>(){}[0]
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val output // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.output|{}output[0]
+        final fun <get-output>(): com.myadidi.universalai.connector.contract/UniversalAiOutput? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.output.<get-output>|<get-output>(){}[0]
+    final val outputId // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.outputId|{}outputId[0]
+        final fun <get-outputId>(): com.myadidi.universalai.connector.contract/OutputId? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.outputId.<get-outputId>|<get-outputId>(){}[0]
+    final val outputIndex // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.outputIndex|{}outputIndex[0]
+        final fun <get-outputIndex>(): kotlin/Int? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.outputIndex.<get-outputIndex>|<get-outputIndex>(){}[0]
+    final val requestId // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.requestId|{}requestId[0]
+        final fun <get-requestId>(): com.myadidi.universalai.connector.contract/RequestId? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.requestId.<get-requestId>|<get-requestId>(){}[0]
+    final val response // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.response|{}response[0]
+        final fun <get-response>(): com.myadidi.universalai.connector.contract/UniversalAiResponse? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.response.<get-response>|<get-response>(){}[0]
+    final val responseId // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.responseId|{}responseId[0]
+        final fun <get-responseId>(): com.myadidi.universalai.connector.contract/ResponseId // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.responseId.<get-responseId>|<get-responseId>(){}[0]
+    final val sequence // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.sequence|{}sequence[0]
+        final fun <get-sequence>(): kotlin/Long // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.sequence.<get-sequence>|<get-sequence>(){}[0]
+    final val terminal // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.terminal|{}terminal[0]
+        final fun <get-terminal>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.terminal.<get-terminal>|<get-terminal>(){}[0]
+    final val type // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.type|{}type[0]
+        final fun <get-type>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.type.<get-type>|<get-type>(){}[0]
+    final val usage // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.usage|{}usage[0]
+        final fun <get-usage>(): com.myadidi.universalai.connector.contract/UniversalAiUsage? // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.usage.<get-usage>|<get-usage>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.hashCode|hashCode(){}[0]
+    final fun toJson(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.toJson|toJson(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.Companion|null[0]
+        final fun fromJson(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiStreamEvent // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.Companion.fromJson|fromJson(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiStreamEvent> // com.myadidi.universalai.connector.contract/UniversalAiStreamEvent.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiStreamSequenceValidator { // com.myadidi.universalai.connector.contract/UniversalAiStreamSequenceValidator|null[0]
+    constructor <init>() // com.myadidi.universalai.connector.contract/UniversalAiStreamSequenceValidator.<init>|<init>(){}[0]
+
+    final fun accept(com.myadidi.universalai.connector.contract/UniversalAiStreamEvent) // com.myadidi.universalai.connector.contract/UniversalAiStreamSequenceValidator.accept|accept(com.myadidi.universalai.connector.contract.UniversalAiStreamEvent){}[0]
+    final fun finish() // com.myadidi.universalai.connector.contract/UniversalAiStreamSequenceValidator.finish|finish(){}[0]
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiTarget { // com.myadidi.universalai.connector.contract/UniversalAiTarget|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/ProviderId, com.myadidi.universalai.connector.contract/ModelId) // com.myadidi.universalai.connector.contract/UniversalAiTarget.<init>|<init>(com.myadidi.universalai.connector.contract.ProviderId;com.myadidi.universalai.connector.contract.ModelId){}[0]
+
+    final val modelId // com.myadidi.universalai.connector.contract/UniversalAiTarget.modelId|{}modelId[0]
+        final fun <get-modelId>(): com.myadidi.universalai.connector.contract/ModelId // com.myadidi.universalai.connector.contract/UniversalAiTarget.modelId.<get-modelId>|<get-modelId>(){}[0]
+    final val providerId // com.myadidi.universalai.connector.contract/UniversalAiTarget.providerId|{}providerId[0]
+        final fun <get-providerId>(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector.contract/UniversalAiTarget.providerId.<get-providerId>|<get-providerId>(){}[0]
+
+    final fun component1(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector.contract/UniversalAiTarget.component1|component1(){}[0]
+    final fun component2(): com.myadidi.universalai.connector.contract/ModelId // com.myadidi.universalai.connector.contract/UniversalAiTarget.component2|component2(){}[0]
+    final fun copy(com.myadidi.universalai.connector.contract/ProviderId = ..., com.myadidi.universalai.connector.contract/ModelId = ...): com.myadidi.universalai.connector.contract/UniversalAiTarget // com.myadidi.universalai.connector.contract/UniversalAiTarget.copy|copy(com.myadidi.universalai.connector.contract.ProviderId;com.myadidi.universalai.connector.contract.ModelId){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiTarget.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiTarget.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiTarget.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.myadidi.universalai.connector.contract/UniversalAiTarget> { // com.myadidi.universalai.connector.contract/UniversalAiTarget.$serializer|null[0]
+        final val descriptor // com.myadidi.universalai.connector.contract/UniversalAiTarget.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.myadidi.universalai.connector.contract/UniversalAiTarget.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.myadidi.universalai.connector.contract/UniversalAiTarget.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.myadidi.universalai.connector.contract/UniversalAiTarget // com.myadidi.universalai.connector.contract/UniversalAiTarget.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.myadidi.universalai.connector.contract/UniversalAiTarget) // com.myadidi.universalai.connector.contract/UniversalAiTarget.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.myadidi.universalai.connector.contract.UniversalAiTarget){}[0]
+    }
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiTarget.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiTarget> // com.myadidi.universalai.connector.contract/UniversalAiTarget.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiTextInput { // com.myadidi.universalai.connector.contract/UniversalAiTextInput|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/UniversalAiInputRole, kotlin/String) // com.myadidi.universalai.connector.contract/UniversalAiTextInput.<init>|<init>(com.myadidi.universalai.connector.contract.UniversalAiInputRole;kotlin.String){}[0]
+
+    final val content // com.myadidi.universalai.connector.contract/UniversalAiTextInput.content|{}content[0]
+        final fun <get-content>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiTextInput.content.<get-content>|<get-content>(){}[0]
+    final val role // com.myadidi.universalai.connector.contract/UniversalAiTextInput.role|{}role[0]
+        final fun <get-role>(): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiTextInput.role.<get-role>|<get-role>(){}[0]
+
+    final fun component1(): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiTextInput.component1|component1(){}[0]
+    final fun component2(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiTextInput.component2|component2(){}[0]
+    final fun copy(com.myadidi.universalai.connector.contract/UniversalAiInputRole = ..., kotlin/String = ...): com.myadidi.universalai.connector.contract/UniversalAiTextInput // com.myadidi.universalai.connector.contract/UniversalAiTextInput.copy|copy(com.myadidi.universalai.connector.contract.UniversalAiInputRole;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiTextInput.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiTextInput.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiTextInput.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.myadidi.universalai.connector.contract/UniversalAiTextInput> { // com.myadidi.universalai.connector.contract/UniversalAiTextInput.$serializer|null[0]
+        final val descriptor // com.myadidi.universalai.connector.contract/UniversalAiTextInput.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.myadidi.universalai.connector.contract/UniversalAiTextInput.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.myadidi.universalai.connector.contract/UniversalAiTextInput.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.myadidi.universalai.connector.contract/UniversalAiTextInput // com.myadidi.universalai.connector.contract/UniversalAiTextInput.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.myadidi.universalai.connector.contract/UniversalAiTextInput) // com.myadidi.universalai.connector.contract/UniversalAiTextInput.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.myadidi.universalai.connector.contract.UniversalAiTextInput){}[0]
+    }
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiTextInput.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiTextInput> // com.myadidi.universalai.connector.contract/UniversalAiTextInput.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector.contract/UniversalAiUsage { // com.myadidi.universalai.connector.contract/UniversalAiUsage|null[0]
+    constructor <init>(kotlin/Long, kotlin/Long, kotlin/Long, kotlin.collections/Map<kotlin/String, kotlin/Long> = ..., kotlin.collections/Map<kotlin/String, kotlin/Long> = ..., com.myadidi.universalai.connector.contract.extension/Extensions = ...) // com.myadidi.universalai.connector.contract/UniversalAiUsage.<init>|<init>(kotlin.Long;kotlin.Long;kotlin.Long;kotlin.collections.Map<kotlin.String,kotlin.Long>;kotlin.collections.Map<kotlin.String,kotlin.Long>;com.myadidi.universalai.connector.contract.extension.Extensions){}[0]
+
+    final val extensions // com.myadidi.universalai.connector.contract/UniversalAiUsage.extensions|{}extensions[0]
+        final fun <get-extensions>(): com.myadidi.universalai.connector.contract.extension/Extensions // com.myadidi.universalai.connector.contract/UniversalAiUsage.extensions.<get-extensions>|<get-extensions>(){}[0]
+    final val inputDetails // com.myadidi.universalai.connector.contract/UniversalAiUsage.inputDetails|{}inputDetails[0]
+        final fun <get-inputDetails>(): kotlin.collections/Map<kotlin/String, kotlin/Long> // com.myadidi.universalai.connector.contract/UniversalAiUsage.inputDetails.<get-inputDetails>|<get-inputDetails>(){}[0]
+    final val inputTokens // com.myadidi.universalai.connector.contract/UniversalAiUsage.inputTokens|{}inputTokens[0]
+        final fun <get-inputTokens>(): kotlin/Long // com.myadidi.universalai.connector.contract/UniversalAiUsage.inputTokens.<get-inputTokens>|<get-inputTokens>(){}[0]
+    final val outputDetails // com.myadidi.universalai.connector.contract/UniversalAiUsage.outputDetails|{}outputDetails[0]
+        final fun <get-outputDetails>(): kotlin.collections/Map<kotlin/String, kotlin/Long> // com.myadidi.universalai.connector.contract/UniversalAiUsage.outputDetails.<get-outputDetails>|<get-outputDetails>(){}[0]
+    final val outputTokens // com.myadidi.universalai.connector.contract/UniversalAiUsage.outputTokens|{}outputTokens[0]
+        final fun <get-outputTokens>(): kotlin/Long // com.myadidi.universalai.connector.contract/UniversalAiUsage.outputTokens.<get-outputTokens>|<get-outputTokens>(){}[0]
+    final val totalTokens // com.myadidi.universalai.connector.contract/UniversalAiUsage.totalTokens|{}totalTokens[0]
+        final fun <get-totalTokens>(): kotlin/Long // com.myadidi.universalai.connector.contract/UniversalAiUsage.totalTokens.<get-totalTokens>|<get-totalTokens>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiUsage.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiUsage.hashCode|hashCode(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiUsage.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiUsage> // com.myadidi.universalai.connector.contract/UniversalAiUsage.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector/UniversalAiConnector : kotlin/AutoCloseable { // com.myadidi.universalai.connector/UniversalAiConnector|null[0]
+    constructor <init>() // com.myadidi.universalai.connector/UniversalAiConnector.<init>|<init>(){}[0]
+    constructor <init>(com.myadidi.universalai.connector/UniversalAiConnectorConfiguration) // com.myadidi.universalai.connector/UniversalAiConnector.<init>|<init>(com.myadidi.universalai.connector.UniversalAiConnectorConfiguration){}[0]
+    constructor <init>(com.myadidi.universalai.connector/UniversalAiConnectorConfiguration, io.ktor.client.engine/HttpClientEngine) // com.myadidi.universalai.connector/UniversalAiConnector.<init>|<init>(com.myadidi.universalai.connector.UniversalAiConnectorConfiguration;io.ktor.client.engine.HttpClientEngine){}[0]
+    constructor <init>(io.ktor.client.engine/HttpClientEngine) // com.myadidi.universalai.connector/UniversalAiConnector.<init>|<init>(io.ktor.client.engine.HttpClientEngine){}[0]
+
+    final val version // com.myadidi.universalai.connector/UniversalAiConnector.version|{}version[0]
+        final fun <get-version>(): kotlin/String // com.myadidi.universalai.connector/UniversalAiConnector.version.<get-version>|<get-version>(){}[0]
+
+    final fun close() // com.myadidi.universalai.connector/UniversalAiConnector.close|close(){}[0]
+    final fun stream(com.myadidi.universalai.connector.contract/UniversalAiRequest): kotlinx.coroutines.flow/Flow<com.myadidi.universalai.connector.contract/UniversalAiStreamEvent> // com.myadidi.universalai.connector/UniversalAiConnector.stream|stream(com.myadidi.universalai.connector.contract.UniversalAiRequest){}[0]
+    final suspend fun listModels(com.myadidi.universalai.connector.contract/ProviderId): com.myadidi.universalai.connector/UniversalAiModelListResult // com.myadidi.universalai.connector/UniversalAiConnector.listModels|listModels(com.myadidi.universalai.connector.contract.ProviderId){}[0]
+    final suspend fun respond(com.myadidi.universalai.connector.contract/UniversalAiRequest): com.myadidi.universalai.connector.contract/UniversalAiResponse // com.myadidi.universalai.connector/UniversalAiConnector.respond|respond(com.myadidi.universalai.connector.contract.UniversalAiRequest){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector/UniversalAiConnector.Companion|null[0]
+        final const val LIBRARY_VERSION // com.myadidi.universalai.connector/UniversalAiConnector.Companion.LIBRARY_VERSION|{}LIBRARY_VERSION[0]
+            final fun <get-LIBRARY_VERSION>(): kotlin/String // com.myadidi.universalai.connector/UniversalAiConnector.Companion.LIBRARY_VERSION.<get-LIBRARY_VERSION>|<get-LIBRARY_VERSION>(){}[0]
+        final const val SIMULATED_ERROR_INPUT // com.myadidi.universalai.connector/UniversalAiConnector.Companion.SIMULATED_ERROR_INPUT|{}SIMULATED_ERROR_INPUT[0]
+            final fun <get-SIMULATED_ERROR_INPUT>(): kotlin/String // com.myadidi.universalai.connector/UniversalAiConnector.Companion.SIMULATED_ERROR_INPUT.<get-SIMULATED_ERROR_INPUT>|<get-SIMULATED_ERROR_INPUT>(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector/UniversalAiConnectorConfiguration { // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration|null[0]
+    constructor <init>(kotlin.collections/List<com.myadidi.universalai.connector/UniversalAiProviderConfiguration>, kotlin/Long = ..., kotlin/Long = ...) // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.<init>|<init>(kotlin.collections.List<com.myadidi.universalai.connector.UniversalAiProviderConfiguration>;kotlin.Long;kotlin.Long){}[0]
+
+    final val connectTimeoutMillis // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.connectTimeoutMillis|{}connectTimeoutMillis[0]
+        final fun <get-connectTimeoutMillis>(): kotlin/Long // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.connectTimeoutMillis.<get-connectTimeoutMillis>|<get-connectTimeoutMillis>(){}[0]
+    final val providers // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.providers|{}providers[0]
+        final fun <get-providers>(): kotlin.collections/List<com.myadidi.universalai.connector/UniversalAiProviderConfiguration> // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.providers.<get-providers>|<get-providers>(){}[0]
+    final val requestTimeoutMillis // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.requestTimeoutMillis|{}requestTimeoutMillis[0]
+        final fun <get-requestTimeoutMillis>(): kotlin/Long // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.requestTimeoutMillis.<get-requestTimeoutMillis>|<get-requestTimeoutMillis>(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion|null[0]
+        final const val DEFAULT_CONNECT_TIMEOUT_MILLIS // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.DEFAULT_CONNECT_TIMEOUT_MILLIS|{}DEFAULT_CONNECT_TIMEOUT_MILLIS[0]
+            final fun <get-DEFAULT_CONNECT_TIMEOUT_MILLIS>(): kotlin/Long // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.DEFAULT_CONNECT_TIMEOUT_MILLIS.<get-DEFAULT_CONNECT_TIMEOUT_MILLIS>|<get-DEFAULT_CONNECT_TIMEOUT_MILLIS>(){}[0]
+        final const val DEFAULT_REQUEST_TIMEOUT_MILLIS // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.DEFAULT_REQUEST_TIMEOUT_MILLIS|{}DEFAULT_REQUEST_TIMEOUT_MILLIS[0]
+            final fun <get-DEFAULT_REQUEST_TIMEOUT_MILLIS>(): kotlin/Long // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.DEFAULT_REQUEST_TIMEOUT_MILLIS.<get-DEFAULT_REQUEST_TIMEOUT_MILLIS>|<get-DEFAULT_REQUEST_TIMEOUT_MILLIS>(){}[0]
+        final const val MAX_TIMEOUT_MILLIS // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.MAX_TIMEOUT_MILLIS|{}MAX_TIMEOUT_MILLIS[0]
+            final fun <get-MAX_TIMEOUT_MILLIS>(): kotlin/Long // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.MAX_TIMEOUT_MILLIS.<get-MAX_TIMEOUT_MILLIS>|<get-MAX_TIMEOUT_MILLIS>(){}[0]
+
+        final val Empty // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.Empty|{}Empty[0]
+            final fun <get-Empty>(): com.myadidi.universalai.connector/UniversalAiConnectorConfiguration // com.myadidi.universalai.connector/UniversalAiConnectorConfiguration.Companion.Empty.<get-Empty>|<get-Empty>(){}[0]
+    }
+}
+
+final class com.myadidi.universalai.connector/UniversalAiProviderConfiguration { // com.myadidi.universalai.connector/UniversalAiProviderConfiguration|null[0]
+    constructor <init>(com.myadidi.universalai.connector.contract/ProviderId, kotlin/String, kotlin/Function0<kotlin/String>) // com.myadidi.universalai.connector/UniversalAiProviderConfiguration.<init>|<init>(com.myadidi.universalai.connector.contract.ProviderId;kotlin.String;kotlin.Function0<kotlin.String>){}[0]
+
+    final val baseUrl // com.myadidi.universalai.connector/UniversalAiProviderConfiguration.baseUrl|{}baseUrl[0]
+        final fun <get-baseUrl>(): kotlin/String // com.myadidi.universalai.connector/UniversalAiProviderConfiguration.baseUrl.<get-baseUrl>|<get-baseUrl>(){}[0]
+    final val providerId // com.myadidi.universalai.connector/UniversalAiProviderConfiguration.providerId|{}providerId[0]
+        final fun <get-providerId>(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector/UniversalAiProviderConfiguration.providerId.<get-providerId>|<get-providerId>(){}[0]
+}
+
+final value class com.myadidi.universalai.connector.contract.extension/ExtensionNamespace { // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.Companion|null[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionNamespace // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract.extension/ExtensionNamespace> // com.myadidi.universalai.connector.contract.extension/ExtensionNamespace.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract.extension/ExtensionNumber { // com.myadidi.universalai.connector.contract.extension/ExtensionNumber|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.hashCode|hashCode(){}[0]
+    final fun toFiniteDoubleOrNull(): kotlin/Double? // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.toFiniteDoubleOrNull|toFiniteDoubleOrNull(){}[0]
+    final fun toLongOrNull(): kotlin/Long? // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.toLongOrNull|toLongOrNull(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.Companion|null[0]
+        final fun of(kotlin/Double): com.myadidi.universalai.connector.contract.extension/ExtensionNumber // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.Companion.of|of(kotlin.Double){}[0]
+        final fun of(kotlin/Int): com.myadidi.universalai.connector.contract.extension/ExtensionNumber // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.Companion.of|of(kotlin.Int){}[0]
+        final fun of(kotlin/Long): com.myadidi.universalai.connector.contract.extension/ExtensionNumber // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.Companion.of|of(kotlin.Long){}[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionNumber // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract.extension/ExtensionNumber> // com.myadidi.universalai.connector.contract.extension/ExtensionNumber.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/ModelId { // com.myadidi.universalai.connector.contract/ModelId|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/ModelId.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/ModelId.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/ModelId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/ModelId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/ModelId.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/ModelId.Companion|null[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/ModelId // com.myadidi.universalai.connector.contract/ModelId.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/ModelId> // com.myadidi.universalai.connector.contract/ModelId.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/OutputId { // com.myadidi.universalai.connector.contract/OutputId|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/OutputId.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/OutputId.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/OutputId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/OutputId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/OutputId.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/OutputId.Companion|null[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/OutputId // com.myadidi.universalai.connector.contract/OutputId.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/OutputId> // com.myadidi.universalai.connector.contract/OutputId.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/ProviderId { // com.myadidi.universalai.connector.contract/ProviderId|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/ProviderId.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/ProviderId.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/ProviderId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/ProviderId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/ProviderId.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/ProviderId.Companion|null[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector.contract/ProviderId.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/ProviderId> // com.myadidi.universalai.connector.contract/ProviderId.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/RequestId { // com.myadidi.universalai.connector.contract/RequestId|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/RequestId.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/RequestId.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/RequestId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/RequestId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/RequestId.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/RequestId.Companion|null[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/RequestId // com.myadidi.universalai.connector.contract/RequestId.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/RequestId> // com.myadidi.universalai.connector.contract/RequestId.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/ResponseId { // com.myadidi.universalai.connector.contract/ResponseId|null[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/ResponseId.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/ResponseId.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/ResponseId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/ResponseId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/ResponseId.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/ResponseId.Companion|null[0]
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/ResponseId // com.myadidi.universalai.connector.contract/ResponseId.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/ResponseId> // com.myadidi.universalai.connector.contract/ResponseId.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName { // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion|null[0]
+        final val MaxSchemaBytes // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion.MaxSchemaBytes|{}MaxSchemaBytes[0]
+            final fun <get-MaxSchemaBytes>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion.MaxSchemaBytes.<get-MaxSchemaBytes>|<get-MaxSchemaBytes>(){}[0]
+        final val MaxSchemaDepth // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion.MaxSchemaDepth|{}MaxSchemaDepth[0]
+            final fun <get-MaxSchemaDepth>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion.MaxSchemaDepth.<get-MaxSchemaDepth>|<get-MaxSchemaDepth>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName> // com.myadidi.universalai.connector.contract/UniversalAiCapabilityLimitName.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiCapabilityName { // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion|null[0]
+        final val Streaming // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion.Streaming|{}Streaming[0]
+            final fun <get-Streaming>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilityName // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion.Streaming.<get-Streaming>|<get-Streaming>(){}[0]
+        final val StructuredOutput // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion.StructuredOutput|{}StructuredOutput[0]
+            final fun <get-StructuredOutput>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilityName // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion.StructuredOutput.<get-StructuredOutput>|<get-StructuredOutput>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiCapabilityName // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiCapabilityName> // com.myadidi.universalai.connector.contract/UniversalAiCapabilityName.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport { // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+    final val semanticState // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.semanticState|{}semanticState[0]
+        final fun <get-semanticState>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupportState // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.semanticState.<get-semanticState>|<get-semanticState>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion|null[0]
+        final val Supported // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.Supported|{}Supported[0]
+            final fun <get-Supported>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.Supported.<get-Supported>|<get-Supported>(){}[0]
+        final val Unknown // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.Unknown|{}Unknown[0]
+            final fun <get-Unknown>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.Unknown.<get-Unknown>|<get-Unknown>(){}[0]
+        final val Unsupported // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.Unsupported|{}Unsupported[0]
+            final fun <get-Unsupported>(): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.Unsupported.<get-Unsupported>|<get-Unsupported>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport> // com.myadidi.universalai.connector.contract/UniversalAiCapabilitySupport.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiCompletionReason { // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion|null[0]
+        final val ContentFilter // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.ContentFilter|{}ContentFilter[0]
+            final fun <get-ContentFilter>(): com.myadidi.universalai.connector.contract/UniversalAiCompletionReason // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.ContentFilter.<get-ContentFilter>|<get-ContentFilter>(){}[0]
+        final val MaxOutputTokens // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.MaxOutputTokens|{}MaxOutputTokens[0]
+            final fun <get-MaxOutputTokens>(): com.myadidi.universalai.connector.contract/UniversalAiCompletionReason // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.MaxOutputTokens.<get-MaxOutputTokens>|<get-MaxOutputTokens>(){}[0]
+        final val Stop // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.Stop|{}Stop[0]
+            final fun <get-Stop>(): com.myadidi.universalai.connector.contract/UniversalAiCompletionReason // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.Stop.<get-Stop>|<get-Stop>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiCompletionReason // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiCompletionReason> // com.myadidi.universalai.connector.contract/UniversalAiCompletionReason.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiErrorCategory { // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion|null[0]
+        final val Authentication // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Authentication|{}Authentication[0]
+            final fun <get-Authentication>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Authentication.<get-Authentication>|<get-Authentication>(){}[0]
+        final val Authorization // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Authorization|{}Authorization[0]
+            final fun <get-Authorization>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Authorization.<get-Authorization>|<get-Authorization>(){}[0]
+        final val Internal // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Internal|{}Internal[0]
+            final fun <get-Internal>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Internal.<get-Internal>|<get-Internal>(){}[0]
+        final val NotFound // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.NotFound|{}NotFound[0]
+            final fun <get-NotFound>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.NotFound.<get-NotFound>|<get-NotFound>(){}[0]
+        final val Protocol // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Protocol|{}Protocol[0]
+            final fun <get-Protocol>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Protocol.<get-Protocol>|<get-Protocol>(){}[0]
+        final val Provider // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Provider|{}Provider[0]
+            final fun <get-Provider>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Provider.<get-Provider>|<get-Provider>(){}[0]
+        final val RateLimit // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.RateLimit|{}RateLimit[0]
+            final fun <get-RateLimit>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.RateLimit.<get-RateLimit>|<get-RateLimit>(){}[0]
+        final val Transport // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Transport|{}Transport[0]
+            final fun <get-Transport>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Transport.<get-Transport>|<get-Transport>(){}[0]
+        final val Validation // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Validation|{}Validation[0]
+            final fun <get-Validation>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.Validation.<get-Validation>|<get-Validation>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiErrorCategory // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiErrorCategory> // com.myadidi.universalai.connector.contract/UniversalAiErrorCategory.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiErrorCode { // com.myadidi.universalai.connector.contract/UniversalAiErrorCode|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion|null[0]
+        final val ConnectionTimeout // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.ConnectionTimeout|{}ConnectionTimeout[0]
+            final fun <get-ConnectionTimeout>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.ConnectionTimeout.<get-ConnectionTimeout>|<get-ConnectionTimeout>(){}[0]
+        final val ConnectorFailure // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.ConnectorFailure|{}ConnectorFailure[0]
+            final fun <get-ConnectorFailure>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.ConnectorFailure.<get-ConnectorFailure>|<get-ConnectorFailure>(){}[0]
+        final val IncompleteStream // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.IncompleteStream|{}IncompleteStream[0]
+            final fun <get-IncompleteStream>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.IncompleteStream.<get-IncompleteStream>|<get-IncompleteStream>(){}[0]
+        final val InvalidInput // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.InvalidInput|{}InvalidInput[0]
+            final fun <get-InvalidInput>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.InvalidInput.<get-InvalidInput>|<get-InvalidInput>(){}[0]
+        final val InvalidRequest // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.InvalidRequest|{}InvalidRequest[0]
+            final fun <get-InvalidRequest>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.InvalidRequest.<get-InvalidRequest>|<get-InvalidRequest>(){}[0]
+        final val InvalidStreamSequence // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.InvalidStreamSequence|{}InvalidStreamSequence[0]
+            final fun <get-InvalidStreamSequence>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.InvalidStreamSequence.<get-InvalidStreamSequence>|<get-InvalidStreamSequence>(){}[0]
+        final val RequestTimeout // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.RequestTimeout|{}RequestTimeout[0]
+            final fun <get-RequestTimeout>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.RequestTimeout.<get-RequestTimeout>|<get-RequestTimeout>(){}[0]
+        final val SimulatedFailure // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.SimulatedFailure|{}SimulatedFailure[0]
+            final fun <get-SimulatedFailure>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.SimulatedFailure.<get-SimulatedFailure>|<get-SimulatedFailure>(){}[0]
+        final val TransportFailure // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.TransportFailure|{}TransportFailure[0]
+            final fun <get-TransportFailure>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.TransportFailure.<get-TransportFailure>|<get-TransportFailure>(){}[0]
+        final val UnsupportedTerminalEvent // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.UnsupportedTerminalEvent|{}UnsupportedTerminalEvent[0]
+            final fun <get-UnsupportedTerminalEvent>(): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.UnsupportedTerminalEvent.<get-UnsupportedTerminalEvent>|<get-UnsupportedTerminalEvent>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiErrorCode // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiErrorCode> // com.myadidi.universalai.connector.contract/UniversalAiErrorCode.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiInputRole { // com.myadidi.universalai.connector.contract/UniversalAiInputRole|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiInputRole.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiInputRole.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiInputRole.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiInputRole.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiInputRole.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiInputRole.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiInputRole.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion|null[0]
+        final val Assistant // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.Assistant|{}Assistant[0]
+            final fun <get-Assistant>(): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.Assistant.<get-Assistant>|<get-Assistant>(){}[0]
+        final val Developer // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.Developer|{}Developer[0]
+            final fun <get-Developer>(): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.Developer.<get-Developer>|<get-Developer>(){}[0]
+        final val System // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.System|{}System[0]
+            final fun <get-System>(): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.System.<get-System>|<get-System>(){}[0]
+        final val User // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.User|{}User[0]
+            final fun <get-User>(): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.User.<get-User>|<get-User>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiInputRole // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiInputRole> // com.myadidi.universalai.connector.contract/UniversalAiInputRole.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiOutputKind { // com.myadidi.universalai.connector.contract/UniversalAiOutputKind|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion|null[0]
+        final val StructuredJson // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion.StructuredJson|{}StructuredJson[0]
+            final fun <get-StructuredJson>(): com.myadidi.universalai.connector.contract/UniversalAiOutputKind // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion.StructuredJson.<get-StructuredJson>|<get-StructuredJson>(){}[0]
+        final val Text // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion.Text|{}Text[0]
+            final fun <get-Text>(): com.myadidi.universalai.connector.contract/UniversalAiOutputKind // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion.Text.<get-Text>|<get-Text>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiOutputKind // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiOutputKind> // com.myadidi.universalai.connector.contract/UniversalAiOutputKind.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind { // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion|null[0]
+        final val JsonSchema // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion.JsonSchema|{}JsonSchema[0]
+            final fun <get-JsonSchema>(): com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion.JsonSchema.<get-JsonSchema>|<get-JsonSchema>(){}[0]
+        final val PlainText // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion.PlainText|{}PlainText[0]
+            final fun <get-PlainText>(): com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion.PlainText.<get-PlainText>|<get-PlainText>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind> // com.myadidi.universalai.connector.contract/UniversalAiResponseFormatKind.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final value class com.myadidi.universalai.connector.contract/UniversalAiStreamEventType { // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType|null[0]
+    final val isKnown // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.isKnown|{}isKnown[0]
+        final fun <get-isKnown>(): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.isKnown.<get-isKnown>|<get-isKnown>(){}[0]
+    final val rawValue // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.rawValue|{}rawValue[0]
+        final fun <get-rawValue>(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.rawValue.<get-rawValue>|<get-rawValue>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.toString|toString(){}[0]
+
+    final object Companion { // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion|null[0]
+        final val OutputCompleted // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.OutputCompleted|{}OutputCompleted[0]
+            final fun <get-OutputCompleted>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.OutputCompleted.<get-OutputCompleted>|<get-OutputCompleted>(){}[0]
+        final val OutputDelta // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.OutputDelta|{}OutputDelta[0]
+            final fun <get-OutputDelta>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.OutputDelta.<get-OutputDelta>|<get-OutputDelta>(){}[0]
+        final val OutputStarted // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.OutputStarted|{}OutputStarted[0]
+            final fun <get-OutputStarted>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.OutputStarted.<get-OutputStarted>|<get-OutputStarted>(){}[0]
+        final val ResponseCompleted // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.ResponseCompleted|{}ResponseCompleted[0]
+            final fun <get-ResponseCompleted>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.ResponseCompleted.<get-ResponseCompleted>|<get-ResponseCompleted>(){}[0]
+        final val ResponseStarted // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.ResponseStarted|{}ResponseStarted[0]
+            final fun <get-ResponseStarted>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.ResponseStarted.<get-ResponseStarted>|<get-ResponseStarted>(){}[0]
+        final val UsageUpdated // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.UsageUpdated|{}UsageUpdated[0]
+            final fun <get-UsageUpdated>(): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.UsageUpdated.<get-UsageUpdated>|<get-UsageUpdated>(){}[0]
+
+        final fun of(kotlin/String): com.myadidi.universalai.connector.contract/UniversalAiStreamEventType // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.of|of(kotlin.String){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract/UniversalAiStreamEventType> // com.myadidi.universalai.connector.contract/UniversalAiStreamEventType.Companion.serializer|serializer(){}[0]
+    }
+}
+
+sealed class com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue|null[0]
+    final class ArrayValue : com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue|null[0]
+        final val values // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue.values|{}values[0]
+            final fun <get-values>(): kotlin.collections/List<com.myadidi.universalai.connector.contract.extension/ExtensionValue> // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue.values.<get-values>|<get-values>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue.hashCode|hashCode(){}[0]
+    }
+
+    final class BooleanValue : com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.BooleanValue|null[0]
+        final val value // com.myadidi.universalai.connector.contract.extension/ExtensionValue.BooleanValue.value|{}value[0]
+            final fun <get-value>(): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.BooleanValue.value.<get-value>|<get-value>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.BooleanValue.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionValue.BooleanValue.hashCode|hashCode(){}[0]
+    }
+
+    final class NumberValue : com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue|null[0]
+        final val value // com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue.value|{}value[0]
+            final fun <get-value>(): com.myadidi.universalai.connector.contract.extension/ExtensionNumber // com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue.value.<get-value>|<get-value>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue.hashCode|hashCode(){}[0]
+    }
+
+    final class ObjectValue : com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue|null[0]
+        final val members // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.members|{}members[0]
+            final fun <get-members>(): kotlin.collections/Map<kotlin/String, com.myadidi.universalai.connector.contract.extension/ExtensionValue> // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.members.<get-members>|<get-members>(){}[0]
+
+        final fun array(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue? // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.array|array(kotlin.String){}[0]
+        final fun boolean(kotlin/String): kotlin/Boolean? // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.boolean|boolean(kotlin.String){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.equals|equals(kotlin.Any?){}[0]
+        final fun get(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionValue? // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.get|get(kotlin.String){}[0]
+        final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.hashCode|hashCode(){}[0]
+        final fun number(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionNumber? // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.number|number(kotlin.String){}[0]
+        final fun objectValue(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue? // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.objectValue|objectValue(kotlin.String){}[0]
+        final fun string(kotlin/String): kotlin/String? // com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue.string|string(kotlin.String){}[0]
+    }
+
+    final class StringValue : com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.StringValue|null[0]
+        final val value // com.myadidi.universalai.connector.contract.extension/ExtensionValue.StringValue.value|{}value[0]
+            final fun <get-value>(): kotlin/String // com.myadidi.universalai.connector.contract.extension/ExtensionValue.StringValue.value.<get-value>|<get-value>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.StringValue.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionValue.StringValue.hashCode|hashCode(){}[0]
+    }
+
+    final object Companion { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion|null[0]
+        final fun array(kotlin.collections/List<com.myadidi.universalai.connector.contract.extension/ExtensionValue>): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.array|array(kotlin.collections.List<com.myadidi.universalai.connector.contract.extension.ExtensionValue>){}[0]
+        final fun array(kotlin/Array<out com.myadidi.universalai.connector.contract.extension/ExtensionValue>...): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ArrayValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.array|array(kotlin.Array<out|com.myadidi.universalai.connector.contract.extension.ExtensionValue>...){}[0]
+        final fun boolean(kotlin/Boolean): com.myadidi.universalai.connector.contract.extension/ExtensionValue.BooleanValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.boolean|boolean(kotlin.Boolean){}[0]
+        final fun number(com.myadidi.universalai.connector.contract.extension/ExtensionNumber): com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.number|number(com.myadidi.universalai.connector.contract.extension.ExtensionNumber){}[0]
+        final fun number(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionValue.NumberValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.number|number(kotlin.String){}[0]
+        final fun objectValue(kotlin.collections/Map<kotlin/String, com.myadidi.universalai.connector.contract.extension/ExtensionValue>): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.objectValue|objectValue(kotlin.collections.Map<kotlin.String,com.myadidi.universalai.connector.contract.extension.ExtensionValue>){}[0]
+        final fun objectValue(kotlin/Array<out kotlin/Pair<kotlin/String, com.myadidi.universalai.connector.contract.extension/ExtensionValue>>...): com.myadidi.universalai.connector.contract.extension/ExtensionValue.ObjectValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.objectValue|objectValue(kotlin.Array<out|kotlin.Pair<kotlin.String,com.myadidi.universalai.connector.contract.extension.ExtensionValue>>...){}[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.myadidi.universalai.connector.contract.extension/ExtensionValue> // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.serializer|serializer(){}[0]
+        final fun string(kotlin/String): com.myadidi.universalai.connector.contract.extension/ExtensionValue.StringValue // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Companion.string|string(kotlin.String){}[0]
+    }
+
+    final object Null : com.myadidi.universalai.connector.contract.extension/ExtensionValue { // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Null|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Null.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Null.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.myadidi.universalai.connector.contract.extension/ExtensionValue.Null.toString|toString(){}[0]
+    }
+}
+
+sealed class com.myadidi.universalai.connector/UniversalAiModelListResult { // com.myadidi.universalai.connector/UniversalAiModelListResult|null[0]
+    abstract val providerId // com.myadidi.universalai.connector/UniversalAiModelListResult.providerId|{}providerId[0]
+        abstract fun <get-providerId>(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector/UniversalAiModelListResult.providerId.<get-providerId>|<get-providerId>(){}[0]
+
+    final class Supported : com.myadidi.universalai.connector/UniversalAiModelListResult { // com.myadidi.universalai.connector/UniversalAiModelListResult.Supported|null[0]
+        final val models // com.myadidi.universalai.connector/UniversalAiModelListResult.Supported.models|{}models[0]
+            final fun <get-models>(): kotlin.collections/List<com.myadidi.universalai.connector.contract/UniversalAiModelDescriptor> // com.myadidi.universalai.connector/UniversalAiModelListResult.Supported.models.<get-models>|<get-models>(){}[0]
+        final val providerId // com.myadidi.universalai.connector/UniversalAiModelListResult.Supported.providerId|{}providerId[0]
+            final fun <get-providerId>(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector/UniversalAiModelListResult.Supported.providerId.<get-providerId>|<get-providerId>(){}[0]
+    }
+
+    final class Unsupported : com.myadidi.universalai.connector/UniversalAiModelListResult { // com.myadidi.universalai.connector/UniversalAiModelListResult.Unsupported|null[0]
+        final val providerId // com.myadidi.universalai.connector/UniversalAiModelListResult.Unsupported.providerId|{}providerId[0]
+            final fun <get-providerId>(): com.myadidi.universalai.connector.contract/ProviderId // com.myadidi.universalai.connector/UniversalAiModelListResult.Unsupported.providerId.<get-providerId>|<get-providerId>(){}[0]
+    }
+}

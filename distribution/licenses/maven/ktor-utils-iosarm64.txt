@@ -1,0 +1,40 @@
+===== Source attribution (5 files; example posixMain/io/ktor/util/AttributesNative.kt) =====
+/*
+ * Copyright 2014-2019 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (11 files; example nixMain/io/ktor/util/date/DateNix.kt) =====
+/*
+ * Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (7 files; example darwinMain/io/ktor/util/ThreadInfoDarwin.kt) =====
+/*
+ * Copyright 2014-2022 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example posixMain/io/ktor/util/ContentEncodersNative.kt) =====
+/*
+ * Copyright 2014-2023 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (13 files; example posixMain/io/ktor/util/collections/ConcurrentMapNative.kt) =====
+/*
+ * Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example posixMain/io/ktor/util/PlatformUtilsNative.kt) =====
+/*
+ * Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (1 files; example posixMain/io/ktor/util/CoroutineUtils.kt) =====
+/*
+ * Copyright 2014-2026 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (37 files; example nixMain/io/ktor/util/CryptoPosix.kt) =====
+/*
+* Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+

@@ -26,12 +26,21 @@ run_hygiene() {
 
   python3 -I "$ROOT/scripts/tests/verification-policy-test.py"
   python3 -I -B "$ROOT/scripts/tests/sample-parity-test.py"
+  python3 -I -B "$ROOT/scripts/tests/openrouter-limits-test.py"
+  python3 -I -B "$ROOT/scripts/tests/openrouter-diagnostic-test.py"
+  python3 -I -B "$ROOT/scripts/native-notices.py"
+  python3 -I -B "$ROOT/scripts/tests/native-notices-test.py"
+  python3 -I -B "$ROOT/scripts/tests/maven-inventory-test.py"
+  python3 -I -B "$ROOT/scripts/tests/maven-distribution-test.py"
   "$ROOT/scripts/tests/environment-preflight-test.sh"
   "$ROOT/scripts/secret-scan.sh"
   "$ROOT/scripts/tests/secret-scan-test.sh"
   "$ROOT/scripts/tests/local-config-worktree-test.sh"
   "$ROOT/scripts/tests/gradle-wrapper-policy-test.sh"
   "$ROOT/scripts/tests/dependabot-policy-test.sh"
+  "$ROOT/scripts/check-distribution-metadata.sh"
+  "$ROOT/scripts/tests/distribution-metadata-test.sh"
+  "$ROOT/scripts/tests/distribution-readiness-test.sh"
   "$ROOT/scripts/check-contracts.sh" --layout-only
   "$ROOT/scripts/check-sample-parity.sh" --catalog
   git -C "$ROOT" diff --check
@@ -64,6 +73,7 @@ run_hygiene() {
 }
 
 run_script_tests() {
+  "$ROOT/scripts/tests/native-notice-cache-test.sh"
   "$ROOT/scripts/tests/check-live-test.sh"
   "$ROOT/scripts/tests/launch-ios-live-sample-test.sh"
   "$ROOT/scripts/tests/ios-sample-result-test.sh"
@@ -82,6 +92,7 @@ run_cross_platform_gradle_checks() {
 
   "$ROOT/gradlew" \
     :bridge:bundleAndroidMainAar \
+    :bridge:checkKotlinAbi \
     :samples:jvm-console:consumerCheck \
     :samples:host-controller:test \
     :samples:desktop:consumerCheck \
@@ -93,7 +104,8 @@ run_cross_platform_gradle_checks() {
 }
 
 verify_platform_packaging_boundaries() {
-  local jvm_jar="$ROOT/bridge/build/libs/bridge-jvm.jar"
+  local library_version
+  local jvm_jar
   local android_aar="$ROOT/bridge/build/outputs/aar/bridge.aar"
   local temp_artifact_directory
   local jvm_listing
@@ -102,6 +114,20 @@ verify_platform_packaging_boundaries() {
   local jar_command
   local javap_command
   local scan_status
+
+  library_version="$(
+    awk -F= '
+      $1 == "VERSION_NAME" {
+        sub(/^[^=]*=/, "")
+        print
+      }
+    ' "$ROOT/gradle.properties"
+  )"
+  if [[ -z "$library_version" ]]; then
+    echo "Could not resolve VERSION_NAME for the JVM packaging boundary check." >&2
+    return 1
+  fi
+  jvm_jar="$ROOT/bridge/build/libs/bridge-jvm-$library_version.jar"
 
   jar_command="$("$ROOT/scripts/resolve-jdk-tool.sh" jar)" || return 1
   javap_command="$("$ROOT/scripts/resolve-jdk-tool.sh" javap)" || return 1
@@ -272,6 +298,7 @@ run_full() {
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-app-extension-consumer.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample.sh"
   UAC_SKIP_XCFRAMEWORK_BUILD=1 "$ROOT/scripts/build-sample-device.sh"
+  "$ROOT/scripts/check-maven-distribution.sh" local
 
   echo "Adidi Universal AI Connector complete deterministic checks passed."
 }

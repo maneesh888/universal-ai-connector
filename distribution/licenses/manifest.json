@@ -1,0 +1,598 @@
+{
+  "schema": 1,
+  "kotlin": "2.4.10",
+  "inputs": [
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-client-core-iosarm64:3.5.2",
+      "artifact": "ktor-client-core-iosArm64Main-3.5.2.klib",
+      "sha256": "93b943723f86c03029f66af054e9596f18f88295c41826d8d47ff0483de789a4"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-client-darwin-iosarm64:3.5.2",
+      "artifact": "ktor-client-darwin-iosArm64Main-3.5.2.klib",
+      "sha256": "0ae36e3a9f0b473cabdb1a7902f1997bc509d9b90990e74b254fed152063b629"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-events-iosarm64:3.5.2",
+      "artifact": "ktor-events-iosArm64Main-3.5.2.klib",
+      "sha256": "fc4737ab9595f181cfcff6f188519b89aa4292cccdb1d5af04c991a7e2c94fb5"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-http-cio-iosarm64:3.5.2",
+      "artifact": "ktor-http-cio-iosArm64Main-3.5.2.klib",
+      "sha256": "8f98f04745e401811579a07282b8e9037f747c97081b38948c76c8d3da95b577"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-http-iosarm64:3.5.2",
+      "artifact": "ktor-http-iosArm64Main-3.5.2.klib",
+      "sha256": "5c323d82a0791148a75b63eb9594ebbcaa104e0836e0872ef85829774723bb09"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-io-iosarm64:3.5.2",
+      "artifact": "ktor-io-iosArm64Cinterop-mutexMain-3.5.2.klib",
+      "sha256": "5758a3b2df89ee989bea472f2a1d743aae7c9ee619b878ea045d72cac91e9d09"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-io-iosarm64:3.5.2",
+      "artifact": "ktor-io-iosArm64Main-3.5.2.klib",
+      "sha256": "13afac645dd1f0a0cd17ef89a8831556f3f48946e197f383dfa72c5b40fc1675"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-iosarm64:3.5.2",
+      "artifact": "ktor-network-iosArm64Cinterop-networkMain-3.5.2.klib",
+      "sha256": "2c978230724e53c570541fd4317279e87cfbf869338f8ae851f10e0b62a0c7cb"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-iosarm64:3.5.2",
+      "artifact": "ktor-network-iosArm64Cinterop-unMain-3.5.2.klib",
+      "sha256": "bb45ef0e69e55c92a51cf875b63800e8f22ecdb37ee5bf8325aaf12e6f11d5b5"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-iosarm64:3.5.2",
+      "artifact": "ktor-network-iosArm64Main-3.5.2.klib",
+      "sha256": "44b03e8b1b847f4ebf923978a8d2a8b61e538541c099be63b8f44b80afac1fa7"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-tls-iosarm64:3.5.2",
+      "artifact": "ktor-network-tls-iosArm64Main-3.5.2.klib",
+      "sha256": "3acb842ebdfa750bc075d0d323fb1bc81b5b26a6cdb8733de2e1228c57d34bc9"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-serialization-iosarm64:3.5.2",
+      "artifact": "ktor-serialization-iosArm64Main-3.5.2.klib",
+      "sha256": "625e407f2d4abb10325f1a5ce478cc16c55e076fe3c6ff9938392245772d9c08"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-sse-iosarm64:3.5.2",
+      "artifact": "ktor-sse-iosArm64Main-3.5.2.klib",
+      "sha256": "b55074222eaf775d927cb9af9a8d0b2c045793a3d2043ea5fa80e957acebc775"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-utils-iosarm64:3.5.2",
+      "artifact": "ktor-utils-iosArm64Cinterop-threadUtilsMain-3.5.2.klib",
+      "sha256": "513e48b8464345dc4ae2b9688802da6dbd8a7f7a4aa363cc516b08b1efc9b74a"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-utils-iosarm64:3.5.2",
+      "artifact": "ktor-utils-iosArm64Main-3.5.2.klib",
+      "sha256": "8fc3435a47129e4b26dce18d98d030b6e8f85b16b2540781553ecf5a82f1be5b"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-websocket-serialization-iosarm64:3.5.2",
+      "artifact": "ktor-websocket-serialization-iosArm64Main-3.5.2.klib",
+      "sha256": "e832b6150586deed40a228335636e7c9962ead2d78cbc131b703085505988c1d"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-websockets-iosarm64:3.5.2",
+      "artifact": "ktor-websockets-iosArm64Main-3.5.2.klib",
+      "sha256": "3f80af4c82cbfd6e6d89e7f4a099b591a75e41d13cadac2cb982756ae8585a81"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:atomicfu-iosarm64:0.32.1",
+      "artifact": "atomicfu-iosArm64Cinterop-interopMain-0.32.1.klib",
+      "sha256": "3b82332d088c938714510256d812bec5c7e3406475aec80cea32c91089dd137f"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:atomicfu-iosarm64:0.32.1",
+      "artifact": "atomicfu-iosArm64Main-0.32.1.klib",
+      "sha256": "44411dbb0e4a3efdd4cc2d74db7ef18477f65fdba0d4b7956e1658546fcd947d"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-iosarm64:1.11.0",
+      "artifact": "kotlinx-coroutines-core-iosArm64Main-1.11.0.klib",
+      "sha256": "9d071a8f57b5bf31487bac7568ec4fd852fc2fd4c2416876df4df3ebb0129ed4"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-io-bytestring-iosarm64:0.9.1",
+      "artifact": "kotlinx-io-bytestring-iosArm64Main-0.9.1.klib",
+      "sha256": "4c851e6398e67b8836ef6b6563065752758bbd29ab8522f996bc4abaf04d8f56"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-io-core-iosarm64:0.9.1",
+      "artifact": "kotlinx-io-core-iosArm64Main-0.9.1.klib",
+      "sha256": "b1a294b8fd34ddda087270ee2b9272645f89c8a7cb9953d8ac2a68b82115b156"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core-iosarm64:1.11.0",
+      "artifact": "kotlinx-serialization-core-iosArm64Main-1.11.0.klib",
+      "sha256": "c4231813a585384c493947756ee1ffbbd4d3e0b76ac98d2ed8335909aa1316a2"
+    },
+    {
+      "configuration": "iosArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json-iosarm64:1.11.0",
+      "artifact": "kotlinx-serialization-json-iosArm64Main-1.11.0.klib",
+      "sha256": "b6bdde447bac2dc90e9d73a107aedb130cc4bd873227d87ce3009659434f9903"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-client-core-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-client-core-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "5c84f753a7770c1e342c87ddc3660385e8408491c58b71cd1a0996fb20c3f831"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-client-darwin-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-client-darwin-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "142c89f05659740427878e76ac13701bdb9f693e968dac3b47ba9336e66765c0"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-events-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-events-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "016b0bae3540eb70fd5b2d3f0458055caa6c2d79d9f2e4c1ce3b577a8ef6ea2c"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-http-cio-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-http-cio-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "cb165e4cb9e1801a5e76c7b61645f3429c99bc2af81b77eb7ab0c1c9f508f8fc"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-http-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-http-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "ca853a309d2779fe8cef3b2d4885d28a22f86ea83131010cc79cdbecb9323a70"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-io-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-io-iosSimulatorArm64Cinterop-mutexMain-3.5.2.klib",
+      "sha256": "8938f89bbab629c72c7025b1d424c895c84f41649d94db15eeb29d4c54bfbd9b"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-io-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-io-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "2dc67a13f0a3df351c63b33d0330bcf3a0c1f979aed8c03c3b34f429639e2071"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-network-iosSimulatorArm64Cinterop-networkMain-3.5.2.klib",
+      "sha256": "570d0ab3d045416bfe27ddc3be5ec6c352e381e41d96e96bd8bcb2f0772fcd4c"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-network-iosSimulatorArm64Cinterop-unMain-3.5.2.klib",
+      "sha256": "72ab87d1fc9e9842953f070e31cbf88bb592591ba0b6db9aafcdd92162dc7082"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-network-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "edff6fa7af96f82c47f505c04fa895c32d81fb1f62b7834d86ec9e28bd7b7610"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-network-tls-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-network-tls-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "e815f834e1c7d01dd6fc799a4cd9b1fbe3af4f912b021de541ebab243e646e13"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-serialization-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-serialization-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "da829ec4528fb2292a9f3f7552380909e191f119ba63a15fc838f6a92377df72"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-sse-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-sse-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "64e89e5f798901471bd770529abbc0bed474e92ec3fef780ae01130947dd6051"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-utils-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-utils-iosSimulatorArm64Cinterop-threadUtilsMain-3.5.2.klib",
+      "sha256": "83ad3e974a08c74571ffb282ab53bb1191027e45de15dac90d4e7f0530ed1dc8"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-utils-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-utils-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "7281aaffe1589274763780e81e199ab68522a463f008dcf7dc87b7d24560feec"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-websocket-serialization-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-websocket-serialization-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "6d16e92ebe0ffb0ae273ca7f8832aaa448d9c8250dda2eac52b4c3835d6fa39c"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "io.ktor:ktor-websockets-iossimulatorarm64:3.5.2",
+      "artifact": "ktor-websockets-iosSimulatorArm64Main-3.5.2.klib",
+      "sha256": "6c1afaa02b1fdd336e1bb184020ea335d66dfcc49d6712ea3940ffe182e0e18a"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:atomicfu-iossimulatorarm64:0.32.1",
+      "artifact": "atomicfu-iosSimulatorArm64Cinterop-interopMain-0.32.1.klib",
+      "sha256": "c6ba3b588ffae909ac021105ba87dfde5a80de19e2679413f36f05b87e7fa8e2"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:atomicfu-iossimulatorarm64:0.32.1",
+      "artifact": "atomicfu-iosSimulatorArm64Main-0.32.1.klib",
+      "sha256": "10100e1e68f25dd209fa089bbc9344c3aa8430e87122f1dd9c8b85e1cc46c7f2"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-iossimulatorarm64:1.11.0",
+      "artifact": "kotlinx-coroutines-core-iosSimulatorArm64Main-1.11.0.klib",
+      "sha256": "3200d59215e7f4c6ffccc32d30d05e5425d80144a8a7bafb70f99d86b9402379"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-io-bytestring-iossimulatorarm64:0.9.1",
+      "artifact": "kotlinx-io-bytestring-iosSimulatorArm64Main-0.9.1.klib",
+      "sha256": "d8c64b8cb4403e4e333a3fdf2258edb20c60a035b8120777a6596d230944434e"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-io-core-iossimulatorarm64:0.9.1",
+      "artifact": "kotlinx-io-core-iosSimulatorArm64Main-0.9.1.klib",
+      "sha256": "f6a5988e7ace4b3da50dfbe64db3862f0df1a2aaf0399036877d4be3b1afd568"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core-iossimulatorarm64:1.11.0",
+      "artifact": "kotlinx-serialization-core-iosSimulatorArm64Main-1.11.0.klib",
+      "sha256": "6f4dbb2d2b56a25b8ec0fe620d2f0f6f5c88510d81d8361cf9fc1807c83e57a5"
+    },
+    {
+      "configuration": "iosSimulatorArm64CompileKlibraries",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json-iossimulatorarm64:1.11.0",
+      "artifact": "kotlinx-serialization-json-iosSimulatorArm64Main-1.11.0.klib",
+      "sha256": "4083d68d4c3f31b9c30972c3bf5b02a6dc274f3fcafb1637182fa9b6db09bd73"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-client-core-iosarm64/3.5.2/ktor-client-core-iosarm64-3.5.2-sources.jar",
+      "sha256": "d1e512f422cbf5a501e9f71ef454138e4891d5c68bbc7bd358330806f1142b25",
+      "module": "io.ktor:ktor-client-core-iosarm64:3.5.2",
+      "entries": 150
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-client-darwin-iosarm64/3.5.2/ktor-client-darwin-iosarm64-3.5.2-sources.jar",
+      "sha256": "db792a7eadd670a73ae8ef9ff19d240289b3ccceb7bf095c0a2f58188a9c0f5a",
+      "module": "io.ktor:ktor-client-darwin-iosarm64:3.5.2",
+      "entries": 30
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-events-iosarm64/3.5.2/ktor-events-iosarm64-3.5.2-sources.jar",
+      "sha256": "25a4d89461d074f84b3f77d8bfe875832adfe744c83aee283f4586f37acdffc3",
+      "module": "io.ktor:ktor-events-iosarm64:3.5.2",
+      "entries": 7
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-http-cio-iosarm64/3.5.2/ktor-http-cio-iosarm64-3.5.2-sources.jar",
+      "sha256": "1c0617bf82277e1fa531c470b867a1410b62eb60175911a21ac166f8f0af4836",
+      "module": "io.ktor:ktor-http-cio-iosarm64:3.5.2",
+      "entries": 35
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-http-iosarm64/3.5.2/ktor-http-iosarm64-3.5.2-sources.jar",
+      "sha256": "0414ec385ef351a033a398a804e50817d8f4d92a840e059d8adb3c19b6b69378",
+      "module": "io.ktor:ktor-http-iosarm64:3.5.2",
+      "entries": 77
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-io-iosarm64/3.5.2/ktor-io-iosarm64-3.5.2-sources.jar",
+      "sha256": "b1b5914806ab45dc146e0f57c3d2a1ca5d2f41f4e0152f6d2b646f66eff8d06a",
+      "module": "io.ktor:ktor-io-iosarm64:3.5.2",
+      "entries": 100
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-network-iosarm64/3.5.2/ktor-network-iosarm64-3.5.2-sources.jar",
+      "sha256": "ee7fec75310fbb0ab59534742561f6f5ab81504a8c1afa92427b7ccb7e5eee17",
+      "module": "io.ktor:ktor-network-iosarm64:3.5.2",
+      "entries": 81
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-network-tls-iosarm64/3.5.2/ktor-network-tls-iosarm64-3.5.2-sources.jar",
+      "sha256": "22668810dc5187a06bf5d4d8159203e82a6f49964ee2a497808925d1e48aa8ac",
+      "module": "io.ktor:ktor-network-tls-iosarm64:3.5.2",
+      "entries": 28
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-serialization-iosarm64/3.5.2/ktor-serialization-iosarm64-3.5.2-sources.jar",
+      "sha256": "2696dded418414c804d9f961c671cbdcb67f4ca97ff23289626c05c6cc1ad67c",
+      "module": "io.ktor:ktor-serialization-iosarm64:3.5.2",
+      "entries": 6
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-sse-iosarm64/3.5.2/ktor-sse-iosarm64-3.5.2-sources.jar",
+      "sha256": "01efe32298e72359115ab1ae29d6f2859a1c5dd05f26b93d7e295c175e2c0ca6",
+      "module": "io.ktor:ktor-sse-iosarm64:3.5.2",
+      "entries": 7
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-utils-iosarm64/3.5.2/ktor-utils-iosarm64-3.5.2-sources.jar",
+      "sha256": "5fa75bd294343e0b759a93e8b8a31561c77c6dde586bf93bd76be0497133ebce",
+      "module": "io.ktor:ktor-utils-iosarm64:3.5.2",
+      "entries": 118
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-websocket-serialization-iosarm64/3.5.2/ktor-websocket-serialization-iosarm64-3.5.2-sources.jar",
+      "sha256": "c533cf7494376c100f927d7575de6393f5e5263effe530ca7016183b01fdb073",
+      "module": "io.ktor:ktor-websocket-serialization-iosarm64:3.5.2",
+      "entries": 8
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/io/ktor/ktor-websockets-iosarm64/3.5.2/ktor-websockets-iosarm64-3.5.2-sources.jar",
+      "sha256": "2c7d4087a2ae65754f37ef09507da38272d3aa57ba192275f467d78bac5a046d",
+      "module": "io.ktor:ktor-websockets-iosarm64:3.5.2",
+      "entries": 27
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/atomicfu-iosarm64/0.32.1/atomicfu-iosarm64-0.32.1-sources.jar",
+      "sha256": "587e055d252e4e766b481d372f486642e2f262b20fbc832cbb0c4e3fca908ae2",
+      "module": "org.jetbrains.kotlinx:atomicfu-iosarm64:0.32.1",
+      "entries": 45
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-iosarm64/1.11.0/kotlinx-coroutines-core-iosarm64-1.11.0-sources.jar",
+      "sha256": "adac4ed567fa58f2ec9e7633a6943fe1604d8becc47e2a9ec57ce228300496c1",
+      "module": "org.jetbrains.kotlinx:kotlinx-coroutines-core-iosarm64:1.11.0",
+      "entries": 160
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-io-bytestring-iosarm64/0.9.1/kotlinx-io-bytestring-iosarm64-0.9.1-sources.jar",
+      "sha256": "d25fb9af522b961fee4f6117a2e970cc7e83fc1dfa29eed14f633fc26e52f6d3",
+      "module": "org.jetbrains.kotlinx:kotlinx-io-bytestring-iosarm64:0.9.1",
+      "entries": 15
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-io-core-iosarm64/0.9.1/kotlinx-io-core-iosarm64-0.9.1-sources.jar",
+      "sha256": "ea6c170984bfa6e512cace6590913cec26f7ac8ef70b3c28f28a29aebac03910",
+      "module": "org.jetbrains.kotlinx:kotlinx-io-core-iosarm64:0.9.1",
+      "entries": 49
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-iosarm64/1.11.0/kotlinx-serialization-core-iosarm64-1.11.0-sources.jar",
+      "sha256": "367d0b0dbe61b7785c8454b33709709d1fa5c9b72dc9c2c1c1beebe7cb886076",
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-core-iosarm64:1.11.0",
+      "entries": 66
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-iosarm64/1.11.0/kotlinx-serialization-json-iosarm64-1.11.0-sources.jar",
+      "sha256": "0aa5e7645077ba0c0e2cfe946926c82b9a55a5a500621d566eb11951914d9303",
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-json-iosarm64:1.11.0",
+      "entries": 55
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.11.0/kotlinx-coroutines-core-1.11.0-sources.jar",
+      "sha256": "42b1e26bc792fc3d8ba702ef5bd166adcd6c8350f377f639fb7d2e01b3366e3e",
+      "module": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0",
+      "entries": 190
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.11.0/kotlinx-serialization-core-1.11.0-sources.jar",
+      "sha256": "aea7121eef1207bb71f489cb1f32337922d92441d31f4669c299f57043e6aaea",
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0",
+      "entries": 66
+    },
+    {
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.11.0/kotlinx-serialization-json-1.11.0-sources.jar",
+      "sha256": "b3dd36abd8d06dd2e08eb74cd38dacc6b45182e191f5b8fe51cb5eab7666ba07",
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0",
+      "entries": 65
+    }
+  ],
+  "notices": {
+    "maven/ktor-client-core-iosarm64.txt": {
+      "sha256": "2d85b106b9e3885eebb568f1f4e15d889fdc3077e61338414efb77ec2abd5e28",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-client-core-iosarm64/3.5.2/ktor-client-core-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-client-darwin-iosarm64.txt": {
+      "sha256": "c7297599947be1ecaa020a0e4554d8ca857d76dc589091cecc952e1859adc860",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-client-darwin-iosarm64/3.5.2/ktor-client-darwin-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-events-iosarm64.txt": {
+      "sha256": "2416b6d5eec8d97e20b604c0c33fe3324d892b1948c345d7e0835fae92290f73",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-events-iosarm64/3.5.2/ktor-events-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-http-cio-iosarm64.txt": {
+      "sha256": "93d9c153fff8843a767fe48f3f1de2426b39ff4fa55cf7e3b2def0ccc4e98a01",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-http-cio-iosarm64/3.5.2/ktor-http-cio-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-http-iosarm64.txt": {
+      "sha256": "d262f3ad5dc9ff7d12cfdb5bc092e6d839f56fc99aeea18b691a72a9fe7f96b7",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-http-iosarm64/3.5.2/ktor-http-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-io-iosarm64.txt": {
+      "sha256": "43b17bad4f128f07300abdaaa9436355cc2efe61dba2dafec23c0a0ac1d4e9bc",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-io-iosarm64/3.5.2/ktor-io-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-network-iosarm64.txt": {
+      "sha256": "6e61ad9f97466d2f71a327ad6d5e6c877b957144b4ddbbaedca3d86f594b5410",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-network-iosarm64/3.5.2/ktor-network-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-network-tls-iosarm64.txt": {
+      "sha256": "6bf046b395afd487f9578b541a642279f858d513ff8f3825aba07acf065c4f18",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-network-tls-iosarm64/3.5.2/ktor-network-tls-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-serialization-iosarm64.txt": {
+      "sha256": "1af435ca5a1411c9606df793214eb6612f6d9801a688f895ebf6d5f4de942bbe",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-serialization-iosarm64/3.5.2/ktor-serialization-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-sse-iosarm64.txt": {
+      "sha256": "0a0940a3a38c55574788437e5e925c3971029f205e44145005fc9909885047f5",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-sse-iosarm64/3.5.2/ktor-sse-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-utils-iosarm64.txt": {
+      "sha256": "88813a71d8723a4e44994c597ee929eb89aa4af88f8629e0b9abdd159edd499f",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-utils-iosarm64/3.5.2/ktor-utils-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-websocket-serialization-iosarm64.txt": {
+      "sha256": "a9578a90a52c3c14f6de1fa52e3e96cf2b855521ccfe697aabc317bba81653bc",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-websocket-serialization-iosarm64/3.5.2/ktor-websocket-serialization-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/ktor-websockets-iosarm64.txt": {
+      "sha256": "cea46a7ed5ecd650faf8f718edb3a60305ec386820248e1ed825abe2d4eacc99",
+      "origin": "https://repo.maven.apache.org/maven2/io/ktor/ktor-websockets-iosarm64/3.5.2/ktor-websockets-iosarm64-3.5.2-sources.jar"
+    },
+    "maven/atomicfu-iosarm64.txt": {
+      "sha256": "d5a51ef3beb42e2bb4feb906975726c1d72b9815e25a806b035f449521aada71",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/atomicfu-iosarm64/0.32.1/atomicfu-iosarm64-0.32.1-sources.jar"
+    },
+    "maven/kotlinx-coroutines-core-iosarm64.txt": {
+      "sha256": "1b3103179b809fc80c6fee78d5b491a0616c6cb9ce40d3802cdfd73c0bf6d937",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-iosarm64/1.11.0/kotlinx-coroutines-core-iosarm64-1.11.0-sources.jar"
+    },
+    "maven/kotlinx-io-bytestring-iosarm64.txt": {
+      "sha256": "c866f30c976b012320a63973b1dcfdf72e115b0d670aa5ad84bb95228f8027da",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-io-bytestring-iosarm64/0.9.1/kotlinx-io-bytestring-iosarm64-0.9.1-sources.jar"
+    },
+    "maven/kotlinx-io-core-iosarm64.txt": {
+      "sha256": "3cdc79541ca18e0bbe235ede05f88a834802a72d4baa0d7d7631d78b39c57791",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-io-core-iosarm64/0.9.1/kotlinx-io-core-iosarm64-0.9.1-sources.jar"
+    },
+    "maven/kotlinx-serialization-core-iosarm64.txt": {
+      "sha256": "627b214e46fa0276b3f2e97bcd62be4d86c1011a32551cba02787c86b1cf9206",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-iosarm64/1.11.0/kotlinx-serialization-core-iosarm64-1.11.0-sources.jar"
+    },
+    "maven/kotlinx-serialization-json-iosarm64.txt": {
+      "sha256": "d343cd74eb1448e2b36b1b59c332e8096e105f2c99dcb43d90188585372060b4",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-iosarm64/1.11.0/kotlinx-serialization-json-iosarm64-1.11.0-sources.jar"
+    },
+    "projects/ktor/LICENSE": {
+      "sha256": "883b820629750db15375940d0581ea74bad8b685c8b0ef5b098c3cc631c74515",
+      "origin": "https://raw.githubusercontent.com/ktorio/ktor/3.5.2/LICENSE"
+    },
+    "projects/coroutines/LICENSE.txt": {
+      "sha256": "b1febe6399dffb10d19d35e7663ab16300c93cb0476a94115df1cc0097a8ffd8",
+      "origin": "https://raw.githubusercontent.com/Kotlin/kotlinx.coroutines/1.11.0/LICENSE.txt"
+    },
+    "projects/atomicfu/LICENSE.txt": {
+      "sha256": "f4def61b03500df363b99b1781d37b345d335129d33e28d7193de2e6bdb33e96",
+      "origin": "https://raw.githubusercontent.com/Kotlin/kotlinx-atomicfu/0.32.1/LICENSE.txt"
+    },
+    "projects/io/LICENSE": {
+      "sha256": "9e29096c161f416b13ff13696307880761a7f43aee10ca2823f8ba17c708f4ed",
+      "origin": "https://raw.githubusercontent.com/Kotlin/kotlinx-io/0.9.1/LICENSE"
+    },
+    "projects/io/NOTICE": {
+      "sha256": "a126623d2c0c1ca21814828749243869ae2c44c7f6a56ef6074bb87f430b659e",
+      "origin": "https://raw.githubusercontent.com/Kotlin/kotlinx-io/0.9.1/NOTICE"
+    },
+    "kotlin/LICENSE.txt": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/LICENSE.txt"
+    },
+    "kotlin/COPYRIGHT.txt": {
+      "sha256": "8f1a1700adb5490604c6094fb137bf73f6c28d3ee554b58f3ff8ef975a79672d",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/COPYRIGHT.txt"
+    },
+    "kotlin/NOTICE.txt": {
+      "sha256": "0b09a83d3ef7795c7dec65e815866597c066c53898f2852a76599b8f5552941a",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/NOTICE.txt"
+    },
+    "kotlin/third_party/harmony_LICENSE.txt": {
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/harmony_LICENSE.txt"
+    },
+    "kotlin/third_party/harmony_NOTICE.txt": {
+      "sha256": "8a6725437c8f16af6322496d8e22169fdb8988ad43c5b300350ef867fd7d48e4",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/harmony_NOTICE.txt"
+    },
+    "kotlin/third_party/unicode_LICENSE.txt": {
+      "sha256": "1c3ddd6cc94ad4357e76a589325dd46520850348770536ef66bf8f2b56c77463",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/unicode_LICENSE.txt"
+    },
+    "kotlin/third_party/threetenbp_license.txt": {
+      "sha256": "d1bc53b493a3ab387b42717ed5c4b1976a5048996f81154278100bff86d39331",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/threetenbp_license.txt"
+    },
+    "kotlin/third_party/gwt_license.txt": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/gwt_license.txt"
+    },
+    "kotlin/third_party/guava_license.txt": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/guava_license.txt"
+    },
+    "kotlin/third_party/boost_LICENSE.txt": {
+      "sha256": "8d8291caf1cee26d23acf3eb67c9f9a2d58f1c681b16a4fbe8cbfb9e3c0b5a9b",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/boost_LICENSE.txt"
+    },
+    "kotlin/third_party/libbacktrace_LICENSE.txt": {
+      "sha256": "660729a7713d03d375b81ec8126f9c801b11d1eacefbe9685185d4c6a24e79cf",
+      "origin": "Kotlin/Native 2.4.10 distribution licenses/third_party/libbacktrace_LICENSE.txt"
+    },
+    "kotlin/stdlib-source-attributions.txt": {
+      "sha256": "ba27ff18e1c18920b1810f8eb1a9bfc7c84205cf9580071a4233c657a596b41e",
+      "origin": "Kotlin/Native 2.4.10 sources/kotlin-stdlib-native-sources.zip"
+    },
+    "kotlin/utf8cpp-attribution.txt": {
+      "sha256": "0f18d4635e87034c730a4dd10c7af526ce40cc91bcd3e5a9a3991bc24747b4ee",
+      "origin": "https://raw.githubusercontent.com/JetBrains/kotlin/v2.4.10/kotlin-native/runtime/src/utfcpp/cpp/utf8.h"
+    },
+    "kotlin/boost-hash-attribution.txt": {
+      "sha256": "c3dfc28bedb9075da88e6e2954b334fa76dc5445c291064bcb199a5793035687",
+      "origin": "https://raw.githubusercontent.com/JetBrains/kotlin/v2.4.10/kotlin-native/runtime/src/main/cpp/Utils.cpp"
+    },
+    "maven/kotlinx-coroutines-core-common.txt": {
+      "sha256": "67f7746f0f0c9bf9939757d532eae29b874607ab47a0bccfe9e8a0a355baf0bf",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.11.0/kotlinx-coroutines-core-1.11.0-sources.jar"
+    },
+    "maven/kotlinx-serialization-core-common.txt": {
+      "sha256": "60028ac07a1c70796618978a9b7cd98cd5e050e41481e508f4c98d9f957c6b64",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.11.0/kotlinx-serialization-core-1.11.0-sources.jar"
+    },
+    "maven/kotlinx-serialization-json-common.txt": {
+      "sha256": "977447b45f2b3eb7299bed61bce2324d9fd0ee1b07460b1c787f1ecdb7c1315e",
+      "origin": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.11.0/kotlinx-serialization-json-1.11.0-sources.jar"
+    },
+    "projects/serialization/LICENSE.txt": {
+      "sha256": "c5accbbd8546e94c34aed24afe689a617627d18eed5a6c48277e48db57c23851",
+      "origin": "https://raw.githubusercontent.com/Kotlin/kotlinx.serialization/v1.11.0/LICENSE.txt"
+    }
+  }
+}
