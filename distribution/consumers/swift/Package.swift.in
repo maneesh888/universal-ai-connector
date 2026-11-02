@@ -1,0 +1,11 @@
+// swift-tools-version: 6.0
+import PackageDescription
+let package = Package(
+    name: "ReleaseConsumer", platforms: [.iOS(.v17)],
+    products: [.library(name: "ReleaseConsumer", targets: ["ReleaseConsumer"])],
+    dependencies: [@@DEPENDENCY@@],
+    targets: [
+        .target(name: "ReleaseConsumer", dependencies: [.product(name: "UniversalAiConnector", package: "@@IDENTITY@@")]),
+        .testTarget(name: "ReleaseConsumerTests", dependencies: ["ReleaseConsumer"]),
+    ]
+)

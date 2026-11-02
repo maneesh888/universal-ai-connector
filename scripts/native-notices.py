@@ -19,7 +19,9 @@ def inventory(path):
     return sorted(rows, key=lambda x: (x['configuration'], x['coordinate'], x['artifact']))
 
 
-def validate(root, resolved=None, destination=None, verify=False):
+def validate(root, resolved=None, destination=None, verify=False, archive_verify=False):
+    if archive_verify and (destination is None or not verify or resolved is not None):
+        raise ValueError('Archive-only verification requires destination/verify and cannot assert local resolution')
     source = root / 'distribution/licenses'
     manifest = json.loads((source / 'manifest.json').read_text())
     if manifest['schema'] != 1 or len(manifest['inputs']) != 48:
@@ -42,7 +44,7 @@ def validate(root, resolved=None, destination=None, verify=False):
     if resolved is not None and inventory(resolved) != manifest['inputs']:
         raise ValueError('Native dependency inputs changed; review licenses before packaging')
     if destination is not None:
-        if resolved is None:
+        if resolved is None and not archive_verify:
             raise ValueError('Packaging requires resolved dependency evidence')
         if not destination.is_dir() or destination.is_symlink():
             raise ValueError('Expected regular XCFramework directory')
@@ -74,12 +76,16 @@ def main():
     parser.add_argument('--resolved', type=Path)
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--verify', action='store_true')
+    parser.add_argument('--archive-verify', action='store_true', help='Read-only legal-byte comparison against frozen source; no local resolution claim')
     args = parser.parse_args()
     try:
-        inputs, notices = validate(args.root, args.resolved, args.destination, args.verify)
+        inputs, notices = validate(args.root, args.resolved, args.destination, args.verify, args.archive_verify)
     except (ValueError, KeyError, OSError) as error:
         parser.exit(1, str(error) + '\n')
-    print(f'Native notice validation passed: {inputs} reviewed inputs, {notices} notice files.')
+    if args.archive_verify:
+        print(f'Archive legal-byte verification passed: {inputs} reviewed source inputs, {notices} notice files; no local resolution asserted.')
+    else:
+        print(f'Native notice validation passed: {inputs} reviewed inputs, {notices} notice files.')
 
 
 if __name__ == '__main__':

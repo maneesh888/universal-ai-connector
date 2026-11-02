@@ -1,8 +1,9 @@
 # P8 unpublished distribution preparation
 
-This branch prepares one nonpublishing identity/version contract and explicitly requested unsigned local Maven validation after accepted P8-D
+This branch prepares library release engineering and local validation after accepted P8-D
 (PR #88, merged as `047169abbcb1438adfe29f9c8acb0c08fa9ed646`, with successful resulting-main
-CI). It does not publish a package, tag, release asset, or remote Swift manifest.
+CI). It adds the root remote Swift manifest and explicit local publisher tools. It does not itself
+publish a package, tag or release asset; the manifest's URL becomes usable only after publication.
 
 The owner approved `0.1.0-alpha.0.p8.1` and the public libraries-first scope on November 2, 2026.
 The shared `alpha` qualifier with numeric `0` keeps this P8 proof before P9's reserved
@@ -86,9 +87,10 @@ GitHub read access likewise does not prove release-write permission.
 
 ## SwiftPM and signing boundaries
 
-The supported iOS path needs a release device/simulator XCFramework, ZIP, checksum, root remote
+The supported iOS path uses a release device/simulator XCFramework, ZIP, checksum, root remote
 `Package.swift`, immutable Git tag/asset and clean consumer proof. There is no separate mandatory
-central SwiftPM upload. No public asset URL or remote consumption is claimed by this candidate.
+central SwiftPM upload. The source manifest records the approved future asset URL; hosted
+availability and remote consumption are not claimed before publication and consumer verification.
 
 Apple documents unsigned and self-signed XCFramework states. Publisher identity signing is a
 policy choice to finalize before archiving/checksum freeze; it is not the macOS notarization
@@ -162,7 +164,59 @@ Kotlin compiler ABI baselines live in `bridge/api`; normal validation uses `chec
 never updates them automatically. Filters include the supported connector namespace, excluding
 the separate Apple bridge namespace. JVM and Klib dumps are checked; on non-Apple hosts the Kotlin
 tool may preserve/infer unsupported native target data, so complete native ABI proof is the Mac
-route. Swift API compatibility remains assigned to Apple distribution preparation.
+route. Swift API compatibility uses the normalized compiler symbol graph baseline under
+`swift-package/api`, including public declarations, generics, availability and conditional
+conformance. Compiler paths and documentation are excluded. Baseline changes require explicit
+source review; normal checks never update it.
+
+### Independent SwiftPM preparation and publication order
+
+SwiftPM does not require Maven's key or token. The approved unsigned iOS path is independently
+implemented while Maven credentialed acceptance is pending. Both destinations keep the same
+approved version and accepted source; reporting one as published never implies the other is.
+
+```bash
+./scripts/check-apple-distribution.sh metadata
+./scripts/check-apple-distribution.sh prepare
+./scripts/check-apple-distribution.sh build
+./scripts/check-apple-distribution.sh local --rebuild-check
+./scripts/check-apple-distribution.sh publication-ready
+./scripts/check-apple-distribution.sh remote
+```
+
+`metadata` checks the source identity, exact URL/version/checksum and canonical root manifest.
+`prepare` explicitly builds Release, updates the unpublished manifest/record and creates the
+initial API baseline only if none exists. A dirty preparation run is not release acceptance.
+`swift-package/Package.swift` remains the local development entry point; both manifests expose
+the same public product, targets and source tree.
+
+`build` joins full deterministic verification on every Apple host. It tests that host's archive
+and the frozen manifest identity. Different Xcode/SDK toolchains may produce different binary
+bytes: its receipt records whether the archive matches the publisher checksum without asserting
+frozen-asset acceptance. It never updates the manifest, baseline or strict publisher receipt.
+This adds packaging proof and does not waive any existing deterministic gate.
+
+Strict `local --rebuild-check` requires the produced archive to match the frozen remote checksum
+and a forced Release rebuild to reproduce it. ZIP order, timestamps/modes and plist serialization/
+library-record ordering are canonicalized; compiler binaries and legal texts are not patched.
+The unsigned archive excludes dSYMs. Checks cover actual arm64 device/simulator slices and retained
+notices. A fresh extracted-package consumer must execute exactly one passed XCTest with no skips
+or expected failures. A thin app forces a generic-device executable link against the public
+product. This proves neither physical-device installation nor App Store signing.
+
+After exact-head Release gates, independent review, guarded merge and successful resulting-main
+CI, rebuild from that clean accepted source with strict `local --rebuild-check`.
+`publication-ready` checks the strict receipt, current archive, source/tree, main ancestry and
+exact-source successful main CI without writing. Create the approved tag on that source,
+reproduce from the tag, push through mandatory hooks, and create the GitHub prerelease with ZIP
+and `.sha256` assets. Never overwrite an immutable candidate. Use the reviewed local release
+procedure and existing `gh` session; ordinary CI remains read-only and never publishes.
+
+Then `remote` downloads the public asset afresh with `gh`, checks its frozen checksum/notices,
+resolves the public Git package at the exact version/source and runs the simulator runtime test
+and generic-device app link. Both resolution records must match the published tag. Only this
+completed command establishes hosted consumer proof. It creates no release, token or key and
+makes no live-provider call.
 
 ### Signing and publication boundary
 
@@ -218,6 +272,41 @@ and Portal validation remain unverified until the owner-operated path runs succe
 has no HTTP, keyserver, token or upload action; a local signed bundle is not public resolution proof.
 
 Signing reference: [Central PGP requirements](https://central.sonatype.org/publish/requirements/gpg/).
+
+### Explicit Central publisher
+
+`./scripts/publish-central.sh prepare` checks the signed bundle, all 28 payloads, signatures'
+recorded hashes, checksums, full Maven graph and consumer inventory identity without network or
+credential entry. It checks the clean current source. It verifies bytes against the local GnuPG
+receipt rather than claiming a new cryptographic operation.
+
+The explicit owner commands `upload`, `status` and `publish` require
+`--confirmed-recipient central.sonatype.com`, the approved tag at the signed source, ancestry on
+`origin/main`, successful exact-source resulting-main CI, and private Terminal token entry.
+They must not run until the specific credential-transmission handoff is confirmed. Only the two
+token fields entered at hidden prompts are sent as the Portal Bearer header to
+`https://central.sonatype.com/api/v1/publisher/`; they are never command arguments, environment
+inputs or journal fields. No redirect, environment proxy or automatic request retry is allowed.
+
+Upload always uses `USER_MANAGED`: upload success is not validation or publication. `status`
+checks the exact deployment ID/name and retains only the documented state and error-group count.
+`publish` accepts only a matching `VALIDATED` deployment; a later `PUBLISHED` status and independent
+public-consumer checks are still required. Neither credentials nor raw upstream error text are
+retained. HTTP status and numeric Retry-After are safe failure evidence.
+
+Shared owner-only journals under Git's common metadata `uac-release-state/<version>` serialize
+linked worktrees and retain uncertain upload/publish outcomes. Never reupload after a timeout:
+inspect the Portal's named deployment, then reconcile with `status --deployment-id <public-id>`.
+An existing journal blocks another upload; no drop/delete or overwrite route is provided.
+Publish-attempt history survives status observations and prohibits another publish POST, including
+after an uncertain response. A known deployment ID cannot be replaced; missing-ID adoption is
+restricted to status-only upload reconciliation. Pending markers and their parent directories are
+synced before a mutation is admitted.
+
+The protocol and recovery fixtures are entirely offline. Real Portal authentication, validation,
+publication and public resolution have not run. This source implementation removes an engineering
+gap; the remaining secret entry and public-key identity transmission are separate owner handoffs.
+See [the official Publisher API](https://central.sonatype.org/publish/publish-portal-api/).
 
 Sources: [KMP publication](https://kotlinlang.org/docs/multiplatform/multiplatform-publish-lib-setup.html),
 [Android KMP publication](https://developer.android.com/kotlin/multiplatform/plugin),
