@@ -134,6 +134,26 @@ Unknown or missing fields remain unknown; the endpoint cannot establish per-minu
 capacity. Account quota, model throttling and successful inference remain distinct claims.
 The socket timeout is not a hard overall request deadline.
 
+`./scripts/check-live.sh openrouter --diagnose-once` is a separate opt-in troubleshooting route,
+requiring authorization for one generation. It uses the same canonical input loader and exact-head
+clean-checkout checks. It sends one direct HTTPS Chat Completions POST with the configured model,
+fixed synthetic content, 64-token output cap, no streaming, redirects, client retry or provider
+fallback. Disabling fallback is request-local; it changes no account configuration. It invokes
+neither Gradle, the eight-case live suite nor any sample launcher, and never substitutes for their
+gates. A successful diagnostic cannot attest `Local live verification: passed`.
+
+Its bounded parser retains HTTP status, allowlisted typed error/code/provider metadata, numeric
+rate-limit headers and numeric/canonical-date Retry-After. Error messages and nested provider raw
+errors contribute only fixed normalized classifications; arbitrary text, model/key values, prompts,
+account/request IDs, raw headers, generated text and payloads are discarded. Unknown fields remain
+unknown. The response cap is 64 KiB and the socket timeout is 30 seconds, not an overall deadline.
+Network failure has uncertain execution status and must not be retried automatically. Offline
+redaction/one-call fixtures run before live execution and in normal hygiene; only an explicit
+`--diagnose-once` invocation makes the one generation request. Never use a full push to trigger it.
+
+References: [OpenRouter limits](https://openrouter.ai/docs/api_reference/limits),
+[OpenRouter error fields](https://openrouter.ai/docs/api_reference/errors-and-debugging).
+
 Machine-local live inputs persist only in the primary checkout path printed by
 `./scripts/local-config.sh live-env-path`. The helper derives that checkout from
 `git rev-parse --path-format=absolute --git-common-dir` and the shared worktree metadata, so the
