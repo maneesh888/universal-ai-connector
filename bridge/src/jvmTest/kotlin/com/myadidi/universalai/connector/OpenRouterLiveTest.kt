@@ -12,6 +12,10 @@ import com.myadidi.universalai.connector.contract.UniversalAiStreamEvent
 import com.myadidi.universalai.connector.contract.UniversalAiStreamEventType
 import com.myadidi.universalai.connector.contract.UniversalAiTarget
 import com.myadidi.universalai.connector.contract.UniversalAiTextInput
+import com.myadidi.universalai.connector.internal.ConnectorResourceOwnership
+import com.myadidi.universalai.connector.internal.DeterministicConnectorEngine
+import com.myadidi.universalai.connector.internal.provider.builtInProviderRegistration
+import com.myadidi.universalai.connector.internal.transport.createDefaultKtorTransport
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
@@ -280,18 +284,21 @@ class OpenRouterLiveTest {
     private fun configuredConnector(
         providerId: ProviderId = OPENROUTER_PROVIDER_ID,
         credentialSupplier: () -> String,
-    ): UniversalAiConnector =
-        UniversalAiConnector(
-            UniversalAiConnectorConfiguration(
-                listOf(
-                    UniversalAiProviderConfiguration(
-                        providerId = providerId,
-                        baseUrl = "https://openrouter.ai/api/v1",
-                        credentialSupplier = credentialSupplier,
-                    ),
-                ),
-            ),
+    ): UniversalAiConnector {
+        val configuration = UniversalAiConnectorConfiguration(
+            listOf(UniversalAiProviderConfiguration(
+                providerId = providerId,
+                baseUrl = "https://openrouter.ai/api/v1",
+                credentialSupplier = credentialSupplier,
+            )),
         )
+        return UniversalAiConnector.createForTesting(
+            engineFactory = ::DeterministicConnectorEngine,
+            transport = OpenRouterDiagnosticTransport(createDefaultKtorTransport(configuration.transportTimeouts)),
+            ownership = ConnectorResourceOwnership.Owned,
+            providerRegistrations = configuration.providersForRegistration().map(::builtInProviderRegistration),
+        )
+    }
 
     private fun liveRequest(
         prompt: String,

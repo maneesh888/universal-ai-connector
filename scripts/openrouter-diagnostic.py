@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """One opt-in generation, bounded typed diagnostics; no raw upstream text or retries."""
+import base64
 import datetime
 import email.utils
 import http.client
@@ -212,7 +213,67 @@ def probe(key, model, head, opener=None):
         return base | {"outcome": "invalid_response"}, 1
 
 
+def captured_response(envelope):
+    """Pure formatter for the real connector's bounded in-memory response capture."""
+    import email.message
+    if not isinstance(envelope, dict) or type(envelope.get("http_status")) is not int or not 100 <= envelope["http_status"] <= 599:
+        raise ValueError("invalid capture")
+    pairs = envelope.get("headers")
+    encoded = envelope.get("body_base64")
+    if not isinstance(pairs, list) or len(pairs) > 64 or not isinstance(encoded, str) or len(encoded) > 90_000:
+        raise ValueError("invalid capture")
+    headers = email.message.Message()
+    for pair in pairs:
+        if not isinstance(pair, list) or len(pair) != 2 or not all(isinstance(v, str) for v in pair):
+            raise ValueError("invalid header")
+        name, value = pair
+        if name.lower() in (*RATE_HEADERS, "retry-after") and len(value) <= 128 and not any(ord(c) < 32 or ord(c) == 127 for c in value):
+            headers[name] = value
+    body = base64.b64decode(encoded, validate=True)
+    if len(body) > MAX_BODY:
+        result, _ = summarize(envelope["http_status"], headers, body)
+    else:
+        error_body = body
+        if envelope.get("event_stream") is True:
+            error_body = b"{}"
+            for event in re.split(br"\r?\n\r?\n", body):
+                data = b"\n".join(line[5:].lstrip(b" ") for line in event.splitlines() if line.startswith(b"data:"))
+                try:
+                    payload = parse(data)
+                except (ValueError, UnicodeError):
+                    continue
+                if isinstance(payload, dict) and isinstance(payload.get("error"), dict):
+                    error_body = json.dumps({"error": payload["error"]}).encode()
+                    break
+        if envelope.get("event_stream") is not True:
+            try:
+                payload = parse(error_body)
+                choices = payload.get("choices") if isinstance(payload, dict) else None
+                if isinstance(choices, list) and len(choices) == 1 and isinstance(choices[0], dict) and isinstance(choices[0].get("error"), dict):
+                    error_body = json.dumps({"error": choices[0]["error"]}).encode()
+            except (ValueError, UnicodeError):
+                pass
+        result, _ = summarize(envelope["http_status"], headers, error_body)
+    return result | {"response_source": "actual_connector_transport", "body_capture_complete": envelope.get("body_complete") is True}
+
+
+def captured_stdin(stream):
+    raw = stream.read(100_001)
+    if len(raw) > 100_000:
+        raise ValueError("oversized capture")
+    return captured_response(parse(raw))
+
+
 if __name__ == "__main__":
-    result, status = probe(os.environ.get("OPENROUTER_API_KEY", ""), os.environ.get("OPENROUTER_LIVE_MODEL", ""), os.environ.get("UAC_LIVE_EXPECTED_SHA", ""))
+    if sys.argv[1:] == ["--captured-stdin"]:
+        try:
+            result = captured_stdin(sys.stdin.buffer)
+            status = 0
+        except (ValueError, TypeError, UnicodeError, KeyError):
+            result, status = {"outcome": "invalid_connector_capture"}, 1
+    elif sys.argv[1:]:
+        result, status = {"outcome": "invalid_diagnostic_mode"}, 1
+    else:
+        result, status = probe(os.environ.get("OPENROUTER_API_KEY", ""), os.environ.get("OPENROUTER_LIVE_MODEL", ""), os.environ.get("UAC_LIVE_EXPECTED_SHA", ""))
     print(json.dumps(result, sort_keys=True))
     sys.exit(status)

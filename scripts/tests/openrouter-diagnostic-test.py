@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Offline one-call, redaction and bounded-parser regressions; never uses real credentials."""
+import base64
 import email.message
 import importlib.util
 import io
@@ -47,6 +48,28 @@ class DiagnosticTests(unittest.TestCase):
         text = json.dumps(result)
         for value in [KEY, MODEL, PRIVATE, diag.PROMPT, "Bearer", "flagged_input", "request_id"]:
             self.assertNotIn(value, text)
+
+    def test_actual_connector_capture_reuses_redaction_without_a_network_call(self):
+        body = json.dumps({"error": {"code": 429, "message": "Rate limit exceeded " + KEY,
+                          "metadata": {"provider_name": "Google", "limit_source": "openrouter_free_model_per_minute", "raw": PRIVATE}}}).encode()
+        envelope = {"http_status": 429, "headers": [["Retry-After", "60"], ["X-RateLimit-Remaining", "0"], ["Authorization", KEY]], "body_base64": base64.b64encode(body).decode(), "body_complete": True}
+        result = diag.captured_stdin(io.BytesIO(json.dumps(envelope).encode()))
+        self.assertEqual(result["response_source"], "actual_connector_transport")
+        self.assertEqual(result["retry_after"], {"seconds": 60})
+        self.assertEqual(result["error"]["metadata"]["provider_name"], "Google")
+        self.check_no_private(result)
+        envelope["headers"] = [["Retry-After", "60"], ["Retry-After", "61"]]
+        self.assertIsNone(diag.captured_response(envelope)["retry_after"])
+
+    def test_actual_stream_error_and_oversized_capture_stay_bounded(self):
+        body = b'data: {"error":{"code":429,"message":"rate limited upstream"}}\n\n'
+        envelope = {"http_status": 200, "headers": [], "event_stream": True, "body_base64": base64.b64encode(body).decode()}
+        result = diag.captured_response(envelope)
+        self.assertEqual(result["error"]["code"], 429)
+        self.assertFalse(result["body_capture_complete"])
+        envelope["body_base64"] = base64.b64encode(b'x' * (diag.MAX_BODY + 1)).decode()
+        self.assertEqual(diag.captured_response(envelope)["outcome"], "oversized_response")
+        with self.assertRaises(ValueError): diag.captured_stdin(io.BytesIO(b'x' * 100_001))
 
     def test_upstream_diagnostics_are_typed_not_raw_text(self):
         body = {"error": {"code": 429, "message": "Provider returned error " + KEY + " " + diag.PROMPT,

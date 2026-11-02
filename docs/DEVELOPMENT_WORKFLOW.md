@@ -120,10 +120,19 @@ provider tests or receive provider credentials.
 The OpenRouter live fixture shares a four-second request-start cadence across both adapter paths
 within its JVM, including discovery. It never retries a generation. A rate-limit response stops
 further fixture requests and leaves the gate failed; rerun only after diagnosing availability.
-Failure diagnostics retain only the rate-limit classification, bounded numeric status and
-`retryAfterMillis` when supplied. They exclude messages, request IDs, local configuration values,
-headers and provider bodies. These fields cannot distinguish every upstream throttle from an
-account quota. Pacing is outside the cancellation tests' observation windows and does not alter
+Failure diagnostics retain the canonical rate-limit classification, numeric status and
+`retryAfterMillis`, plus a test-only transport capture of the actual failed response. That capture
+tees at most 64 KiB plus an overflow sentinel without extra requests or retries. If an adapter
+leaves a failed HTTP body unread, it drains only the remaining bounded prefix inside the response
+callback, with a one-second deadline. It never reads ahead on success/cancellation. A pure
+stdin mode, with one five-second deadline for all child I/O and bounded cleanup, reuses the isolated diagnostic's allowlisted error/provider parser and numeric rate
+headers/Retry-After, with no network access or provider environment passed to the formatter.
+Only fixed classifications, known enums, bounded numeric headers and a shared transport-attempt
+ordinal are emitted. Credentials, model values, prompts, request IDs, arbitrary messages, raw
+headers and provider bodies are never logged; request-value collisions redact the result.
+A bounded SSE prefix is parsed on stream failure; truncation and incomplete captures remain
+explicit. Successful/cancelled responses produce no response diagnostic. This improves the next
+failure's evidence without asserting a particular quota or throttle cause. Pacing is outside the cancellation tests' observation windows and does not alter
 their assertions or production retry behavior. Coordinate separate live processes explicitly;
 this fixture does not impose a cross-process lock or control other applications' traffic.
 `./scripts/check-live.sh openrouter --limits` makes one read-only HTTPS self-key request, without
