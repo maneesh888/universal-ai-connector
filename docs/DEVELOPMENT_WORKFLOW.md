@@ -167,8 +167,10 @@ observer emits at most four allowlisted exception classes and fixed network-mess
 classifications, a UTC timestamp and transport-attempt ordinal. It never copies raw messages,
 URLs, headers, credentials, model values, prompts or responses; secret-value collisions redact
 the result. Public exception mapping and request/response behavior remain unchanged. The
-fixture owns and closes its injected CIO engine and client wrapper. Caller cancellation remains
-cancellation; the observer adds no retry or request. This diagnostic covers failures before the
+fixture owns and closes its injected CIO engine and client wrapper. It tracks the originating
+caller job before Ktor creates its separate engine-call job, so socket errors caused by caller
+cancellation do not become failure diagnostics. Cancellation remains cancellation; the observer
+adds no retry or request. This diagnostic covers failures before the
 engine returns a response, not arbitrary later response-body errors. Offline mock-engine proof
 establishes capture/redaction/cleanup behavior, not a live failure's cause.
 

@@ -41,7 +41,12 @@ class GatewayTransportDiagnosticsTest {
         val original = IOException("fixture $KEY $MODEL", SocketException("Connection reset by peer $PRIVATE"))
         var requests = 0
         var closes = 0
-        val mock = MockEngine { requests++; throw original }
+        val mock = MockEngine { data ->
+            requests++
+            val callerKey = data.attributes.allKeys.single { it.name == "uac.gateway.diagnostic.caller-job" }
+            assertFalse(data.attributes[callerKey] === data.executionContext)
+            throw original
+        }
         val engine = object : HttpClientEngine by mock {
             override fun close() { closes++; mock.close() }
         }
@@ -55,6 +60,7 @@ class GatewayTransportDiagnosticsTest {
         assertEquals(1, closes)
         val record = records.single()
         assertTrue(record.contains("engine_before_response"))
+        assertTrue(record.contains("\"caller_context_available\":true"))
         assertTrue(record.contains("IOException"))
         assertTrue(record.contains("SocketException"))
         assertTrue(record.contains("connection_reset"))
@@ -95,19 +101,21 @@ class GatewayTransportDiagnosticsTest {
 
     @Test
     fun cancelledCallerWithSocketCloseFailureDoesNotLogNetworkFailure(): Unit = runBlocking {
-        val records = mutableListOf<String>()
-        val started = CompletableDeferred<Unit>()
-        val engine = MockEngine {
-            started.complete(Unit)
-            try { awaitCancellation() } catch (_: CancellationException) { throw IOException("Connection reset during fixture cancellation $PRIVATE") }
+        repeat(25) {
+            val records = mutableListOf<String>()
+            val started = CompletableDeferred<Unit>()
+            val engine = MockEngine {
+                started.complete(Unit)
+                try { awaitCancellation() } catch (_: CancellationException) { throw IOException("Connection reset during fixture cancellation $PRIVATE") }
+            }
+            val pending = async {
+                GatewayDiagnosticClient(configuration(), engine, records::add).use { it.respond(request()) }
+            }
+            withTimeout(2_000) { started.await() }
+            pending.cancel()
+            assertFailsWith<CancellationException> { pending.await() }
+            assertTrue(records.isEmpty())
         }
-        val pending = async {
-            GatewayDiagnosticClient(configuration(), engine, records::add).use { it.respond(request()) }
-        }
-        withTimeout(2_000) { started.await() }
-        pending.cancel()
-        assertFailsWith<CancellationException> { pending.await() }
-        assertTrue(records.isEmpty())
     }
 
     @Test

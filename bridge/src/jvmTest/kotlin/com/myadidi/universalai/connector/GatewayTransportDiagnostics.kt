@@ -10,12 +10,17 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
+import io.ktor.client.request.HttpSendPipeline
+import io.ktor.util.AttributeKey
 import java.time.Instant
 import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -30,7 +35,15 @@ internal class GatewayDiagnosticEngine(
     private val closed = AtomicBoolean()
 
     // Delegating install() would bind the delegate's execute(), bypassing this observer.
-    override fun install(client: HttpClient) = super<HttpClientEngine>.install(client)
+    override fun install(client: HttpClient) {
+        client.sendPipeline.intercept(HttpSendPipeline.Engine) {
+            // Ktor creates an engine call job later. Keep the originating caller job
+            // separately so its cancellation cannot race the request execution job.
+            context.attributes.put(CALLER_JOB, currentCoroutineContext().job)
+            proceed()
+        }
+        super<HttpClientEngine>.install(client)
+    }
 
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val attempt = attempts.incrementAndGet()
@@ -39,7 +52,8 @@ internal class GatewayDiagnosticEngine(
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (failure: Throwable) {
-            if (data.executionContext.isActive) {
+            val caller = data.attributes.getOrNull(CALLER_JOB)
+            if (caller?.isActive != false) {
                 try {
                     val chain = mutableListOf<Throwable>()
                     val visited = Collections.newSetFromMap(IdentityHashMap<Throwable, Boolean>())
@@ -50,6 +64,7 @@ internal class GatewayDiagnosticEngine(
                     }
                     val result = buildJsonObject {
                         put("phase", "engine_before_response")
+                        put("caller_context_available", caller != null)
                         put("utc", Instant.now().toString())
                         put("transport_attempt", attempt)
                         put("exception_classes", JsonArray(chain.map { JsonPrimitive(it.javaClass.simpleName.takeIf(KNOWN_CLASSES::contains) ?: "other") }))
@@ -76,6 +91,7 @@ internal class GatewayDiagnosticEngine(
 
     private companion object {
         val attempts = AtomicLong()
+        val CALLER_JOB = AttributeKey<Job>("uac.gateway.diagnostic.caller-job")
         val KNOWN_CLASSES = setOf("IOException", "EOFException", "SocketException", "SocketTimeoutException", "ConnectException", "UnknownHostException", "SSLException", "SSLHandshakeException", "SSLPeerUnverifiedException", "TLSException", "ConnectTimeoutException", "HttpRequestTimeoutException", "ClosedReadChannelException", "ClosedWriteChannelException", "ChannelReadException", "ChannelWriteException", "ClientEngineClosedException")
     }
 }
