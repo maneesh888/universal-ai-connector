@@ -210,8 +210,8 @@ Today's delivered providers and gateways use remote HTTP APIs. On-device inferen
 | Track | Goal | Boundary |
 |---|---|---|
 | [P10 image and audio inputs](docs/plans/multimodal-inputs.md) | Add ordered, provider-neutral image and audio input parts with bounded validation, conservative capabilities, cancellation, cleanup, and redaction. | Capture, playback, transcoding, DSP, storage, documents, video, and realtime sessions remain outside the initial scope. |
-| [P11 native on-device AI](docs/plans/universal-ai-connector-v2.md#p11-native-on-device-ai) | Integrate OS-managed models, starting with Apple Foundation Models and Android ML Kit GenAI, behind the existing Kotlin client and Swift façade. | Planned only; current builds do not include these runtimes or claim offline inference. |
-| [P12 downloaded local models](docs/plans/universal-ai-connector-v2.md#p12-downloaded-local-models) | Evaluate optional in-app backends for host-provided models, beginning with llama.cpp and LiteRT-LM. | No engine or model format is selected, no model weights will be bundled by default, and remote/OS-native consumers must not acquire a runtime transitively. |
+| [P11 native on-device AI](docs/plans/on-device-model-integration.md#native-os-model-candidates) | Integrate OS-managed models, starting with Apple Foundation Models and Android ML Kit GenAI, behind the existing Kotlin client and Swift façade. | Planned only; current builds do not include these runtimes or claim offline inference. |
+| [P12 downloaded local models](docs/plans/on-device-model-integration.md#downloaded-model-candidates) | Evaluate optional in-app backends for host-provided models, beginning with llama.cpp and LiteRT-LM. | No engine or model format is selected, no model weights will be bundled by default, and remote/OS-native consumers must not acquire a runtime transitively. |
 
 Each track requires separate activation and acceptance work. Adding these goals to the roadmap does not activate a milestone or change the current text-and-HTTP implementation.
 

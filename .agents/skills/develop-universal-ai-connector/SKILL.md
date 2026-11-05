@@ -1,6 +1,6 @@
 ---
 name: develop-universal-ai-connector
-description: Execute roadmap-driven analysis, planning, implementation, testing, documentation, and status work for Universal AI Connector milestones P0-P9. Use for repository changes involving shared Kotlin behavior, canonical contracts, Apple bridging, Android/JVM/iOS consumers, transport, providers, gateway integration, distribution, or release hardening.
+description: Execute roadmap-driven analysis, planning, implementation, testing, documentation, and status work for Universal AI Connector milestones P0-P12. Use for repository changes involving shared Kotlin behavior, canonical contracts, Apple bridging, Android/JVM/iOS consumers, transport, providers, gateway integration, distribution, release hardening, multimodal inputs, or on-device model backends.
 ---
 
 # Develop Universal AI Connector
