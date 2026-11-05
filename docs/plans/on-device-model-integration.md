@@ -41,6 +41,36 @@ Model provisioning can need network access; offline inference must be tested aft
 Neither approach gives every model image/audio support. Record that support separately per
 runtime, model, platform and task using the [media goals](multimodal-inputs.md#goal-register).
 
+### Capability discovery and selected-model state
+
+The connector must expose the selected model's effective capabilities through its provider-neutral
+Kotlin and Swift boundaries so a host can enable or disable relevant features without adopting SDK
+types. This requirement does not prescribe a visual design, and host gating never replaces request-
+time validation inside the connector.
+
+Keep three evidence layers distinct:
+
+1. **Model/runtime evidence** covers the exact OS-managed or downloaded model identity, runtime/SDK
+   version and task support.
+2. **Connector evidence** covers whether the installed optional adapter implements and has verified
+   the requested mapping, lifecycle and output guarantee.
+3. **Host readiness** covers current device eligibility, OS/language/region policy, model readiness,
+   foreground or resource restrictions and any prepared-input requirement.
+
+Derive `supported` only when every required layer is affirmative. Report `unsupported` when an
+authoritative layer establishes that the operation cannot run. Preserve `unknown` when evidence is
+absent, stale or conflicting; a model name, family name or generated response in which a model claims
+to support a feature is never capability evidence. Before invoking native generation or loading a
+downloaded model, `unsupported` fails with a stable unsupported-capability error, while `unknown` or
+not-ready fails closed with a distinct stable state. Deterministic tests must prove zero native,
+runtime and network dispatch for each rejected state.
+
+Bind capability snapshots to the selected model, runtime/SDK version and host-readiness identity.
+Changing the model, runtime, SDK/OS eligibility, adapter or readiness state invalidates or refreshes
+the snapshot before reuse. Front ends may react to refreshed `supported`, `unsupported` and `unknown`
+states, but the connector rechecks the effective state at request time so stale UI state cannot
+authorize work. Provisioning/download readiness stays distinguishable from intrinsic model support.
+
 ## Current-source research
 
 The facts below were checked against current official sources, including the separately supplied
@@ -109,7 +139,7 @@ Research completion is recorded separately from runtime delivery.
 
 | ID | Goal / milestone | Prerequisites | Observable acceptance |
 |---|---|---|---|
-| OD-01 | P11 activation and native contract | Preceding roadmap gates; explicit target platforms | Recorded eligibility/readiness/error/capability mapping and applicable terms review; plain-text defaults; opt-in structured output; provider-neutral Kotlin/Swift boundary; no runtime behavior claimed by planning |
+| OD-01 | P11 activation and native contract | Preceding roadmap gates; explicit target platforms | Recorded model/runtime, connector and host-readiness evidence; selected-model supported/unsupported/unknown mapping and invalidation; applicable terms review; zero-dispatch rejected-state tests; plain-text defaults; opt-in structured output; provider-neutral Kotlin/Swift boundary; no runtime behavior claimed by planning |
 | OD-02 | Apple native adapter | OD-01; supported real hardware; resolved macOS package boundary if claimed | Fake-backed mapping and accumulated-stream tests; real-device text/structured/cancellation proof; local-only inference after provisioning; no SDK types in public API |
 | OD-03 | Android native adapter | OD-01; eligible AICore device | Fake-backed readiness/download/error mapping; supported-device text/stream/cancellation proof; foreground/quota limits documented; no model substitution |
 | OD-04 | Native lifecycle and host acceptance | Each delivered native adapter | Concurrent request isolation, close races, exactly-once completion and cleanup; thin host consumers; offline proof; explicit unsupported platforms |
@@ -142,8 +172,10 @@ native inference from types, fixtures, compilation, a simulator or an emulator.
 
 P11-A accepts when OD-01 decisions are recorded, plain-text and explicitly structured behavior are
 distinguished without prompt rewriting, unavailable states and stable failures are exhaustive for
-the selected first platform, and the verification plan names real hardware. The unselected adapter,
-P12 engines, native media and automatic cloud routing remain unsupported.
+the selected first platform, selected-model effective capabilities refresh after identity/readiness
+changes, unsupported/unknown/not-ready tests prove zero dispatch, and the verification plan names
+real hardware. The unselected adapter, P12 engines, native media and automatic cloud routing remain
+unsupported.
 
 ### P11-B: Apple OS-managed model adapter
 
@@ -225,7 +257,8 @@ stable refusal when admission cannot be established; OS memory warnings are not 
 1. **Native delivery order and devices:** first Apple or Android path, exact eligible physical
    devices and supported OS/SDK. Native macOS requires a separate consumption-path decision.
 2. **API shape:** capability/readiness exposure and session ownership while retaining one client
-   and one Swift façade; distinguish native constrained output from prompt-and-validate strategies.
+   and one Swift façade; expose selected-model effective capabilities without prescribing host UI;
+   distinguish native constrained output from prompt-and-validate strategies.
 3. **Runtime/model intersection:** compare llama.cpp and LiteRT-LM using the same workload before
    selecting a backend, formats, quantization, accelerator and model license.
 4. **Resource policy:** measured budgets, host control over idle/background unload, safe cancellation
