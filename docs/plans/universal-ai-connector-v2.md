@@ -367,6 +367,10 @@ proof decisions before activation.
 
 ## P11: Native on-device AI
 
+The separate [on-device research and delivery goals](on-device-model-integration.md) track native
+OS models and downloaded runtimes, with source dates, platform questions and independent acceptance
+goals. Research does not activate either milestone.
+
 P11 is future work after P10 and remains `Not started`. A separate activation change must define
 bounded work packages and make P11 the sole milestone marked `In progress` before implementation.
 Recording this milestone has `Milestone effect: none`; it does not activate native inference or
@@ -427,6 +431,9 @@ the initial P11 scope. P12 reserves downloaded-model inference and its initial r
 all other extensions require separate bounded decisions.
 
 ## P12: Downloaded local models
+
+Follow the downloaded-model goals in the [on-device research track](on-device-model-integration.md#goal-register),
+separately from native OS-model delivery and [image/audio inputs](multimodal-inputs.md).
 
 P12 follows P11 and remains `Not started`. A separate activation change must define bounded work
 packages and make P12 the sole milestone marked `In progress` before implementation. Recording
