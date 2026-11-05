@@ -123,6 +123,86 @@ package at a time. OD-05 must select a runtime/model intersection before OD-06 p
 The existing P11/P12 roadmap acceptance criteria remain authoritative if this research checklist
 leaves a detail implicit.
 
+## P11 pre-activation delivery blueprint
+
+This section converts OD-01 through OD-04 into bounded future packages. It is planning only:
+P11 remains `Not started`, no package below is active, and no SDK dependency or native behavior is
+authorized by naming the packages. Under the current roadmap, execute them one at a time only after
+P8, P9 and P10 have completed and a separate P11-A change activates P11.
+
+### P11-A: Native contract, platform selection and activation
+
+Before adding an SDK, revalidate the current Apple and Android sources, device eligibility, terms,
+OS/SDK requirements and host restrictions. Record the first adapter and exact physical proof
+devices; freeze the provider-neutral readiness, capability, error, output-format and session-
+ownership semantics; and resolve the native macOS consumption/packaging path if macOS is claimed.
+The activation change updates the roadmap so P11 is the sole milestone marked `In progress` and
+identifies P11-A as current. It may add deterministic contract/fake coverage, but it does not claim
+native inference from types, fixtures, compilation, a simulator or an emulator.
+
+P11-A accepts when OD-01 decisions are recorded, plain-text and explicitly structured behavior are
+distinguished without prompt rewriting, unavailable states and stable failures are exhaustive for
+the selected first platform, and the verification plan names real hardware. The unselected adapter,
+P12 engines, native media and automatic cloud routing remain unsupported.
+
+### P11-B: Apple OS-managed model adapter
+
+Add the optional Apple adapter behind the shared contract without exposing Foundation Models types.
+Cover availability and capability mapping, plain-text and opt-in structured requests, accumulated-
+snapshot streaming conversion, refusal/context failures, cancellation, exactly-once termination and
+cleanup with deterministic fakes. Acceptance additionally requires the selected physical Apple host
+to prove local text/structured/streaming/cancellation behavior after provisioning, with no silent
+server executor, cloud fallback or model substitution. Native macOS is claimed only if P11-A resolved
+its packaging boundary and this package verifies the supported consumption path.
+
+### P11-C: Android OS-managed model adapter
+
+Add the optional ML Kit GenAI Prompt/AICore adapter behind the same shared contract without exposing
+SDK task/session types. Cover eligibility, readiness/download states, capability and error mapping,
+plain-text and supported structured behavior, streaming, cancellation, quotas, foreground rules,
+exactly-once termination and cleanup with deterministic fakes. Acceptance additionally requires an
+eligible physical Android device and the recorded terms decision to prove the claimed local path;
+API level, compilation or emulator success alone is insufficient.
+
+P11-B and P11-C are independently reviewable. P11-A records which one executes first; the other does
+not run concurrently if it would change the same shared contract or lifecycle surface.
+
+### P11-D: Native lifecycle, hosts and closeout
+
+Reconcile both delivered adapters through concurrent-request isolation, close races, repeated
+session creation/teardown, cancellation and exactly-once terminal behavior. Verify thin supported
+host consumers, offline inference after provisioning, limitation documentation, optional dependency
+isolation and explicit unsupported-platform behavior. Close P11 only after every claimed platform
+has exact physical-device/native-host evidence and the roadmap's Release gates pass; do not infer
+one platform's proof from the other.
+
+## P10 dependency and sequential activation boundary
+
+The current roadmap makes completed P10 a sequencing prerequisite for P11. The technical dependency
+is narrower but material:
+
+- P10-A owns the canonical transition from `List<UniversalAiTextInput>` to ordered typed content
+  parts, the Kotlin and Swift public request shapes, the JSON version/migration decision, capability
+  names and limits, and shared validation. A native adapter built against the earlier shape would
+  need coordinated rework across common Kotlin, the Swift facade, schemas, fixtures and adapter
+  tests when P10-A lands.
+- P10-B through P10-D own remote-provider media translation and media-source lifecycle. They are not
+  prerequisites for P11's text-only readiness, local execution, native streaming conversion,
+  cancellation or terminal arbitration. P11 must nevertheless reject native image/audio claims
+  until the P10 contract and a runtime-specific media package are both accepted.
+- P11 readiness/session ownership, accumulated-snapshot conversion, platform eligibility mapping,
+  native failures and physical-device proof do not belong in P10 and can be designed while P10 is
+  being planned. Product code for them still requires P11 activation.
+
+Under the existing one-active-milestone rule, exact activation is: complete P8, P9 and P10; refresh
+the dated SDK/terms/device findings; resolve every P11-A decision; then land a separate roadmap
+change that marks P11 alone `In progress`, names P11-A as current, and records milestone effect
+`advances`. Runtime packages begin only after that transition is authoritative.
+
+This preserves the requested sequential lifecycle: land the researched requirements first; execute,
+test and merge the easier P10 image/audio track through its accepted packages; then refresh the P11
+research and activate P11-A. No P11 implementation or SDK prototype runs in parallel with P10.
+
 ## Evaluation and evidence record
 
 For each evaluated combination record:
