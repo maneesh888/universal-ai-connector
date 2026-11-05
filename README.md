@@ -20,7 +20,7 @@ Universal AI Connector gives Android, iOS, JVM, and desktop applications one pro
 [Why it exists](#why-universal-ai-connector) · [Try it](#try-it-in-60-seconds) · [Providers](#providers) · [Host APIs](#native-on-every-host) · [Status](#project-status) · [Roadmap](#planned-next) · [Documentation](#documentation)
 
 > [!IMPORTANT]
-> The Kotlin libraries remain a source preview while Maven Central publication is pending. iOS 17+ applications can use the exact [`0.1.0-alpha.0.p8.1` SwiftPM prerelease](https://github.com/maneesh888/universal-ai-connector/releases/tag/v0.1.0-alpha.0.p8.1). Packaged desktop applications, physical-device execution, and the immutable `0.1.0-alpha.1` release remain future work.
+> The Kotlin libraries remain a source preview while Maven Central publication is pending. iOS 17+ applications can use the exact unsigned [`0.1.0-alpha.0.p8.1` SwiftPM prerelease](https://github.com/maneesh888/universal-ai-connector/releases/tag/v0.1.0-alpha.0.p8.1). Packaged desktop applications, physical-device execution, and the immutable `0.1.0-alpha.1` release remain future work.
 
 ## Why Universal AI Connector?
 
@@ -192,7 +192,7 @@ Universal AI Connector has completed its cross-platform foundation, canonical co
 - Unary responses, structured output, incremental streaming, and cancellation
 - Deterministic JVM, Android, iOS Simulator, Swift Package, and host-consumer verification
 - Credential-free demos plus explicit live workflows on every current sample host
-- Public iOS SwiftPM prerelease with hosted consumer verification
+- Public unsigned iOS SwiftPM prerelease with hosted consumer verification
 
 ### Still in progress
 
