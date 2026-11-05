@@ -1,6 +1,6 @@
 ---
 name: develop-universal-ai-connector
-description: Execute roadmap-driven analysis, planning, implementation, testing, documentation, and status work for Universal AI Connector milestones P0-P9. Use for repository changes involving shared Kotlin behavior, canonical contracts, Apple bridging, Android/JVM/iOS consumers, transport, providers, gateway integration, distribution, or release hardening.
+description: Execute roadmap-driven analysis, planning, implementation, testing, documentation, and status work for Universal AI Connector milestones P0-P12. Use for repository changes involving shared Kotlin behavior, canonical contracts, Apple bridging, Android/JVM/iOS consumers, transport, providers, gateway integration, distribution, release hardening, multimodal inputs, or on-device model backends.
 ---
 
 # Develop Universal AI Connector
@@ -37,6 +37,9 @@ Use the highest mode required by the requested outcome or changed surface. Manda
 6. Keep deterministic and live proof distinct.
 7. Update affected documentation when a public contract, package boundary, compatibility rule, or milestone status changes.
 8. Never claim evidence for an unexecuted platform, device, provider, gateway, distribution, or release path.
+9. Keep the root README as a stable public product overview. Route routine milestone progress,
+   exact-head proof, and closeout chronology to the roadmap, active plan, verification records,
+   and pull-request brief; change the README only for user-visible product or consumption changes.
 
 The roadmap and active plan own product constraints. Do not copy them into a work order or report; cite the relevant source sections.
 
