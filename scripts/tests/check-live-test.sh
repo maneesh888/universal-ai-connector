@@ -80,6 +80,32 @@ printf '%s\n' \
 cp "$ROOT/.env.live.example" "$TEST_REPOSITORY/.env.live.example"
 TEST_REPOSITORY_PHYSICAL="$(cd "$TEST_REPOSITORY" && pwd -P)"
 
+cat > "$TEST_REPOSITORY/scripts/openrouter-limits.py" <<'LIMITS_PY'
+import json, os
+assert os.environ["OPENROUTER_API_KEY"] == os.environ["UAC_TEST_EXPECTED_KEY"]
+assert os.environ["OPENROUTER_LIVE_MODEL"] == os.environ["UAC_TEST_EXPECTED_MODEL"]
+assert os.environ["UAC_LIVE_EXPECTED_SHA"] == os.environ["UAC_TEST_EXPECTED_SHA"]
+assert all(not os.environ.get(k) for k in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GATEWAY_API_KEY", "UAC_LIVE_ENV_FILE"])
+with open(os.environ["UAC_TEST_CALL_LOG"], "a") as f:
+    f.write("limits\n")
+print(json.dumps({"probe": "read_only_limits", "inference_calls": 0}))
+LIMITS_PY
+
+cat > "$TEST_REPOSITORY/scripts/openrouter-diagnostic.py" <<'DIAGNOSTIC_PY'
+import json, os, sys
+from pathlib import Path
+assert os.environ["OPENROUTER_API_KEY"] == os.environ["UAC_TEST_EXPECTED_KEY"]
+assert os.environ["OPENROUTER_LIVE_MODEL"] == os.environ["UAC_TEST_EXPECTED_MODEL"]
+assert os.environ["UAC_LIVE_EXPECTED_SHA"] == os.environ["UAC_TEST_EXPECTED_SHA"]
+assert all(not os.environ.get(k) for k in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GATEWAY_API_KEY", "UAC_LIVE_ENV_FILE"])
+with open(os.environ["UAC_TEST_CALL_LOG"], "a") as f:
+    f.write("diagnose-once\n")
+if os.environ.get("UAC_TEST_DIAGNOSTIC_DIRTY"):
+    Path(os.environ["UAC_TEST_DIAGNOSTIC_DIRTY"]).write_text("synthetic untracked change")
+print(json.dumps({"outcome": "offline_fixture", "request_attempts": 1}))
+sys.exit(int(os.environ.get("UAC_TEST_DIAGNOSTIC_EXIT", "0")))
+DIAGNOSTIC_PY
+
 cat > "$TEST_REPOSITORY/gradlew" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -843,5 +869,56 @@ for proof_flag in UAC_JVM_SAMPLE_LIVE_PROOF UAC_DESKTOP_SAMPLE_LIVE_PROOF; do
     exit 1
   fi
 done
+
+# The limits mode uses the same isolated inputs and never invokes Gradle or host proof.
+: > "$CALL_LOG"
+env OPENAI_API_KEY="$SYNTHETIC_KEY" ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+  GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+  OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$OPENROUTER_SYNTHETIC_KEY" UAC_TEST_EXPECTED_MODEL="$OPENROUTER_MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" UAC_JVM_SAMPLE_LIVE_PROOF=1 \
+  "$RUNNER" openrouter --limits > "$OUTPUT" 2>&1
+if [[ "$(cat "$CALL_LOG")" != "limits" ]] || ! grep -Fq 'read_only_limits' "$OUTPUT"; then
+  echo "Limits mode must make only the isolated read-only probe." >&2
+  exit 1
+fi
+if grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" || grep -Fq "$OPENROUTER_MODEL" "$OUTPUT"; then
+  echo "Limits mode exposed local configuration values." >&2
+  exit 1
+fi
+
+# Diagnostic mode is distinct from the full gate; one isolated child, no Gradle or host launch.
+for expected_status in 0 17; do
+  : > "$CALL_LOG"
+  actual_status=0
+  env OPENAI_API_KEY="$SYNTHETIC_KEY" ANTHROPIC_API_KEY="$ANTHROPIC_SYNTHETIC_KEY" \
+    GATEWAY_API_KEY="$GATEWAY_SYNTHETIC_KEY" \
+    OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+    UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" UAC_TEST_CALL_LOG="$CALL_LOG" \
+    UAC_TEST_EXPECTED_KEY="$OPENROUTER_SYNTHETIC_KEY" UAC_TEST_EXPECTED_MODEL="$OPENROUTER_MODEL" \
+    UAC_TEST_EXPECTED_SHA="$HEAD_SHA" UAC_JVM_SAMPLE_LIVE_PROOF=1 UAC_IOS_SAMPLE_LIVE_PROOF=1 \
+    UAC_ANDROID_SAMPLE_LIVE_PROOF=1 UAC_DESKTOP_SAMPLE_LIVE_PROOF=1 \
+    UAC_TEST_DIAGNOSTIC_EXIT="$expected_status" \
+    "$RUNNER" openrouter --diagnose-once > "$OUTPUT" 2>&1 || actual_status=$?
+  if [[ "$actual_status" != "$expected_status" || "$(cat "$CALL_LOG")" != "diagnose-once" ]] ||
+      grep -Fq "$OPENROUTER_SYNTHETIC_KEY" "$OUTPUT" || grep -Fq "$OPENROUTER_MODEL" "$OUTPUT"; then
+    echo "Diagnostic mode lost isolation, status, or redaction." >&2
+    exit 1
+  fi
+done
+actual_status=0
+: > "$CALL_LOG"
+env OPENROUTER_API_KEY="$OPENROUTER_SYNTHETIC_KEY" OPENROUTER_LIVE_MODEL="$OPENROUTER_MODEL" \
+  UAC_LIVE_EXPECTED_SHA="$HEAD_SHA" UAC_TEST_CALL_LOG="$CALL_LOG" \
+  UAC_TEST_EXPECTED_KEY="$OPENROUTER_SYNTHETIC_KEY" UAC_TEST_EXPECTED_MODEL="$OPENROUTER_MODEL" \
+  UAC_TEST_EXPECTED_SHA="$HEAD_SHA" UAC_TEST_DIAGNOSTIC_EXIT=17 \
+  UAC_TEST_DIAGNOSTIC_DIRTY="$TEST_REPOSITORY/diagnostic-fixture-untracked" \
+  "$RUNNER" openrouter --diagnose-once > "$OUTPUT" 2>&1 || actual_status=$?
+rm -f "$TEST_REPOSITORY/diagnostic-fixture-untracked"
+if [[ "$actual_status" != 1 ]] || ! grep -Fq 'requires a clean checkout' "$OUTPUT"; then
+  echo "Diagnostic failures must still check post-call checkout integrity." >&2
+  exit 1
+fi
 
 echo "Live verification runner regression tests passed."

@@ -17,10 +17,10 @@ consumption changes.
 
 Universal AI Connector gives Android, iOS, JVM, and desktop applications one provider-neutral API for model discovery, text generation, structured output, and streaming—without leaking provider DTOs into application code.
 
-[Why it exists](#why-universal-ai-connector) · [Try it](#try-it-in-60-seconds) · [Providers](#providers) · [Host APIs](#native-on-every-host) · [Status](#project-status) · [Documentation](#documentation)
+[Why it exists](#why-universal-ai-connector) · [Try it](#try-it-in-60-seconds) · [Providers](#providers) · [Host APIs](#native-on-every-host) · [Status](#project-status) · [Roadmap](#planned-next) · [Documentation](#documentation)
 
 > [!IMPORTANT]
-> The library is a source preview. It is tested from this repository, but Maven publication, remote Swift Package installation, packaged desktop applications, and the first immutable alpha release are still in progress.
+> The Kotlin libraries remain a source preview while Maven Central publication is pending. iOS 17+ applications can use the exact [`0.1.0-alpha.0.p8.1` SwiftPM prerelease](https://github.com/maneesh888/universal-ai-connector/releases/tag/v0.1.0-alpha.0.p8.1). Packaged desktop applications, physical-device execution, and the immutable `0.1.0-alpha.1` release remain future work.
 
 ## Why Universal AI Connector?
 
@@ -121,7 +121,7 @@ for try await event in connector.stream(request: request) {
 }
 ```
 
-The snippets focus on the public API shape. Until remote artifacts are published, use the tested source-revision setup in the [production consumption contract](docs/PRODUCTION_CONSUMPTION.md).
+The snippets focus on the public API shape. Kotlin consumers use the tested source-revision setup in the [production consumption contract](docs/PRODUCTION_CONSUMPTION.md) until Maven Central publication. iOS applications can resolve the exact [`0.1.0-alpha.0.p8.1` SwiftPM prerelease](https://github.com/maneesh888/universal-ai-connector/releases/tag/v0.1.0-alpha.0.p8.1).
 
 ## Providers
 
@@ -192,17 +192,28 @@ Universal AI Connector has completed its cross-platform foundation, canonical co
 - Unary responses, structured output, incremental streaming, and cancellation
 - Deterministic JVM, Android, iOS Simulator, Swift Package, and host-consumer verification
 - Credential-free demos plus explicit live workflows on every current sample host
+- Public iOS SwiftPM prerelease with hosted consumer verification
 
 ### Still in progress
 
-- Published Maven coordinates for Android and JVM
-- Remote Swift Package distribution
+- Published Maven Central coordinates for Android and JVM
 - Packaged and signed desktop applications
-- Released-artifact consumer tests, checksums, and compatibility policy
 - Physical iOS-device execution
 - The immutable `0.1.0-alpha.1` release
 
 The [V2 roadmap](docs/plans/universal-ai-connector-v2.md) is the source of truth for milestone status, scope, and proof limits.
+
+## Planned next
+
+Today's delivered providers and gateways use remote HTTP APIs. On-device inference is a separate future path: it will be explicit, capability-gated, and will never silently fall back to a cloud provider.
+
+| Track | Goal | Boundary |
+|---|---|---|
+| [P10 image and audio inputs](docs/plans/multimodal-inputs.md) | Add ordered, provider-neutral image and audio input parts with bounded validation, conservative capabilities, cancellation, cleanup, and redaction. | Capture, playback, transcoding, DSP, storage, documents, video, and realtime sessions remain outside the initial scope. |
+| [P11 native on-device AI](docs/plans/universal-ai-connector-v2.md#p11-native-on-device-ai) | Integrate OS-managed models, starting with Apple Foundation Models and Android ML Kit GenAI, behind the existing Kotlin client and Swift façade. | Planned only; current builds do not include these runtimes or claim offline inference. |
+| [P12 downloaded local models](docs/plans/universal-ai-connector-v2.md#p12-downloaded-local-models) | Evaluate optional in-app backends for host-provided models, beginning with llama.cpp and LiteRT-LM. | No engine or model format is selected, no model weights will be bundled by default, and remote/OS-native consumers must not acquire a runtime transitively. |
+
+Each track requires separate activation and acceptance work. Adding these goals to the roadmap does not activate a milestone or change the current text-and-HTTP implementation.
 
 ## Run the samples
 

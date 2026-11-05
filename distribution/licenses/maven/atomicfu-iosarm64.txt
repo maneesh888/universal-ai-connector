@@ -1,0 +1,20 @@
+===== Source attribution (3 files; example nativeMain/kotlinx/atomicfu/Trace.kt) =====
+/*
+ * Copyright 2016-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example nativeMain/kotlinx/atomicfu/AtomicFU.kt) =====
+/*
+ * Copyright 2017-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (1 files; example commonMain/kotlinx/atomicfu/locks/Synchronized.common.kt) =====
+/*
+ * Copyright 2017-2024 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (4 files; example appleMain/kotlinx/atomicfu/locks/NativeMutexNode.kt) =====
+/*
+ * Copyright 2025 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+

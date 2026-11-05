@@ -8,6 +8,8 @@ LOCAL_CONFIG_HELPER="$ROOT/scripts/local-config.sh"
 usage() {
   cat <<'EOF'
 Usage: ./scripts/check-live.sh <provider>
+       ./scripts/check-live.sh openrouter --limits  # Read-only; no inference or Gradle tests.
+       ./scripts/check-live.sh openrouter --diagnose-once  # One generation; no retries or live suite.
 
 Supported providers and required live inputs:
   openai
@@ -93,7 +95,13 @@ require_clean_checkout() {
   fi
 }
 
-if [[ "$#" -ne 1 ]]; then
+READ_LIMITS=false
+DIAGNOSE_ONCE=false
+if [[ "$#" -eq 2 && "$PROVIDER" == "openrouter" && "$2" == "--limits" ]]; then
+  READ_LIMITS=true
+elif [[ "$#" -eq 2 && "$PROVIDER" == "openrouter" && "$2" == "--diagnose-once" ]]; then
+  DIAGNOSE_ONCE=true
+elif [[ "$#" -ne 1 ]]; then
   usage >&2
   exit 2
 fi
@@ -293,6 +301,24 @@ case "$PROVIDER" in
     fi
     ;;
 esac
+
+if [[ "$READ_LIMITS" == "true" || "$DIAGNOSE_ONCE" == "true" ]]; then
+  probe_script=openrouter-limits.py
+  if [[ "$DIAGNOSE_ONCE" == "true" ]]; then probe_script=openrouter-diagnostic.py; fi
+  probe_status=0
+  (
+    unset OPENAI_API_KEY OPENAI_LIVE_MODEL ANTHROPIC_API_KEY ANTHROPIC_LIVE_MODEL \
+      GATEWAY_API_KEY GATEWAY_LIVE_MODEL GATEWAY_LIVE_BASE_URL GATEWAY_LIVE_STRUCTURED_OUTPUT \
+      UAC_LIVE_ENV_FILE
+    export OPENROUTER_API_KEY="$KEY_VALUE" OPENROUTER_LIVE_MODEL="$MODEL_VALUE"
+    export UAC_LIVE_EXPECTED_SHA="$HEAD_SHA"
+    python3 -I -B "$ROOT/scripts/$probe_script"
+  ) || probe_status=$?
+  [[ "$(uac_git -C "$ROOT" rev-parse --verify HEAD)" == "$HEAD_SHA" ]] ||
+    fail "HEAD changed during isolated OpenRouter inspection."
+  require_clean_checkout
+  exit "$probe_status"
+fi
 
 if [[ ! -x "$ROOT/gradlew" ]]; then
   fail "The Gradle wrapper is required for $PROVIDER_LABEL live verification."

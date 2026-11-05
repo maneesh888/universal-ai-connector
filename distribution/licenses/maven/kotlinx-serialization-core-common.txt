@@ -1,0 +1,35 @@
+===== Source attribution (1 files; example commonMain/kotlinx/serialization/internal/PrimitiveArraysSerializers.kt) =====
+/*
+ * Copyright 2017-2019 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (23 files; example commonMain/kotlinx/serialization/KSerializer.kt) =====
+/*
+ * Copyright 2017-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (18 files; example commonMain/kotlinx/serialization/ContextualSerializer.kt) =====
+/*
+ * Copyright 2017-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (2 files; example commonMain/kotlinx/serialization/SerializersCache.kt) =====
+/*
+ * Copyright 2017-2022 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (3 files; example commonMain/kotlinx/serialization/Annotations.kt) =====
+/*
+ * Copyright 2017-2023 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (1 files; example commonMain/kotlinx/serialization/ApiLevels.kt) =====
+/*
+ * Copyright 2017-2024 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (1 files; example commonMain/kotlinx/serialization/builtins/InstantComponentSerializer.kt) =====
+/*
+ * Copyright 2025-2025 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+

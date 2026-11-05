@@ -92,11 +92,15 @@ Use the smallest commands that exercise the changed surface:
 | Android launch script | `./scripts/tests/run-android-sample-test.sh`; use `./scripts/run-android-sample.sh` only when device/UI lifecycle proof is required |
 | Android live state and bootstrap | `./gradlew :samples:android:consumerCheck`; `python3 -B scripts/tests/android-live-seed-test.py`; build `:samples:android:assembleRelease` when changing the debug-only bootstrap boundary |
 | Shell, hooks, or secret scanning | `./scripts/check.sh --hygiene` and the affected script regression |
+| Local Maven graph, metadata, or consumers | `./scripts/check-maven-distribution.sh local` on Mac; add `--android-runtime <emulator-serial>` for runtime acceptance, separately from compilation |
+| Kotlin API compatibility | `./scripts/check-api-compatibility.sh kotlin`; update baselines only deliberately |
+| Swift package distribution/API | `./scripts/check-apple-distribution.sh build` or `./scripts/check-api-compatibility.sh swift`; strict publisher proof is `local --rebuild-check`, public proof is `remote` |
+| Distribution identity, version, POM, assets, or host baselines | `./scripts/check-distribution-metadata.sh` and its metadata/readiness regressions; run `./scripts/check-distribution-readiness.sh` only on a credentialed release host |
 | Documentation or plans | `./scripts/check.sh --hygiene` |
 
-The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM, Android, shared host controller, and desktop consumers. It validates the P8-D parity catalog against Kotlin test results. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests plus structured iOS parity evidence, the locally signed simulator sample build, and unsigned generic-device link verification.
+The quick gate covers hygiene, deterministic shell-script behavior, canonical contract layout and conformance on JVM, Android host, and iOS Simulator, shared JVM and Android behavior, Android AAR packaging, iOS Simulator bridge behavior, and the JVM, Android, shared host controller, and desktop consumers. It validates the P8-D parity catalog against Kotlin test results. Packaging checks reject retired POC classes and platform-boundary leaks. The full gate adds combined device-and-simulator XCFramework validation, Swift Package tests, app-hosted iOS sample state and Keychain tests plus structured iOS parity evidence, the locally signed simulator sample build, and unsigned generic-device link verification. P8-F adds complete unsigned local Maven graph/inventory, Kotlin ABI and standalone JVM-runtime/Android-compilation checks to the Apple full gate. Emulator consumer runtime is an explicit separate local acceptance route.
 
-When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior.
+When a milestone adds an authoritative contract, provider, gateway, publication, or compatibility command, record it in that active plan and add it to the appropriate cumulative gate when it becomes supported baseline behavior. P8-E adds credential-free metadata/readiness regressions to hygiene. P8-F adds Maven inventory/driver/signing/publisher fixtures and Kotlin ABI checks. P8-G adds Apple metadata/archive/API fixtures to hygiene, and Release packaging, a standalone simulator runtime test, generic-device executable link and compiler-based Swift API comparison to the Apple full gate. CI uses explicit `build` proof, recording checksum differences across toolchains without claiming frozen-asset acceptance. Strict publisher `local --rebuild-check` and public `remote` proof remain distinct required release operations. Owner signing/publishing stay opt-in and outside ordinary CI. Signing/publisher fixtures use synthetic signatures/mocked GnuPG/HTTP and do not establish real credentialed acceptance. Local preparation establishes no remote distribution proof.
 
 P4 adds `./scripts/check-live.sh openai` as a separate exact-head provider gate. It is not part of
 `--quick` or normal CI. The pre-push hook compares the candidate with `origin/main` through
@@ -113,6 +117,66 @@ P8 iOS, Android, JVM console, shared host controller, and desktop live-sample su
 initial PR body and every affected update record exact-head local
 evidence for the secretless `Required live verification` policy check. GitHub does not rerun
 provider tests or receive provider credentials.
+
+The OpenRouter live fixture shares a four-second request-start cadence across both adapter paths
+within its JVM, including discovery. It never retries a generation. A rate-limit response stops
+further fixture requests and leaves the gate failed; rerun only after diagnosing availability.
+Failure diagnostics retain the canonical rate-limit classification, numeric status and
+`retryAfterMillis`, plus a test-only transport capture of the actual failed response. That capture
+tees at most 64 KiB plus an overflow sentinel without extra requests or retries. If an adapter
+leaves a failed HTTP body unread, it drains only the remaining bounded prefix inside the response
+callback, with a one-second deadline. It never reads ahead on success/cancellation. A pure
+stdin mode, with one five-second deadline for all child I/O and bounded cleanup, reuses the isolated diagnostic's allowlisted error/provider parser and numeric rate
+headers/Retry-After, with no network access or provider environment passed to the formatter.
+Only fixed classifications, known enums, bounded numeric headers and a shared transport-attempt
+ordinal are emitted. Credentials, model values, prompts, request IDs, arbitrary messages, raw
+headers and provider bodies are never logged; request-value collisions redact the result.
+A bounded SSE prefix is parsed on stream failure; truncation and incomplete captures remain
+explicit. Successful/cancelled responses produce no response diagnostic. This improves the next
+failure's evidence without asserting a particular quota or throttle cause. Pacing is outside the cancellation tests' observation windows and does not alter
+their assertions or production retry behavior. Coordinate separate live processes explicitly;
+this fixture does not impose a cross-process lock or control other applications' traffic.
+`./scripts/check-live.sh openrouter --limits` makes one read-only HTTPS self-key request, without
+Gradle or inference. It uses the same validated canonical configuration and clean-head checks,
+disables redirects, caps response size, sets a 20-second socket timeout, and reports only allowlisted quota counters and
+exhaustion/reset indicators. It never prints key labels, balances, model values or raw responses.
+Unknown or missing fields remain unknown; the endpoint cannot establish per-minute or upstream
+capacity. Account quota, model throttling and successful inference remain distinct claims.
+The socket timeout is not a hard overall request deadline.
+
+`./scripts/check-live.sh openrouter --diagnose-once` is a separate opt-in troubleshooting route,
+requiring authorization for one generation. It uses the same canonical input loader and exact-head
+clean-checkout checks. It sends one direct HTTPS Chat Completions POST with the configured model,
+fixed synthetic content, 64-token output cap, no streaming, redirects, client retry or provider
+fallback. Disabling fallback is request-local; it changes no account configuration. It invokes
+neither Gradle, the eight-case live suite nor any sample launcher, and never substitutes for their
+gates. A successful diagnostic cannot attest `Local live verification: passed`.
+
+Its bounded parser retains HTTP status, allowlisted typed error/code/provider metadata, numeric
+rate-limit headers and numeric/canonical-date Retry-After. Error messages and nested provider raw
+errors contribute only fixed normalized classifications; arbitrary text, model/key values, prompts,
+account/request IDs, raw headers, generated text and payloads are discarded. Unknown fields remain
+unknown. The response cap is 64 KiB and the socket timeout is 30 seconds, not an overall deadline.
+Network failure has uncertain execution status and must not be retried automatically. Offline
+redaction/one-call fixtures run before live execution and in normal hygiene; only an explicit
+`--diagnose-once` invocation makes the one generation request. Never use a full push to trigger it.
+
+
+Gateway live fixtures additionally observe the platform engine's pre-response failure boundary
+before the production transport maps I/O errors to a fixed public exception. The test-only
+observer emits at most four allowlisted exception classes and fixed network-message
+classifications, a UTC timestamp and transport-attempt ordinal. It never copies raw messages,
+URLs, headers, credentials, model values, prompts or responses; secret-value collisions redact
+the result. Public exception mapping and request/response behavior remain unchanged. The
+fixture owns and closes its injected CIO engine and client wrapper. It tracks the originating
+caller job before Ktor creates its separate engine-call job, so socket errors caused by caller
+cancellation do not become failure diagnostics. Cancellation remains cancellation; the observer
+adds no retry or request. This diagnostic covers failures before the
+engine returns a response, not arbitrary later response-body errors. Offline mock-engine proof
+establishes capture/redaction/cleanup behavior, not a live failure's cause.
+
+References: [OpenRouter limits](https://openrouter.ai/docs/api_reference/limits),
+[OpenRouter error fields](https://openrouter.ai/docs/api_reference/errors-and-debugging).
 
 Machine-local live inputs persist only in the primary checkout path printed by
 `./scripts/local-config.sh live-env-path`. The helper derives that checkout from
@@ -172,8 +236,8 @@ These hook requirements are safety gates; they do not make every task a Release 
 `.github/workflows/ci.yml` runs on pull requests, pushes to `main`, and manual dispatch:
 
 - `Repository hygiene` installs `rg`, runs the fail-closed secret-scan regression, and checks secrets and whitespace on Linux.
-- `JVM + Android (Linux)` runs shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer check with Java 21.
-- `JVM (Windows)` runs JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
+- `JVM + Android (Linux)` runs on Ubuntu 24.04 and checks shared contract and behavior tests on JVM and Android host, the JVM console consumer, Android AAR packaging, and the Android application consumer with Java 21.
+- `JVM (Windows)` runs on Windows Server 2025 and checks JVM shared contract and behavior tests plus the JVM console consumer with Java 21.
 - `Apple + JVM (macOS)` installs `rg` and runs the complete local `--full` suite, including Android library/application, JVM, combined Apple framework, Swift Package, simulator sample, and generic-device link verification, with Java 21.
 - `Classify verification` selects trusted docs-only scope; platform jobs run for every other PR.
 - `Required checks` provides one stable branch-protection status and validates classified skips.

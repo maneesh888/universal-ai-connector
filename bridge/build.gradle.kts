@@ -1,15 +1,73 @@
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import java.util.Properties
+import java.security.MessageDigest
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.android.kotlin.multiplatform.library")
+    `maven-publish`
+    signing
+    id("org.jetbrains.dokka")
 }
 
-group = "com.myadidi"
+val releaseMetadata = Properties().apply {
+    rootProject.file("distribution/release.properties").inputStream().use { load(it) }
+}
+fun releaseProperty(name: String): String = requireNotNull(releaseMetadata.getProperty(name))
+
+dokka {
+    dokkaPublications.html {
+        moduleName.set("Universal AI Connector")
+        moduleVersion.set(project.version.toString())
+        offlineMode.set(true)
+        outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+    }
+    dokkaSourceSets.configureEach {
+        // Kotlin/Native publications complete the metadata graph; Swift remains the Apple API.
+        if (name.startsWith("ios")) suppress.set(true)
+    }
+}
+
+val publicationJavadocJar = tasks.register<Jar>("publicationJavadocJar") {
+    dependsOn("dokkaGeneratePublicationHtml")
+    archiveClassifier.set("javadoc")
+    from(layout.buildDirectory.dir("dokka/html"))
+    from(rootProject.file("LICENSE")) { into("META-INF") }
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+}
+
+val generatedVersionSource =
+    tasks.register("generateUniversalAiConnectorVersion") {
+        val outputDirectory = layout.buildDirectory.dir("generated/sources/uacVersion/commonMain/kotlin")
+        val libraryVersion = providers.gradleProperty("VERSION_NAME")
+
+        inputs.property("libraryVersion", libraryVersion)
+        outputs.dir(outputDirectory)
+
+        doLast {
+            val outputFile =
+                outputDirectory.get().file(
+                    "com/myadidi/universalai/connector/UniversalAiConnectorVersion.kt",
+                ).asFile
+            outputFile.parentFile.mkdirs()
+            outputFile.writeText(
+                """
+                package com.myadidi.universalai.connector
+
+                internal const val UNIVERSAL_AI_CONNECTOR_VERSION: String = "${libraryVersion.get()}"
+                """.trimIndent() + "\n",
+            )
+        }
+    }
 
 kotlin {
+    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    abiValidation {
+        filters { include { byNames.add("com.myadidi.universalai.connector.**") } }
+    }
     val xcframework = XCFramework("UniversalAiConnectorBridge")
     val ktorVersion = "3.5.2"
 
@@ -47,6 +105,10 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            kotlin.srcDir(generatedVersionSource)
+        }
+
         commonMain.dependencies {
             api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
@@ -77,7 +139,64 @@ kotlin {
     }
 }
 
+publishing {
+    // This phase has no remote repository: ordinary publishing tasks can only write build output.
+    repositories {
+        maven {
+            name = "LocalRelease"
+            url = layout.buildDirectory.dir("distribution/maven").get().asFile.toURI()
+        }
+    }
+    publications.withType<MavenPublication>().configureEach {
+        val suffix = if (name == "kotlinMultiplatform") "" else "-${name.lowercase()}"
+        artifactId = releaseProperty("MAVEN_ARTIFACT_ID") + suffix
+        artifact(publicationJavadocJar)
+        pom {
+            name.set(releaseProperty("POM_NAME"))
+            description.set(releaseProperty("POM_DESCRIPTION"))
+            url.set(releaseProperty("POM_URL"))
+            licenses { license {
+                name.set(releaseProperty("POM_LICENSE_NAME"))
+                url.set(releaseProperty("POM_LICENSE_URL"))
+            } }
+            developers { developer {
+                id.set(releaseProperty("POM_DEVELOPER_ID"))
+                name.set(releaseProperty("POM_DEVELOPER_NAME"))
+                url.set(releaseProperty("POM_DEVELOPER_URL"))
+            } }
+            scm {
+                url.set(releaseProperty("POM_SCM_URL"))
+                connection.set(releaseProperty("POM_SCM_CONNECTION"))
+                developerConnection.set(releaseProperty("POM_SCM_DEVELOPER_CONNECTION"))
+            }
+        }
+    }
+}
+
+// No signing material is inspected during unsigned local builds or ordinary CI.
+val signPublication = providers.gradleProperty("uacSignPublication").map {
+    require(it == "true" || it == "false") { "uacSignPublication must be true or false." }
+    it == "true"
+}.orElse(false).get()
+if (signPublication) {
+    require(!gradle.startParameter.isConfigurationCacheRequested) {
+        "Signing requires --no-configuration-cache; use an explicitly approved host invocation."
+    }
+    val key = providers.environmentVariable("ORG_GRADLE_PROJECT_signingInMemoryKey").orNull
+    val password = providers.environmentVariable("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword").orNull
+    require(!key.isNullOrBlank() && !password.isNullOrBlank()) {
+        "Signing requires approved host-supplied key and passphrase inputs."
+    }
+    signing {
+        useInMemoryPgpKeys(key, password)
+        sign(publishing.publications)
+    }
+}
+
+
 tasks.withType<Test>().configureEach {
+    inputs.file(rootProject.file("scripts/openrouter-diagnostic.py"))
+    systemProperty("uac.openrouter.diagnostic.script", rootProject.file("scripts/openrouter-diagnostic.py").absolutePath)
     val contractsDirectory = rootProject.layout.projectDirectory.dir("contracts")
     inputs.dir(contractsDirectory)
     systemProperty("uac.contracts.root", contractsDirectory.asFile.absolutePath)
@@ -271,4 +390,50 @@ tasks.register<Test>("gatewayLiveTest") {
             )
         }
     }
+}
+
+// Bind bundled-native notice review to the actual resolved iOS link inputs.
+abstract class NativeNoticeInputs : DefaultTask() {
+    @get:Input
+    abstract val identities: ListProperty<String>
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val artifacts: ConfigurableFileCollection
+
+    @get:OutputFile
+    abstract val destination: RegularFileProperty
+
+    @TaskAction
+    fun writeInventory() {
+        val filesByName = artifacts.files.groupBy { it.name }
+        val rows = identities.get().map { identity ->
+            val name = identity.substringAfterLast('\t')
+            val file = filesByName[name]?.singleOrNull()
+                ?: throw GradleException("Expected one native input for $name")
+            val hash = MessageDigest.getInstance("SHA-256")
+                .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
+            "$identity\t$hash"
+        }
+        destination.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(rows.sorted().joinToString("\n", postfix = "\n"))
+        }
+    }
+}
+
+tasks.register<NativeNoticeInputs>("releaseNativeNoticeInputs") {
+    destination.set(layout.buildDirectory.file("distribution/native-notice-inputs.tsv"))
+    artifacts.from(listOf("iosArm64CompileKlibraries", "iosSimulatorArm64CompileKlibraries")
+        .map { configurations.getByName(it).incoming.artifacts.artifactFiles })
+    identities.set(listOf("iosArm64CompileKlibraries", "iosSimulatorArm64CompileKlibraries").map { configurationName ->
+        configurations.getByName(configurationName).incoming.artifacts.resolvedArtifacts.map { artifacts ->
+            artifacts.map { artifact ->
+                val id = artifact.id.componentIdentifier as org.gradle.api.artifacts.component.ModuleComponentIdentifier
+                "$configurationName\t${id.group}:${id.module}:${id.version}\t${artifact.file.name}"
+            }
+        }
+    }.let { providersList ->
+        providersList[0].zip(providersList[1]) { first, second -> first + second }
+    })
 }

@@ -1,0 +1,1 @@
+No embedded copyright or license comment blocks occur in this common source archive. The unchanged project-level Apache-2.0 license and copyright are retained in projects/coroutines/LICENSE.txt.

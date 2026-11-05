@@ -1,0 +1,25 @@
+===== Source attribution (2 files; example posixMain/io/ktor/network/sockets/TCPServerSocketNative.kt) =====
+/*
+ * Copyright 2014-2019 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (5 files; example nixMain/io/ktor/network/selector/SignalPoint.kt) =====
+/*
+ * Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (26 files; example iosMain/io/ktor/network/util/SocketUtilsIos.kt) =====
+/*
+ * Copyright 2014-2024 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (5 files; example nixMain/io/ktor/network/sockets/SocketAddress.nonJvm.nix.kt) =====
+/*
+ * Copyright 2014-2025 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+===== Source attribution (6 files; example nixMain/io/ktor/network/util/NativeSocketAddressNix.kt) =====
+/*
+* Copyright 2014-2021 JetBrains s.r.o and contributors. Use of this source code is governed by the Apache 2.0 license.
+*/
+

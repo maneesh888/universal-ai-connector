@@ -17,6 +17,13 @@ for forbidden in \
   'GATEWAY_API_KEY' \
   'GATEWAY_LIVE_MODEL' \
   'GATEWAY_LIVE_STRUCTURED_OUTPUT' \
+  'ORG_GRADLE_PROJECT_mavenCentralUsername' \
+  'ORG_GRADLE_PROJECT_mavenCentralPassword' \
+  'ORG_GRADLE_PROJECT_signingInMemoryKey' \
+  'ORG_GRADLE_PROJECT_signingInMemoryKeyPassword' \
+  'UAC_PGP_SIGNING_KEY_FINGERPRINT' \
+  'UAC_MACOS_SIGNING_IDENTITY' \
+  'UAC_NOTARY_KEYCHAIN_PROFILE' \
   '.env.live' \
   './scripts/check-live.sh' \
   ':bridge:openAiLiveTest' \
@@ -33,7 +40,11 @@ done
 for required in \
   'permissions:' \
   'contents: read' \
-  './scripts/check.sh --full'; do
+  './scripts/check.sh --full' \
+  'bridge/build/distribution/apple/*.log' \
+  'bridge/build/distribution/apple/swift-api-comparison.json' \
+  'bridge/build/distribution/apple/swift-public-api-actual.json' \
+  'bridge/build/distribution/apple/local-consumer/consumer.xcresult'; do
   if ! grep -Fq "$required" "$WORKFLOW"; then
     echo "Ordinary CI omitted a required read-only deterministic policy: $required" >&2
     exit 1
