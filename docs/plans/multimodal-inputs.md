@@ -56,6 +56,36 @@ client closes.
   semantics. A request cannot replay a consumed non-rewindable source without an explicit safe
   source contract.
 
+### Capability discovery and selected-model state
+
+The connector must expose the selected model's effective capabilities through the existing
+provider-neutral Kotlin and Swift boundaries so a host can enable or disable relevant features.
+This is a semantic contract, not a prescribed visual design, and UI gating never replaces connector
+validation when a request begins.
+
+Keep the evidence layers distinct:
+
+1. **Model and endpoint evidence** says whether the exact selected provider, endpoint, model and API
+   version support the task and source form.
+2. **Connector evidence** says whether the installed adapter implements and has verified the exact
+   translation, validation, cancellation and cleanup path.
+3. **Host readiness** says whether the current host can supply the accepted source form and satisfy
+   applicable preparation and resource requirements now.
+
+Derive `supported` only when every required layer is affirmative. Report `unsupported` when an
+authoritative layer establishes that the exact operation cannot be used. Preserve `unknown` when
+evidence is absent, stale or conflicting; do not infer support from a model name, family name,
+provider-wide marketing statement or generated answer in which a model describes its own features.
+Before network dispatch, requests requiring `unsupported` fail with a stable unsupported-capability
+error, while `unknown` or not-ready requests fail closed with a distinct stable state. Deterministic
+tests must prove zero dispatch in both cases.
+
+Capability snapshots are bound to the selected provider/endpoint/model/API tuple and current host
+readiness. A model selection, endpoint or API change, adapter replacement, or relevant host-readiness
+change invalidates or refreshes the snapshot before it is used again. Front ends may react to the
+refreshed `supported`, `unsupported` or `unknown` state, but the connector rechecks the same effective
+state at request time to prevent stale UI state from authorizing an invalid dispatch.
+
 ## Deferred extensions
 
 The following are not P10 acceptance and require separately activated packages:
@@ -75,8 +105,9 @@ Execute one package at a time only after P10 activation.
 
 Freeze the canonical content-part model, Kotlin and Swift public API shape, serialized contract,
 MIME allowlists, bounded source forms, ownership, error mapping, capability representation, and
-compatibility/migration policy. Add fixture and host-boundary coverage without a provider media
-request.
+compatibility/migration policy. Define the evidence layers, selected-model effective-capability
+snapshot, invalidation rules and stable fail-closed states. Add fixture and host-boundary coverage,
+including zero-dispatch tests, without a provider media request.
 
 ### P10-B: Image input
 
@@ -190,7 +221,7 @@ visible, even where they share the contract and lifecycle foundation.
 | ID | Package / goal | Depends on | Observable acceptance |
 |---|---|---|---|
 | MEDIA-01 | P10-A content and compatibility contract | P10 activation; ADR 0007 decision | Ordered typed parts/roles; unchanged text-only behavior; explicit Kotlin/Swift/JSON migration; no media disguised as an ignored field |
-| MEDIA-02 | P10-A source ownership, validation and capability contract | MEDIA-01 | MIME/size/dimension/duration/count/total-budget policies; known/unknown/unsupported capabilities; immutable prepared data or explicit bounded source semantics; no dispatch for rejected input |
+| MEDIA-02 | P10-A source ownership, validation and capability contract | MEDIA-01 | MIME/size/dimension/duration/count/total-budget policies; separate model/endpoint, connector and host-readiness evidence; selected-model supported/unsupported/unknown state and invalidation; immutable prepared data or explicit bounded source semantics; zero dispatch for unsupported, unknown, not-ready or invalid input |
 | IMG-01 | P10-B one provider/model image intersection | MEDIA-01/02; explicit provider/model choice | Deterministic exact request translation, ordering and rejection tests; target live image-understanding proof using synthetic non-sensitive input |
 | IMG-02 | Image host and lifecycle acceptance | IMG-01 | Public Kotlin/Swift consumer paths; cancellation/close/concurrency/cleanup and redaction tests; no hidden preprocessing or provider substitution |
 | AUD-01 | P10-C select audio operation | MEDIA-01/02; explicit transcription or understanding choice | Document whether output is transcript, audio-grounded answer, or both; define independent capabilities/errors; no synthesized speech or realtime claim |
@@ -222,7 +253,8 @@ results rather than raw media, prompt content or provider payloads. Required pro
 1. Schemas and embedded contract mirror agree; retained V1 fixtures and text-only Kotlin/Swift
    consumers keep their documented behavior; new wire migration follows the accepted ADR.
 2. Allowed/unsupported/unknown media and capability cases; malformed or spoofed MIME, empty,
-   oversized, count/total-budget and invalid-reference cases fail before network dispatch.
+   oversized, count/total-budget and invalid-reference cases fail before network dispatch. Tests
+   assert zero dispatch for unsupported, unknown and not-ready effective capability states.
 3. Provider request translation preserves original part order and allowed roles; no silent drop,
    text conversion, model fallback or automatic upload/fetch is introduced.
 4. Cancellation before/during preparation/dispatch/streaming, concurrent requests and close races
@@ -232,6 +264,9 @@ results rather than raw media, prompt content or provider payloads. Required pro
    limits are not treated as a proof that untrusted media decodes safely.
 6. Exact targeted live proof and thin public host consumption for the actual delivered path;
    simulator/compilation does not stand in for local model/device inference.
+7. Capability snapshots refresh or invalidate after selected-model, endpoint/API, adapter or host-
+   readiness changes; absent or conflicting evidence remains `unknown`, and generated model claims
+   or name-based heuristics never upgrade support.
 
 ## Task quality and resource evaluation
 
