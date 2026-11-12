@@ -208,6 +208,13 @@ introduced that inherited relationship; Swift 6.1 omits it. Explicit metatype-on
 relationship remain checked. The reviewed migration removed exactly 43 redundant edges and changed
 none of the 264 symbols. See [Swift Evolution SE-0470](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0470-isolated-conformances.md).
 
+Swift 6.4's symbol-graph extractor renders the already-existing `@Sendable` annotation on the
+`UniversalAiProviderConfiguration` credential-supplier initializer, while Swift 6.2 omits that
+annotation from the declaration text. The canonical surface retains the previously reviewed Swift
+6.2 spelling for that exact mangled symbol and exact Swift 6.4 declaration only. The symbol's precise
+identifier encodes sendability (`Yb`), so removing `@Sendable` still appears as a removed and added
+symbol; unexpected signature changes and every other declaration remain exact equality failures.
+
 Strict `local --rebuild-check` requires the produced archive to match the frozen remote checksum
 and a forced Release rebuild to reproduce it. ZIP order, timestamps/modes and plist serialization/
 library-record ordering are canonicalized; compiler binaries and legal texts are not patched.

@@ -25,6 +25,15 @@ def portability_graph(relationships):
     ], "relationships": relationships}
 
 
+def provider_configuration_graph(identifier, declaration):
+    return {"module": {"name": apple.PRODUCT}, "symbols": [{
+        "identifier": {"precise": identifier},
+        "accessLevel": "public",
+        "kind": {"identifier": "swift.init"},
+        "declarationFragments": [{"spelling": declaration}],
+    }], "relationships": []}
+
+
 class AppleTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -213,6 +222,30 @@ class AppleTests(unittest.TestCase):
         for graph in variants:
             with self.assertRaises(apple.AppleError):
                 apple.verify_api(expected, apple.public_api([graph]), self.root)
+
+    def test_xcode_26_and_27_sendable_initializer_spellings_have_one_portable_form(self):
+        older = provider_configuration_graph(apple.PROVIDER_CONFIGURATION_INIT, apple.PROVIDER_CONFIGURATION_INIT_CANONICAL)
+        newer = provider_configuration_graph(apple.PROVIDER_CONFIGURATION_INIT, apple.PROVIDER_CONFIGURATION_INIT_XCODE_27)
+        self.assertEqual(apple.public_api([newer]), apple.public_api([older]))
+
+    def test_sendable_initializer_normalization_cannot_hide_sendability_loss_or_other_changes(self):
+        expected = apple.public_api([provider_configuration_graph(apple.PROVIDER_CONFIGURATION_INIT, apple.PROVIDER_CONFIGURATION_INIT_XCODE_27)])
+        without_sendable_id = apple.PROVIDER_CONFIGURATION_INIT.replace("SyYbKc", "SyKc")
+        without_sendable = apple.public_api([provider_configuration_graph(without_sendable_id, apple.PROVIDER_CONFIGURATION_INIT_CANONICAL)])
+        with self.assertRaises(apple.AppleError):
+            apple.verify_api(expected, without_sendable, self.root)
+        report = json.loads((self.root / "swift-api-comparison.json").read_text())
+        self.assertEqual(report["addedSymbols"], [without_sendable_id])
+        self.assertEqual(report["removedSymbols"], [apple.PROVIDER_CONFIGURATION_INIT])
+
+        changed = apple.public_api([provider_configuration_graph(
+            apple.PROVIDER_CONFIGURATION_INIT,
+            apple.PROVIDER_CONFIGURATION_INIT_XCODE_27.replace(" -> String", " async -> String"),
+        )])
+        with self.assertRaises(apple.AppleError):
+            apple.verify_api(expected, changed, self.root)
+        report = json.loads((self.root / "swift-api-comparison.json").read_text())
+        self.assertEqual(report["changedSymbols"], [apple.PROVIDER_CONFIGURATION_INIT])
 
     def test_build_proof_is_distinct_from_strict_publisher_and_remote_checksum_binding(self):
         actual = self.config | {"sha256": "a" * 64}

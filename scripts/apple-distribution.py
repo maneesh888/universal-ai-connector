@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parent.parent
 NAME = "UniversalAiConnectorBridge"
 PRODUCT = "UniversalAiConnector"
 REPOSITORY = "https://github.com/maneesh888/universal-ai-connector"
+PROVIDER_CONFIGURATION_INIT = "s:20UniversalAiConnector0aB21ProviderConfigurationV10providerId7baseURL18credentialSupplierAcA0abdG0V_S2SyYbKctcfc"
+PROVIDER_CONFIGURATION_INIT_XCODE_27 = "init(providerId: UniversalAiProviderId, baseURL: String, credentialSupplier: @escaping @Sendable () throws -> String)"
+PROVIDER_CONFIGURATION_INIT_CANONICAL = "init(providerId: UniversalAiProviderId, baseURL: String, credentialSupplier: @escaping () throws -> String)"
 spec = importlib.util.spec_from_file_location("apple_properties", ROOT / "scripts/maven-inventory.py")
 metadata_reader = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(metadata_reader)
@@ -142,6 +145,7 @@ def public_api(graphs):
                 continue
             identifier = symbol["identifier"]["precise"]
             declaration = "".join(f["spelling"] for f in symbol.get("declarationFragments", []))
+            declaration = canonical_declaration(identifier, declaration)
             require(not re.search(r"Kotlin|Ktor|UACB|UniversalAiConnectorBridge|CoroutineScope|HttpClient", declaration), "Implementation type leaked into the public Swift API.")
             entry = {"kind": symbol["kind"]["identifier"], "declaration": declaration, "generics": symbol.get("swiftGenerics", {}), "availability": sorted(symbol.get("availability", []), key=lambda value: json.dumps(value, sort_keys=True))}
             require(identifier not in symbols or symbols[identifier] == entry, "Conflicting public Swift symbol.")
@@ -151,6 +155,17 @@ def public_api(graphs):
             relationships[json.dumps(value, sort_keys=True)] = value
     require(symbols, "Empty public Swift API.")
     return {"module": PRODUCT, "symbols": dict(sorted(symbols.items())), "relationships": canonical_relationships([relationships[k] for k in sorted(relationships) if relationships[k]["source"] in symbols])}
+
+
+def canonical_declaration(identifier, declaration):
+    """Normalize one Swift 6.4 extractor spelling for an unchanged @Sendable API.
+
+    The precise identifier contains Swift's sendability marker (Yb), so removing
+    @Sendable changes the identifier and remains an added/removed API difference.
+    """
+    if identifier == PROVIDER_CONFIGURATION_INIT and declaration == PROVIDER_CONFIGURATION_INIT_XCODE_27:
+        return PROVIDER_CONFIGURATION_INIT_CANONICAL
+    return declaration
 
 
 def canonical_relationships(records):
