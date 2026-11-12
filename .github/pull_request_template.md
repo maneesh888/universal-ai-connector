@@ -29,6 +29,11 @@ Link durable sources and evidence; do not copy full plans, raw logs, test-by-tes
 <!-- Record route, status (pending/completed/failed/unavailable/not-applicable), exact head, and a sanitized disposition summary. Keep vulnerability details and private report references in the private reviewer packet. No finding is not proof of security. -->
 -
 
+## Xcode MCP evidence
+
+<!-- When applicable, record Xcode version/build, catalog/read-only versus executed operations, project/scheme/destination, serialized Simulator session, direct screenshot references, and exact-head owner-approval status. Write "Not used" otherwise. Never include credentials, provider bodies, or private screenshot content. -->
+-
+
 ## Proof limits and out of scope
 
 <!-- Identify what the evidence does not prove and what this PR deliberately excludes. -->

@@ -40,6 +40,13 @@ Use the highest mode required by the requested outcome or changed surface. Manda
 9. Keep the root README as a stable public product overview. Route routine milestone progress,
    exact-head proof, and closeout chronology to the roadmap, active plan, verification records,
    and pull-request brief; change the README only for user-visible product or consumption changes.
+10. For affected Swift or iOS work, use the verified Xcode 27 MCP route when its reads,
+    diagnostics, previews, build/test controls, or Simulator controls materially help. Apply the
+    evidence levels in `docs/DEVELOPMENT_WORKFLOW.md`: a catalog or read does not prove an
+    unexecuted build, test, interaction, or screenshot.
+11. Keep MCP test and Simulator activity serialized with other repository/worktree Simulator work.
+    Preserve complete repository scripts and their Kotlin, JVM, Android, Swift, packaging, and
+    consumer coverage; MCP never replaces a selected repository gate.
 
 The roadmap and active plan own product constraints. Do not copy them into a work order or report; cite the relevant source sections.
 
@@ -71,6 +78,9 @@ Use `gh` for GitHub operations and `gh api graphql` for thread state. Do not swi
 - Run `./scripts/check.sh --quick` for Standard; let the pre-commit hook supply it when committing.
 - Use the trusted docs-only selection from `docs/DEVELOPMENT_WORKFLOW.md`; all other Release/push scopes require `./scripts/check.sh --full`. Explicit full always means full.
 - Never bypass hooks or security scans.
+- For MCP-assisted Simulator/runtime acceptance, retain inspected direct screenshots and an
+  exact-head evidence record. Complete independent exact-head review and required checks, then
+  stop before merge until the repository owner explicitly approves that exact head.
 
 Create PRs as drafts with a concise brief containing scope, source links, verification, proof limits, exact head SHA, and one milestone effect. Build the detailed reviewer packet only when Release review begins.
 

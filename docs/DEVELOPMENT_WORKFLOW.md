@@ -281,8 +281,56 @@ adopting another reviewer's conclusion. Repository documentation does not activa
 - Use `gh` for repository, PR, issue, review, workflow, log, artifact, and lifecycle state-changing operations. Use `gh api graphql` for review-thread state.
 - Use the GitHub connector only when the user explicitly requests it.
 - Use current official provider documentation only after the corresponding provider milestone activates.
-- Use Xcode, simulator, or device tooling only for an affected proof surface. Repository scripts remain the deterministic fallback.
+- Use Xcode, simulator, or device tooling only for an affected proof surface. Repository scripts remain the deterministic authority.
 - Never make development tools or credentials runtime dependencies.
+
+### Xcode 27 MCP evidence boundary
+
+Xcode's MCP service is an optional assistive route for Swift and iOS work. Confirm
+`xcodebuild -version` reports Xcode 27, resolve `xcrun mcpbridge`, connect the exact task
+worktree/project, and
+inspect the current tool list before use. On November 12, 2026, Xcode 27.1 build `27A9269` exposed a
+54-tool catalog. That establishes a capability snapshot only: tool names and counts may change, and
+no unexecuted operation inherits proof from catalog presence.
+
+Use the following evidence levels:
+
+1. **Read assistance:** project/file reads, navigation, settings inspection, and issue discovery may
+   guide implementation after the returned project identity and content are checked against the
+   task worktree.
+2. **Edit or diagnostic assistance:** MCP edits, preview output, debugger state, or build
+   diagnostics are useful inputs, but the root diff and repository checks decide what is accepted.
+3. **Build or test evidence:** record the exact head, Xcode version/build, project or workspace,
+   scheme, destination, requested operation, and inspected result. Until a bounded MCP build or
+   test has run successfully for that target, describe this route as unverified. Even after it
+   succeeds, run the repository command selected by the targeted-check table and the complete
+   Release script when required.
+4. **Simulator runtime or visual evidence:** serialize the whole MCP interaction session with other
+   repository/worktree Simulator work. Inspect the normal product state after every required
+   interaction and retain direct screenshots. Do not substitute XCTest attachments, accessibility
+   metadata, a preview snapshot, or a tool success response for the required runtime observation.
+
+MCP use never narrows the cross-platform matrix. `./scripts/check.sh --quick` and
+`./scripts/check.sh --full` continue to own their complete Kotlin, JVM, Android, Swift, Apple
+packaging, and consumer scopes. Keep the scripts intact; do not translate only their Apple steps
+into MCP calls and claim the script passed.
+
+Before an MCP test or Simulator operation, coordinate with other active project work and wait until
+no repository script or linked worktree is using the host Simulator. Keep one owner for the entire
+session. Do not stop global Simulator/CoreSimulator processes or mutate a pre-existing or user-open
+device to prepare proof. A project-read session alone does not require the Simulator hold.
+
+For MCP-assisted runtime acceptance, keep screenshots outside the repository and private evidence
+packet, exclude credentials/provider bodies/private configuration, and bind the record to the exact
+head, Xcode build, scheme, destination, action, and result. The agent must inspect every screenshot
+used for a claim. The independent reviewer checks the same exact head and the distinction between
+read, build/test, and runtime evidence. After every non-test head change, repeat the affected
+runtime evidence.
+
+An MCP-assisted Simulator/runtime candidate remains on human hold after automated gates. Do not
+merge it until the repository owner explicitly approves the current exact head after the screenshot
+and proof limits are presented. General implementation authority, a request to continue, prior-head
+approval, or silence is not approval for the current head.
 
 ## Agent efficiency
 
