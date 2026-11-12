@@ -42,6 +42,7 @@ run_hygiene() {
   "$ROOT/scripts/tests/local-config-worktree-test.sh"
   "$ROOT/scripts/tests/gradle-wrapper-policy-test.sh"
   "$ROOT/scripts/tests/dependabot-policy-test.sh"
+  "$ROOT/scripts/tests/xcode-mcp-workflow-policy-test.sh"
   "$ROOT/scripts/check-distribution-metadata.sh"
   "$ROOT/scripts/tests/distribution-metadata-test.sh"
   "$ROOT/scripts/tests/distribution-readiness-test.sh"

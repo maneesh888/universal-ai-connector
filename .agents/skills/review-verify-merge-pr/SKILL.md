@@ -65,6 +65,13 @@ authoritative.
 4. Treat correctness, security, data-loss, public-contract, packaging, missing-material-test, and false-evidence findings as blockers.
 5. Resolve trusted verification scope using `./scripts/verification-mode.sh head`. Run full on the exact Release head, or hygiene only for trusted docs scope. Reuse successful same-head hook evidence when its command, scope, environment, and result match. Run additional active-plan proof only when applicable.
 6. Confirm required security tools and regressions actually executed without revealing matched material.
+7. When Xcode MCP contributed to Swift/iOS work, separate catalog/read assistance from executed
+   build, test, debugger, preview, and Simulator evidence. Verify the exact worktree, Xcode
+   version/build, scheme, destination, operation, result, and repository-script coverage. An MCP
+   result cannot replace selected Kotlin, JVM, Android, packaging, or consumer gates.
+8. For MCP-assisted Simulator/runtime claims, inspect the direct screenshots and exact-head record,
+   confirm Simulator work was serialized with other project/worktree activity, and require explicit
+   repository-owner approval of the current exact head before merge.
 
 Review-only work reports findings and stops. During an autonomous implementation lifecycle, fix in-scope blockers while the PR remains draft. External review status is advisory, but validated in-scope findings remain blockers. Missing services must be recorded unavailable, never clean. Active user constraints retain their scope through phase transitions. Any head change invalidates local Release evidence, the reviewer result, and GitHub gate conclusions. If the PR had already become ready, immediately disable any auto-merge request and return it to draft, including after a `do not merge` hold or a queued merge was disabled. Refresh the PR brief and repeat the exact-head cycle before readiness; in review-only work, report the required recovery without changing state.
 
@@ -81,6 +88,8 @@ Before readiness, require:
 7. no conflict or unsatisfied base-update policy;
 8. successful exact-head required checks, including `Required checks` and applicable protected live verification; and
 9. effective base protection requiring PRs, strict required checks, conversation resolution, administrator enforcement without bypass, and prohibiting force pushes and deletion.
+10. for MCP-assisted Simulator/runtime evidence, explicit repository-owner approval bound to the
+    exact current head after the screenshot evidence and proof limits were presented.
 
 Verify protection through GitHub APIs and confirm `gh pr checks <number> --required`. Pending, skipped, missing, cancelled, timed-out, or failed mandatory checks block readiness and merge. Only platform jobs explicitly skipped by successful trusted docs classification are non-applicable; `Required checks` and applicable live policy must succeed.
 
@@ -88,20 +97,28 @@ Verify protection through GitHub APIs and confirm `gh pr checks <number> --requi
 
 If the latest instruction says `keep draft`, leave the PR draft. If it says `do not merge`, a clean head may become ready but must remain unmerged.
 
-Otherwise:
+Otherwise, and only when any required MCP-assisted runtime approval is present for the current
+exact head:
 
 1. Refresh the head, checks, reviews, threads, protection, mergeability, scope, and latest user instruction.
 2. Confirm the head remains the exact reviewed and locally verified SHA.
-3. Mark the draft ready.
-4. Refresh the same state once more. On any head, gate, protection, mergeability, scope, or review mismatch, disable any queued auto-merge, return the PR to draft when applicable, and restart the exact-head cycle or report the blocker. On a late `keep draft`, disable any queued auto-merge, run `gh pr ready <number> --undo`, verify draft and unmerged, and stop. On a late `do not merge`, disable any queued auto-merge, verify unmerged, and stop; the PR may remain ready.
-5. Run:
+3. Reconfirm any required repository-owner approval names that same SHA; a general continuation
+   request, silence, or approval of an earlier head does not authorize merge.
+4. Mark the draft ready.
+5. Refresh the same state once more. On any head, gate, protection, mergeability, scope, review, or
+   required owner-approval mismatch, disable any queued auto-merge, return the PR to draft when
+   applicable, and restart the exact-head cycle or report the blocker. On a late `keep draft`,
+   disable any queued auto-merge, run `gh pr ready <number> --undo`, verify draft and unmerged, and
+   stop. On a late `do not merge`, disable any queued auto-merge, verify unmerged, and stop; the PR
+   may remain ready.
+6. Run:
 
    ```bash
    gh pr merge <number> --auto --squash --match-head-commit <reviewed-head-sha>
    ```
 
-6. Inspect PR state immediately. If GitHub queues auto-merge instead of merging, disable it. Apply a late `keep draft` by returning the PR to draft; otherwise leave its current draft/readiness state. Verify unmerged and report the blocker.
-7. If the head changes before completion, disable auto-merge, return the PR to draft when applicable, and restart the exact-head cycle.
+7. Inspect PR state immediately. If GitHub queues auto-merge instead of merging, disable it. Apply a late `keep draft` by returning the PR to draft; otherwise leave its current draft/readiness state. Verify unmerged and report the blocker.
+8. If the head changes before completion, disable auto-merge, return the PR to draft when applicable, and restart the exact-head cycle.
 
 Never leave queued auto-merge active.
 

@@ -83,6 +83,35 @@ Create new branches with `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/
 - Use `gh` for GitHub reads and lifecycle writes. Do not use the GitHub connector unless the user explicitly requests it.
 - Keep normal GitHub Actions read-only and secretless; never add `pull_request_target`, merge logic, a write token, PAT, or unattended merger.
 
+### Xcode MCP assistance
+
+- For affected Swift and iOS work, use a connected Xcode 27 MCP service when its project reads,
+  diagnostics, previews, build/test controls, or Simulator controls materially improve the work.
+  Verify the selected Xcode major version, exact worktree/project, and current tool catalog before
+  relying on it. The November 12, 2026 Xcode 27.1 capability check exposed 54 tools; the count is a
+  dated inventory, not a stable API contract.
+- Classify every MCP result by what actually ran. Catalog discovery or a successful project read
+  proves only tool availability and read access. Do not claim MCP build, test, debugger, preview,
+  install, launch, interaction, or screenshot proof until that exact operation succeeds and its
+  target and result are inspected.
+- MCP is assistive, never a replacement for repository gates. Retain the complete repository
+  scripts and all affected Kotlin, JVM, Android, Swift, packaging, and consumer checks. A Swift or
+  iOS MCP result cannot justify skipping the Gradle or Android/JVM portions selected by
+  `docs/DEVELOPMENT_WORKFLOW.md`.
+- Serialize MCP test or Simulator activity with every other Simulator-backed task for this
+  repository, including work from another linked worktree. Do not run an MCP Simulator action in
+  parallel with repository scripts or another project task using the same host Simulator. Never
+  repurpose, erase, shut down, or delete a pre-existing or user-open Simulator.
+- Runtime or visual acceptance through MCP requires direct screenshots of the normally launched
+  product state, captured and inspected by the agent, with credentials and private configuration
+  excluded. Bind the evidence to the exact Git head, Xcode version/build, scheme, destination,
+  action, and observed result. XCTest attachments, catalog output, accessibility metadata, or a
+  successful action without the resulting screenshot are not visual acceptance.
+- A head that uses Xcode MCP Simulator/runtime evidence must not merge until the independent
+  exact-head review and required checks pass and the repository owner explicitly approves that
+  exact head. Record the approval in the private reviewer packet; never infer it from silence or
+  from a general request to continue.
+
 ## Pull requests
 
 - Create pull requests as drafts only after the pre-PR task-completion gate above is satisfied.
