@@ -25,6 +25,7 @@ run_hygiene() {
   done < <(git -C "$ROOT" ls-files '*.sh' '.githooks/*')
 
   python3 -I "$ROOT/scripts/tests/verification-policy-test.py"
+  "$ROOT/scripts/tests/agent-execution-workflow-policy-test.sh"
   python3 -I -B "$ROOT/scripts/tests/sample-parity-test.py"
   python3 -I -B "$ROOT/scripts/tests/openrouter-limits-test.py"
   python3 -I -B "$ROOT/scripts/tests/openrouter-diagnostic-test.py"

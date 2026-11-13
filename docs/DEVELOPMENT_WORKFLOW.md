@@ -35,7 +35,15 @@ Android checks require SDK platforms 36 (shared library) and 37.0 (Lifecycle 2.1
 plus Build Tools 36.1.0. The sample compiles against API 37 while retaining target API 36 and
 minimum API 24. Both Linux and macOS CI provision the same SDK components.
 
-Run targeted checks while editing, then run only the highest final gate required by the selected mode:
+Keep one compact execution checkpoint visible in the working conversation: objective and scope,
+current state, next proof gate, and blockers. Update it only at meaningful state transitions so
+the user and project retain current status without carrying a transcript of routine commands.
+
+Run the smallest affected test after each coherent fix, and inspect only the failure output and
+source context needed to choose the next change. Retry a failed command only after a code,
+configuration, or environment change, or when evidence identifies a transient external failure;
+record that reason instead of rerunning speculatively. Then run only the highest final gate
+required by the selected mode:
 
 | Mode | Final gate | Additional proof |
 |---|---|---|
@@ -47,7 +55,11 @@ Calling `./scripts/check.sh` without an argument is equivalent to `--full`.
 
 Successful same-head hook evidence may satisfy the matching local gate when the command, scope, environment, and result are retained. Do not rerun an unchanged successful full gate merely to label it Release.
 
-Mandatory hooks may execute a higher cumulative gate at commit or push. Do not manually repeat the same gate immediately before the hook unless the intervening state changed.
+Before the Release full gate and independent review, freeze the candidate. Any head change
+invalidates that exact-head evidence and restarts the final candidate cycle. Mandatory hooks may
+execute a higher cumulative gate at commit or push. Do not manually repeat the same gate
+immediately before the hook unless the intervening state changed. A changed UI surface still
+requires direct screenshots or runtime proof; do not collect unrelated UI evidence.
 
 ## Trusted docs-only exception
 

@@ -29,7 +29,9 @@ Use the highest mode required by the requested outcome or changed surface. Manda
 
 ## Execute
 
-1. Confirm the objective, active package, affected surfaces, out-of-scope behavior, selected mode, and proof boundaries. Keep this as a compact internal work order; do not restate a clear user request.
+1. Keep one compact checkpoint visible in the working conversation: objective and scope, active
+   package, current state, next proof gate, and blockers. Refresh it only when that state
+   meaningfully changes; do not restate a clear user request.
 2. Add or update focused tests when behavior changes.
 3. Prefer existing modules, fixtures, Gradle tasks, and repository scripts.
 4. Use the Gradle wrapper.
@@ -77,11 +79,17 @@ Use `gh` for GitHub operations and `gh api graphql` for thread state. Do not swi
 
 ## Verify and publish
 
-- Run affected tests during iteration.
+- Run the smallest affected test after each coherent fix, using only the scoped failure output and
+  source context needed for the next change.
+- Retry a failed command only after a code, configuration, or environment change, or evidence of a
+  transient external failure; state the reason instead of rerunning speculatively.
 - Run `./scripts/check.sh --hygiene` for a Fast handoff with file changes.
 - Run `./scripts/check.sh --quick` for Standard; let the pre-commit hook supply it when committing.
 - Use the trusted docs-only selection from `docs/DEVELOPMENT_WORKFLOW.md`; all other Release/push scopes require `./scripts/check.sh --full`. Explicit full always means full.
+- Freeze a Release candidate before the full gate and independent review; any head change restarts
+  the exact-head cycle.
 - Never bypass hooks or security scans.
+- Keep screenshot or runtime proof for changed UI; do not collect unrelated UI evidence.
 - For MCP-assisted Simulator/runtime acceptance, retain inspected direct screenshots and an
   exact-head evidence record that identifies source revision, Xcode build, scheme, task-owned
   device UUID, operation, and mock-versus-live boundary. Complete independent exact-head review
