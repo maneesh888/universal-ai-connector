@@ -19,9 +19,6 @@ Work on one bounded package while preserving the repository's accepted host and 
 
 Preserve unrelated work. Use an isolated worktree when exact-head operations would disturb a dirty checkout.
 
-Keep one compact checkpoint visible in the working conversation: objective and scope, current
-state, next proof gate, and blockers. Refresh it only when that state meaningfully changes.
-
 ## Select the mode
 
 - **Fast:** focused local change and affected tests.
@@ -32,7 +29,9 @@ Use the highest mode required by the requested outcome or changed surface. Manda
 
 ## Execute
 
-1. Confirm the objective, active package, affected surfaces, out-of-scope behavior, selected mode, and proof boundaries. Keep this as a compact internal work order; do not restate a clear user request.
+1. Keep one compact checkpoint visible in the working conversation: objective and scope, active
+   package, current state, next proof gate, and blockers. Refresh it only when that state
+   meaningfully changes; do not restate a clear user request.
 2. Add or update focused tests when behavior changes.
 3. Prefer existing modules, fixtures, Gradle tasks, and repository scripts.
 4. Use the Gradle wrapper.

@@ -40,4 +40,13 @@ require_phrase 'Freeze a Release candidate before the full gate and independent 
 require_phrase 'do not collect unrelated UI evidence' "$DEVELOP_SKILL" \
   'The development skill must scope UI evidence.'
 
+if [[ "$(rg --fixed-strings --count-matches 'one compact checkpoint visible' "$DEVELOP_SKILL")" != "1" ]]; then
+  echo 'The development skill must define exactly one visible execution checkpoint.' >&2
+  exit 1
+fi
+if rg --fixed-strings --quiet 'compact internal work order' "$DEVELOP_SKILL"; then
+  echo 'The development skill must not retain a competing internal checkpoint.' >&2
+  exit 1
+fi
+
 echo 'Agent execution workflow policy checks passed.'
