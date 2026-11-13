@@ -87,13 +87,19 @@ Create new branches with `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/
 
 - For affected Swift and iOS work, use a connected Xcode 27 MCP service when its project reads,
   diagnostics, previews, build/test controls, or Simulator controls materially improve the work.
-  Verify the selected Xcode major version, exact worktree/project, and current tool catalog before
-  relying on it. The November 12, 2026 Xcode 27.1 capability check exposed 54 tools; the count is a
-  dated inventory, not a stable API contract.
+  Discover the current tool catalog first, then use read-only project/workspace, scheme, and
+  destination reads to verify the selected Xcode major version and exact task worktree before
+  relying on it. Never assume a tool name or capability from a prior session.
+  The November 12, 2026 Xcode 27.1 capability check exposed 54 tools; the count is a dated
+  inventory, not a stable API contract.
 - Classify every MCP result by what actually ran. Catalog discovery or a successful project read
   proves only tool availability and read access. Do not claim MCP build, test, debugger, preview,
   install, launch, interaction, or screenshot proof until that exact operation succeeds and its
   target and result are inspected.
+- Treat build/test destination support and Device Interaction session eligibility as separate
+  capabilities. A destination that passes a build or test does not prove that an interaction
+  session can start; validate the interaction destination separately and record its task-owned
+  device UUID.
 - MCP is assistive, never a replacement for repository gates. Retain the complete repository
   scripts and all affected Kotlin, JVM, Android, Swift, packaging, and consumer checks. A Swift or
   iOS MCP result cannot justify skipping the Gradle or Android/JVM portions selected by
@@ -102,11 +108,15 @@ Create new branches with `feature/`, `bugfix/`, `docs/`, `chore/`, or `refactor/
   repository, including work from another linked worktree. Do not run an MCP Simulator action in
   parallel with repository scripts or another project task using the same host Simulator. Never
   repurpose, erase, shut down, or delete a pre-existing or user-open Simulator.
+- Keep the interaction lane serialized from session start through cleanup. Read the current UI
+  hierarchy before every action, inspect the resulting hierarchy and direct screenshot, and end
+  the workspace interaction session even after failure.
 - Runtime or visual acceptance through MCP requires direct screenshots of the normally launched
   product state, captured and inspected by the agent, with credentials and private configuration
   excluded. Bind the evidence to the exact Git head, Xcode version/build, scheme, destination,
-  action, and observed result. XCTest attachments, catalog output, accessibility metadata, or a
-  successful action without the resulting screenshot are not visual acceptance.
+  device UUID, source revision, action, and observed result; label mock versus live behavior.
+  XCTest attachments, catalog output, accessibility metadata, or a successful action without the
+  resulting screenshot are not visual acceptance.
 - A head that uses Xcode MCP Simulator/runtime evidence must not merge until the independent
   exact-head review and required checks pass and the repository owner explicitly approves that
   exact head. Record the approval in the private reviewer packet; never infer it from silence or

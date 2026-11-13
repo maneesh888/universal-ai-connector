@@ -31,7 +31,7 @@ Link durable sources and evidence; do not copy full plans, raw logs, test-by-tes
 
 ## Xcode MCP evidence
 
-<!-- When applicable, record Xcode version/build, catalog/read-only versus executed operations, project/scheme/destination, serialized Simulator session, direct screenshot references, and exact-head owner-approval status. Write "Not used" otherwise. Never include credentials, provider bodies, or private screenshot content. -->
+<!-- When applicable, record exact source SHA, Xcode version/build, discovered catalog/read-only preflight versus executed operations, project/workspace, scheme, build/test destination, separately verified interaction destination and task-owned UUID, serialized session cleanup, hierarchy-before-action, direct screenshot references, mock-versus-live label, and exact-head owner-approval status. Write "Not used" otherwise. Never include credentials, provider bodies, or private screenshot content. -->
 -
 
 ## Proof limits and out of scope

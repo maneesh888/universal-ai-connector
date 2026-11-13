@@ -24,6 +24,10 @@ require_phrase 'The November 12, 2026 Xcode 27.1 capability check exposed 54 too
   'AGENTS.md must retain the dated Xcode MCP capability baseline.'
 require_phrase 'Catalog discovery or a successful project read' "$AGENTS" \
   'AGENTS.md must not promote safe reads into unexecuted MCP proof.'
+require_phrase 'Never assume a tool name or capability from a prior session.' "$AGENTS" \
+  'AGENTS.md must require tool discovery and read-only preflight.'
+require_phrase 'build/test destination support and Device Interaction session eligibility as separate' "$AGENTS" \
+  'AGENTS.md must separate build/test and interaction destination eligibility.'
 require_phrase 'MCP is assistive, never a replacement for repository gates.' "$AGENTS" \
   'AGENTS.md must preserve the repository-script authority boundary.'
 require_phrase 'scripts and all affected Kotlin, JVM, Android, Swift, packaging, and consumer checks.' "$AGENTS" \
@@ -32,6 +36,8 @@ require_phrase 'Serialize MCP test or Simulator activity with every other Simula
   'AGENTS.md must serialize MCP Simulator work across project worktrees.'
 require_phrase 'Runtime or visual acceptance through MCP requires direct screenshots' "$AGENTS" \
   'AGENTS.md must require direct screenshot evidence for runtime acceptance.'
+require_phrase 'hierarchy before every action' "$AGENTS" \
+  'AGENTS.md must require hierarchy-driven interaction.'
 require_phrase 'must not merge until the independent' "$AGENTS" \
   'AGENTS.md must retain the exact-head review and human merge hold.'
 
@@ -41,11 +47,19 @@ require_phrase 'Keep the scripts intact; do not translate only their Apple steps
   'The workflow must reject partial MCP replacement of full scripts.'
 require_phrase 'A project-read session alone does not require the Simulator hold.' "$WORKFLOW" \
   'The workflow must scope serialization to test and Simulator operations.'
+require_phrase 'Build/test destination eligibility and Device Interaction destination eligibility are independent.' "$WORKFLOW" \
+  'The workflow must keep build/test and interaction eligibility distinct.'
+require_phrase 'End the workspace interaction session on' "$WORKFLOW" \
+  'The workflow must require interaction-session cleanup.'
+require_phrase 'camera and microphone access is unavailable while interacting with a physical device' "$WORKFLOW" \
+  'The workflow must retain the official physical-device sensor limitation.'
 require_phrase 'explicitly approves the current exact head' "$WORKFLOW" \
   'The workflow must require exact-head owner approval for MCP runtime candidates.'
 
 require_phrase 'MCP never replaces a selected repository gate.' "$DEVELOP_SKILL" \
   'The development skill must preserve repository gates.'
+require_phrase 'use a task-owned device UUID, read hierarchy before each action' "$DEVELOP_SKILL" \
+  'The development skill must carry the interaction lifecycle.'
 require_phrase 'stop before merge until the repository owner explicitly approves that exact head.' "$DEVELOP_SKILL" \
   'The development skill must stop before unapproved MCP-runtime merges.'
 require_phrase 'explicit repository-owner approval bound to the' "$REVIEW_SKILL" \
@@ -56,6 +70,8 @@ require_phrase 'retained Kotlin/JVM/Android and repository-script coverage' "$RE
   'The independent reviewer must inspect retained cross-platform evidence.'
 require_phrase '## Xcode MCP evidence' "$PR_TEMPLATE" \
   'The pull-request brief must record Xcode MCP evidence or non-use.'
+require_phrase 'mock-versus-live label' "$PR_TEMPLATE" \
+  'The pull-request brief must distinguish mock and live runtime evidence.'
 
 if rg --fixed-strings --quiet 'MCP replaces the repository scripts' \
   "$AGENTS" "$WORKFLOW" "$DEVELOP_SKILL" "$REVIEW_SKILL"; then

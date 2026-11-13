@@ -288,10 +288,11 @@ adopting another reviewer's conclusion. Repository documentation does not activa
 
 Xcode's MCP service is an optional assistive route for Swift and iOS work. Confirm
 `xcodebuild -version` reports Xcode 27, resolve `xcrun mcpbridge`, connect the exact task
-worktree/project, and
-inspect the current tool list before use. On November 12, 2026, Xcode 27.1 build `27A9269` exposed a
-54-tool catalog. That establishes a capability snapshot only: tool names and counts may change, and
-no unexecuted operation inherits proof from catalog presence.
+worktree/project, discover the current tool list, and then use read-only calls to verify the
+project or workspace, scheme, and destinations before use. Do not assume a tool name, argument, or
+capability from a prior run. On November 12, 2026, Xcode 27.1 build `27A9269` exposed a 54-tool
+catalog. That establishes a capability snapshot only: tool names and counts may change, and no
+unexecuted operation inherits proof from catalog presence.
 
 Use the following evidence levels:
 
@@ -310,6 +311,13 @@ Use the following evidence levels:
    interaction and retain direct screenshots. Do not substitute XCTest attachments, accessibility
    metadata, a preview snapshot, or a tool success response for the required runtime observation.
 
+Build/test destination eligibility and Device Interaction destination eligibility are independent.
+A destination can run automated tests while the workspace interaction-session start rejects it.
+Discover the available destinations, select a task-owned Simulator, record its UUID, and verify
+interaction-session start explicitly before claiming interaction support. An interaction failure
+does not invalidate successful build/test evidence, and successful build/test evidence does not
+upgrade the failed interaction route.
+
 MCP use never narrows the cross-platform matrix. `./scripts/check.sh --quick` and
 `./scripts/check.sh --full` continue to own their complete Kotlin, JVM, Android, Swift, Apple
 packaging, and consumer scopes. Keep the scripts intact; do not translate only their Apple steps
@@ -320,12 +328,27 @@ no repository script or linked worktree is using the host Simulator. Keep one ow
 session. Do not stop global Simulator/CoreSimulator processes or mutate a pre-existing or user-open
 device to prepare proof. A project-read session alone does not require the Simulator hold.
 
+Hold the serialized Simulator lane from interaction-session start through cleanup. After install
+and launch, fetch the current accessibility hierarchy before every action; use identifiers and
+labels from that fresh hierarchy instead of stale coordinates or indexes. Inspect the returned
+hierarchy and a direct screenshot after the action. End the workspace interaction session on
+success, failure, or cancellation before releasing the lane. Preserve the task-owned Simulator for
+repeatable follow-up unless its cleanup is part of the task; do not erase or delete it merely to
+close a session.
+
 For MCP-assisted runtime acceptance, keep screenshots outside the repository and private evidence
 packet, exclude credentials/provider bodies/private configuration, and bind the record to the exact
-head, Xcode build, scheme, destination, action, and result. The agent must inspect every screenshot
-used for a claim. The independent reviewer checks the same exact head and the distinction between
-read, build/test, and runtime evidence. After every non-test head change, repeat the affected
-runtime evidence.
+head and source revision, Xcode version/build, project or workspace, scheme, destination name and
+UUID, tool operation, action, and result. Label each result as read-only, build/test, or runtime,
+and as deterministic mock or live-provider behavior. The agent must inspect every direct screenshot
+used for a claim. The independent reviewer checks the same exact head and these proof boundaries.
+After every non-test head change, repeat the affected runtime evidence.
+
+Apple documents Device Hub interaction for simulated and physical devices, and explicitly states
+that camera and microphone access is unavailable while interacting with a physical device. Treat
+that as a physical-device interaction limitation, not as proof about Simulator sensor behavior or
+about this package's audio support. See [Interacting with your app in Device Hub](https://developer.apple.com/documentation/xcode/interacting-with-your-app-in-device-hub)
+and [Xcode 27 Release Notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes).
 
 An MCP-assisted Simulator/runtime candidate remains on human hold after automated gates. Do not
 merge it until the repository owner explicitly approves the current exact head after the screenshot

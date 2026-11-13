@@ -47,6 +47,10 @@ Use the highest mode required by the requested outcome or changed surface. Manda
 11. Keep MCP test and Simulator activity serialized with other repository/worktree Simulator work.
     Preserve complete repository scripts and their Kotlin, JVM, Android, Swift, packaging, and
     consumer coverage; MCP never replaces a selected repository gate.
+12. Before MCP runtime work, discover the current tools and verify the project, scheme, and
+    destinations with read-only calls. Validate Device Interaction eligibility separately from
+    build/test support, use a task-owned device UUID, read hierarchy before each action, inspect
+    direct screenshots, and end the interaction session during cleanup.
 
 The roadmap and active plan own product constraints. Do not copy them into a work order or report; cite the relevant source sections.
 
@@ -79,8 +83,9 @@ Use `gh` for GitHub operations and `gh api graphql` for thread state. Do not swi
 - Use the trusted docs-only selection from `docs/DEVELOPMENT_WORKFLOW.md`; all other Release/push scopes require `./scripts/check.sh --full`. Explicit full always means full.
 - Never bypass hooks or security scans.
 - For MCP-assisted Simulator/runtime acceptance, retain inspected direct screenshots and an
-  exact-head evidence record. Complete independent exact-head review and required checks, then
-  stop before merge until the repository owner explicitly approves that exact head.
+  exact-head evidence record that identifies source revision, Xcode build, scheme, task-owned
+  device UUID, operation, and mock-versus-live boundary. Complete independent exact-head review
+  and required checks, then stop before merge until the repository owner explicitly approves that exact head.
 
 Create PRs as drafts with a concise brief containing scope, source links, verification, proof limits, exact head SHA, and one milestone effect. Build the detailed reviewer packet only when Release review begins.
 
